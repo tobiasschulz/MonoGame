@@ -92,7 +92,8 @@ namespace Microsoft.Xna.Framework.Graphics
             var rowSize = elementSize * 4;
 
             // Take care of a single data type.
-            if (rows == 1 && columns == 1)
+            // (only if it's not wrapped inside an array)
+            if (rows == 1 && columns == 1 && !(data is Array))
             {
                 // TODO: Consider storing all data in arrays to avoid
                 // having to generate this temp array on every set.
