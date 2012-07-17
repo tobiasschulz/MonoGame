@@ -63,6 +63,7 @@ namespace Microsoft.Xna.Framework
         protected Game game;
         private List<Microsoft.Xna.Framework.Input.Keys> keys;
         private OpenTK.Graphics.GraphicsContext backgroundContext;
+        private bool _isDisposed;
 
         // we need this variables to make changes beetween threads
         private WindowState windowState;
@@ -294,10 +295,16 @@ namespace Microsoft.Xna.Framework
 
         public void Dispose()
         {
-            Threading.BackgroundContext.Dispose();
-            Threading.BackgroundContext = null;
-            Threading.WindowInfo = null;
-            window.Dispose();
+            // Dispose check : disposal happens twice if game exited by closing main window
+            if (!_isDisposed)
+            {
+                Threading.BackgroundContext.Dispose();
+                Threading.BackgroundContext = null;
+                Threading.WindowInfo = null;
+                window.Dispose();
+            }
+
+            _isDisposed = true;
         }
 
         public override void BeginScreenDeviceChange(bool willBeFullScreen)
