@@ -469,37 +469,44 @@ namespace Microsoft.Xna.Framework
             float displayAspectRatio = (float)GraphicsDevice.DisplayMode.Width / 
                                        (float)GraphicsDevice.DisplayMode.Height;
 
+            float adjustedAspectRatio = preferredAspectRatio;
+
             if ((preferredAspectRatio > 1.0f && displayAspectRatio < 1.0f) ||
                 (preferredAspectRatio < 1.0f && displayAspectRatio > 1.0f))
             {
                 // Invert preferred aspect ratio if it's orientation differs from the display mode orientation.
                 // This occurs when user sets preferredBackBufferWidth/Height and also allows multiple supported orientations
-                preferredAspectRatio = 1.0f / preferredAspectRatio;
+                adjustedAspectRatio = 1.0f / preferredAspectRatio;
             }
 
             const float EPSILON = 0.00001f;
             var newClientBounds = new Rectangle();
-            if (displayAspectRatio > (preferredAspectRatio + EPSILON))
+            if (displayAspectRatio > (adjustedAspectRatio + EPSILON))
             {
                 newClientBounds.Height = GraphicsDevice.DisplayMode.Height;
-                newClientBounds.Width = (int) (newClientBounds.Height * preferredAspectRatio);
+                newClientBounds.Width = (int)(newClientBounds.Height * adjustedAspectRatio);
                 newClientBounds.X = (GraphicsDevice.DisplayMode.Width - newClientBounds.Width)/2;
 
                 _game.Window.ClientBounds = newClientBounds;
             }
-            else if (displayAspectRatio < (preferredAspectRatio - EPSILON))
+            else if (displayAspectRatio < (adjustedAspectRatio - EPSILON))
             {
                 newClientBounds.Width = GraphicsDevice.DisplayMode.Width;
-                newClientBounds.Height = (int)(newClientBounds.Width / preferredAspectRatio);
+                newClientBounds.Height = (int)(newClientBounds.Width / adjustedAspectRatio);
                 newClientBounds.Y = (GraphicsDevice.DisplayMode.Height - newClientBounds.Height) / 2;
 
                 _game.Window.ClientBounds = newClientBounds;
             }
             else
             {
-                newClientBounds.Width = GraphicsDevice.DisplayMode.Width;
-                newClientBounds.Height = GraphicsDevice.DisplayMode.Height;
-                _game.Window.ClientBounds = new Rectangle(0, 0, GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height);
+                // Set the ClientBounds to match the DisplayMode but swapped if necessary to match current orientation
+                bool isLandscape = preferredAspectRatio > 1.0f;
+                int w = GraphicsDevice.DisplayMode.Width;
+                int h = GraphicsDevice.DisplayMode.Height;
+
+                newClientBounds.Width = isLandscape ? Math.Max(w, h) : Math.Min(w, h);
+                newClientBounds.Height = isLandscape ? Math.Min(w, h) : Math.Max(w, h);
+                _game.Window.ClientBounds = new Rectangle(0, 0, newClientBounds.Width, newClientBounds.Height);
             }
             GraphicsDevice.Viewport = new Viewport(newClientBounds.X, newClientBounds.Y, newClientBounds.Width, newClientBounds.Height);
             Android.Util.Log.Debug("MonoGame", "GraphicsDeviceManager.ResetClientBounds: newClientBounds=" + newClientBounds.ToString());
