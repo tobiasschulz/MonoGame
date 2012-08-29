@@ -17,8 +17,6 @@ namespace MonoGameContentProcessors.Processors
     {
         public override CompiledEffectContent Process(EffectContent input, ContentProcessorContext context)
         {
-            //System.Diagnostics.Debugger.Launch();
-
             // If this isn't a MonoGame platform then do the default processing.
             var platform = ContentHelper.GetMonoGamePlatform();
             if (platform == MonoGamePlatform.None)
@@ -29,6 +27,8 @@ namespace MonoGameContentProcessors.Processors
             options.DX11Profile = platform == MonoGamePlatform.Windows8 ? true : false;
             options.OutputFile = context.OutputFilename;
 
+            //System.Diagnostics.Debugger.Break();
+
             // Parse the MGFX file expanding includes, macros, and returning the techniques.
             ShaderInfo shaderInfo;
             try
@@ -37,6 +37,7 @@ namespace MonoGameContentProcessors.Processors
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debugger.Break();
                 throw new InvalidContentException("Failed to parse the effect!", ex);
             }
 
@@ -48,6 +49,7 @@ namespace MonoGameContentProcessors.Processors
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debugger.Break();
                 throw new InvalidContentException("Failed to create the effect!", ex);
             }
 
@@ -65,6 +67,7 @@ namespace MonoGameContentProcessors.Processors
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debugger.Break();
                 throw new InvalidContentException("Failed to serialize the effect!", ex);
             }
 
