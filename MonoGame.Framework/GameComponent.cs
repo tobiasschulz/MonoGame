@@ -49,6 +49,8 @@ namespace Microsoft.Xna.Framework
         bool _enabled;
         public event EventHandler<EventArgs> UpdateOrderChanged;
         public event EventHandler<EventArgs> EnabledChanged;
+        public event EventHandler<EventArgs> Disposed;
+
         public GameComponent(Game game)
         {
             _game = game;
@@ -120,6 +122,7 @@ namespace Microsoft.Xna.Framework
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
+            Raise(Disposed, EventArgs.Empty);
         }
         
         /// <summary>
