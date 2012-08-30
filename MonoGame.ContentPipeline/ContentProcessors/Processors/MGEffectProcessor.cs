@@ -37,7 +37,9 @@ namespace MonoGameContentProcessors.Processors
             }
             catch (Exception ex)
             {
+#if DEBUG
                 System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidContentException("Failed to parse the effect!", ex);
             }
 
@@ -49,7 +51,9 @@ namespace MonoGameContentProcessors.Processors
             }
             catch (Exception ex)
             {
+#if DEBUG
                 System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidContentException("Failed to create the effect!", ex);
             }
 
@@ -67,7 +71,9 @@ namespace MonoGameContentProcessors.Processors
             }
             catch (Exception ex)
             {
+#if DEBUG
                 System.Diagnostics.Debugger.Break();
+#endif
                 throw new InvalidContentException("Failed to serialize the effect!", ex);
             }
 
