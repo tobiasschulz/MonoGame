@@ -341,7 +341,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				return BlendEquationMode.MaxExt;
 			case BlendFunction.Min:
 				return BlendEquationMode.MinExt;
-#elif MONOMAC
+#else 
 			case BlendFunction.Max:
 				return BlendEquationMode.Max;
 			case BlendFunction.Min:
