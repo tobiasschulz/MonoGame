@@ -246,7 +246,9 @@ namespace Microsoft.Xna.Framework
         {
             GraphicsContext.ShareContexts = true;
 
-            window = new OpenTK.GameWindow();
+            var stencilGraphicsMode = new GraphicsMode(DisplayDevice.Default.BitsPerPixel, 24, 8);
+
+            window = new OpenTK.GameWindow(640, 480, stencilGraphicsMode);
             window.RenderFrame += OnRenderFrame;
             window.UpdateFrame += OnUpdateFrame;
             window.Closing += new EventHandler<CancelEventArgs>(OpenTkGameWindow_Closing);
@@ -270,7 +272,7 @@ namespace Microsoft.Xna.Framework
             }
 #endif
             // Provide the graphics context for background loading
-            Threading.BackgroundContext = new GraphicsContext(GraphicsMode.Default, window.WindowInfo);
+            Threading.BackgroundContext = new GraphicsContext(stencilGraphicsMode, window.WindowInfo);
             Threading.WindowInfo = window.WindowInfo;
             Threading.BackgroundContext.MakeCurrent( Threading.WindowInfo );
 
