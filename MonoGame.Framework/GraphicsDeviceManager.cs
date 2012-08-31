@@ -95,7 +95,7 @@ namespace Microsoft.Xna.Framework
 #endif
 
             _preferredBackBufferFormat = SurfaceFormat.Color;
-            _preferredDepthStencilFormat = DepthFormat.Depth24;
+            _preferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             _synchronizedWithVerticalRetrace = true;
 
             if (game.Services.GetService(typeof(IGraphicsDeviceManager)) != null)
