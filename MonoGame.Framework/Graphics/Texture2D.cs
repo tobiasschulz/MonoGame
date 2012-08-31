@@ -780,6 +780,7 @@ namespace Microsoft.Xna.Framework.Graphics
                                                  bitmap.PixelFormat);
                 Marshal.Copy(data, 0, bitmapData.Scan0, data.Length);
                 bitmap.UnlockBits(bitmapData);
+                bitmap.RGBToBGR();
                 bitmap.Save(stream, outputFormat);
             }
         }
