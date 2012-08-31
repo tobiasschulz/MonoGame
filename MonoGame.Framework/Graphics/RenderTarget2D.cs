@@ -147,7 +147,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			case DepthFormat.Depth24: glDepthStencilFormat = GLDepthComponent24; break;
 			case DepthFormat.Depth24Stencil8: glDepthStencilFormat = GLDepth24Stencil8; break;
 			}
-			GL.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
+            if (MultiSampleCount == 0)
+			    GL.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
+            else
+                GL.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, glDepthStencilFormat, this.width, this.height);
 #endif
         }
 		
