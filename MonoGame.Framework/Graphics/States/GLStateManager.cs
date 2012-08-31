@@ -80,6 +80,10 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
 			GL.BlendFunc (bfs, bfd);
 #endif
+            GL.ColorMask((state.ColorWriteChannels & ColorWriteChannels.Red) != 0,
+                (state.ColorWriteChannels & ColorWriteChannels.Green) != 0,
+                (state.ColorWriteChannels & ColorWriteChannels.Blue) != 0,
+                (state.ColorWriteChannels & ColorWriteChannels.Alpha) != 0);
 			
 			GL.Enable (EnableCap.Blend);
 		}
@@ -151,6 +155,13 @@ namespace Microsoft.Xna.Framework.Graphics
 			} else {
 				GL.Disable(EnableCap.ScissorTest);
 			}
+
+            // Depth bias implementation differs in OpenGL from DX, see
+            // http://aras-p.info/blog/2008/06/12/depth-bias-and-the-power-of-deceiving-yourself/
+            // for where the constant comes from (fiddled with the original 4.8e7 though)
+            const float DepthBiasMultiplier = 10000000;
+		    GL.Enable(EnableCap.PolygonOffsetFill);
+            GL.PolygonOffset(state.SlopeScaleDepthBias, state.DepthBias * DepthBiasMultiplier);
 		}
 		
 		public static void SetScissor (Rectangle scissor) {
