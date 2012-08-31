@@ -118,7 +118,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         void SetParameter(int offset, EffectParameter param)
         {
-            if (param.Data != null)
+            if (param.Data != null || param.Elements.Count > 0)
             {
                 int elementSize = 4;
                 var rowSize = elementSize * 4;
