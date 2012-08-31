@@ -291,7 +291,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			SamplerStates = new SamplerStateCollection (16);
 
 			PresentationParameters = new PresentationParameters ();
-			PresentationParameters.DepthStencilFormat = DepthFormat.Depth24;
+			PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;
         }
 
         internal void Initialize()
@@ -770,6 +770,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				bufferMask = bufferMask | ClearBufferMask.StencilBufferBit;
 			}
 			if (options.HasFlag(ClearOptions.DepthBuffer)) {
+                // Make sure we're not masking depth writes, this affects
+                // glClear calls.
+                GL.DepthMask(true);
 #if GLES
                 GL.ClearDepth (depth);
 #else
@@ -777,7 +780,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 				bufferMask = bufferMask | ClearBufferMask.DepthBufferBit;
 			}
-
 #if GLES
 			GL.Clear ((uint)bufferMask);
 #else
