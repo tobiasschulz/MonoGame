@@ -1002,7 +1002,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 lock (_d3dContext) 
                     _d3dContext.Rasterizer.SetViewports(viewport);
 #elif OPENGL
-                GL.Viewport(value.X, value.Y, value.Width, value.Height);
+                GL.Viewport (value.X, value.Y, value.Width, value.Height);
 #if GLES
                 GL.DepthRange(value.MinDepth, value.MaxDepth);
 #else
