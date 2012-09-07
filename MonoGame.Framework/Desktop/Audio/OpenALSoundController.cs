@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 
 #if IPHONE || WINDOWS || LINUX
+using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 using OpenTK;
 #elif MONOMAC
@@ -16,10 +17,11 @@ namespace Microsoft.Xna.Framework.Audio
 	internal sealed class OpenALSoundController : IDisposable
 	{
 		static OpenALSoundController _instance = null;
-		IntPtr _device;
-		ContextHandle _context;
+		//IntPtr _device;
+		//ContextHandle _context;
 		//int outputSource;
 		//int[] buffers;
+	    AudioContext audioContext;
 		AlcError _lastOpenALError;
 		int[] allSourcesArray;
 		const int MAX_NUMBER_OF_SOURCES = 32;
@@ -33,7 +35,7 @@ namespace Microsoft.Xna.Framework.Audio
 #if MACOSX || IPHONE
 			alcMacOSXMixerOutputRate(PREFERRED_MIX_RATE);
 #endif
-			_device = Alc.OpenDevice (string.Empty);
+			/*_device = Alc.OpenDevice (string.Empty);
 			CheckALError ("Could not open AL device");
 			if (_device != IntPtr.Zero) {
 				int[] attribute = new int[0];
@@ -46,7 +48,8 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			} else {
 				return;
-			}
+			}*/
+            audioContext = new AudioContext();
 
 			allSourcesArray = new int[MAX_NUMBER_OF_SOURCES];
 			AL.GenSources (allSourcesArray);
@@ -72,7 +75,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void CheckALError (string operation)
 		{
-			_lastOpenALError = Alc.GetError (_device);
+			//_lastOpenALError = Alc.GetError (_device);
 
 			if (_lastOpenALError == AlcError.NoError) {
 				return;
@@ -87,7 +90,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void CleanUpOpenAL ()
 		{
-			Alc.MakeContextCurrent (ContextHandle.Zero);
+			/*Alc.MakeContextCurrent (ContextHandle.Zero);
 			if (_context != ContextHandle.Zero) {
 				Alc.DestroyContext (_context);
 				_context = ContextHandle.Zero;
@@ -95,7 +98,8 @@ namespace Microsoft.Xna.Framework.Audio
 			if (_device != IntPtr.Zero) {
 				Alc.CloseDevice (_device);
 				_device = IntPtr.Zero;
-			}
+			}*/
+            audioContext.Dispose();
 		}
 
 		public void Dispose ()
