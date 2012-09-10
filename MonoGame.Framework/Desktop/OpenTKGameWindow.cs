@@ -274,16 +274,15 @@ namespace Microsoft.Xna.Framework
             // Provide the graphics context for background loading
             Threading.BackgroundContext = new GraphicsContext(stencilGraphicsMode, window.WindowInfo);
             Threading.WindowInfo = window.WindowInfo;
-            Threading.BackgroundContext.MakeCurrent( Threading.WindowInfo );
 
             keys = new List<Keys>();
 
             // mouse
             // TODO review this when opentk 1.1 is released
-#if !WINDOWS
-            Mouse.UpdateMouseInfo(window.Mouse);
-#else
+#if WINDOWS || LINUX
             Mouse.setWindows(window);
+#else
+            Mouse.UpdateMouseInfo(window.Mouse);
 #endif
 
             //Default no resizing
