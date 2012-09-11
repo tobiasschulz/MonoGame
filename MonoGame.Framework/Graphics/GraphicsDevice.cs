@@ -973,14 +973,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        public Microsoft.Xna.Framework.Graphics.GraphicsDeviceCapabilities GraphicsDeviceCapabilities
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public Microsoft.Xna.Framework.Graphics.GraphicsDeviceStatus GraphicsDeviceStatus
         {
             get
