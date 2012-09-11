@@ -87,15 +87,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XInput">
+      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.XInput.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
-    <Reference Include="Tao.Sdl, Version=1.2.13.0, Culture=neutral, PublicKeyToken=9c7a200e36c0094e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\GamepadConfig\Tao.Sdl.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\AudioCategory.cs" />
@@ -121,16 +123,7 @@
     <Compile Include="Content\ContentReaders\VertexDeclarationReader.cs" />
     <Compile Include="Content\ResourceContentManager.cs" />
     <Compile Include="Desktop\Audio\SoundEffectInstance.cs" />
-    <Compile Include="Desktop\Input\Axis.cs" />
-    <Compile Include="Desktop\Input\Capabilities.cs" />
-    <Compile Include="Desktop\Input\DPad.cs" />
-    <Compile Include="Desktop\Input\GamePad.cs" />
-    <Compile Include="Desktop\Input\Input.cs" />
-    <Compile Include="Desktop\Input\Joystick.cs" />
     <Compile Include="Input\Mouse.cs" />
-    <Compile Include="Desktop\Input\PadConfig.cs" />
-    <Compile Include="Desktop\Input\Settings.cs" />
-    <Compile Include="Desktop\Input\Stick.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GamePlatform.cs" />
     <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
@@ -335,6 +328,7 @@
     <Compile Include="Windows\GamerServices\Guide.cs" />
     <Compile Include="Windows\GamerServices\MonoGameGamerServicesHelper.cs" />
     <Compile Include="Windows\GamerServices\SignedInGamer.cs" />
+    <Compile Include="Windows\Input\GamePad.cs" />
     <Compile Include="Windows\Input\KeyboardUtil.cs" />
     <Compile Include="Windows\Media\Video.cs" />
     <Compile Include="Desktop\OpenTKGamePlatform.cs" />
@@ -477,5 +471,8 @@
       <Project>{AE483C29-042E-4226-BA52-D247CE7676DA}</Project>
       <Name>Lidgren.Network.Windows</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Windows8\" />
   </ItemGroup>
 </Project>
