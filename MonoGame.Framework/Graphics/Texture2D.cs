@@ -550,19 +550,17 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
 #else
+		    Threading.BlockOnUIThread(() =>
+		    {
+		        GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
 
-			GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+		        if (rect.HasValue)
+		            throw new NotImplementedException();
+		        if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
+		            throw new NotImplementedException();
 
-			if (rect.HasValue) {
-				throw new NotImplementedException();
-			}
-
-			if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
-				throw new NotImplementedException();
-			} else {
-				GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
-			}
-
+		        GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
+		    });
 #endif
         }
 
