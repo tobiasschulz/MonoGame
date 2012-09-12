@@ -188,8 +188,6 @@ namespace Microsoft.Xna.Framework
         {
             if (disposing)
             {
-                Platform.Dispose();
-
                 // Dispose loaded game components
                 for (int i = 0; i < _components.Count; i++)
                 {
@@ -197,6 +195,8 @@ namespace Microsoft.Xna.Framework
                     if (disposable != null)
                         disposable.Dispose();
                 }
+
+                Platform.Dispose();
             }
 
             _isDisposed = true;

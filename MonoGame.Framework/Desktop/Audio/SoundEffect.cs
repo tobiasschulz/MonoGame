@@ -51,12 +51,11 @@ namespace Microsoft.Xna.Framework.Audio
 {
     public sealed class SoundEffect : IDisposable
     {
-		private Sound _sound;
 		private string _name = "";
 		private string _filename = "";
 		internal byte[] _data;
 		
-		internal float Rate { get; set; }
+		internal int Rate { get; set; }
 
 		internal ALFormat Format { get; set; }
 
@@ -224,14 +223,15 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region IDisposable Members
 
+        bool isDisposed;
         public bool IsDisposed
         {
-            get { return false; }
+            get { return isDisposed; }
         }
 
         public void Dispose()
         {
-            //_sound.Dispose ();
+            isDisposed = true;
         }
 
         #endregion
