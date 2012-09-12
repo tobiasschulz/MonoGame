@@ -41,11 +41,11 @@ purpose and non-infringement.
 using System;
 using System.IO;
 
-using Microsoft.Xna;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-
+#if MONOMAC
+using MonoMac.OpenAL;
+#else
 using OpenTK.Audio.OpenAL;
+#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {

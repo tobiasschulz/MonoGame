@@ -45,8 +45,12 @@ namespace Microsoft.Xna.Framework.Audio
         internal bool Preparing { get; private set; }
 
         public int BufferCount { get; private set; }
+        public string Name { get; private set; }
 
-        public OggStream(string filename, int bufferCount = DefaultBufferCount) : this(File.OpenRead(filename), bufferCount) { }
+        public OggStream(string filename, int bufferCount = DefaultBufferCount) : this(File.OpenRead(filename), bufferCount)
+        {
+            Name = filename;
+        }
         public OggStream(Stream stream, int bufferCount = DefaultBufferCount)
         {
             ALHelper.Check();
@@ -441,7 +445,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             for (int i = 0; i < length; i++)
             {
-                var temp = (int)(32767f * inBuffer[i]);
+                var temp = (int)(short.MaxValue * inBuffer[i]);
                 if (temp > short.MaxValue) temp = short.MaxValue;
                 else if (temp < short.MinValue) temp = short.MinValue;
                 outBuffer[i] = (short)temp;
@@ -521,6 +525,7 @@ namespace Microsoft.Xna.Framework.Audio
                         var state = AL.GetSourceState(stream.alSourceId);
                         if (state == ALSourceState.Stopped)
                         {
+                            Trace.WriteLine("[OpenAL] Buffer underrun on " + stream.Name);
                             AL.SourcePlay(stream.alSourceId);
                             ALHelper.Check();
                         }

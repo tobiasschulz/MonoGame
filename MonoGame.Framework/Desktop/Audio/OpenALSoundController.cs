@@ -5,7 +5,6 @@ using System.Diagnostics;
 #if IPHONE || WINDOWS || LINUX
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
-using OpenTK;
 #elif MONOMAC
 using MonoMac.OpenAL;
 #endif
@@ -39,7 +38,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         readonly Stack<int> freeBuffers;
 	    readonly Dictionary<SoundEffect, BufferAllocation> allocatedBuffers;
-	    List<KeyValuePair<SoundEffect, BufferAllocation>> staleAllocations; 
+	    readonly List<KeyValuePair<SoundEffect, BufferAllocation>> staleAllocations; 
 
 	    readonly int filterId;
 
@@ -74,7 +73,8 @@ namespace Microsoft.Xna.Framework.Audio
         public int RegisterSfxInstance(SoundEffectInstance instance)
         {
             activeSoundEffects.Add(instance);
-            return TakeSourceFor(instance.SoundEffect, !instance.SoundEffect.Name.Contains("Ui"));
+            var doFilter = !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp");
+            return TakeSourceFor(instance.SoundEffect, doFilter);
         }
 
         public void Update(GameTime gameTime)
@@ -142,20 +142,11 @@ namespace Microsoft.Xna.Framework.Audio
             if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
                 throw new InvalidOperationException(soundEffect.Name + " not found");
 
-            AL.Source(sourceId, ALSourcei.Buffer, 0);
-            ALHelper.Check();
-
             allocation.SourceCount--;
             if (allocation.SourceCount == 0) allocation.SinceUnused = 0;
             Debug.Assert(allocation.SourceCount >= 0);
 
-            freeSources.Push(sourceId);
-
-            if (ALHelper.Efx.IsInitialized && filteredSources.Remove(sourceId))
-            {
-                ALHelper.Efx.BindFilterToSource(sourceId, 0);
-                ALHelper.Check();
-            }
+            ReturnSource(sourceId);
 
             TidySources();
         }
@@ -196,19 +187,24 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void ReturnSource(int sourceId)
         {
-            if (ALHelper.Efx.IsInitialized)
-            {
-                ALHelper.Efx.BindFilterToSource(sourceId, 0);
-                ALHelper.Check();
-                filteredSources.Remove(sourceId);
-            }
+            ResetSource(sourceId);
+            TidySources();
+        }
 
-            freeSources.Push(sourceId);
-
+        void ResetSource(int sourceId)
+        {
+            AL.Source(sourceId, ALSourceb.Looping, false);
+            AL.Source(sourceId, ALSource3f.Position, 0, 0.0f, 0.1f);
+            AL.Source(sourceId, ALSourcef.Pitch, 1);
+            AL.Source(sourceId, ALSourcef.Gain, 1);
             AL.Source(sourceId, ALSourcei.Buffer, 0);
+
+            if (ALHelper.Efx.IsInitialized && filteredSources.Remove(sourceId))
+                ALHelper.Efx.BindFilterToSource(sourceId, 0);
+
             ALHelper.Check();
 
-            TidySources();
+            freeSources.Push(sourceId);
         }
 
         void ExpandBuffers()

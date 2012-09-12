@@ -47,8 +47,6 @@ using MonoMac.OpenAL;
 using OpenTK.Audio.OpenAL;
 #endif
 
-using Microsoft.Xna.Framework;
-
 #endregion Statements
 
 namespace Microsoft.Xna.Framework.Audio
@@ -71,11 +69,6 @@ namespace Microsoft.Xna.Framework.Audio
 		{
             this.soundEffect = soundEffect;
             sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this);
-
-            Volume = volume;
-	        IsLooped = looped;
-	        Pan = pan;
-	        Pitch = pitch;
 		}
 
 	    public SoundEffect SoundEffect
