@@ -122,6 +122,7 @@
     <Compile Include="Content\ContentReaders\VertexBufferReader.cs" />
     <Compile Include="Content\ContentReaders\VertexDeclarationReader.cs" />
     <Compile Include="Content\ResourceContentManager.cs" />
+    <Compile Include="Desktop\Audio\OggStream.cs" />
     <Compile Include="Desktop\Audio\SoundEffectInstance.cs" />
     <Compile Include="Input\Mouse.cs" />
     <Compile Include="Game.cs" />
@@ -443,7 +444,6 @@
     <Compile Include="Graphics\Vertices\VertexElementColor.cs" />
     <Compile Include="Audio\XactClip.cs" />
     <Compile Include="Audio\XactSound.cs" />
-    <Compile Include="Desktop\Audio\OALSoundBuffer.cs" />
     <Compile Include="Desktop\Audio\OpenALSoundController.cs" />
     <Compile Include="Desktop\Audio\SoundEffect.cs" />
   </ItemGroup>
@@ -467,12 +467,14 @@
     <EmbeddedResource Include="Graphics\Effect\Resources\SkinnedEffect.ogl.mgfxo" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NVorbis\Lib\NVorbis.csproj">
+      <Project>{A372E591-DFEF-49C4-9C82-98C4361EFCCD}</Project>
+      <Name>NVorbis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.Windows.csproj">
       <Project>{AE483C29-042E-4226-BA52-D247CE7676DA}</Project>
       <Name>Lidgren.Network.Windows</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Windows8\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>
