@@ -186,6 +186,8 @@ namespace Microsoft.Xna.Framework
             var graphicsDeviceManager = (GraphicsDeviceManager)
                 Game.Services.GetService(typeof(IGraphicsDeviceManager));
 
+            VSyncEnabled = graphicsDeviceManager.SynchronizeWithVerticalRetrace;
+
             if (graphicsDeviceManager.IsFullScreen)
             {
                 bounds = new Rectangle(0, 0,graphicsDeviceManager.PreferredBackBufferWidth,graphicsDeviceManager.PreferredBackBufferHeight);
