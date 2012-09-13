@@ -221,5 +221,11 @@ namespace Microsoft.Xna.Framework.Content
         {
             typeCreators.Add(typeString, createFunction);
         }
+
+        public static void ClearTypeCreators()
+        {
+            typeCreators.Clear();
+        }
+
     }
 }
