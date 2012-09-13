@@ -323,6 +323,7 @@
     <Compile Include="Net\QualityOfService.cs" />
     <Compile Include="Net\SendDataOptions.cs" />
     <Compile Include="Storage\StorageDeviceHelper.cs" />
+    <Compile Include="SubStream.cs" />
     <Compile Include="Windows\Audio\AudioLoader.cs" />
     <Compile Include="Windows\Audio\Sound.cs" />
     <Compile Include="Windows\Content\ContentReaders\SoundEffectReader.cs" />

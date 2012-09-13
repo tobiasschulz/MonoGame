@@ -20,6 +20,10 @@ namespace Microsoft.Xna.Framework.Audio
             Efx = new EffectsExtension();
         }
 
+        public static bool TryCheck()
+        {
+            return AL.GetError() != ALError.NoError;
+        }
         public static void Check()
         {
             ALError error;
@@ -56,10 +60,10 @@ namespace Microsoft.Xna.Framework.Audio
             ALHelper.Check();
 
             BufferCount = bufferCount;
-
+#if !FAKE
             alBufferIds = OpenALSoundController.Instance.TakeBuffers(BufferCount);
             alSourceId = OpenALSoundController.Instance.TakeSource();
-
+#endif
             if (ALHelper.XRam.IsInitialized)
             {
                 ALHelper.XRam.SetBufferMode(BufferCount, ref alBufferIds[0], XRamExtension.XRamStorage.Hardware);
@@ -71,7 +75,7 @@ namespace Microsoft.Xna.Framework.Audio
             underlyingStream = stream;
         }
 
-        public void Prepare()
+        public void Prepare(bool asynchronous = false)
         {
             if (Preparing) return;
 
@@ -99,7 +103,7 @@ namespace Microsoft.Xna.Framework.Audio
                     lock (prepareMutex)
                     {
                         Preparing = true;
-                        Open(precache: true);
+                        Open(precache: true, asyncPrecache: asynchronous);
                     }
                 }
             }
@@ -236,10 +240,10 @@ namespace Microsoft.Xna.Framework.Audio
 
                 underlyingStream.Dispose();
             }
-
+#if !FAKE
             OpenALSoundController.Instance.ReturnSource(alSourceId);
             OpenALSoundController.Instance.ReturnBuffers(alBufferIds);
-
+#endif
             ALHelper.Check();
         }
 
@@ -255,12 +259,9 @@ namespace Microsoft.Xna.Framework.Audio
             AL.GetSource(alSourceId, ALGetSourcei.BuffersQueued, out queued);
             if (queued > 0)
             {
-                try
-                {
-                    AL.SourceUnqueueBuffers(alSourceId, queued);
-                    ALHelper.Check();
-                }
-                catch (InvalidOperationException)
+                AL.SourceUnqueueBuffers(alSourceId, queued);
+
+                if (!ALHelper.TryCheck())
                 {
                     if (giveUp) return;
 
@@ -284,17 +285,20 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
-        internal void Open(bool precache = false)
+        internal void Open(bool precache = false, bool asyncPrecache = false)
         {
             underlyingStream.Seek(0, SeekOrigin.Begin);
             Reader = new VorbisReader(underlyingStream, false);
 
             if (precache)
             {
-                // Fill first buffer synchronously
-                OggStreamer.Instance.FillBuffer(this, alBufferIds[0]);
-                AL.SourceQueueBuffer(alSourceId, alBufferIds[0]);
-                ALHelper.Check();
+                if (!asyncPrecache)
+                {
+                    // Fill first buffer synchronously
+                    OggStreamer.Instance.FillBuffer(this, alBufferIds[0]);
+                    AL.SourceQueueBuffer(alSourceId, alBufferIds[0]);
+                    ALHelper.Check();
+                }
 
                 // Schedule the others asynchronously
                 OggStreamer.Instance.AddStream(this);
@@ -390,7 +394,12 @@ namespace Microsoft.Xna.Framework.Audio
 
         public float LowPassHFGain
         {
-            set { OpenALSoundController.Instance.LowPassHFGain = value; }
+            set
+            {
+#if !FAKE
+                OpenALSoundController.Instance.LowPassHFGain = value;
+#endif
+            }
         }
 
         float musicVolume = 1;

@@ -169,9 +169,13 @@ namespace Microsoft.Xna.Framework.Audio
             Format = format;
             Size = size;
             Rate = freq;
-            return data;
 
-            //Initialize(data, format, size, freq, volume, looping);
+            // bigger than 512kb? precache
+            // TODO : figure out why this causes clicking
+            //if (size > 1024 * 512) 
+            //    OpenALSoundController.Instance.RegisterSoundEffect(this);
+
+            return data;
         }
 
         TimeSpan _duration = TimeSpan.Zero;
@@ -232,6 +236,7 @@ namespace Microsoft.Xna.Framework.Audio
         public void Dispose()
         {
             isDisposed = true;
+            OpenALSoundController.Instance.DestroySoundEffect(this);
         }
 
         #endregion

@@ -13,9 +13,9 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	internal sealed class OpenALSoundController : IDisposable
 	{
-        const int PreallocatedBuffers = 16;
+        const int PreallocatedBuffers = 24;
         const int PreallocatedSources = 16;
-	    const float BufferTimeout = 5; // in seconds
+	    const float BufferTimeout = 10; // in seconds
 
         class BufferAllocation
         {
@@ -38,9 +38,10 @@ namespace Microsoft.Xna.Framework.Audio
 
         readonly Stack<int> freeBuffers;
 	    readonly Dictionary<SoundEffect, BufferAllocation> allocatedBuffers;
-	    readonly List<KeyValuePair<SoundEffect, BufferAllocation>> staleAllocations; 
 
 	    readonly int filterId;
+
+	    //readonly object bufferDataMutex = new object();
 
         int totalSources, totalBuffers;
 	    float lowpassGainHf = 1;
@@ -77,14 +78,18 @@ namespace Microsoft.Xna.Framework.Audio
             return TakeSourceFor(instance.SoundEffect, doFilter);
         }
 
+        readonly List<KeyValuePair<SoundEffect, BufferAllocation>> staleAllocations; 
         public void Update(GameTime gameTime)
         {
             for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
-                if (activeSoundEffects[i].RefreshState())
+            {
+                var sfx = activeSoundEffects[i];
+                if (sfx.RefreshState())
                 {
-                    activeSoundEffects[i].Dispose();
+                    if (!sfx.IsDisposed) sfx.Dispose();
                     activeSoundEffects.RemoveAt(i);
                 }
+            }
 
             var elapsedSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
             foreach (var kvp in allocatedBuffers)
@@ -102,10 +107,53 @@ namespace Microsoft.Xna.Framework.Audio
                 freeBuffers.Push(kvp.Value.BufferId);
             }
 
-            if (staleAllocations.Count > 0)
-                TidyBuffers();
+            TidySources();
+            TidyBuffers();
 
             staleAllocations.Clear();
+        }
+
+        public void RegisterSoundEffect(SoundEffect soundEffect)
+        {
+            if (allocatedBuffers.ContainsKey(soundEffect)) return;
+
+            if (freeBuffers.Count == 0) ExpandBuffers();
+            Trace.WriteLine("[OpenAL] Pre-allocating buffer for " + soundEffect.Name);
+            BufferAllocation allocation;
+            allocatedBuffers.Add(soundEffect, allocation = new BufferAllocation { BufferId = freeBuffers.Pop(), SinceUnused = -1 });
+            //lock (bufferDataMutex)
+                AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
+            ALHelper.Check();
+        }
+        public void DestroySoundEffect(SoundEffect soundEffect)
+        {
+            BufferAllocation allocation;
+            if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
+                return;
+
+            bool foundActive = false;
+            for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
+            {
+                var sfx = activeSoundEffects[i];
+                if (sfx.SoundEffect == soundEffect)
+                {
+                    if (!sfx.IsDisposed)
+                    {
+                        foundActive = true;
+                        sfx.Stop();
+                        sfx.Dispose();
+                    }
+                    activeSoundEffects.RemoveAt(i);
+                }
+            }
+
+            if (foundActive)
+                Trace.WriteLine("[OpenAL] Delete active sources & buffer for " + soundEffect.Name);
+
+            Debug.Assert(allocation.SourceCount == 0);
+
+            allocatedBuffers.Remove(soundEffect);
+            freeBuffers.Push(allocation.BufferId);
         }
 
         int TakeSourceFor(SoundEffect soundEffect, bool filter = false)
@@ -125,7 +173,8 @@ namespace Microsoft.Xna.Framework.Audio
                 if (freeBuffers.Count == 0) ExpandBuffers();
                 //Trace.WriteLine("[OpenAL] Allocating buffer for " + soundEffect.Name);
                 allocatedBuffers.Add(soundEffect, allocation = new BufferAllocation { BufferId = freeBuffers.Pop() });
-                AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
+                //lock (bufferDataMutex)
+                    AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
                 ALHelper.Check();
             }
             allocation.SourceCount++;
@@ -147,8 +196,6 @@ namespace Microsoft.Xna.Framework.Audio
             Debug.Assert(allocation.SourceCount >= 0);
 
             ReturnSource(sourceId);
-
-            TidySources();
         }
 
         public int[] TakeBuffers(int count)
@@ -181,14 +228,11 @@ namespace Microsoft.Xna.Framework.Audio
         {
             foreach (var b in bufferIds)
                 freeBuffers.Push(b);
-
-            TidyBuffers();
         }
 
         public void ReturnSource(int sourceId)
         {
             ResetSource(sourceId);
-            TidySources();
         }
 
         void ResetSource(int sourceId)
@@ -258,28 +302,28 @@ namespace Microsoft.Xna.Framework.Audio
         void TidySources()
         {
             bool tidiedUp = false;
-            while (freeSources.Count > 2 * PreallocatedSources)
+            if (freeSources.Count > 2 * PreallocatedSources)
             {
                 AL.DeleteSource(freeSources.Pop());
                 ALHelper.Check();
                 totalSources--;
                 tidiedUp = true;
             }
-            if (tidiedUp)
-                Trace.WriteLine("[OpenAL] Tidied sources down to " + totalSources);
+            //if (tidiedUp)
+            //    Trace.WriteLine("[OpenAL] Tidied sources down to " + totalSources);
         }
         void TidyBuffers()
         {
             bool tidiedUp = false;
-            while (freeBuffers.Count > 2 * PreallocatedBuffers)
+            if (freeBuffers.Count > 2 * PreallocatedBuffers)
             {
                 AL.DeleteBuffer(freeBuffers.Pop());
                 ALHelper.Check();
                 totalBuffers--;
                 tidiedUp = true;
             }
-            if (tidiedUp)
-                Trace.WriteLine("[OpenAL] Tidied buffers down to " + totalBuffers);
+            //if (tidiedUp)
+            //    Trace.WriteLine("[OpenAL] Tidied buffers down to " + totalBuffers);
         }
 
 	    public void Dispose()
