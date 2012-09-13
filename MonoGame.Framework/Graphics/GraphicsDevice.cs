@@ -1591,10 +1591,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
 #elif OPENGL
-            // Unbind the VBOs
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-
             //Create VBO if not created already
 #if GLES
 			if (VboIdArray == 0)
@@ -1610,22 +1606,15 @@ namespace Microsoft.Xna.Framework.Graphics
             // Bind the VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, VboIdArray);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, VboIdElement);
-            ////Clear previous data
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexDeclaration.VertexStride * vertexData.Length - vertexOffset * vertexDeclaration.VertexStride), IntPtr.Zero, BufferUsageHint.StreamDraw);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(ushort) * indexData.Length), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
-            // TODO: Why two handles when we only need one?
-            //
             //Pin data
             var handle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
-            var handle2 = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
 
-
-            //Buffer data to VBO; This should use stream when we move to ES2.0
+            //Buffer data to VBO
             GL.BufferData(BufferTarget.ArrayBuffer,
                             (IntPtr)(vertexDeclaration.VertexStride * vertexData.Length - vertexOffset * vertexDeclaration.VertexStride),
                             new IntPtr(handle.AddrOfPinnedObject().ToInt64() + vertexOffset * vertexDeclaration.VertexStride),
-                            BufferUsageHint.StreamDraw);
+                            BufferUsageHint.DynamicDraw);
 
             GL.BufferData(BufferTarget.ElementArrayBuffer,
                             (IntPtr)(sizeof(ushort) * indexData.Length),
@@ -1645,7 +1634,6 @@ namespace Microsoft.Xna.Framework.Graphics
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
             handle.Free();
-            handle2.Free();
 #endif
         }
 
