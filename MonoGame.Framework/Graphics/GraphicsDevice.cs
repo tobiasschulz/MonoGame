@@ -1149,31 +1149,34 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 				}
 
-				GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
-				GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
-				if (renderTarget.DepthStencilFormat != DepthFormat.None)
-				{
-					GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
-					if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
-					{
-						GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
-					}
-				}
+                // TODO : This prevented the "incomplete" bug but doesn't solve the visual glitch
+                Threading.BlockOnUIThread(() =>
+                {
+				    GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
+				    GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
+				    if (renderTarget.DepthStencilFormat != DepthFormat.None)
+				    {
+					    GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+					    if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
+					    {
+						    GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+					    }
+				    }
 
-				var status = GL.CheckFramebufferStatus(GLFramebuffer);
-				if (status != GLFramebufferComplete)
-				{
-					string message = "Framebuffer Incomplete.";
-					switch (status)
-					{
-					case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
-					case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
-					case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
-					//case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
-					}
-					throw new InvalidOperationException(message);
-				}
-                                
+				    var status = GL.CheckFramebufferStatus(GLFramebuffer);
+				    if (status != GLFramebufferComplete)
+				    {
+					    string message = "Framebuffer Incomplete.";
+					    switch (status)
+					    {
+					    case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
+					    case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
+					    case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
+					    //case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
+					    }
+					    throw new InvalidOperationException(message);
+				    }
+                });
 #endif
                 // Set the viewport to the size of the first render target.
                 Viewport = new Viewport(0, 0, renderTarget.Width, renderTarget.Height);
@@ -1662,10 +1665,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
 #elif OPENGL
-            // Unbind the VBOs
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-
             //Create VBO if not created already
 #if GLES
 			if (VboIdArray == 0)
@@ -1682,20 +1681,16 @@ namespace Microsoft.Xna.Framework.Graphics
             // Bind the VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, VboIdArray);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, VboIdElement);
-            ////Clear previous data
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexDeclaration.VertexStride * vertexData.Length - vertexOffset * vertexDeclaration.VertexStride), IntPtr.Zero, BufferUsageHint.StreamDraw);
-			GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(sizeof(uint) * indexData.Length), IntPtr.Zero, BufferUsageHint.StreamDraw);
 
             //Pin data
             var handle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
-            var handle2 = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
 
 
             //Buffer data to VBO; This should use stream when we move to ES2.0
             GL.BufferData(BufferTarget.ArrayBuffer,
                             (IntPtr)(vertexDeclaration.VertexStride * vertexData.Length - vertexOffset * vertexDeclaration.VertexStride),
                             new IntPtr(handle.AddrOfPinnedObject().ToInt64() + vertexOffset * vertexDeclaration.VertexStride),
-                            BufferUsageHint.StreamDraw);
+                            BufferUsageHint.DynamicDraw);
 
             GL.BufferData(BufferTarget.ElementArrayBuffer,
                             (IntPtr)(sizeof(uint) * indexData.Length),
@@ -1715,7 +1710,6 @@ namespace Microsoft.Xna.Framework.Graphics
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
             handle.Free();
-            handle2.Free();
 #endif
         }
 
