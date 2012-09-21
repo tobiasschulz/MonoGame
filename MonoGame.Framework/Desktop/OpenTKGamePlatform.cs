@@ -229,10 +229,8 @@ namespace Microsoft.Xna.Framework
                 _view.ToggleFullScreen();
             }
 
-            // we only change window bounds if we are not fullscreen
-            // or if fullscreen mode was just entered
-            if (!graphicsDeviceManager.IsFullScreen || (graphicsDeviceManager.IsFullScreen != isCurrentlyFullScreen))
-                _view.ChangeClientBounds(bounds);
+            // On Windows 7 we *do* need to set the client bounds even if we remain in fullscreen
+            _view.ChangeClientBounds(bounds);
 
             // store the current fullscreen state
             isCurrentlyFullScreen = graphicsDeviceManager.IsFullScreen;
@@ -252,13 +250,11 @@ namespace Microsoft.Xna.Framework
   
         protected override void OnIsMouseVisibleChanged()
         {
-#if LINUX
+            // This is necessary in Windows 7 as well, not just in Linux
             MouseState oldState = Mouse.GetState();
             _view.Window.CursorVisible = IsMouseVisible;
-            // IsMouseVisible changes the location of the cursor on Linux (and Windows?) and we have to manually set it back to the correct position
             System.Drawing.Point mousePos = _view.Window.PointToScreen(new System.Drawing.Point(oldState.X, oldState.Y));
             OpenTK.Input.Mouse.SetPosition(mousePos.X, mousePos.Y);
-#endif
         }
         
         public override void Log(string Message)
