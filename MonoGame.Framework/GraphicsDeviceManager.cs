@@ -153,7 +153,7 @@ namespace Microsoft.Xna.Framework
 
         // FIXME: Why does the GraphicsDeviceManager not know enough about the
         //        GraphicsDevice to raise these events without help?
-        internal void OnDeviceReset(EventArgs e)
+        public void OnDeviceReset(EventArgs e)
         {
             Raise(DeviceReset, e);
         }
