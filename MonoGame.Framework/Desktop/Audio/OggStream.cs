@@ -45,8 +45,7 @@ namespace Microsoft.Xna.Framework.Audio
         readonly Stream underlyingStream;
 
         internal VorbisReader Reader { get; private set; }
-        internal bool Ready { get; private set; }
-        internal bool Preparing { get; private set; }
+        internal bool Precaching { get; private set; }
 
         public int BufferCount { get; private set; }
         public string Name { get; private set; }
@@ -77,8 +76,6 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void Prepare(bool asynchronous = false)
         {
-            if (Preparing) return;
-
             var state = AL.GetSourceState(alSourceId);
 
             lock (stopMutex)
@@ -88,23 +85,17 @@ namespace Microsoft.Xna.Framework.Audio
                     case ALSourceState.Playing:
                     case ALSourceState.Paused:
                         return;
-
-                    case ALSourceState.Stopped:
-                        lock (prepareMutex)
-                        {
-                            Reader.DecodedTime = TimeSpan.Zero;
-                            Ready = false;
-                            Empty();
-                        }
-                        break;
                 }
 
-                if (!Ready)
+                lock (prepareMutex)
                 {
-                    lock (prepareMutex)
+                    if (Reader == null)
+                        Open();
+
+                    if (!Precaching)
                     {
-                        Preparing = true;
-                        Open(precache: true, asyncPrecache: asynchronous);
+                        Precaching = true;
+                        Precache(asynchronous: asynchronous);
                     }
                 }
             }
@@ -127,7 +118,7 @@ namespace Microsoft.Xna.Framework.Audio
             AL.SourcePlay(alSourceId);
             ALHelper.Check();
 
-            Preparing = false;
+            Precaching = false;
 
             OggStreamer.Instance.AddStream(this);
         }
@@ -286,26 +277,24 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
-        internal void Open(bool precache = false, bool asyncPrecache = false)
+        internal void Open()
         {
             underlyingStream.Seek(0, SeekOrigin.Begin);
             Reader = new VorbisReader(underlyingStream, false);
+        }
 
-            if (precache)
+        internal void Precache(bool asynchronous = false)
+        {
+            if (!asynchronous)
             {
-                if (!asyncPrecache)
-                {
-                    // Fill first buffer synchronously
-                    OggStreamer.Instance.FillBuffer(this, alBufferIds[0]);
-                    AL.SourceQueueBuffer(alSourceId, alBufferIds[0]);
-                    ALHelper.Check();
-                }
-
-                // Schedule the others asynchronously
-                OggStreamer.Instance.AddStream(this);
+                // Fill first buffer synchronously
+                OggStreamer.Instance.FillBuffer(this, alBufferIds[0]);
+                AL.SourceQueueBuffer(alSourceId, alBufferIds[0]);
+                ALHelper.Check();
             }
 
-            Ready = true;
+            // Schedule the others asynchronously
+            OggStreamer.Instance.AddStream(this);
         }
 
         internal void Close()
@@ -315,7 +304,6 @@ namespace Microsoft.Xna.Framework.Audio
                 Reader.Dispose();
                 Reader = null;
             }
-            Ready = false;
         }
     }
 
@@ -523,7 +511,7 @@ namespace Microsoft.Xna.Framework.Audio
 
                     lock (stream.stopMutex)
                     {
-                        if (stream.Preparing) continue;
+                        if (stream.Precaching) continue;
 
                         lock (iterationMutex)
                             if (!streams.Contains(stream))
