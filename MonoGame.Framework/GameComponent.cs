@@ -44,22 +44,13 @@ namespace Microsoft.Xna.Framework
 {   
     public class GameComponent : IGameComponent, IUpdateable, IComparable<GameComponent>, IDisposable
     {
-        Game _game;
         int _updateOrder;
         bool _enabled;
-        int _updateOrder;
 
-        public Game Game 
-        {
-            get 
-            {
-                return _game;
         public Game Game { get; private set; }
 
         public Graphics.GraphicsDevice GraphicsDevice
         {
-            get 
-            {
             get { return this.Game.GraphicsDevice; }
         }
 
