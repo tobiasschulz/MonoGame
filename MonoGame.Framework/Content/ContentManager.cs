@@ -274,7 +274,7 @@ namespace Microsoft.Xna.Framework.Content
                     }
                 }
             }
-            catch (ContentLoadException)
+            catch (ContentLoadException ex)
             {
 				//MonoGame try to load as a non-content file
 

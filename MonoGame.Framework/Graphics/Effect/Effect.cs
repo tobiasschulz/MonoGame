@@ -229,7 +229,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// We should avoid supporting old versions for very long as
         /// users should be rebuilding content when packaging their game.
         /// </remarks>
-        private const int MGFXVersion = 2;
+        private const int MGFXVersion = 3;
+        private const int MinSupportedMGFXVersion = 2;
+
+	    int version;
 
 #if !PSS
 
@@ -237,8 +240,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			// Check the header to make sure the file and version is correct!
 			var header = new string (reader.ReadChars (MGFXHeader.Length));
-			var version = (int)reader.ReadByte ();
-			if (header != MGFXHeader || version != MGFXVersion)
+			version = (int)reader.ReadByte ();
+            if (header != MGFXHeader || version < MinSupportedMGFXVersion)
 				throw new Exception ("Unsupported MGFX format!");
 
 			var profile = reader.ReadByte ();
@@ -366,7 +369,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return collection;
         }
 
-        private static EffectParameterCollection ReadParameters(BinaryReader reader)
+        private EffectParameterCollection ReadParameters(BinaryReader reader)
         {
             var collection = new EffectParameterCollection();
             var count = (int)reader.ReadByte();
@@ -384,6 +387,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 var rowCount = (int)reader.ReadByte();
                 var columnCount = (int)reader.ReadByte();
+
+                var registerCount = version >= 3 ? reader.ReadByte() : rowCount;
 
                 var elements = ReadParameters(reader);
                 var structMembers = ReadParameters(reader);
@@ -418,8 +423,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
 
                 var param = new EffectParameter(
-                    class_, type, name, rowCount, columnCount, semantic, 
-                    annotations, elements, structMembers, data);
+                    class_, type, name, rowCount, columnCount, registerCount,
+                    semantic, annotations, elements, structMembers, data);
 
                 collection.Add(param);
             }

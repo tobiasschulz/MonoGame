@@ -83,9 +83,11 @@ namespace Microsoft.Xna.Framework.Input
 						for (int b = 0; b < numbuttons; b++) {
 							//pc
 						}
-						
-						if (Sdl.SDL_JoystickName(x).Contains("Microsoft") ||
-							(Sdl.SDL_JoystickName(x).Contains("X-Box") || Sdl.SDL_JoystickName(x).Contains("Xbox")))
+
+					    var joystickName = Sdl.SDL_JoystickName(x);
+						if (joystickName.Contains("Microsoft") || 
+                            (joystickName.Contains("X-Box") || joystickName.Contains("Xbox")) || 
+                            joystickName == "潃瑮潲汬牥⠠䉘塏㌠〶䘠牯圠湩潤獷)ꮫꮫꮫꮫꮫꮫꮫꮫﻮﻮﻮﻮﻮﻮﻮ")
 						{
 							pc.Button_A.ID = 0;
 							pc.Button_A.Type = InputType.Button;
@@ -124,19 +126,19 @@ namespace Microsoft.Xna.Framework.Input
 							pc.LeftStick.Y.Positive.Type = InputType.Axis;
 							pc.LeftStick.Y.Positive.Negative = false;
 
-							pc.RightStick.X.Negative.ID = 3;
+							pc.RightStick.X.Negative.ID = 4;
 							pc.RightStick.X.Negative.Type = InputType.Axis;
 							pc.RightStick.X.Negative.Negative = true;
 
-							pc.RightStick.X.Positive.ID = 3;
+							pc.RightStick.X.Positive.ID = 4;
 							pc.RightStick.X.Positive.Type = InputType.Axis;
 							pc.RightStick.X.Positive.Negative = false;
 
-							pc.RightStick.Y.Negative.ID = 4;
+							pc.RightStick.Y.Negative.ID = 3;
 							pc.RightStick.Y.Negative.Type = InputType.Axis;
 							pc.RightStick.Y.Negative.Negative = true;
 
-							pc.RightStick.Y.Positive.ID = 4;
+							pc.RightStick.Y.Positive.ID = 3;
 							pc.RightStick.Y.Positive.Type = InputType.Axis;
 							pc.RightStick.Y.Positive.Negative = false;
 

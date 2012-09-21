@@ -10,7 +10,7 @@ namespace Microsoft.Xna.Framework.Graphics
 	{
 
         private const string Header = "MGFX";
-        private const int Version = 2;
+        private const int Version = 3;
 
         /// <summary>
         /// Writes the effect for loading later.
@@ -86,6 +86,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             writer.Write((byte)param.rows);
             writer.Write((byte)param.columns);
+
+            writer.Write((byte)param.register_count);
 
             // Write the elements or struct members.
             WriteParameters(writer, param.member_handles, (int)param.element_count);
