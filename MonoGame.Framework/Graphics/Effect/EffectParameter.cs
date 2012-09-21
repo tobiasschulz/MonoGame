@@ -20,6 +20,7 @@ namespace Microsoft.Xna.Framework.Graphics
                                     string name, 
                                     int rowCount, 
                                     int columnCount,
+                                    int registerCount,
                                     string semantic, 
                                     EffectAnnotationCollection annotations,
                                     EffectParameterCollection elements,
@@ -35,6 +36,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             RowCount = rowCount;
 			ColumnCount = columnCount;
+
+            RegisterCount = registerCount;
 
             Elements = elements;
             StructureMembers = structMembers;
@@ -53,6 +56,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Annotations = cloneSource.Annotations;
             RowCount = cloneSource.RowCount;
             ColumnCount = cloneSource.ColumnCount;
+            RegisterCount = cloneSource.RegisterCount;
 
             // Clone the mutable types.
             Elements = new EffectParameterCollection(cloneSource.Elements);
@@ -60,7 +64,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Data is mutable, but a new copy happens during
             // boxing/unboxing so we can just assign it.
-            Data = cloneSource.Data;
+            Data = cloneSource.Data is Array ? (cloneSource.Data as Array).Clone() : cloneSource.Data;
             StateKey = unchecked(NextStateKey++);
         }
 
@@ -75,6 +79,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int RowCount { get; private set; }
 
         public int ColumnCount { get; private set; }
+
+        internal int RegisterCount { get; private set; }
 
         public EffectParameterCollection Elements { get; private set; }
 
@@ -269,8 +275,37 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void SetValue (Matrix[] value)
 		{
-            for (var i = 0; i < value.Length; i++)
-				Elements[i].SetValue (value[i]);
+            var arrayData = Data as float[];
+            if (Data == null || arrayData.Length < value.Length * 16)
+                Data = arrayData = new float[value.Length * 16];
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                var m = value[i];
+
+                arrayData[i * 16]     = m.M11;
+                arrayData[i * 16 + 1] = m.M21;
+                arrayData[i * 16 + 2] = m.M31;
+                arrayData[i * 16 + 3] = m.M41;
+
+                arrayData[i * 16 + 4] = m.M12;
+                arrayData[i * 16 + 5] = m.M22;
+                arrayData[i * 16 + 6] = m.M32;
+                arrayData[i * 16 + 7] = m.M42;
+
+                arrayData[i * 16 + 8]  = m.M13;
+                arrayData[i * 16 + 9]  = m.M23;
+                arrayData[i * 16 + 10] = m.M33;
+                arrayData[i * 16 + 11] = m.M43;
+
+                arrayData[i * 16 + 12] = m.M14;
+                arrayData[i * 16 + 13] = m.M24;
+                arrayData[i * 16 + 14] = m.M34;
+                arrayData[i * 16 + 15] = m.M44;
+            }
+
+            //for (var i = 0; i < value.Length; i++)
+				//Elements[i].SetValue (value[i]);
 
             StateKey = unchecked(NextStateKey++);
 		}
@@ -356,8 +391,21 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void SetValue (Vector4[] value)
 		{
-            for (var i = 0; i < value.Length; i++)
-				Elements[i].SetValue (value[i]);
+		    var arrayData = Data as float[];
+            if (Data == null || arrayData.Length < value.Length * 4)
+                Data = arrayData = new float[value.Length * 4];
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                arrayData[i * 4] = value[i].X;
+                arrayData[i * 4 + 1] = value[i].Y;
+                arrayData[i * 4 + 2] = value[i].Z;
+                arrayData[i * 4 + 3] = value[i].W;
+            }
+
+		    //for (var i = 0; i < value.Length; i++)
+            //	Elements[i].SetValue (value[i]);
+
             StateKey = unchecked(NextStateKey++);
 		}
 	}

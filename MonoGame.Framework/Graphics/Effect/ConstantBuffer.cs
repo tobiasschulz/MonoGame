@@ -80,11 +80,16 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
-        public void SetData(int offset, int rows, int columns, object data)
+        public void SetData(int offset, int rows, int columns, int registers, object data)
         {
             // TODO: Should i pass the element size in?
             var elementSize = 4;
-            var rowSize = elementSize * 4;
+            var registerSize = elementSize * 4;
+
+            // If the compiler cropped unused rows, clamp to register count
+            // Note : array elements say they have "0 registers", that's wrong
+            if (registers > 0)
+                rows = Math.Min(registers, rows);
 
             // Take care of a single data type.
             // (only if it's not wrapped inside an array)
@@ -103,16 +108,23 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Take care of the single copy case!
-            else if (rows == 1 || (rows == 4 && columns == 4))
-                Buffer.BlockCopy(data as Array, 0, _buffer, offset, rows * columns * elementSize);
+            else if (rows == 1 || columns == 4)
+            {
+                var source = data as Array;
+                var actualRows = source.Length / columns;
 
+                Buffer.BlockCopy(data as Array, 0, _buffer, offset, Math.Min(rows, actualRows) * columns * elementSize);
+            }
             else
             {
                 var source = data as Array;
+                var actualRows = source.Length / columns;
+                var sourceStride = columns * elementSize;
 
-                var stride = (columns * elementSize);
+                rows = Math.Min(rows, actualRows);
+
                 for (var y = 0; y < rows; y++)
-                    Buffer.BlockCopy(source, stride * y, _buffer, offset + (rowSize * y), columns * elementSize);
+                    Buffer.BlockCopy(source, sourceStride * y, _buffer, offset + registerSize * y, columns * elementSize);
             }
         }
 
@@ -125,20 +137,22 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 if (param.Elements.Count > 0)
                 {
-                    foreach (var subparam in param.Elements)
-                    {
-                        SetParameter(offset, subparam);
+                    SetData(offset, param.RowCount * param.Elements.Count, param.ColumnCount, 0, param.Data);
+
+                    //foreach (var subparam in param.Elements)
+                    //{
+                        //SetParameter(offset, subparam);
                         //TODO: Sometimes directx decides to transpose matricies
                         //to fit in fewer registers.
-                        offset += subparam.RowCount * rowSize;
-                    }
+                        //offset += subparam.RowCount * rowSize;
+                    //}
                 }
                 else
                 {
                     switch (param.ParameterType)
                     {
                         case EffectParameterType.Single:
-                            SetData(offset, param.RowCount, param.ColumnCount, param.Data);
+                            SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
                             break;
 
                         default:
