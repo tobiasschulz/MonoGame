@@ -139,6 +139,9 @@ namespace Microsoft.Xna.Framework.Content
 
     				readerTypeString = PrepareType(readerTypeString);
 
+                    // FEZ-ONLY FIX LOLOL
+                    readerTypeString = readerTypeString.Replace(", FezContentPipeline", ", FezEngine");
+
     				var l_readerType = Type.GetType(readerTypeString);
                     if (l_readerType != null)
                     {

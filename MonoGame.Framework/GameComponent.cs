@@ -86,6 +86,7 @@ namespace Microsoft.Xna.Framework
 
         public event EventHandler<EventArgs> EnabledChanged;
         public event EventHandler<EventArgs> UpdateOrderChanged;
+        public event EventHandler<EventArgs> Disposed;
 
         public GameComponent(Game game)
         {
@@ -104,7 +105,11 @@ namespace Microsoft.Xna.Framework
         /// <summary>
         /// Shuts down the component.
         /// </summary>
-        protected virtual void Dispose(bool disposing) { }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing && Disposed != null)
+                Disposed(this, EventArgs.Empty);
+        }
         
         /// <summary>
         /// Shuts down the component.

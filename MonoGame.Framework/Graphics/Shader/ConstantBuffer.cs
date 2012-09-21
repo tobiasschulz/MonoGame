@@ -135,7 +135,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 var stride = (columns * elementSize);
                 for (var y = 0; y < rows; y++)
-                    Buffer.BlockCopy(source, stride * y, _buffer, offset + (rowSize * y), columns * elementSize);
+                {
+                    var destOffset = offset + (rowSize * y);
+                    var lengthInBytes = columns * elementSize;
+                    if (destOffset + lengthInBytes >= _buffer.Length)
+                        Buffer.BlockCopy(source, stride * y, _buffer, destOffset, lengthInBytes);
+                }
             }
         }
 

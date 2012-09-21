@@ -107,7 +107,7 @@ namespace Microsoft.Xna.Framework
             this.Window = _view;
 			
 			// Setup our OpenALSoundController to handle our SoundBuffer pools
-			soundControllerInstance = OpenALSoundController.GetInstance;
+			soundControllerInstance = OpenALSoundController.Instance;
             
 #if LINUX
             // also set up SdlMixer to play background music. If one of these functions fails, we will not get any background music (but that should rarely happen)
@@ -150,7 +150,7 @@ namespace Microsoft.Xna.Framework
             IsActive = _view.Window.Focused;
             
             // Update our OpenAL sound buffer pools
-            soundControllerInstance.Update();
+            soundControllerInstance.Update(gameTime);
 
             return true;
         }

@@ -41,38 +41,37 @@ purpose and non-infringement.
 using System;
 using System.IO;
 
-using Microsoft.Xna;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-
+#if MONOMAC
+using MonoMac.OpenAL;
+#else
 using OpenTK.Audio.OpenAL;
+#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {
     public sealed class SoundEffect : IDisposable
     {
-		private Sound _sound;
-		private string _name = "";
-		private string _filename = "";
-		internal byte[] _data;
-		
-		internal float Rate { get; set; }
+        private string _name = "";
+        private string _filename = "";
+        internal byte[] _data;
 
-		internal ALFormat Format { get; set; }
+        internal int Rate { get; set; }
 
-		internal int Size { get; set; }
-		
-		internal SoundEffect(string fileName)
-		{
-			_filename = fileName;		
-			
-			if (_filename == string.Empty )
-			{
-			  throw new FileNotFoundException("Supported Sound Effect formats are wav, mp3, acc, aiff");
-			}
-			
-			//_sound = new Sound(_filename, 1.0f, false);
-			_name = Path.GetFileNameWithoutExtension(fileName);
+        internal ALFormat Format { get; set; }
+
+        internal int Size { get; set; }
+
+        internal SoundEffect(string fileName)
+        {
+            _filename = fileName;
+
+            if (_filename == string.Empty)
+            {
+                throw new FileNotFoundException("Supported Sound Effect formats are wav, mp3, acc, aiff");
+            }
+
+            //_sound = new Sound(_filename, 1.0f, false);
+            _name = Path.GetFileNameWithoutExtension(fileName);
             ALFormat format;
             int size;
             int freq;
@@ -90,15 +89,15 @@ namespace Microsoft.Xna.Framework.Audio
 
             _data = LoadAudioStream(s, 1.0f, false);
 
-            s.Close();			
-		}
-		
-		//SoundEffect from playable audio data
-		internal SoundEffect(string name, byte[] data)
-		{
-			_data = data;
-			_name = name;
-			
+            s.Close();
+        }
+
+        //SoundEffect from playable audio data
+        internal SoundEffect(string name, byte[] data)
+        {
+            _data = data;
+            _name = name;
+
             Stream s;
 
             try
@@ -109,16 +108,16 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 throw new Content.ContentLoadException("Could not load audio data", e);
             }
-			
-			//_sound = new Sound(_data, 1.0f, false);
+
+            //_sound = new Sound(_data, 1.0f, false);
             _data = LoadAudioStream(s, 1.0f, false);
 
-		}
-		
-		public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
-		{
-			//buffer should contain 16-bit PCM wave data
-			short bitsPerSample = 16;
+        }
+
+        public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
+        {
+            //buffer should contain 16-bit PCM wave data
+            short bitsPerSample = 16;
 
             using (MemoryStream mStream = new MemoryStream(44 + buffer.Length))
             {
@@ -154,9 +153,9 @@ namespace Microsoft.Xna.Framework.Audio
                     mStream.Close();
                 }
             }
-			//_sound = new Sound(_data, 1.0f, false);
-		}
-		
+            //_sound = new Sound(_data, 1.0f, false);
+        }
+
         byte[] LoadAudioStream(Stream s, float volume, bool looping)
         {
             ALFormat format;
@@ -170,9 +169,13 @@ namespace Microsoft.Xna.Framework.Audio
             Format = format;
             Size = size;
             Rate = freq;
-            return data;
 
-            //Initialize(data, format, size, freq, volume, looping);
+            // bigger than 512kb? precache
+            // TODO : figure out why this causes clicking
+            //if (size > 1024 * 512) 
+            //    OpenALSoundController.Instance.RegisterSoundEffect(this);
+
+            return data;
         }
 
         TimeSpan _duration = TimeSpan.Zero;
@@ -224,14 +227,16 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region IDisposable Members
 
+        bool isDisposed;
         public bool IsDisposed
         {
-            get { return false; }
+            get { return isDisposed; }
         }
 
         public void Dispose()
         {
-            //_sound.Dispose ();
+            isDisposed = true;
+            OpenALSoundController.Instance.DestroySoundEffect(this);
         }
 
         #endregion
@@ -301,7 +306,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 speedOfSound = value;
             }
-        }		
+        }
     }
 }
 

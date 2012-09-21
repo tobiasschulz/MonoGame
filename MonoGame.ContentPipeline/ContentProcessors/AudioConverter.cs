@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yeti.WMFSdk;
 using System.IO;
 //using Yeti.MMedia;
 //using WaveLib;
