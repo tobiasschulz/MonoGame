@@ -176,15 +176,12 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 switch (param.ParameterType)
                 {
-                    switch (param.ParameterType)
-                    {
-                        case EffectParameterType.Single:
-                            SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
-                            break;
+                    case EffectParameterType.Single:
+                        SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
+                        break;
 
-                        default:
-                            throw new NotImplementedException("Not supported!");
-                    }
+                    default:
+                        throw new NotImplementedException("Not supported!");
                 }
             }
         }

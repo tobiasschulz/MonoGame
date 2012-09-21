@@ -784,7 +784,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				GL.ClearStencil(stencil);
 				bufferMask = bufferMask | ClearBufferMask.StencilBufferBit;
 			}
-			if (options.HasFlag(ClearOptions.DepthBuffer)) {
+			if (options.HasFlag(ClearOptions.DepthBuffer))
             {
 #if GLES
                 GL.ClearDepth (depth);

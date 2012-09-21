@@ -122,12 +122,6 @@
     <Compile Include="Desktop\Audio\OggStream.cs" />
     <Compile Include="Desktop\Audio\SoundEffect.cs" />
     <Compile Include="Desktop\Audio\SoundEffectInstance.cs" />
-    <Compile Include="Desktop\Input\Axis.cs" />
-    <Compile Include="Desktop\Input\Capabilities.cs" />
-    <Compile Include="Desktop\Input\DPad.cs" />
-    <Compile Include="Desktop\Input\GamePad.cs" />
-    <Compile Include="Desktop\Input\Input.cs" />
-    <Compile Include="Desktop\Input\Joystick.cs" />
     <Compile Include="Graphics\Shader\ConstantBufferCollection.cs" />
     <Compile Include="Input\Mouse.cs" />
     <Compile Include="Game.cs" />
