@@ -80,6 +80,11 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 		}
 
+        internal void MarkDirty(int index)
+        {
+            _dirty |= 1 << index;
+        }
+
         internal void SetSamplers(GraphicsDevice device)
         {
             // Skip out if nothing has changed.
