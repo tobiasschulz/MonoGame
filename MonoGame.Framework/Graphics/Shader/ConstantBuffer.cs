@@ -117,7 +117,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Take care of a single data type.
             // (only if it's not wrapped inside an array)
-            if (rows == 1 && columns == 1 && !(data is Array))
+            if (rows == 1 && columns == 1)
             {
                 // TODO: Consider storing all data in arrays to avoid
                 // having to generate this temp array on every set.
@@ -154,23 +154,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private void SetParameter(int offset, EffectParameter param)
         {
-            const int elementSize = 4;
-            const int rowSize = elementSize * 4;
+            if (param.ParameterType != EffectParameterType.Single)
+                throw new NotImplementedException("Not supported!");
 
             if (param.Elements.Count > 0)
                 SetData(offset, param.RowCount * param.Elements.Count, param.ColumnCount, 0, param.Data);
-            else if (param.Data != null)
-            {
-                switch (param.ParameterType)
-                {
-                    case EffectParameterType.Single:
-                        SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
-                        break;
-
-                    default:
-                        throw new NotImplementedException("Not supported!");
-                }
-            }
+            else
+                SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
         }
 
         public void Update(EffectParameterCollection parameters)
