@@ -241,8 +241,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // If the buffer content hasn't changed then we're
             // done... use the previously set uniform state.
-            if (!_dirty)
-                return;
+            // NOTE: Commented out as workaround for caching mismatch between
+            // OpenGL shader objects & constant buffers
+            //if (!_dirty)
+            //return;
 
             fixed (byte* bytePtr = _buffer)
             {
