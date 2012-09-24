@@ -44,8 +44,8 @@ namespace Microsoft.Xna.Framework
 {   
     public class GameComponent : IGameComponent, IUpdateable, IComparable<GameComponent>, IDisposable
     {
-        bool _enabled;
         int _updateOrder;
+        bool _enabled;
 
         public Game Game { get; private set; }
 

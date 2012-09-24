@@ -86,6 +86,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     _targets[i] = tex.glTarget;
                     GL.BindTexture(tex.glTarget, tex.glTexture);
+
+                    // If the texture changes, we potentially need to reset its filter
+                    device.SamplerStates.MarkDirty(i);
                 }
 #elif DIRECTX
                 if (_textures[i] == null)

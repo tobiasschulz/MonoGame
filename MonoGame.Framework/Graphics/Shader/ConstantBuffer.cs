@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -104,13 +104,19 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
-        private void SetData(int offset, int rows, int columns, object data)
+        private void SetData(int offset, int rows, int columns, int registers, object data)
         {
             // TODO: Should i pass the element size in?
             const int elementSize = 4;
-            const int rowSize = elementSize * 4;
+            const int registerSize = elementSize * 4;
+
+            // If the compiler cropped unused rows, clamp to register count
+            // Note : array elements say they have "0 registers", that's wrong
+            if (registers > 0)
+                rows = Math.Min(registers, rows);
 
             // Take care of a single data type.
+            // (only if it's not wrapped inside an array)
             if (rows == 1 && columns == 1)
             {
                 // TODO: Consider storing all data in arrays to avoid
@@ -126,52 +132,35 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Take care of the single copy case!
-            else if (rows == 1 || (rows == 4 && columns == 4))
-                Buffer.BlockCopy(data as Array, 0, _buffer, offset, rows * columns * elementSize);
+            else if (rows == 1 || columns == 4)
+            {
+                var source = data as Array;
+                var actualRows = source.Length / columns;
 
+                Buffer.BlockCopy(data as Array, 0, _buffer, offset, Math.Min(rows, actualRows) * columns * elementSize);
+            }
             else
             {
                 var source = data as Array;
+                var actualRows = source.Length / columns;
+                var sourceStride = columns * elementSize;
 
-                var stride = (columns * elementSize);
+                rows = Math.Min(rows, actualRows);
+
                 for (var y = 0; y < rows; y++)
-                {
-                    var destOffset = offset + (rowSize * y);
-                    var lengthInBytes = columns * elementSize;
-                    if (destOffset + lengthInBytes >= _buffer.Length)
-                        Buffer.BlockCopy(source, stride * y, _buffer, destOffset, lengthInBytes);
-                }
+                    Buffer.BlockCopy(source, sourceStride * y, _buffer, offset + registerSize * y, columns * elementSize);
             }
         }
 
         private void SetParameter(int offset, EffectParameter param)
         {
-            const int elementSize = 4;
-            const int rowSize = elementSize * 4;
+            if (param.ParameterType != EffectParameterType.Single)
+                throw new NotImplementedException("Not supported!");
 
             if (param.Elements.Count > 0)
-            {
-                foreach (var subparam in param.Elements)
-                {
-                    SetParameter(offset, subparam);
-
-                    //TODO: Sometimes directx decides to transpose matricies
-                    //to fit in fewer registers.
-                    offset += subparam.RowCount * rowSize;
-                }
-            }
-            else if (param.Data != null)
-            {
-                switch (param.ParameterType)
-                {
-                    case EffectParameterType.Single:
-                        SetData(offset, param.RowCount, param.ColumnCount, param.Data);
-                        break;
-
-                    default:
-                        throw new NotImplementedException("Not supported!");
-                }
-            }
+                SetData(offset, param.RowCount * param.Elements.Count, param.ColumnCount, 0, param.Data);
+            else
+                SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
         }
 
         public void Update(EffectParameterCollection parameters)
@@ -252,8 +241,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // If the buffer content hasn't changed then we're
             // done... use the previously set uniform state.
-            if (!_dirty)
-                return;
+            // NOTE: Commented out as workaround for caching mismatch between
+            // OpenGL shader objects & constant buffers
+            //if (!_dirty)
+            //return;
 
             fixed (byte* bytePtr = _buffer)
             {

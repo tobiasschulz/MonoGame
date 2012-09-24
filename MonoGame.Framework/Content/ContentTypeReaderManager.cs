@@ -139,9 +139,6 @@ namespace Microsoft.Xna.Framework.Content
 
     				readerTypeString = PrepareType(readerTypeString);
 
-                    // FEZ-ONLY FIX LOLOL
-                    readerTypeString = readerTypeString.Replace(", FezContentPipeline", ", FezEngine");
-
     				var l_readerType = Type.GetType(readerTypeString);
                     if (l_readerType != null)
                     {
@@ -201,6 +198,9 @@ namespace Microsoft.Xna.Framework.Content
 			// TODO: For WinRT this is most likely broken!
 			preparedType = preparedType.Replace(", Microsoft.Xna.Framework.Graphics", string.Format(", {0}", assemblyName));
 			preparedType = preparedType.Replace(", Microsoft.Xna.Framework", string.Format(", {0}", assemblyName));
+			
+			// For FEZ engine classes
+            preparedType = preparedType.Replace(", FezContentPipeline", ", FezEngine");
 			
 			return preparedType;
 		}

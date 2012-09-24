@@ -158,6 +158,12 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             GL.Enable(EnableCap.Blend);
 
+            // Set color write mask
+            GL.ColorMask((ColorWriteChannels & ColorWriteChannels.Red) == ColorWriteChannels.Red,
+                (ColorWriteChannels & ColorWriteChannels.Green) == ColorWriteChannels.Green,
+                (ColorWriteChannels & ColorWriteChannels.Blue) == ColorWriteChannels.Blue,
+                (ColorWriteChannels & ColorWriteChannels.Alpha) == ColorWriteChannels.Alpha);
+
             // Set blending mode
             var blendMode = ColorBlendFunction.GetBlendEquationMode();
             GL.BlendEquation(blendMode);

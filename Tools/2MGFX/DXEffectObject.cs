@@ -292,6 +292,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			public uint member_count;
 			public uint flags;
 			public uint bytes;
+		    public uint register_count;
 
             public int bufferIndex = -1;
             public int bufferOffset = -1;

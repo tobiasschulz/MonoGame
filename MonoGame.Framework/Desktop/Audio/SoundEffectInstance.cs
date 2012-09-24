@@ -65,8 +65,7 @@ namespace Microsoft.Xna.Framework.Audio
         SoundState soundState = SoundState.Stopped;
 
         protected SoundEffectInstance() { }
-        internal SoundEffectInstance(SoundEffect soundEffect)
-            : this()
+        internal SoundEffectInstance(SoundEffect soundEffect) : this()
         {
             this.soundEffect = soundEffect;
             sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this);

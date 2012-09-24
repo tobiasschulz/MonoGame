@@ -309,7 +309,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			SamplerStates = new SamplerStateCollection (16);
 
 			PresentationParameters = new PresentationParameters ();
-			PresentationParameters.DepthStencilFormat = DepthFormat.Depth24;
+			PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;
         }
 
         internal void Initialize()
@@ -784,8 +784,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				GL.ClearStencil(stencil);
 				bufferMask = bufferMask | ClearBufferMask.StencilBufferBit;
 			}
-
-			if (options.HasFlag(ClearOptions.DepthBuffer)) 
+			if (options.HasFlag(ClearOptions.DepthBuffer))
             {
 #if GLES
                 GL.ClearDepth (depth);
@@ -794,7 +793,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 				bufferMask = bufferMask | ClearBufferMask.DepthBufferBit;
 			}
-
 #if GLES
 			GL.Clear((uint)bufferMask);
 #else
@@ -1171,31 +1169,34 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 				}
 
-				GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
-				GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
-				if (renderTarget.DepthStencilFormat != DepthFormat.None)
-				{
-					GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
-					if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
-					{
-						GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
-					}
-				}
+                // TODO : This prevented the "incomplete" bug but doesn't solve the visual glitch
+                Threading.BlockOnUIThread(() =>
+                {
+				    GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
+				    GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
+				    if (renderTarget.DepthStencilFormat != DepthFormat.None)
+				    {
+					    GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+					    if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
+					    {
+						    GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+					    }
+				    }
 
-				var status = GL.CheckFramebufferStatus(GLFramebuffer);
-				if (status != GLFramebufferComplete)
-				{
-					string message = "Framebuffer Incomplete.";
-					switch (status)
-					{
-					case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
-					case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
-					case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
-					//case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
-					}
-					throw new InvalidOperationException(message);
-				}
-                                
+				    var status = GL.CheckFramebufferStatus(GLFramebuffer);
+				    if (status != GLFramebufferComplete)
+				    {
+					    string message = "Framebuffer Incomplete.";
+					    switch (status)
+					    {
+					    case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
+					    case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
+					    case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
+					    //case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
+					    }
+					    throw new InvalidOperationException(message);
+				    }
+                });
 #endif
                 // Set the viewport to the size of the first render target.
                 Viewport = new Viewport(0, 0, renderTarget.Width, renderTarget.Height);
@@ -1568,16 +1569,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var startVertex = buffer.UserOffset;
 
-            var copyCount = vertexCount - vertexOffset;
-            if ((copyCount + buffer.UserOffset) < buffer.VertexCount)
+
+            if ((vertexCount + buffer.UserOffset) < buffer.VertexCount)
             {
-                buffer.UserOffset += copyCount;
-                buffer.SetData(startVertex * vertexDecl.VertexStride, vertexData, vertexOffset, copyCount, SetDataOptions.NoOverwrite);
+                buffer.UserOffset += vertexCount;
+                buffer.SetData(startVertex * vertexDecl.VertexStride, vertexData, vertexOffset, vertexCount, SetDataOptions.NoOverwrite);
             }
             else
             {
-                buffer.UserOffset = copyCount;
-                buffer.SetData(vertexData, vertexOffset, copyCount, SetDataOptions.Discard);
+                buffer.UserOffset = vertexCount;
+                buffer.SetData(vertexData, vertexOffset, vertexCount, SetDataOptions.Discard);
                 startVertex = 0;
             }
 
@@ -1604,17 +1605,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var startIndex = buffer.UserOffset;
 
-            var copyCount = indexCount - indexOffset;
-            if ((copyCount + buffer.UserOffset) < buffer.IndexCount)
+            if ((indexCount + buffer.UserOffset) < buffer.IndexCount)
             {
-                buffer.UserOffset += copyCount;
-                buffer.SetData(startIndex * 2, indexData, indexOffset, copyCount, SetDataOptions.NoOverwrite);
+                buffer.UserOffset += indexCount;
+                buffer.SetData(startIndex * 2, indexData, indexOffset, indexCount, SetDataOptions.NoOverwrite);
             }
             else
             {
                 startIndex = 0;
-                buffer.UserOffset = copyCount;
-                buffer.SetData(indexData, indexOffset, copyCount, SetDataOptions.Discard);
+                buffer.UserOffset = indexCount;
+                buffer.SetData(indexData, indexOffset, indexCount, SetDataOptions.Discard);
             }
 
             Indices = buffer;
