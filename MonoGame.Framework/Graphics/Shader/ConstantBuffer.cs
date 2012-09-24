@@ -132,7 +132,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Take care of the single copy case!
-            else if (rows == 1 || (rows == 4 && columns == 4))
+            else if (rows == 1 || columns == 4)
             {
                 var source = data as Array;
                 var actualRows = source.Length / columns;
