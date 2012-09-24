@@ -17,7 +17,7 @@ namespace Microsoft.Xna.Framework.Input
             if (!controller.IsConnected)
                 return new Microsoft.Xna.Framework.Input.GamePadCapabilities(); // GamePadCapabilities.IsConnected = false by default
 
-           var capabilities = controller.GetCapabilities(SharpDX.XInput.DeviceQueryType.Any);
+            var capabilities = controller.GetCapabilities(SharpDX.XInput.DeviceQueryType.Any);
             var ret = new Microsoft.Xna.Framework.Input.GamePadCapabilities();
             switch (capabilities.SubType)
             {
@@ -136,8 +136,8 @@ namespace Microsoft.Xna.Framework.Input
             if (controller.IsConnected)
                 controller.SetVibration(new Vibration
                 {
-                    LeftMotorSpeed = (short) (leftMotorSpeed * 65535), 
-                    RightMotorSpeed = (short) (rightMotorSpeed * 65535)
+                    LeftMotorSpeed = (short)(leftMotorSpeed * 65535),
+                    RightMotorSpeed = (short)(rightMotorSpeed * 65535)
                 });
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.Xna.Framework.Input
             SharpDX.XInput.GamepadButtonFlags buttonFlags,
             SharpDX.XInput.GamepadButtonFlags desiredButton)
         {
-            return buttonFlags.HasFlag(desiredButton) ? 
+            return buttonFlags.HasFlag(desiredButton) ?
                 Microsoft.Xna.Framework.Input.ButtonState.Pressed : Microsoft.Xna.Framework.Input.ButtonState.Released;
         }
 
@@ -247,11 +247,11 @@ namespace Microsoft.Xna.Framework.Input
             };
 
         private static Microsoft.Xna.Framework.Input.Buttons AddThumbstickButtons(
-            short thumbX, short thumbY, short deadZone, 
+            short thumbX, short thumbY, short deadZone,
             Microsoft.Xna.Framework.Input.Buttons bitFieldToAddTo,
-            Microsoft.Xna.Framework.Input.Buttons thumbstickLeft, 
-            Microsoft.Xna.Framework.Input.Buttons thumbStickRight, 
-            Microsoft.Xna.Framework.Input.Buttons thumbStickUp, 
+            Microsoft.Xna.Framework.Input.Buttons thumbstickLeft,
+            Microsoft.Xna.Framework.Input.Buttons thumbStickRight,
+            Microsoft.Xna.Framework.Input.Buttons thumbStickUp,
             Microsoft.Xna.Framework.Input.Buttons thumbStickDown)
         {
             // TODO: this needs adjustment. Very naive implementation. Doesn't match XNA yet
@@ -281,16 +281,16 @@ namespace Microsoft.Xna.Framework.Input
 
             ret = AddThumbstickButtons(leftThumbX, leftThumbY,
                 SharpDX.XInput.Gamepad.LeftThumbDeadZone, ret,
-                Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickLeft, 
-                Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickRight, 
-                Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickUp, 
+                Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickLeft,
+                Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickRight,
+                Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickUp,
                 Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickDown);
 
             ret = AddThumbstickButtons(rightThumbX, rightThumbY,
                 SharpDX.XInput.Gamepad.RightThumbDeadZone, ret,
-                Microsoft.Xna.Framework.Input.Buttons.RightThumbstickLeft, 
-                Microsoft.Xna.Framework.Input.Buttons.RightThumbstickRight, 
-                Microsoft.Xna.Framework.Input.Buttons.RightThumbstickUp, 
+                Microsoft.Xna.Framework.Input.Buttons.RightThumbstickLeft,
+                Microsoft.Xna.Framework.Input.Buttons.RightThumbstickRight,
+                Microsoft.Xna.Framework.Input.Buttons.RightThumbstickUp,
                 Microsoft.Xna.Framework.Input.Buttons.RightThumbstickDown);
 
             if (leftTrigger >= SharpDX.XInput.Gamepad.TriggerThreshold)

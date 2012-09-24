@@ -199,6 +199,9 @@ namespace Microsoft.Xna.Framework.Content
 			preparedType = preparedType.Replace(", Microsoft.Xna.Framework.Graphics", string.Format(", {0}", assemblyName));
 			preparedType = preparedType.Replace(", Microsoft.Xna.Framework", string.Format(", {0}", assemblyName));
 			
+			// For FEZ engine classes
+            preparedType = preparedType.Replace(", FezContentPipeline", ", FezEngine");
+			
 			return preparedType;
 		}
 

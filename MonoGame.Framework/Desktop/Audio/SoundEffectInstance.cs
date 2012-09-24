@@ -47,113 +47,137 @@ using MonoMac.OpenAL;
 using OpenTK.Audio.OpenAL;
 #endif
 
-using Microsoft.Xna.Framework;
-
 #endregion Statements
 
 namespace Microsoft.Xna.Framework.Audio
 {
-	public class SoundEffectInstance : IDisposable
-	{
-		private bool isDisposed = false;
-		private SoundState soundState = SoundState.Stopped;
-		private OALSoundBuffer soundBuffer;
-		private OpenALSoundController controller;
-		private SoundEffect soundEffect;
+    public class SoundEffectInstance : IDisposable
+    {
+        readonly SoundEffect soundEffect;
+        readonly int sourceId;
 
-		float _volume = 1.0f;
-		bool _looped = false;
-		float _pan = 0;
-		float _pitch = 0f;
+        float volume = 1.0f;
+        bool looped;
+        float pan;
+        float pitch;
 
-		bool hasSourceId = false;
-		int sourceId;
+        bool isDisposed;
+        SoundState soundState = SoundState.Stopped;
 
-        public SoundEffectInstance()
+        protected SoundEffectInstance() { }
+        internal SoundEffectInstance(SoundEffect soundEffect) : this()
         {
-            InitializeSound();
+            this.soundEffect = soundEffect;
+            sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this);
         }
 
-		public SoundEffectInstance (SoundEffect parent)
-		{
-			this.soundEffect = parent;
-			InitializeSound ();
-            BindDataBuffer(soundEffect._data, soundEffect.Format, soundEffect.Size, (int)soundEffect.Rate);
-		}
-
-		private void InitializeSound ()
-		{
-			controller = OpenALSoundController.GetInstance;
-			soundBuffer = new OALSoundBuffer ();			
-			soundBuffer.Reserved += HandleSoundBufferReserved;
-			soundBuffer.Recycled += HandleSoundBufferRecycled;                        
-		}
-
-        protected void BindDataBuffer(byte[] data, ALFormat format, int size, int rate)
+        public SoundEffect SoundEffect
         {
-            soundBuffer.BindDataBuffer(data, format, size, rate);
+            get { return soundEffect; }
         }
 
-		void HandleSoundBufferRecycled (object sender, EventArgs e)
-		{
-			sourceId = 0;
-			hasSourceId = false;
-			//Console.WriteLine ("recycled: " + soundEffect.Name);
-		}
+        public void Dispose()
+        {
+            if (isDisposed) return;
 
-		void HandleSoundBufferReserved (object sender, EventArgs e)
-		{
-			sourceId = soundBuffer.SourceId;
-			hasSourceId = true;
-		}
+            if (soundState != SoundState.Stopped)
+                Stop();
 
-		public void Dispose ()
-		{
-			soundBuffer.Reserved -= HandleSoundBufferReserved;
-			soundBuffer.Recycled -= HandleSoundBufferRecycled;
-			soundBuffer.Dispose ();
-			soundBuffer = null;
-			isDisposed = true;
-		}
-		
-		public void Apply3D (AudioListener listener, AudioEmitter emitter)
-		{
-			Apply3D ( new AudioListener[] { listener }, emitter);
-		}
-		
-		public void Apply3D (AudioListener[] listeners, AudioEmitter emitter)
-		{
-			// get AL's listener position
-			float x, y, z;
-			AL.GetListener (ALListener3f.Position, out x, out y, out z);
+            isDisposed = true;
+            OpenALSoundController.Instance.ReturnSourceFor(soundEffect, sourceId);
+        }
 
-			for (int i = 0; i < listeners.Length; i++)
-			{
-				AudioListener listener = listeners[i];
-				
-				// get the emitter offset from origin
-				Vector3 posOffset = emitter.Position - listener.Position;
-				// set up orientation matrix
-				Matrix orientation = Matrix.CreateWorld(Vector3.Zero, listener.Forward, listener.Up);
-				// set up our final position and velocity according to orientation of listener
-				Vector3 finalPos = new Vector3(x + posOffset.X, y + posOffset.Y, z + posOffset.Z);
-				finalPos = Vector3.Transform(finalPos, orientation);
-				Vector3 finalVel = emitter.Velocity;
-				finalVel = Vector3.Transform(finalVel, orientation);
-				
-				// set the position based on relative positon
-				AL.Source(sourceId, ALSource3f.Position, finalPos.X, finalPos.Y, finalPos.Z);
-				AL.Source(sourceId, ALSource3f.Velocity, finalVel.X, finalVel.Y, finalVel.Z);
-			}
-		}
+        public void Pause()
+        {
+            if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+            if (soundState != SoundState.Playing)
+                return;
 
-		public void Pause ()
-		{
-			if (hasSourceId) {
-				controller.PauseSound (soundBuffer);
-				soundState = SoundState.Paused;
-			}
-		}
+            AL.SourcePause(sourceId);
+            ALHelper.Check();
+            soundState = SoundState.Paused;
+        }
+
+        public void Play()
+        {
+            if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+            if (soundState == SoundState.Playing)
+                return;
+
+            AL.SourcePlay(sourceId);
+            ALHelper.Check();
+            soundState = SoundState.Playing;
+        }
+
+        public void Resume()
+        {
+            if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+            if (soundState == SoundState.Paused)
+                Play();
+        }
+
+        public void Stop(bool immediate = false)
+        {
+            if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+            if (soundState == SoundState.Stopped)
+                return;
+
+            AL.SourceStop(sourceId);
+            ALHelper.Check();
+            soundState = SoundState.Stopped;
+        }
+
+        internal bool RefreshState()
+        {
+            if (soundState == SoundState.Playing && AL.GetSourceState(sourceId) == ALSourceState.Stopped)
+            {
+                ALHelper.Check();
+                soundState = SoundState.Stopped;
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsDisposed
+        {
+            get { return isDisposed; }
+        }
+
+        public bool IsLooped
+        {
+            get { return looped; }
+            set
+            {
+                if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                looped = value;
+                AL.Source(sourceId, ALSourceb.Looping, looped);
+                ALHelper.Check();
+            }
+        }
+
+        public float Pan
+        {
+            get { return pan; }
+            set
+            {
+                if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                pan = value;
+                AL.Source(sourceId, ALSource3f.Position, pan / 1.5f, 0.0f, 0.1f);
+                ALHelper.Check();
+            }
+        }
+
+        public float Pitch
+        {
+            get { return pitch; }
+            set
+            {
+                if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                pitch = value;
+                AL.Source(sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(pitch));
+                ALHelper.Check();
+            }
+        }
 
         private float XnaPitchToAlPitch(float pitch)
         {
@@ -166,142 +190,22 @@ namespace Microsoft.Xna.Framework.Audio
                 alPitch = 1 + pitch;
             return alPitch;
         }
-		private void ApplyState ()
-		{
-			if (!hasSourceId)
-				return;
-			// Distance Model
-			AL.DistanceModel (ALDistanceModel.InverseDistanceClamped);
-			// Listener
-			// Pan
-			AL.Source (sourceId, ALSource3f.Position, _pan, 0, 0.1f);
-			// Volume
-			AL.Source (sourceId, ALSourcef.Gain, _volume * SoundEffect.MasterVolume);
-			// Looping
-			AL.Source (sourceId, ALSourceb.Looping, IsLooped);
-			// Pitch
-			AL.Source (sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(_pitch));
-		}
 
-		public virtual void Play ()
-		{
-			int bufferId = soundBuffer.OpenALDataBuffer;
-			if (hasSourceId) {
-				return;
-			}
-			bool isSourceAvailable = controller.ReserveSource (soundBuffer);
-			if (!isSourceAvailable)
-				return;
+        public SoundState State
+        {
+            get { return soundState; }
+        }
 
-			AL.Source (soundBuffer.SourceId, ALSourcei.Buffer, bufferId);
-			ApplyState ();
-
-			controller.PlaySound (soundBuffer);            
-			//Console.WriteLine ("playing: " + sourceId + " : " + soundEffect.Name);
-			soundState = SoundState.Playing;
-		}
-
-		public void Resume ()
-		{
-			Play ();
-		}
-
-		public void Stop ()
-		{
-			if (hasSourceId) {
-				//Console.WriteLine ("stop " + sourceId + " : " + soundEffect.Name);
-				controller.StopSound (soundBuffer);
-			}
-			soundState = SoundState.Stopped;
-		}
-
-		public void Stop (bool immediate)
-		{
-			Stop ();
-		}
-
-		public bool IsDisposed {
-			get {
-				return isDisposed;
-			}
-		}
-
-		public virtual bool IsLooped {
-			get {
-				return _looped;
-			}
-
-			set {
-				_looped = value;
-				if (hasSourceId) {
-					// Looping
-					AL.Source (sourceId, ALSourceb.Looping, _looped);
-				}
-			}
-		}
-
-		public float Pan {
-			get {
-				return _pan;
-			}
-
-			set {
-				_pan = value;
-				if (hasSourceId) {
-					// Listener
-					// Pan
-					AL.Source (sourceId, ALSource3f.Position, _pan, 0.0f, 0.1f);
-				}
-			}
-		}
-
-		public float Pitch {
-			get {
-				return _pitch;
-			}
-			set {
-				_pitch = value;
-				if (hasSourceId) {
-					// Pitch
-					AL.Source (sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(_pitch));
-				}
-
-			}
-		}
-
-		private byte[] audioData;
-
-		internal byte[] EffectData {
-			get {
-				return audioData;
-			}
-
-			set {
-				audioData = value;
-			}
-		}
-
-		public SoundState State {
-			get {
-				return soundState;
-			}
-		}
-
-		public float Volume {
-			get {
-				return _volume;
-			}
-			
-			set {
-				_volume = value;
-				if (hasSourceId) {
-					// Volume
-					AL.Source (sourceId, ALSourcef.Gain, _volume * SoundEffect.MasterVolume);
-				}
-
-			}
-		}	
-		
-		
-	}
+        public float Volume
+        {
+            get { return volume; }
+            set
+            {
+                if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                volume = value;
+                AL.Source(sourceId, ALSourcef.Gain, volume * SoundEffect.MasterVolume);
+                ALHelper.Check();
+            }
+        }
+    }
 }

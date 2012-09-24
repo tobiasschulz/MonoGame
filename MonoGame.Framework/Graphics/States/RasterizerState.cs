@@ -104,8 +104,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			else
 				GL.Disable(EnableCap.ScissorTest);
 
-            // TODO: What about DepthBias, SlopeScaleDepthBias, and
-            // MultiSampleAntiAlias... we're not handling these!
+            // Depth bias implementation differs in OpenGL from DX, see
+            // http://aras-p.info/blog/2008/06/12/depth-bias-and-the-power-of-deceiving-yourself/
+            // for where the constant comes from (fiddled with the original 4.8e7 though)
+            const float DepthBiasMultiplier = 10000000;
+            GL.Enable(EnableCap.PolygonOffsetFill);
+            GL.PolygonOffset(SlopeScaleDepthBias, DepthBias * DepthBiasMultiplier);
+
+            // TODO: MultiSampleAntiAlias
         }
 
 #elif DIRECTX

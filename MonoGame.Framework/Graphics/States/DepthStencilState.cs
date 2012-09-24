@@ -68,7 +68,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public static readonly DepthStencilState Default;
 		public static readonly DepthStencilState DepthRead;
 		public static readonly DepthStencilState None;
-		
+
 		static DepthStencilState ()
 		{
 			Default = new DepthStencilState () 
@@ -143,8 +143,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 // enable Stencil
                 GL.Enable(EnableCap.StencilTest);
 
-                // Set color mask - not needed
-                //GL.ColorMask(false, false, false, false); //Disable drawing colors to the screen
                 // set function
                 GLStencilFunction func;
                 switch (StencilFunction)

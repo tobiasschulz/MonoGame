@@ -50,6 +50,7 @@ namespace Microsoft.Xna.Framework.Graphics
             param.columns = symbol.info.columns;
             param.name = symbol.name ?? string.Empty;
             param.semantic = string.Empty; // TODO: How do i do this with only MojoShader?
+            param.register_count = symbol.register_count;
 
             var registerSize = (symbol.register_set == MojoShader.MOJOSHADER_symbolRegisterSet.MOJOSHADER_SYMREGSET_BOOL ? 1 : 4) * 4;
             var offset = (int)symbol.register_index * registerSize;

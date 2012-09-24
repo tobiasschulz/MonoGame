@@ -309,7 +309,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			SamplerStates = new SamplerStateCollection (16);
 
 			PresentationParameters = new PresentationParameters ();
-			PresentationParameters.DepthStencilFormat = DepthFormat.Depth24;
+			PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;
         }
 
         internal void Initialize()
@@ -784,8 +784,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				GL.ClearStencil(stencil);
 				bufferMask = bufferMask | ClearBufferMask.StencilBufferBit;
 			}
-
-			if (options.HasFlag(ClearOptions.DepthBuffer)) 
+			if (options.HasFlag(ClearOptions.DepthBuffer))
             {
 #if GLES
                 GL.ClearDepth (depth);
@@ -794,7 +793,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 				bufferMask = bufferMask | ClearBufferMask.DepthBufferBit;
 			}
-
 #if GLES
 			GL.Clear((uint)bufferMask);
 #else
@@ -1171,31 +1169,34 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 				}
 
-				GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
-				GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
-				if (renderTarget.DepthStencilFormat != DepthFormat.None)
-				{
-					GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
-					if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
-					{
-						GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
-					}
-				}
+                // TODO : This prevented the "incomplete" bug but doesn't solve the visual glitch
+                Threading.BlockOnUIThread(() =>
+                {
+				    GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
+				    GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
+				    if (renderTarget.DepthStencilFormat != DepthFormat.None)
+				    {
+					    GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+					    if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
+					    {
+						    GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+					    }
+				    }
 
-				var status = GL.CheckFramebufferStatus(GLFramebuffer);
-				if (status != GLFramebufferComplete)
-				{
-					string message = "Framebuffer Incomplete.";
-					switch (status)
-					{
-					case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
-					case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
-					case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
-					//case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
-					}
-					throw new InvalidOperationException(message);
-				}
-                                
+				    var status = GL.CheckFramebufferStatus(GLFramebuffer);
+				    if (status != GLFramebufferComplete)
+				    {
+					    string message = "Framebuffer Incomplete.";
+					    switch (status)
+					    {
+					    case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
+					    case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
+					    case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
+					    //case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
+					    }
+					    throw new InvalidOperationException(message);
+				    }
+                });
 #endif
                 // Set the viewport to the size of the first render target.
                 Viewport = new Viewport(0, 0, renderTarget.Width, renderTarget.Height);

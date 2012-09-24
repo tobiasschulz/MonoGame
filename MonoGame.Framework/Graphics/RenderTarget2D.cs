@@ -134,22 +134,35 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #elif OPENGL
 
+		    Threading.BlockOnUIThread(() =>
+		    {
 #if GLES
 			GL.GenRenderbuffers(1, ref glDepthStencilBuffer);
 #else
-			GL.GenRenderbuffers(1, out glDepthStencilBuffer);
+		        GL.GenRenderbuffers(1, out glDepthStencilBuffer);
 #endif
-			GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this.glDepthStencilBuffer);
-			var glDepthStencilFormat = GLDepthComponent16;
-			switch (preferredDepthFormat)
-			{
-			case DepthFormat.Depth16: glDepthStencilFormat = GLDepthComponent16; break;
-			case DepthFormat.Depth24: glDepthStencilFormat = GLDepthComponent24; break;
-			case DepthFormat.Depth24Stencil8: glDepthStencilFormat = GLDepth24Stencil8; break;
-			}
-			GL.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
+		        GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this.glDepthStencilBuffer);
+		        var glDepthStencilFormat = GLDepthComponent16;
+		        switch (preferredDepthFormat)
+		        {
+		            case DepthFormat.Depth16:
+		                glDepthStencilFormat = GLDepthComponent16;
+		                break;
+		            case DepthFormat.Depth24:
+		                glDepthStencilFormat = GLDepthComponent24;
+		                break;
+		            case DepthFormat.Depth24Stencil8:
+		                glDepthStencilFormat = GLDepth24Stencil8;
+		                break;
+		        }
+		        if (MultiSampleCount == 0)
+		            GL.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
+		        else
+		            GL.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, glDepthStencilFormat, this.width,
+		                                              this.height);
+		    });
 #endif
-        }
+		}
 		
 		public RenderTarget2D(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat)
 			:this (graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, 0, RenderTargetUsage.DiscardContents) 

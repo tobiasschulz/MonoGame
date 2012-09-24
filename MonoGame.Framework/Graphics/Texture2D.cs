@@ -563,19 +563,17 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
 #else
+		    Threading.BlockOnUIThread(() =>
+		    {
+		        GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
 
-			GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+		        if (rect.HasValue)
+		            throw new NotImplementedException();
+		        if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
+		            throw new NotImplementedException();
 
-			if (rect.HasValue) {
-				throw new NotImplementedException();
-			}
-
-			if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
-				throw new NotImplementedException();
-			} else {
-				GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
-			}
-
+		        GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
+		    });
 #endif
         }
 
@@ -731,15 +729,23 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 #if WINRT
             SaveAsImage(BitmapEncoder.JpegEncoderId, stream, width, height);
+#elif OPENGL
+            SaveAsImage(ImageFormat.Jpeg, stream, width, height);
 #else
             throw new NotImplementedException();
 #endif
         }
 
+        public void SaveAsPng(Stream stream)
+        {
+            SaveAsPng(stream, width, height);
+        }
         public void SaveAsPng(Stream stream, int width, int height)
         {
 #if WINRT
             SaveAsImage(BitmapEncoder.PngEncoderId, stream, width, height);
+#elif OPENGL
+            SaveAsImage(ImageFormat.Png, stream, width, height);
 #else
             throw new NotImplementedException();
 #endif
@@ -770,7 +776,26 @@ namespace Microsoft.Xna.Framework.Graphics
 
             }).Wait();
         }
-#endif // WINRT
+#elif OPENGL
+        private void SaveAsImage(ImageFormat outputFormat, Stream stream, int width, int height)
+        {
+            var data = new byte[width * height * Format.Size()];
+            GetData(data);
+
+            // TODO: We need to convert from Format to R8G8B8A8!
+
+            using (var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            {
+                var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, width, height),
+                                                 ImageLockMode.WriteOnly,
+                                                 bitmap.PixelFormat);
+                Marshal.Copy(data, 0, bitmapData.Scan0, data.Length);
+                bitmap.UnlockBits(bitmapData);
+                bitmap.RGBToBGR();
+                bitmap.Save(stream, outputFormat);
+            }
+        }
+#endif
 
         //What was this for again?
 		internal void Reload(Stream textureStream)

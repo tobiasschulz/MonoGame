@@ -1,7 +1,7 @@
-﻿#region License
+#region License
 /*
 Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009 The MonoGame Team
+MonoGame - Copyright � 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -97,7 +97,7 @@ namespace Microsoft.Xna.Framework
 #endif
 
             _preferredBackBufferFormat = SurfaceFormat.Color;
-            _preferredDepthStencilFormat = DepthFormat.Depth24;
+            _preferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             _synchronizedWithVerticalRetrace = true;
 
             if (game.Services.GetService(typeof(IGraphicsDeviceManager)) != null)
@@ -155,7 +155,7 @@ namespace Microsoft.Xna.Framework
 
         // FIXME: Why does the GraphicsDeviceManager not know enough about the
         //        GraphicsDevice to raise these events without help?
-        internal void OnDeviceReset(EventArgs e)
+        public void OnDeviceReset(EventArgs e)
         {
             Raise(DeviceReset, e);
         }
