@@ -219,7 +219,8 @@ namespace Microsoft.Xna.Framework.Content
         /// </param>
         public static void AddTypeCreator(string typeString, Func<ContentTypeReader> createFunction)
         {
-            typeCreators.Add(typeString, createFunction);
+            if (!typeCreators.ContainsKey(typeString))
+                typeCreators.Add(typeString, createFunction);
         }
 
         public static void ClearTypeCreators()

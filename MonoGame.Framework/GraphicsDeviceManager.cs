@@ -482,6 +482,19 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+        /// <summary>
+        /// This method is used by MonoGame Android to adjust the game's drawn to area to fill
+        /// as much of the screen as possible whilst retaining the aspect ratio inferred from
+        /// aspectRatio = (PreferredBackBufferWidth / PreferredBackBufferHeight)
+        ///
+        /// NOTE: this is a hack that should be removed if proper back buffer to screen scaling
+        /// is implemented. To disable it's effect, in the game's constructor use:
+        ///
+        ///     graphics.IsFullScreen = true;
+        ///     graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+        ///     graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+        ///
+        /// </summary>
         internal void ResetClientBounds()
         {
 #if ANDROID
@@ -504,6 +517,7 @@ namespace Microsoft.Xna.Framework
             var newClientBounds = new Rectangle();
             if (displayAspectRatio > (adjustedAspectRatio + EPSILON))
             {
+                // Fill the entire height and reduce the width to keep aspect ratio
                 newClientBounds.Height = _graphicsDevice.DisplayMode.Height;
                 newClientBounds.Width = (int)(newClientBounds.Height * adjustedAspectRatio);
                 newClientBounds.X = (_graphicsDevice.DisplayMode.Width - newClientBounds.Width) / 2;
@@ -512,6 +526,7 @@ namespace Microsoft.Xna.Framework
             }
             else if (displayAspectRatio < (adjustedAspectRatio - EPSILON))
             {
+                // Fill the entire width and reduce the height to keep aspect ratio
                 newClientBounds.Width = _graphicsDevice.DisplayMode.Width;
                 newClientBounds.Height = (int)(newClientBounds.Width / adjustedAspectRatio);
                 newClientBounds.Y = (_graphicsDevice.DisplayMode.Height - newClientBounds.Height) / 2;
@@ -522,18 +537,23 @@ namespace Microsoft.Xna.Framework
             {
                 // Set the ClientBounds to match the DisplayMode but swapped if necessary to match current orientation
                 bool isLandscape = preferredAspectRatio > 1.0f;
-                int w = GraphicsDevice.DisplayMode.Width;
-                int h = GraphicsDevice.DisplayMode.Height;
+                newClientBounds.Width = GraphicsDevice.DisplayMode.Width;
+                newClientBounds.Height = GraphicsDevice.DisplayMode.Height;
 
                 newClientBounds.Width = isLandscape ? Math.Max(w, h) : Math.Min(w, h);
                 newClientBounds.Height = isLandscape ? Math.Min(w, h) : Math.Max(w, h);
                 _game.Window.ClientBounds = new Rectangle(0, 0, newClientBounds.Width, newClientBounds.Height);
             }
 
-            // Ensure viewport and buffer size are reported correctly
+            // Ensure buffer size is reported correctly
             _graphicsDevice.Viewport = new Viewport(newClientBounds.X, -newClientBounds.Y, newClientBounds.Width, newClientBounds.Height);
             _graphicsDevice.PresentationParameters.BackBufferWidth = newClientBounds.Width;
             _graphicsDevice.PresentationParameters.BackBufferHeight = newClientBounds.Height;
+
+            // Set the veiwport so the (potentially) resized client bounds are drawn in the middle of the screen
+            _graphicsDevice.Viewport = new Viewport(newClientBounds.X, -newClientBounds.Y, newClientBounds.Width, newClientBounds.Height);
+
+            _game.Window.ClientBounds = newClientBounds;
 
             // Touch panel needs latest buffer size for scaling
             TouchPanel.DisplayWidth = newClientBounds.Width;
