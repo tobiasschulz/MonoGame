@@ -85,6 +85,14 @@ namespace Microsoft.Xna.Framework.Graphics
             _dirty |= 1 << index;
         }
 
+        internal void Clear()
+        {
+            for (var i = 0; i < _samplers.Length; i++)
+                _samplers[i] = null;
+
+            _dirty = int.MaxValue;
+        }
+
         internal void SetSamplers(GraphicsDevice device)
         {
             // Skip out if nothing has changed.
