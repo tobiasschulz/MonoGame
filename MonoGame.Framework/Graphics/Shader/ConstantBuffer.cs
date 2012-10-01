@@ -157,6 +157,8 @@ namespace Microsoft.Xna.Framework.Graphics
             if (param.ParameterType != EffectParameterType.Single)
                 throw new NotImplementedException("Not supported!");
 
+            if (param.Data == null) return;
+
             if (param.Elements.Count > 0)
                 SetData(offset, param.RowCount * param.Elements.Count, param.ColumnCount, 0, param.Data);
             else
@@ -242,10 +244,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // If the buffer content hasn't changed then we're
             // done... use the previously set uniform state.
-            // NOTE: Commented out as workaround for caching mismatch between
-            // OpenGL shader objects & constant buffers
             //if (!_dirty)
-            //return;
+                //return;
 
             fixed (byte* bytePtr = _buffer)
             {
