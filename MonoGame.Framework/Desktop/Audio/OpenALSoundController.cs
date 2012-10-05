@@ -71,10 +71,12 @@ namespace Microsoft.Xna.Framework.Audio
             ExpandSources();
         }
 
-        public int RegisterSfxInstance(SoundEffectInstance instance)
+        public int RegisterSfxInstance(SoundEffectInstance instance, bool forceNoFilter = false)
         {
             activeSoundEffects.Add(instance);
-            var doFilter = !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp");
+            var doFilter = !forceNoFilter &&
+                           !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp") &&
+                           !instance.SoundEffect.Name.Contains("ZoomTo");
             return TakeSourceFor(instance.SoundEffect, doFilter);
         }
 
@@ -222,6 +224,23 @@ namespace Microsoft.Xna.Framework.Audio
             }
 
             return sourceId;
+        }
+
+        public void SetSourceFiltered(int sourceId, bool filtered)
+        {
+            if (!ALHelper.Efx.IsInitialized) return;
+
+            if (!filtered && filteredSources.Remove(sourceId))
+            {
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
+                ALHelper.Efx.BindFilterToSource(sourceId, 0);
+            }
+            else if (filtered && !filteredSources.Contains(sourceId))
+            {
+                filteredSources.Add(sourceId);
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
+                ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+            }
         }
 
         public void ReturnBuffers(int[] bufferIds)

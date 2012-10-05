@@ -63,12 +63,13 @@ namespace Microsoft.Xna.Framework.Audio
 
         bool isDisposed;
         SoundState soundState = SoundState.Stopped;
+        bool lowPass;
 
         protected SoundEffectInstance() { }
-        internal SoundEffectInstance(SoundEffect soundEffect) : this()
+        internal SoundEffectInstance(SoundEffect soundEffect, bool forceNoFilter = false) : this()
         {
             this.soundEffect = soundEffect;
-            sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this);
+            sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this, forceNoFilter);
         }
 
         public SoundEffect SoundEffect
@@ -162,7 +163,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
                 pan = value;
-                AL.Source(sourceId, ALSource3f.Position, pan / 1.5f, 0.0f, 0.1f);
+                AL.Source(sourceId, ALSource3f.Position, pan / 1.25f, 0.0f, 0.1f);
                 ALHelper.Check();
             }
         }
@@ -176,6 +177,17 @@ namespace Microsoft.Xna.Framework.Audio
                 pitch = value;
                 AL.Source(sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(pitch));
                 ALHelper.Check();
+            }
+        }
+
+        public bool LowPass
+        {
+            get { return lowPass; }
+            set
+            {
+                if (lowPass != value)
+                    OpenALSoundController.Instance.SetSourceFiltered(sourceId, value);
+                lowPass = value;
             }
         }
 

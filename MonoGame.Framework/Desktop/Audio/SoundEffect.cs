@@ -219,9 +219,9 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
-        public SoundEffectInstance CreateInstance()
+        public SoundEffectInstance CreateInstance(bool forceNoFilter = false)
         {
-            var instance = new SoundEffectInstance(this);
+            var instance = new SoundEffectInstance(this, forceNoFilter);
             return instance;
         }
 
