@@ -201,7 +201,15 @@ namespace Microsoft.Xna.Framework
                                      clientBounds.Y, clientBounds.Width, clientBounds.Height);
 
                 updateClientBounds = false;
-                
+
+                // Make sure we're within bounds on the primary display before changing to fullscreen
+                if (windowState == WindowState.Fullscreen && window.WindowState != WindowState.Fullscreen)
+                {
+                    var primaryDisplay = DisplayDevice.GetDisplay(DisplayIndex.Primary);
+                    window.X = (int)MathHelper.Clamp(window.X, 0, primaryDisplay.Width - window.Width);
+                    window.Y = (int)MathHelper.Clamp(window.Y, 0, primaryDisplay.Height - window.Height);
+                }
+
                 // if the window-state is set from the outside (maximized button pressed) we have to update it here.
                 // if it was set from the inside (.IsFullScreen changed), we have to change the window.
                 // this code might not cover all corner cases
