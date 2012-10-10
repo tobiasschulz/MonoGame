@@ -188,6 +188,8 @@ namespace Microsoft.Xna.Framework
         {
             if (disposing)
             {
+                Platform.Dispose();
+
                 // Dispose loaded game components
                 for (int i = 0; i < _components.Count; i++)
                 {
@@ -195,8 +197,6 @@ namespace Microsoft.Xna.Framework
                     if (disposable != null)
                         disposable.Dispose();
                 }
-
-                Platform.Dispose();
             }
 
             _isDisposed = true;
@@ -452,13 +452,16 @@ namespace Microsoft.Xna.Framework
             if (_accumulatedElapsedTime > _maxElapsedTime)
                 _accumulatedElapsedTime = _maxElapsedTime;
 
-            // TODO: We should be calculating IsRunningSlowly
-            // somewhere around here!
+            // http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.gametime.isrunningslowly.aspx
+            // Calculate IsRunningSlowly for the fixed time step, but only when the accumulated time
+            // exceeds the target time.
 
             if (IsFixedTimeStep)
             {
                 _gameTime.ElapsedGameTime = TargetElapsedTime;
                 var stepCount = 0;
+
+                _gameTime.IsRunningSlowly = (_accumulatedElapsedTime > TargetElapsedTime);
 
                 // Perform as many full fixed length time steps as we can.
                 while (_accumulatedElapsedTime >= TargetElapsedTime)
@@ -489,11 +492,8 @@ namespace Microsoft.Xna.Framework
                 _suppressDraw = false;
             else
             {
-                lock (Threading.BackgroundContext)
-                {
-                    DoDraw(_gameTime);
-                    Platform.Present();
-                }
+                DoDraw(_gameTime);
+                Platform.Present();
             }
         }
 
