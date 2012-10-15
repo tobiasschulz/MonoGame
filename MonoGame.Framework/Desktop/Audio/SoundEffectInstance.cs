@@ -88,6 +88,11 @@ namespace Microsoft.Xna.Framework.Audio
             OpenALSoundController.Instance.ReturnSourceFor(soundEffect, sourceId);
         }
 
+        ~SoundEffectInstance()
+        {
+            Dispose();
+        }
+
         public void Pause()
         {
             if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
