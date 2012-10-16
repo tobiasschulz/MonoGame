@@ -492,8 +492,11 @@ namespace Microsoft.Xna.Framework
                 _suppressDraw = false;
             else
             {
-                DoDraw(_gameTime);
-                Platform.Present();
+                lock (Threading.BackgroundContext)
+                {
+                    DoDraw(_gameTime);
+                    Platform.Present();
+                }
             }
         }
 
