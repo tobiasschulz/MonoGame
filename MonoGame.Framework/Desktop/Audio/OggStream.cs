@@ -28,7 +28,11 @@ namespace Microsoft.Xna.Framework.Audio
         {
             ALError error;
             if ((error = AL.GetError()) != ALError.NoError)
+#if DEBUG
                 throw new InvalidOperationException(AL.GetErrorString(error));
+#else
+                Console.WriteLine("AL Error : " + AL.GetErrorString(error));
+#endif
         }
     }
 
@@ -234,8 +238,11 @@ namespace Microsoft.Xna.Framework.Audio
                 underlyingStream.Dispose();
             }
 #if !FAKE
-            OpenALSoundController.Instance.ReturnSource(alSourceId);
-            OpenALSoundController.Instance.ReturnBuffers(alBufferIds);
+            if (OpenALSoundController.Instance != null)
+            {
+                OpenALSoundController.Instance.ReturnSource(alSourceId);
+                OpenALSoundController.Instance.ReturnBuffers(alBufferIds);
+            }
 #endif
             ALHelper.Check();
         }
