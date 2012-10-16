@@ -85,7 +85,8 @@ namespace Microsoft.Xna.Framework.Audio
                 Stop();
 
             isDisposed = true;
-            OpenALSoundController.Instance.ReturnSourceFor(soundEffect, sourceId);
+            if (OpenALSoundController.Instance != null)
+                OpenALSoundController.Instance.ReturnSourceFor(soundEffect, sourceId);
         }
 
         ~SoundEffectInstance()

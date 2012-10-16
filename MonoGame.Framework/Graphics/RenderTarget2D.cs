@@ -169,7 +169,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			: this(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.DiscardContents) 
 		{}
 
-		public override void Dispose ()
+	    bool disposed;
+
+		public override void Dispose()
 		{
 #if DIRECTX
             if (_renderTargetView != null)
@@ -183,6 +185,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 _depthStencilView = null;
             }
 #elif OPENGL
+            if (disposed) return;
+		    disposed = true;
+            if (Threading.BackgroundContext == null) return;
+
 			GL.DeleteRenderbuffers(1, ref this.glDepthStencilBuffer);
             GraphicsExtensions.CheckGLError();
 

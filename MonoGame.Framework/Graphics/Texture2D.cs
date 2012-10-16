@@ -235,6 +235,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public override void Dispose()
         {
+            if (Threading.BackgroundContext == null) return;
             graphicsDevice.DeviceResetting -= graphicsDevice_DeviceResetting;
             base.Dispose();
         }

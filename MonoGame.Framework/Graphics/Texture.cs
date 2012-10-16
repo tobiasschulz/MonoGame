@@ -157,6 +157,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #endif
 
+	    bool disposed;
         public override void Dispose()
 		{
 #if DIRECTX
@@ -174,8 +175,15 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
 #elif OPENGL
-            GL.DeleteTextures(1, ref glTexture);
-            GraphicsExtensions.CheckGLError();
+            if (disposed) return;
+            disposed = true;
+            if (Threading.BackgroundContext == null) return;
+
+            Threading.BlockOnUIThread(() =>
+            {
+                GL.DeleteTextures(1, ref glTexture);
+                GraphicsExtensions.CheckGLError();
+            });
 #endif
             base.Dispose();
 		}

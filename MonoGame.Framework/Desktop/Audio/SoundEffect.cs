@@ -236,7 +236,8 @@ namespace Microsoft.Xna.Framework.Audio
         public void Dispose()
         {
             isDisposed = true;
-            OpenALSoundController.Instance.DestroySoundEffect(this);
+            if (OpenALSoundController.Instance != null)
+                OpenALSoundController.Instance.DestroySoundEffect(this);
         }
 
         #endregion

@@ -121,7 +121,9 @@ namespace Microsoft.Xna.Framework
                 GraphicsExtensions.CheckGLError();
             }
 #elif WINDOWS || LINUX
-            lock (BackgroundContext)
+            if (BackgroundContext == null)
+                action();
+            else lock (BackgroundContext)
             {
                 // Make the context current on this thread
                 BackgroundContext.MakeCurrent(WindowInfo);
