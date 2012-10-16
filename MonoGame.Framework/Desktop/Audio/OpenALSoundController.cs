@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 #if IPHONE || WINDOWS || LINUX
+using System.Threading;
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 #elif MONOMAC
@@ -30,7 +31,7 @@ namespace Microsoft.Xna.Framework.Audio
             get { return instance; }
         }
 
-        readonly AudioContext context;
+        AudioContext context;
 
         readonly Stack<int> freeSources;
         readonly HashSet<int> filteredSources;
@@ -48,7 +49,21 @@ namespace Microsoft.Xna.Framework.Audio
 
         private OpenALSoundController()
         {
-            context = new AudioContext();
+            int tries = 0;
+            initLoop:
+            try
+            {
+                TryInitialize();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("OpenAL initialization failed, let's try again!");
+                Thread.Sleep(250);
+                tries++;
+                if (tries < 5)
+                    goto initLoop; // lol
+                throw;
+            }
 
             filterId = ALHelper.Efx.GenFilter();
             ALHelper.Efx.Filter(filterId, EfxFilteri.FilterType, (int)EfxFilterType.Lowpass);
@@ -69,6 +84,11 @@ namespace Microsoft.Xna.Framework.Audio
             activeSoundEffects = new List<SoundEffectInstance>();
             freeSources = new Stack<int>(PreallocatedSources);
             ExpandSources();
+        }
+
+        void TryInitialize()
+        {
+            context = new AudioContext();
         }
 
         public int RegisterSfxInstance(SoundEffectInstance instance, bool forceNoFilter = false)
