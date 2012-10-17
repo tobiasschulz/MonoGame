@@ -69,7 +69,8 @@ namespace Microsoft.Xna.Framework.Audio
         internal SoundEffectInstance(SoundEffect soundEffect, bool forceNoFilter = false) : this()
         {
             this.soundEffect = soundEffect;
-            sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this, forceNoFilter);
+            if (OpenALSoundController.Instance != null)
+                sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this, forceNoFilter);
         }
 
         public SoundEffect SoundEffect
