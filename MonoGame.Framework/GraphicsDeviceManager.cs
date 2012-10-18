@@ -346,12 +346,15 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+
         public bool IsFullScreen
         {
             get
             {
-#if WINDOWS || LINUX || WINRT
+#if WINDOWS || LINUX
                 return _graphicsDevice.PresentationParameters.IsFullScreen;
+#elif WINRT
+                return true;
 #else
                 if (_graphicsDevice != null)
                     return _graphicsDevice.PresentationParameters.IsFullScreen;
@@ -361,8 +364,10 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
-#if WINDOWS || LINUX || WINRT
+#if WINDOWS || LINUX
                 _graphicsDevice.PresentationParameters.IsFullScreen = value;
+#elif WINRT
+                // Just ignore this as it is not relevant on Windows 8
 #else
                 _wantFullScreen = value;
                 if (_graphicsDevice != null)
