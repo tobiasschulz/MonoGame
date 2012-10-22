@@ -298,8 +298,11 @@ namespace Microsoft.Xna.Framework.Graphics
             //Do nothing
             _vertexArray = null;
 #else
-			GL.DeleteBuffers(1, ref vbo);
-            GraphicsExtensions.CheckGLError();
+            if (Threading.BackgroundContext != null)
+            {
+                GL.DeleteBuffers(1, ref vbo);
+                GraphicsExtensions.CheckGLError();
+            }
 #endif
             base.Dispose();
 		}

@@ -299,8 +299,11 @@ namespace Microsoft.Xna.Framework.Graphics
             //Do nothing
             _buffer = null;
 #else
-			GL.DeleteBuffers(1, ref ibo);
-            GraphicsExtensions.CheckGLError();
+            if (Threading.BackgroundContext != null)
+            {
+                GL.DeleteBuffers(1, ref ibo);
+                GraphicsExtensions.CheckGLError();
+            }
 #endif
             base.Dispose();
 		}
