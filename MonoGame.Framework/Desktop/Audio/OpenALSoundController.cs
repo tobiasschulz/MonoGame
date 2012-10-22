@@ -77,7 +77,7 @@ namespace Microsoft.Xna.Framework.Audio
             activeSoundEffects.Add(instance);
             var doFilter = !forceNoFilter &&
                            !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp") &&
-                           !instance.SoundEffect.Name.Contains("ZoomTo");
+                           !instance.SoundEffect.Name.Contains("Zoom");
             return TakeSourceFor(instance.SoundEffect, doFilter);
         }
 
