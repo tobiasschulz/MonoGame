@@ -109,7 +109,7 @@ namespace Microsoft.Xna.Framework
             this.IsMouseVisible = true;
 			
 			// Setup our OpenALSoundController to handle our SoundBuffer pools
-			soundControllerInstance = OpenALSoundController.Instance;
+			soundControllerInstance = OpenALSoundController.GetInstance;
             
 #if LINUX
             // also set up SdlMixer to play background music. If one of these functions fails, we will not get any background music (but that should rarely happen)
@@ -255,6 +255,7 @@ namespace Microsoft.Xna.Framework
             // This is necessary in Windows 7 as well, not just in Linux
             MouseState oldState = Mouse.GetState();
             _view.Window.CursorVisible = IsMouseVisible;
+            // IsMouseVisible changes the location of the cursor and we have to manually set it back to the correct position
             System.Drawing.Point mousePos = _view.Window.PointToScreen(new System.Drawing.Point(oldState.X, oldState.Y));
             OpenTK.Input.Mouse.SetPosition(mousePos.X, mousePos.Y);
         }
@@ -268,15 +269,23 @@ namespace Microsoft.Xna.Framework
         {
             base.Present();
 
-            if (_view != null) _view.Window.SwapBuffers();
+            var device = Game.GraphicsDevice;
+            if (device != null)
+                device.Present();
+
+            if (_view != null)
+                _view.Window.SwapBuffers();
         }
 		
         protected override void Dispose(bool disposing)
         {
-            if (_view != null)
+            if (!IsDisposed)
             {
-                _view.Dispose();
-                _view = null;
+                if (_view != null)
+                {
+                    _view.Dispose();
+                    _view = null;
+                }
             }
 
             soundControllerInstance.Dispose();

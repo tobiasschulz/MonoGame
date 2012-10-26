@@ -69,6 +69,7 @@ namespace Microsoft.Xna.Framework
         private bool _preferMultiSampling;
         private DisplayOrientation _supportedOrientations;
         private bool _synchronizedWithVerticalRetrace = true;
+        bool disposed;
 
 #if !(WINDOWS || LINUX || WINRT)
         private bool _wantFullScreen = false;
@@ -110,6 +111,11 @@ namespace Microsoft.Xna.Framework
             // TODO: This should not occur here... it occurs during Game.Initialize().
             CreateDevice();
 #endif
+        }
+
+        ~GraphicsDeviceManager()
+        {
+            Dispose(false);
         }
 
         public void CreateDevice()
@@ -181,10 +187,23 @@ namespace Microsoft.Xna.Framework
 
         public void Dispose()
         {
-            if (_graphicsDevice != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
             {
-                _graphicsDevice.Dispose();
-                _graphicsDevice = null;
+                if (disposing)
+                {
+                    if (_graphicsDevice != null)
+                    {
+                        _graphicsDevice.Dispose();
+                        _graphicsDevice = null;
+                    }
+                }
+                disposed = true;
             }
         }
 
@@ -527,8 +546,6 @@ namespace Microsoft.Xna.Framework
                 newClientBounds.Height = _graphicsDevice.DisplayMode.Height;
                 newClientBounds.Width = (int)(newClientBounds.Height * adjustedAspectRatio);
                 newClientBounds.X = (_graphicsDevice.DisplayMode.Width - newClientBounds.Width) / 2;
-
-                _game.Window.ClientBounds = newClientBounds;
             }
             else if (displayAspectRatio < (adjustedAspectRatio - EPSILON))
             {
@@ -536,23 +553,15 @@ namespace Microsoft.Xna.Framework
                 newClientBounds.Width = _graphicsDevice.DisplayMode.Width;
                 newClientBounds.Height = (int)(newClientBounds.Width / adjustedAspectRatio);
                 newClientBounds.Y = (_graphicsDevice.DisplayMode.Height - newClientBounds.Height) / 2;
-
-                _game.Window.ClientBounds = newClientBounds;
             }
             else
             {
-                // Set the ClientBounds to match the DisplayMode but swapped if necessary to match current orientation
-                bool isLandscape = preferredAspectRatio > 1.0f;
+                // Set the ClientBounds to match the DisplayMode
                 newClientBounds.Width = GraphicsDevice.DisplayMode.Width;
                 newClientBounds.Height = GraphicsDevice.DisplayMode.Height;
-
-                newClientBounds.Width = isLandscape ? Math.Max(w, h) : Math.Min(w, h);
-                newClientBounds.Height = isLandscape ? Math.Min(w, h) : Math.Max(w, h);
-                _game.Window.ClientBounds = new Rectangle(0, 0, newClientBounds.Width, newClientBounds.Height);
             }
 
             // Ensure buffer size is reported correctly
-            _graphicsDevice.Viewport = new Viewport(newClientBounds.X, -newClientBounds.Y, newClientBounds.Width, newClientBounds.Height);
             _graphicsDevice.PresentationParameters.BackBufferWidth = newClientBounds.Width;
             _graphicsDevice.PresentationParameters.BackBufferHeight = newClientBounds.Height;
 

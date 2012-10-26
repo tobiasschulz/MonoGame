@@ -171,34 +171,42 @@ namespace Microsoft.Xna.Framework.Graphics
 
 	    bool disposed;
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+            if (!IsDisposed)
+            {
 #if DIRECTX
-            if (_renderTargetView != null)
-            {
-                _renderTargetView.Dispose();
-                _renderTargetView = null;
-            }
-            if (_depthStencilView != null)
-            {
-                _depthStencilView.Dispose();
-                _depthStencilView = null;
-            }
+                if (disposing)
+                {
+                    if (_renderTargetView != null)
+                    {
+                        _renderTargetView.Dispose();
+                        _renderTargetView = null;
+                    }
+                    if (_depthStencilView != null)
+                    {
+                        _depthStencilView.Dispose();
+                        _depthStencilView = null;
+                    }
+                }
 #elif OPENGL
-            if (disposed) return;
-		    disposed = true;
-            if (Threading.BackgroundContext == null) return;
+                if ((GraphicsDevice != null) && !GraphicsDevice.IsDisposed)
+                {
+                    GraphicsDevice.AddDisposeAction(() =>
+                        {
+                            GL.DeleteRenderbuffers(1, ref this.glDepthStencilBuffer);
+                            GraphicsExtensions.CheckGLError();
 
-			GL.DeleteRenderbuffers(1, ref this.glDepthStencilBuffer);
-            GraphicsExtensions.CheckGLError();
-
-            if (this.glFramebuffer > 0)
-            {
-                GL.DeleteFramebuffers(1, ref this.glFramebuffer);
-                GraphicsExtensions.CheckGLError();
-            }
+                            if (this.glFramebuffer > 0)
+                            {
+                                GL.DeleteFramebuffers(1, ref this.glFramebuffer);
+                                GraphicsExtensions.CheckGLError();
+                            }
+                        });
+                }
 #endif
-            base.Dispose();
+            }
+            base.Dispose(disposing);
 		}
 	}
 }
