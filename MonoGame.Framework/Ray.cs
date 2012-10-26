@@ -113,7 +113,7 @@ namespace Microsoft.Xna.Framework
 				maxT.Z = (box.Max.Z - Position.Z) / Direction.Z;
 
 			//get the maximum maxT
-			if (maxT.X > maxT.Y && maxT.X > maxT.Z)
+			if (maxT.X >= maxT.Y && maxT.X >= maxT.Z)
 			{
 				if (maxT.X < 0.0f)
 					return null;// ray go on opposite of face
@@ -127,7 +127,7 @@ namespace Microsoft.Xna.Framework
 					return null;
 				return maxT.X;
 			}
-			if (maxT.Y > maxT.X && maxT.Y > maxT.Z)
+			if (maxT.Y >= maxT.X && maxT.Y >= maxT.Z)
 			{
 				if (maxT.Y < 0.0f)
 					return null;// ray go on opposite of face
