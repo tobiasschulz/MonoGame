@@ -507,7 +507,6 @@ namespace Microsoft.Xna.Framework
                 lock (Threading.BackgroundContext)
                 {
                     DoDraw(_gameTime);
-                    Platform.Present();
                 }
             }
         }
