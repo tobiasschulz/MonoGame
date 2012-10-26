@@ -463,7 +463,7 @@
   </Target>
   -->
   <ItemGroup>
-    <ProjectReference Include="..\..\NVorbis\Lib\NVorbis.csproj">
+    <ProjectReference Include="..\..\NVorbis\NVorbis\NVorbis.csproj">
       <Project>{A372E591-DFEF-49C4-9C82-98C4361EFCCD}</Project>
       <Name>NVorbis</Name>
     </ProjectReference>
