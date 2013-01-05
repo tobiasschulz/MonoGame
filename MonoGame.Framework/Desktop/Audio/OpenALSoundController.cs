@@ -167,6 +167,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
                 ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+                lock (filteredSources)
                 filteredSources.Add(sourceId);
             }
 
@@ -219,6 +220,7 @@ namespace Microsoft.Xna.Framework.Audio
 
             if (ALHelper.Efx.IsInitialized)
             {
+                lock (filteredSources)
                 filteredSources.Add(sourceId);
                 ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
                 ALHelper.Efx.BindFilterToSource(sourceId, filterId);
@@ -231,16 +233,19 @@ namespace Microsoft.Xna.Framework.Audio
         {
             if (!ALHelper.Efx.IsInitialized) return;
 
-            if (!filtered && filteredSources.Remove(sourceId))
+            lock (filteredSources)
             {
-                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
-                ALHelper.Efx.BindFilterToSource(sourceId, 0);
-            }
-            else if (filtered && !filteredSources.Contains(sourceId))
-            {
-                filteredSources.Add(sourceId);
-                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
-                ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+                if (!filtered && filteredSources.Remove(sourceId))
+                {
+                    ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
+                    ALHelper.Efx.BindFilterToSource(sourceId, 0);
+                }
+                else if (filtered && !filteredSources.Contains(sourceId))
+                {
+                    filteredSources.Add(sourceId);
+                    ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
+                    ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+                }
             }
         }
 
@@ -263,6 +268,7 @@ namespace Microsoft.Xna.Framework.Audio
             AL.Source(sourceId, ALSourcef.Gain, 1);
             AL.Source(sourceId, ALSourcei.Buffer, 0);
 
+            lock (filteredSources)
             if (ALHelper.Efx.IsInitialized && filteredSources.Remove(sourceId))
                 ALHelper.Efx.BindFilterToSource(sourceId, 0);
 
@@ -307,6 +313,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (ALHelper.Efx.IsInitialized)
                 {
+                    lock (filteredSources)
                     foreach (var s in filteredSources)
                     {
                         ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(value, 0, 1));
