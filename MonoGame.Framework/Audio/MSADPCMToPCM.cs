@@ -121,11 +121,12 @@ public class MSADPCMToPCM {
 		// We'll be using this to get each sample from the blocks.
 		byte[] nibbleBlock = new byte[2];
 
+		long fileLength = Source.BaseStream.Length - blockAlign;
+
 		// Mono or Stereo?
 		if (numChannels == 1) {
 			// Read to the end of the file.
-			long fileLength = blockAlign + Source.BaseStream.Length;
-			while (Source.BaseStream.Position >= fileLength) {
+			while (Source.BaseStream.Position <= fileLength) {
 				// Read block preamble
 				byte predictor = Source.ReadByte();
 				short delta = Source.ReadInt16();
@@ -155,8 +156,7 @@ public class MSADPCMToPCM {
 			}
 		} else if (numChannels == 2) {
 			// Read to the end of the file.
-			long fileLength = (blockAlign * 2) + Source.BaseStream.Length;
-			while (Source.BaseStream.Position >= fileLength) {
+			while (Source.BaseStream.Position <= fileLength) {
 				// Read block preamble
 				byte l_predictor = Source.ReadByte();
 				byte r_predictor = Source.ReadByte();
