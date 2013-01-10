@@ -175,8 +175,7 @@ public class MSADPCMToPCM {
 				pcmOut.Write(r_sample_1);
 
 				// Go through the bytes in this MSADPCM block.
-				// FIXME: WTF is the padding for blockAlign here?! -flibit
-				for (int bytes = 0; bytes < (blockAlign + 0); bytes++) {
+				for (int bytes = 0; bytes < ((blockAlign + 15) * 2); bytes++) {
 					// Each block carries one left/right sample.
 					getNibbleBlock(Source.ReadByte(), nibbleBlock);
 
