@@ -416,7 +416,7 @@ namespace Microsoft.Xna.Framework.Audio
                     BinaryReader source = new BinaryReader(dataStream);
                     sounds[current_entry] = new SoundEffect(
                         MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
-                        44100, // FIXME: Assuming 44.1KHz wavedata! -flibit
+                        rate,
                         (chans == 1) ? AudioChannels.Mono : AudioChannels.Stereo
                     ).CreateInstance();
                     source.Close();
