@@ -121,6 +121,7 @@ public class MSADPCMToPCM {
 		// We'll be using this to get each sample from the blocks.
 		byte[] nibbleBlock = new byte[2];
 
+		// Assuming the whole stream is what we want.
 		long fileLength = Source.BaseStream.Length - blockAlign;
 
 		// Mono or Stereo?
@@ -138,7 +139,7 @@ public class MSADPCMToPCM {
 				pcmOut.Write(sample_1);
 
 				// Go through the bytes in this MSADPCM block.
-				for (int bytes = 0; bytes < blockAlign; bytes++) {
+				for (int bytes = 0; bytes < (blockAlign + 15); bytes++) {
 					// Each sample is one half of a nibbleBlock.
 					getNibbleBlock(Source.ReadByte(), nibbleBlock);
 					for (int i = 0; i < 2; i++) {
@@ -174,7 +175,8 @@ public class MSADPCMToPCM {
 				pcmOut.Write(r_sample_1);
 
 				// Go through the bytes in this MSADPCM block.
-				for (int bytes = 0; bytes < blockAlign; bytes++) {
+				// FIXME: WTF is the padding for blockAlign here?! -flibit
+				for (int bytes = 0; bytes < (blockAlign + 0); bytes++) {
 					// Each block carries one left/right sample.
 					getNibbleBlock(Source.ReadByte(), nibbleBlock);
 
