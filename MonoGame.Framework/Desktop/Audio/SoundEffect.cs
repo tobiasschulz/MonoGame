@@ -112,12 +112,17 @@ namespace Microsoft.Xna.Framework.Audio
             //_sound = new Sound(_data, 1.0f, false);
             _data = LoadAudioStream(s, 1.0f, false);
 
+		}
+
+        internal SoundEffect(Stream s)
+        {
+            _data = LoadAudioStream(s, 1.0f, false);
         }
 
-        public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
-        {
-            //buffer should contain 16-bit PCM wave data
-            short bitsPerSample = 16;
+		public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
+		{
+			//buffer should contain 16-bit PCM wave data
+			short bitsPerSample = 16;
 
             using (MemoryStream mStream = new MemoryStream(44 + buffer.Length))
             {
@@ -153,8 +158,8 @@ namespace Microsoft.Xna.Framework.Audio
                     mStream.Close();
                 }
             }
-            //_sound = new Sound(_data, 1.0f, false);
-        }
+			//_sound = new Sound(_data, 1.0f, false);
+		}        
 
         byte[] LoadAudioStream(Stream s, float volume, bool looping)
         {
@@ -307,6 +312,11 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 speedOfSound = value;
             }
+        }
+
+        public static SoundEffect FromStream(Stream stream)
+        {
+            return new SoundEffect(stream);
         }
     }
 }
