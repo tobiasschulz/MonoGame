@@ -11,7 +11,7 @@ using MonoMac.OpenGL;
 using OpenTK.Graphics.OpenGL;
 #elif GLES
 using OpenTK.Graphics.ES20;
-#elif PSS
+#elif PSM
 using Sce.PlayStation.Core.Graphics;
 #endif
 
@@ -39,6 +39,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private int _program = -1;
         private int _location;
+
+        static ConstantBuffer _lastConstantBufferApplied = null;
 
         /// <summary>
         /// A hash value which can be used to compare constant buffers.
@@ -89,7 +91,8 @@ namespace Microsoft.Xna.Framework.Graphics
             desc.Usage = SharpDX.Direct3D11.ResourceUsage.Default;
             desc.BindFlags = SharpDX.Direct3D11.BindFlags.ConstantBuffer;
             desc.CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None;
-            _cbuffer = new SharpDX.Direct3D11.Buffer(GraphicsDevice._d3dDevice, desc);
+            lock (GraphicsDevice._d3dContext)
+                _cbuffer = new SharpDX.Direct3D11.Buffer(GraphicsDevice._d3dDevice, desc);
 
 #elif OPENGL 
 
@@ -124,7 +127,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 rows = Math.Min(registers, rows);
 
             // Take care of a single data type.
-            // (only if it's not wrapped inside an array)
             if (rows == 1 && columns == 1)
             {
                 // TODO: Consider storing all data in arrays to avoid
@@ -133,7 +135,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 if (data is float)
                     bytes = BitConverter.GetBytes((float)data);
-                else
+                else if (data is int)
+					// Integer values are treated as floats after the shader is converted, so we convert them.
+					bytes = BitConverter.GetBytes((float)((int)data));
+				else
                     bytes = BitConverter.GetBytes(((float[])data)[0]);
 
                 Buffer.BlockCopy(bytes, 0, _buffer, offset, elementSize);
@@ -160,17 +165,45 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        private void SetParameter(int offset, EffectParameter param)
+        private int SetParameter(int offset, EffectParameter param)
         {
-            if (param.ParameterType != EffectParameterType.Single)
-                throw new NotImplementedException("Not supported!");
+            const int elementSize = 4;
+            const int rowSize = elementSize * 4;
 
-            if (param.Data == null) return;
+            if (param.Data == null) return 0;
+
+            int rowsUsed = 0;
 
             if (param.Elements.Count > 0)
+            {
+                rowsUsed = param.RowCount * param.Elements.Count;
                 SetData(offset, param.RowCount * param.Elements.Count, param.ColumnCount, 0, param.Data);
+            }
             else
-                SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
+            {
+                switch (param.ParameterType)
+                {
+                    case EffectParameterType.Single:
+					case EffectParameterType.Int32:
+                        // HLSL assumes matrices are column-major, whereas in-memory we use row-major.
+                        // TODO: HLSL can be told to use row-major. We should handle that too.
+                        if (param.ParameterClass == EffectParameterClass.Matrix)
+                        {
+                            rowsUsed = param.ColumnCount;
+                            SetData(offset, param.ColumnCount, param.RowCount, param.RegisterCount, param.Data);
+                        }
+                        else
+                        {
+                            rowsUsed = param.RowCount;
+                            SetData(offset, param.RowCount, param.ColumnCount, param.RegisterCount, param.Data);
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException("Not supported!");
+                }
+            }
+
+            return rowsUsed;
         }
 
         public void Update(EffectParameterCollection parameters)
@@ -228,7 +261,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 d3dContext.PixelShader.SetConstantBuffer(slot, _cbuffer);
         }
 
-#elif OPENGL || PSS
+#elif OPENGL || PSM
 
         public unsafe void Apply(GraphicsDevice device, int program)
         {
@@ -250,12 +283,15 @@ namespace Microsoft.Xna.Framework.Graphics
                 _dirty = true;
             }
 
+            // If the shader program is the same, the effect may still be different and have different values in the buffer
+            if (!Object.ReferenceEquals(this, _lastConstantBufferApplied))
+                _dirty = true;
+
             // If the buffer content hasn't changed then we're
             // done... use the previously set uniform state.
-            // NOTE: Commented out as workaround for caching mismatch between
-            // OpenGL shader objects & constant buffers
-            //if (!_dirty)
-            //return;
+            // TODO : There used to be a problem with caching... still broken?
+            if (!_dirty)
+                return;
 
             fixed (byte* bytePtr = _buffer)
             {
@@ -269,9 +305,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Clear the dirty flag.
             _dirty = false;
+
+            _lastConstantBufferApplied = this;
 #endif
             
-#if PSS
+#if PSM
 #warning Unimplemented
 #endif
         }

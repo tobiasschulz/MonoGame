@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-#if IPHONE || WINDOWS || LINUX
+#if IOS || WINDOWS || LINUX
 using System.Threading;
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;

@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using MonoMac.OpenGL;
 #elif WINDOWS || LINUX
 using OpenTK.Graphics.OpenGL;
-#elif PSS
+#elif PSM
 using Sce.PlayStation.Core.Graphics;
 #elif WINRT
 
 #else
 using OpenTK.Graphics.ES20;
-#if IPHONE || ANDROID
+#if IOS || ANDROID
 using ActiveUniformType = OpenTK.Graphics.ES20.All;
 using ShaderType = OpenTK.Graphics.ES20.All;
 using ProgramParameter = OpenTK.Graphics.ES20.All;
@@ -91,18 +91,18 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
 
             GL.AttachShader(program, vertexShader.GetShaderHandle());
-            GraphicsExtensions.LogGLError("VertexShaderCache.Link(), GL.AttachShader");
+            GraphicsExtensions.CheckGLError();
 
             GL.AttachShader(program, pixelShader.GetShaderHandle());
-            GraphicsExtensions.LogGLError("VertexShaderCache.Link(), GL.AttachShader");
+            GraphicsExtensions.CheckGLError();
 
             //vertexShader.BindVertexAttributes(program);
 
             GL.LinkProgram(program);
-            GraphicsExtensions.LogGLError("VertexShaderCache.Link(), GL.LinkProgram");
+            GraphicsExtensions.CheckGLError();
 
             GL.UseProgram(program);
-            GraphicsExtensions.LogGLError("VertexShaderCache.Link(), GL.UseProgram");
+            GraphicsExtensions.CheckGLError();
 
             vertexShader.GetVertexAttributeLocations(program);
 

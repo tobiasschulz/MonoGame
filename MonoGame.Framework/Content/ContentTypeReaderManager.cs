@@ -108,6 +108,8 @@ namespace Microsoft.Xna.Framework.Content
                 var hArrayMatrixReader = new ArrayReader<Matrix>();
                 var hEnumBlendReader = new EnumReader<Graphics.Blend>();
                 var hNullableRectReader = new NullableReader<Rectangle>();
+				var hEffectMaterialReader = new EffectMaterialReader();
+				var hExternalReferenceReader = new ExternalReferenceReader();
             }
 #pragma warning restore 0219, 0649
 
@@ -132,7 +134,7 @@ namespace Microsoft.Xna.Framework.Content
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine(originalReaderTypeString);
+                    //System.Diagnostics.Debug.WriteLine(originalReaderTypeString);
 
     				// Need to resolve namespace differences
     				string readerTypeString = originalReaderTypeString;

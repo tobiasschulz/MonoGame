@@ -5,7 +5,7 @@ using System.Diagnostics;
 using MonoMac.OpenGL;
 #elif WINDOWS || LINUX
 using OpenTK.Graphics.OpenGL;
-#elif PSS
+#elif PSM
 using Sce.PlayStation.Core.Graphics;
 #elif GLES
 using OpenTK.Graphics.ES20;
@@ -171,7 +171,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 desc.IsDepthClipEnabled = true;
 
                 // Create the state.
-                _state = new SharpDX.Direct3D11.RasterizerState(GraphicsDevice._d3dDevice, ref desc);
+                _state = new SharpDX.Direct3D11.RasterizerState(GraphicsDevice._d3dDevice, desc);
             }
 
             Debug.Assert(GraphicsDevice == device, "The state was created for a different device!");
@@ -184,7 +184,7 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
 #endif // DIRECTX
-#if PSS
+#if PSM
         internal void ApplyState(GraphicsDevice device)
         {
             #warning Unimplemented

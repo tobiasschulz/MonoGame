@@ -134,32 +134,30 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #elif OPENGL
 
-		    Threading.BlockOnUIThread(() =>
-		    {
+			// TODO : Possible use Threading.BlockOnUIThread?
 #if GLES
-			    GL.GenRenderbuffers(1, ref glDepthStencilBuffer);
+			GL.GenRenderbuffers(1, ref glDepthStencilBuffer);
 #else
-		        GL.GenRenderbuffers(1, out glDepthStencilBuffer);
+			GL.GenRenderbuffers(1, out glDepthStencilBuffer);
 #endif
-                GraphicsExtensions.CheckGLError();
-		        GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this.glDepthStencilBuffer);
-		        GraphicsExtensions.CheckGLError();
-		        var glDepthStencilFormat = GLDepthComponent16;
-		        switch (preferredDepthFormat)
-		        {
-		        case DepthFormat.Depth16: glDepthStencilFormat = GLDepthComponent16; break;
-		        case DepthFormat.Depth24: glDepthStencilFormat = GLDepthComponent24; break;
-		        case DepthFormat.Depth24Stencil8: glDepthStencilFormat = GLDepth24Stencil8; break;
-		        }
-		        if (MultiSampleCount == 0)
-		            GL.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
-		        else
-		            GL.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, glDepthStencilFormat, this.width,
-		                                              this.height);
-		        GraphicsExtensions.CheckGLError();  
-		    });
+            GraphicsExtensions.CheckGLError();
+            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this.glDepthStencilBuffer);
+            GraphicsExtensions.CheckGLError();
+            var glDepthStencilFormat = GLDepthComponent16;
+			switch (preferredDepthFormat)
+			{
+			case DepthFormat.Depth16: glDepthStencilFormat = GLDepthComponent16; break;
+			case DepthFormat.Depth24: glDepthStencilFormat = GLDepthComponent24; break;
+			case DepthFormat.Depth24Stencil8: glDepthStencilFormat = GLDepth24Stencil8; break;
+			}
+		   	if (MultiSampleCount == 0)
+		    	GL.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
+		    else
+		    	GL.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, glDepthStencilFormat, this.width,
+		                                          this.height);
+            GraphicsExtensions.CheckGLError();
 #endif
-		}
+        }
 		
 		public RenderTarget2D(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat)
 			:this (graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, 0, RenderTargetUsage.DiscardContents) 
@@ -168,8 +166,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		public RenderTarget2D(GraphicsDevice graphicsDevice, int width, int height)
 			: this(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.DiscardContents) 
 		{}
-
-	    bool disposed;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -190,19 +186,19 @@ namespace Microsoft.Xna.Framework.Graphics
                     }
                 }
 #elif OPENGL
-                if ((GraphicsDevice != null) && !GraphicsDevice.IsDisposed)
+				if (GraphicsDevice != null && !GraphicsDevice.IsDisposed)
                 {
-                    GraphicsDevice.AddDisposeAction(() =>
-                        {
-                            GL.DeleteRenderbuffers(1, ref this.glDepthStencilBuffer);
-                            GraphicsExtensions.CheckGLError();
+                	GraphicsDevice.AddDisposeAction(() =>
+                    {
+                        GL.DeleteRenderbuffers(1, ref this.glDepthStencilBuffer);
+                        GraphicsExtensions.CheckGLError();
 
-                            if (this.glFramebuffer > 0)
-                            {
-                                GL.DeleteFramebuffers(1, ref this.glFramebuffer);
-                                GraphicsExtensions.CheckGLError();
-                            }
-                        });
+                        if (this.glFramebuffer > 0)
+                        {
+                            GL.DeleteFramebuffers(1, ref this.glFramebuffer);
+                            GraphicsExtensions.CheckGLError();
+                        }
+                    });
                 }
 #endif
             }

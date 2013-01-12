@@ -169,7 +169,8 @@ namespace Microsoft.Xna.Framework
             var winRect = new Rectangle(0, 0, winWidth, winHeight);
             
             // If window size is zero, leave bounds unchanged
-            if (winWidth == 0 || winHeight == 0)
+            // OpenTK appears to set the window client size to 1x1 when minimizing
+            if (winWidth <= 1 || winHeight <= 1)
                 return;
 
             //If we've already got a pending change, do nothing
@@ -217,7 +218,7 @@ namespace Microsoft.Xna.Framework
                     window.X = (primaryDisplay.Width - window.Width) / 2;
                     window.Y = (primaryDisplay.Height - window.Height) / 2;
                 }
-
+                
                 // if the window-state is set from the outside (maximized button pressed) we have to update it here.
                 // if it was set from the inside (.IsFullScreen changed), we have to change the window.
                 // this code might not cover all corner cases
@@ -253,7 +254,7 @@ namespace Microsoft.Xna.Framework
             // mouse doesn't need to be treated here, Mouse class does it alone
 
             // keyboard
-            Keyboard.State = new KeyboardState(keys.ToArray());
+            Keyboard.SetKeys(keys);
         }
 
         #endregion

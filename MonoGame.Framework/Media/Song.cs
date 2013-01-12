@@ -43,7 +43,7 @@ using System.IO;
 
 using Microsoft.Xna.Framework.Audio;
 
-#if IPHONE
+#if IOS
 using MonoTouch.Foundation;
 using MonoTouch.AVFoundation;
 #endif
@@ -52,9 +52,9 @@ namespace Microsoft.Xna.Framework.Media
 {
     public sealed class Song : IEquatable<Song>, IDisposable
     {
-#if IPHONE
+#if IOS
 		private AVAudioPlayer _sound;
-#elif PSS
+#elif PSM
         private PSSuiteSong _sound;
 #elif !WINRT
 		private SoundEffectInstance _sound;
@@ -68,11 +68,11 @@ namespace Microsoft.Xna.Framework.Media
 		{			
 			_name = fileName;
 			
-#if IPHONE
+#if IOS
 			_sound = AVAudioPlayer.FromUrl(NSUrl.FromFilename(fileName));
 			_sound.NumberOfLoops = 0;
             _sound.FinishedPlaying += OnFinishedPlaying;
-#elif PSS
+#elif PSM
             _sound = new PSSuiteSong(_name);
 #elif !WINRT       
             _sound = new SoundEffect(_name).CreateInstance();
@@ -104,7 +104,7 @@ namespace Microsoft.Xna.Framework.Media
                 {
                     if (_sound != null)
                     {
-#if IPHONE
+#if IOS
                        _sound.FinishedPlaying -= OnFinishedPlaying;
 #endif
                         _sound.Dispose();
@@ -192,7 +192,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (_sound == null)
 				return;			
-    #if IPHONE
+    #if IOS
 			_sound.Play();
     #else
 			_sound.Resume();

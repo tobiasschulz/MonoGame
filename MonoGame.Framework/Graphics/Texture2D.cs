@@ -39,7 +39,7 @@ purpose and non-infringement.
 #endregion License
 
 using System;
-#if !PSS
+#if !PSM
 using System.Drawing;
 #endif
 using System.IO;
@@ -49,7 +49,7 @@ using System.Runtime.InteropServices;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
-#elif IPHONE
+#elif IOS
 using MonoTouch.UIKit;
 using MonoTouch.CoreGraphics;
 using MonoTouch.Foundation;
@@ -62,7 +62,7 @@ using GLPixelFormat = MonoMac.OpenGL.PixelFormat;
 using System.Drawing.Imaging;
 using OpenTK.Graphics.OpenGL;
 using GLPixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
-#elif PSS
+#elif PSM
 using PssTexture2D = Sce.PlayStation.Core.Graphics.Texture2D;
 #elif GLES
 using OpenTK.Graphics.ES20;
@@ -72,15 +72,23 @@ using TextureParameterName = OpenTK.Graphics.ES20.All;
 using TextureMinFilter = OpenTK.Graphics.ES20.All;
 using PixelInternalFormat = OpenTK.Graphics.ES20.All;
 using PixelType = OpenTK.Graphics.ES20.All;
+using PixelStoreParameter = OpenTK.Graphics.ES20.All;
 using ErrorCode = OpenTK.Graphics.ES20.All;
+
 #endif
 
 using Microsoft.Xna.Framework.Content;
 using System.Diagnostics;
 
 #if WINRT
+#if WINDOWS_PHONE
+using System.Threading;
+using System.Windows;
+using System.Windows.Media.Imaging;
+#else
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Imaging;
+#endif
 using Windows.Storage.Streams;
 using System.Threading.Tasks;
 #endif
@@ -96,7 +104,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		protected int width;
 		protected int height;
 
-#if PSS
+#if PSM
 		internal PssTexture2D _texture2D;
 
 #elif OPENGL
@@ -160,7 +168,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             _texture = new SharpDX.Direct3D11.Texture2D(graphicsDevice._d3dDevice, desc);
 
-#elif PSS
+#elif PSM
 			_texture2D = new Sce.PlayStation.Core.Graphics.Texture2D(width, height, mipmap, PSSHelper.ToFormat(format));
 #else
 
@@ -207,7 +215,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 else
                 {
                     GL.TexImage2D(TextureTarget.Texture2D, 0,
-#if IPHONE || ANDROID
+#if IOS || ANDROID
                         (int)glInternalFormat,
 #else				           
 					    glInternalFormat,
@@ -224,7 +232,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
-#if PSS
+#if PSM
         private Texture2D(GraphicsDevice graphicsDevice, Stream stream)
         {
             byte[] bytes = new byte[stream.Length];
@@ -267,7 +275,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Threading.BlockOnUIThread(() =>
             {
 #endif
-#if !PSS
+#if !PSM
                 var elementSizeInByte = Marshal.SizeOf(typeof(T));
                 var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
                 var startBytes = startIndex * elementSizeInByte;
@@ -306,7 +314,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 lock (d3dContext)
                     d3dContext.UpdateSubresource(box, _texture, level, region);
 
-#elif PSS
+#elif PSM
                 _texture2D.SetPixels(level, data, _texture2D.Format, startIndex, 0, x, y, w, h);
 
 
@@ -341,6 +349,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
                 else
                 {
+                    // Set pixel alignment to match texel size in bytes
+                    GL.PixelStore(PixelStoreParameter.UnpackAlignment, GraphicsExtensions.Size(this.Format));
                     if (rect.HasValue)
                     {
                         GL.TexSubImage2D(TextureTarget.Texture2D, level,
@@ -359,7 +369,8 @@ namespace Microsoft.Xna.Framework.Graphics
                                   w, h, 0, glFormat, glType, dataPtr);
                         GraphicsExtensions.CheckGLError();
                     }
-
+                    // Return to default pixel alignment
+                    GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
                 }
 
 #if !ANDROID
@@ -372,7 +383,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #endif // OPENGL
 
-#if !PSS
+#if !PSM
                 dataHandle.Free();
 #endif
 
@@ -398,7 +409,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		
 		public void GetData<T>(int level, Rectangle? rect, T[] data, int startIndex, int elementCount) where T : struct
         {
-#if IPHONE 
+#if IOS 
 			throw new NotImplementedException();
 #elif ANDROID
 			if (data == null)
@@ -524,7 +535,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 throw new NotImplementedException("GetData not implemented for type.");
             }
-#elif PSS
+#elif PSM
             throw new NotImplementedException();
 #elif DIRECTX
 
@@ -567,17 +578,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
 
 #else
-		    Threading.BlockOnUIThread(() =>
-		    {
-		        GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+			// TODO : Possibly use Threading.BlockOnUIThread?
 
-		        if (rect.HasValue)
-		            throw new NotImplementedException();
-		        if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
-		            throw new NotImplementedException();
+			GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
 
-		        GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
-		    });
+			if (rect.HasValue) {
+				throw new NotImplementedException();
+			}
+
+			if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
+				throw new NotImplementedException();
+			} else {
+				GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
+			}
+
 #endif
         }
 
@@ -594,17 +608,17 @@ namespace Microsoft.Xna.Framework.Graphics
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
             //todo: partial classes would be cleaner
-#if IPHONE || MONOMAC
+#if IOS || MONOMAC
             
 
 
-#if IPHONE
+#if IOS
 			using (var uiImage = UIImage.LoadFromData(NSData.FromStream(stream)))
 #elif MONOMAC
 			using (var nsImage = NSImage.FromStream (stream))
 #endif
 			{
-#if IPHONE
+#if IOS
 				var cgImage = uiImage.CGImage;
 #elif MONOMAC
 				var cgImage = nsImage.AsCGImage (RectangleF.Empty, null, null);
@@ -631,49 +645,55 @@ namespace Microsoft.Xna.Framework.Graphics
 				return texture;
 			}
 #elif ANDROID
-            // Work-around for "The program 'Mono' has exited with code 255 (0xff)."
-			// Based on http://stackoverflow.com/questions/7535503/mono-for-android-exit-code-255-on-bitmapfactory-decodestream
-            //Bitmap image = BitmapFactory.DecodeStream(stream);
-			Bitmap image = null;
-			using (MemoryStream memStream = new MemoryStream())
-			{
-				stream.CopyTo(memStream);
-				image = BitmapFactory.DecodeByteArray(memStream.GetBuffer(), 0, (int)memStream.Length);
-			}
-            var width = image.Width;
-            var height = image.Height;
-
-            int[] pixels = new int[width * height];
-            if ((width != image.Width) || (height != image.Height))
+            using (Bitmap image = BitmapFactory.DecodeStream(stream, null, new BitmapFactory.Options
             {
-                Bitmap imagePadded = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
-                Canvas canvas = new Canvas(imagePadded);
-                canvas.DrawARGB(0, 0, 0, 0);
-                canvas.DrawBitmap(image, 0, 0, null);
-                imagePadded.GetPixels(pixels, 0, width, 0, 0, width, height);
+                InScaled = false,
+                InDither = false,
+                InJustDecodeBounds = false,
+                InPurgeable = true,
+                InInputShareable = true,
+            }))
+            {
+                var width = image.Width;
+                var height = image.Height;
+
+                int[] pixels = new int[width * height];
+                if ((width != image.Width) || (height != image.Height))
+                {
+                    using (Bitmap imagePadded = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888))
+                    {
+                        Canvas canvas = new Canvas(imagePadded);
+                        canvas.DrawARGB(0, 0, 0, 0);
+                        canvas.DrawBitmap(image, 0, 0, null);
+                        imagePadded.GetPixels(pixels, 0, width, 0, 0, width, height);
+                        imagePadded.Recycle();
+                    }
+                }
+                else
+                {
+                    image.GetPixels(pixels, 0, width, 0, 0, width, height);
+                }
+                image.Recycle();
+
+                // Convert from ARGB to ABGR
+                for (int i = 0; i < width * height; ++i)
+                {
+                    uint pixel = (uint)pixels[i];
+                    pixels[i] = (int)((pixel & 0xFF00FF00) | ((pixel & 0x00FF0000) >> 16) | ((pixel & 0x000000FF) << 16));
+                }
+
+                Texture2D texture = null;
+                Threading.BlockOnUIThread(() =>
+                {
+                    texture = new Texture2D(graphicsDevice, width, height, false, SurfaceFormat.Color);
+                    texture.SetData<int>(pixels);
+                });
+
+                return texture;
             }
-            else
-            {
-                image.GetPixels(pixels, 0, width, 0, 0, width, height);
-            }
 
-			// Convert from ARGB to ABGR
-			for (int i = 0; i < width * height; ++i)
-			{
-				uint pixel = (uint)pixels[i];
-				pixels[i] = (int)((pixel & 0xFF00FF00) | ((pixel & 0x00FF0000) >> 16) | ((pixel & 0x000000FF) << 16));
-			}
+#elif WINDOWS_STOREAPP
 
-            Texture2D texture = null;
-            Threading.BlockOnUIThread(() =>
-            {
-                texture = new Texture2D(graphicsDevice, width, height, false, SurfaceFormat.Color);
-                texture.SetData<int>(pixels);
-            });
-
-            return texture;
- 
-#elif WINRT
             // For reference this implementation was ultimately found through this post:
             // http://stackoverflow.com/questions/9602102/loading-textures-with-sharpdx-in-metro 
             Texture2D toReturn = null;
@@ -691,7 +711,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return toReturn;
 #elif DIRECTX
             throw new NotImplementedException(); 
-#elif PSS
+#elif PSM
             return new Texture2D(graphicsDevice, stream);
 #else
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
@@ -719,59 +739,72 @@ namespace Microsoft.Xna.Framework.Graphics
         private void FillTextureFromStream(Stream stream)
         {
 #if ANDROID
-            // Work-around for "The program 'Mono' has exited with code 255 (0xff)."
-            // Based on http://stackoverflow.com/questions/7535503/mono-for-android-exit-code-255-on-bitmapfactory-decodestream
-            //Bitmap image = BitmapFactory.DecodeStream(stream);
-            Bitmap image = null;
-            using (MemoryStream memStream = new MemoryStream())
+            using (Bitmap image = BitmapFactory.DecodeStream(stream, null, new BitmapFactory.Options
             {
-                stream.CopyTo(memStream);
-                image = BitmapFactory.DecodeByteArray(memStream.GetBuffer(), 0, (int)memStream.Length);
-            }
-            var width = image.Width;
-            var height = image.Height;
-
-            int[] pixels = new int[width * height];
-            image.GetPixels(pixels, 0, width, 0, 0, width, height);
-
-            // Convert from ARGB to ABGR
-            for (int i = 0; i < width * height; ++i)
+                InScaled = false,
+                InDither = false,
+                InJustDecodeBounds = false,
+                InPurgeable = true,
+                InInputShareable = true,
+            }))
             {
-                uint pixel = (uint)pixels[i];
-                pixels[i] = (int)((pixel & 0xFF00FF00) | ((pixel & 0x00FF0000) >> 16) | ((pixel & 0x000000FF) << 16));
+                var width = image.Width;
+                var height = image.Height;
+
+                int[] pixels = new int[width * height];
+                image.GetPixels(pixels, 0, width, 0, 0, width, height);
+
+                // Convert from ARGB to ABGR
+                for (int i = 0; i < width * height; ++i)
+                {
+                    uint pixel = (uint)pixels[i];
+                    pixels[i] = (int)((pixel & 0xFF00FF00) | ((pixel & 0x00FF0000) >> 16) | ((pixel & 0x000000FF) << 16));
+                }
+
+                this.SetData<int>(pixels);
+                image.Recycle();
             }
-            
-            this.SetData<int>(pixels);
 #endif
         }
 
         public void SaveAsJpeg(Stream stream, int width, int height)
         {
-#if WINRT
+#if WINDOWS_STOREAPP
             SaveAsImage(BitmapEncoder.JpegEncoderId, stream, width, height);
-#elif OPENGL
-            SaveAsImage(ImageFormat.Jpeg, stream, width, height);
+#elif WINDOWS_PHONE
+
+            var pixelData = new byte[Width * Height * GraphicsExtensions.Size(Format)];
+            GetData(pixelData);
+
+            var waitEvent = new ManualResetEventSlim(false);
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                var bitmap = new WriteableBitmap(width, height);
+                System.Buffer.BlockCopy(pixelData, 0, bitmap.Pixels, 0, pixelData.Length);
+                bitmap.SaveJpeg(stream, width, height, 0, 100);
+                waitEvent.Set();
+            });
+
+            waitEvent.Wait();
+
 #else
             throw new NotImplementedException();
 #endif
         }
 
-        public void SaveAsPng(Stream stream)
-        {
-            SaveAsPng(stream, width, height);
-        }
         public void SaveAsPng(Stream stream, int width, int height)
         {
-#if WINRT
+#if WINDOWS_STOREAPP
             SaveAsImage(BitmapEncoder.PngEncoderId, stream, width, height);
-#elif OPENGL
-            SaveAsImage(ImageFormat.Png, stream, width, height);
 #else
+            // TODO: We need to find a simple stand alone
+            // PNG encoder if we want to support this.
             throw new NotImplementedException();
 #endif
         }
 
-#if WINRT
+#if WINDOWS_STOREAPP
+
         private void SaveAsImage(Guid encoderId, Stream stream, int width, int height)
         {
             var pixelData = new byte[Width * Height * GraphicsExtensions.Size(Format)];
@@ -796,7 +829,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
             }).Wait();
         }
-		
 		
         public static SharpDX.Direct3D11.Texture2D CreateTex2DFromBitmap(SharpDX.WIC.BitmapSource bsource, GraphicsDevice device)
         {
@@ -855,8 +887,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			return fconv;
         }
 		
-		
-#elif OPENGL // WINRT
+#elif OPENGL 
         private void SaveAsImage(ImageFormat outputFormat, Stream stream, int width, int height)
         {
             var data = new byte[width * height * Format.Size()];
@@ -892,7 +923,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             if (this.glTexture < 0)
             {
-#if IPHONE || ANDROID
+#if IOS || ANDROID
                 GL.GenTextures(1, ref this.glTexture);
 #else
                 GL.GenTextures(1, out this.glTexture);
