@@ -145,6 +145,9 @@
     <Compile Include="..\..\Tools\2MGFX\ParseTree.cs">
       <Link>Processors\Effect\ParseTree.cs</Link>
     </Compile>
+    <Compile Include="..\..\Tools\2MGFX\ParseTreeTools.cs">
+      <Link>Processors\Effect\ParseTreeTools.cs</Link>
+    </Compile>
     <Compile Include="..\..\Tools\2MGFX\Scanner.cs">
       <Link>Processors\Effect\Scanner.cs</Link>
     </Compile>

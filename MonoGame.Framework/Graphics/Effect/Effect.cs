@@ -431,7 +431,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			return collection;
 		}
 
-		private static EffectParameterCollection ReadParameters(BinaryReader reader)
+		private EffectParameterCollection ReadParameters(BinaryReader reader)
 		{
 			var collection = new EffectParameterCollection();
 			var count = (int)reader.ReadByte();

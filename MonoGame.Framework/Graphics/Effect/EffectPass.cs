@@ -144,8 +144,8 @@ namespace Microsoft.Xna.Framework.Graphics
 					if (texture != null)
 					{
 						device.Textures[sampler.index] = texture;
-						if (sampler.state != null)
-							device.SamplerStates[sampler.index] = sampler.state;
+						//if (sampler.state != null)
+							//device.SamplerStates[sampler.index] = sampler.state;
 					}
                 }
                 
@@ -161,13 +161,15 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 
             // Set the render states if we have some.
+            /*
             if (_rasterizerState != null)
                 device.RasterizerState = _rasterizerState;
             if (_blendState != null)
                 device.BlendState = _blendState;
             if (_depthStencilState != null)
                 device.DepthStencilState = _depthStencilState;
-            
+            */
+
 #if PSM
             _effect.GraphicsDevice._graphics.SetShaderProgram(_shaderProgram);
 
