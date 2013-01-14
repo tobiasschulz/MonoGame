@@ -93,7 +93,7 @@ namespace Microsoft.Xna.Framework.Audio
         }
 
         //SoundEffect from playable audio data
-        internal SoundEffect(string name, byte[] data)
+        internal SoundEffect(string name, bool isAdpcm, byte[] data)
         {
             _data = data;
             _name = name;

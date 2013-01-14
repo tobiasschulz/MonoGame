@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,11 @@ namespace MonoGameContentProcessors.Processors
         public override SoundEffectContent Process(AudioContent input, ContentProcessorContext context)
         {
             // Fallback if we aren't buiding for iOS.
-            var platform = ContentHelper.GetMonoGamePlatform();
+            /*var platform = ContentHelper.GetMonoGamePlatform();
             if (platform != MonoGamePlatform.iOS)
-                return base.Process(input, context);
+                return base.Process(input, context);*/
 
+            bool useAdpcm = false;
             var targetSampleRate = input.Format.SampleRate;
 
             // XNA SoundEffects have their sample rate changed based on the quality setting on the processor.
@@ -29,13 +31,14 @@ namespace MonoGameContentProcessors.Processors
             switch(this.Quality)
             {
                 case ConversionQuality.Best:
-                    break;
+                    return base.Process(input, context);
 
                 case ConversionQuality.Medium:
-                    targetSampleRate = (int)(targetSampleRate * 0.75f);
+                    useAdpcm = true;
                     break;
 
                 case ConversionQuality.Low:
+                    useAdpcm = true;
                     targetSampleRate = (int)(targetSampleRate * 0.5f);
                     break;
             }
@@ -43,8 +46,22 @@ namespace MonoGameContentProcessors.Processors
             targetSampleRate = Math.Max(8000, targetSampleRate);
 
             var wavStream = new MemoryStream();
-            WaveFormat outputFormat = AudioConverter.ConvertFile(input.FileName, wavStream, AudioFileType.Wav, targetSampleRate, 
-                                                                 input.Format.BitsPerSample, input.Format.ChannelCount);
+            WaveFormat outputFormat;
+            try
+            {
+                outputFormat = useAdpcm
+                                   ? AudioConverter.ToImaAdpcm(input.FileName, wavStream, targetSampleRate,
+                                                            input.Format.ChannelCount)
+                                   : AudioConverter.ConvertFile(input.FileName, wavStream, AudioFileType.Wav,
+                                                                targetSampleRate,
+                                                                input.Format.BitsPerSample,
+                                                                input.Format.ChannelCount);
+            }
+            catch (Exception ex)
+            {
+                Quality = ConversionQuality.Best;
+                return base.Process(input, context);
+            }
 
             var outputData = new ReadOnlyCollection<byte>(wavStream.ToArray());
             wavStream.Close();
@@ -64,7 +81,9 @@ namespace MonoGameContentProcessors.Processors
         {
             using (var writer = new BinaryWriter(new MemoryStream()))
             {
-                writer.Write((short)1);
+                bool isAdpcm = header is AdpcmWaveFormat || header is ImaAdpcmWaveFormat;
+
+                writer.Write((short)(isAdpcm ? 2 : 1));
                 writer.Write((short)header.Channels);
                 writer.Write(header.SampleRate);
                 writer.Write(header.AverageBytesPerSecond);

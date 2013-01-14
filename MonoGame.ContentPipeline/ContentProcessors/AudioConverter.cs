@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.IO;
 //using Yeti.MMedia;
@@ -92,6 +94,41 @@ namespace MonoGameContentProcessors
             }
 
             return null;
+        }
+
+        public static WaveFormat ToImaAdpcm(string pathToWav, Stream outputStream, int sampleRate, int numChannels)
+        {
+            using (var reader = new WaveFileReader(pathToWav))
+            {
+                var targetFormat = new ImaAdpcmWaveFormatImpl(sampleRate, numChannels, 4);
+                var pcmStream = new WaveFormatConversionStream(targetFormat, reader);
+                var buffer = new byte[pcmStream.Length];
+                pcmStream.Read(buffer, 0, (int)pcmStream.Length);
+
+                outputStream.Write(buffer, 0, buffer.Length);
+                outputStream.Position = 0;
+
+                pcmStream.Close();
+
+                return targetFormat;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 2)]
+        public class ImaAdpcmWaveFormatImpl : ImaAdpcmWaveFormat
+        {
+            public ImaAdpcmWaveFormatImpl(int sampleRate, int channels, int bitsPerSample) : 
+                base(sampleRate, channels, bitsPerSample)
+            {
+                this.waveFormatTag = WaveFormatEncoding.ImaAdpcm;
+                this.sampleRate = sampleRate;
+                this.channels = (short)channels;
+                this.bitsPerSample = (short)bitsPerSample;
+                this.extraSize = 2;     
+                this.blockAlign = (short)(36 * channels);
+                this.averageBytesPerSecond = (sampleRate * channels * bitsPerSample) / 8;
+                typeof(ImaAdpcmWaveFormat).GetField("samplesPerBlock", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, (short)(65));
+            }
         }
 
         private static void wavToMp3(string pathToFile, Stream outputStream, int sampleRate, int bitDepth, int numChannels)

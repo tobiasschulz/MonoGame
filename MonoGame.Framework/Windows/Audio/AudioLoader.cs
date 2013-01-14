@@ -10,13 +10,18 @@ namespace Microsoft.Xna.Framework.Audio
         {
         }
 
-        private static ALFormat GetSoundFormat(int channels, int bits)
+        private static ALFormat GetSoundFormat(int channels, int bits, bool adpcm)
         {
             switch (channels)
             {
-                case 1: return bits == 8 ? OpenTK.Audio.OpenAL.ALFormat.Mono8 : OpenTK.Audio.OpenAL.ALFormat.Mono16;
-                case 2: return bits == 8 ? OpenTK.Audio.OpenAL.ALFormat.Stereo8 : OpenTK.Audio.OpenAL.ALFormat.Stereo16;
-                default: throw new NotSupportedException("The specified sound format is not supported.");
+                case 1:
+                    if (adpcm) return ALFormat.MonoIma4Ext;
+                    return bits == 8 ? ALFormat.Mono8 : ALFormat.Mono16;
+                case 2:
+                    if (adpcm) return ALFormat.StereoIma4Ext;
+                    return bits == 8 ? ALFormat.Stereo8 : ALFormat.Stereo16;
+                default: 
+                    throw new NotSupportedException("The specified sound format is not supported.");
             }
         }
 
@@ -73,12 +78,12 @@ namespace Microsoft.Xna.Framework.Audio
             int format_chunk_size = reader.ReadInt32();
 
             // total bytes read: tbp
-            int audio_format = reader.ReadInt16(); // 2
-            int num_channels = reader.ReadInt16(); // 4
-            int sample_rate = reader.ReadInt32();  // 8
-            int byte_rate = reader.ReadInt32();    // 12
-            int block_align = reader.ReadInt16();  // 14
-            int bits_per_sample = reader.ReadInt16(); // 16
+            int audio_format = reader.ReadUInt16(); // 2
+            int num_channels = reader.ReadUInt16(); // 4
+            int sample_rate = (int)reader.ReadUInt32();  // 8
+            int byte_rate = (int)reader.ReadUInt32();    // 12
+            int block_align = reader.ReadUInt16();  // 14
+            int bits_per_sample = reader.ReadUInt16(); // 16
 
             // reads residual bytes
             if (format_chunk_size > 16)
@@ -98,18 +103,19 @@ namespace Microsoft.Xna.Framework.Audio
             int data_chunk_size = reader.ReadInt32();
 
             frequency = sample_rate;
-            format = GetSoundFormat(num_channels, bits_per_sample);
+            format = GetSoundFormat(num_channels, bits_per_sample, audio_format == 2);
             audioData = reader.ReadBytes((int)reader.BaseStream.Length);
-            size = data_chunk_size;
 
 
             // WAV compression is not supported. Warn our user and 
             // Set size to 0 So that nothing is played.
-            if (audio_format != 1)
+            /*if (audio_format != 1)
             {
                 Console.WriteLine("Wave compression is not supported.");
                 size = 0;
-            }
+            }*/
+
+            size = (data_chunk_size / block_align) * block_align;
 
             return audioData;
         }

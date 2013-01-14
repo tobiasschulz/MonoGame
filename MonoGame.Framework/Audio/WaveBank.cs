@@ -358,7 +358,7 @@ namespace Microsoft.Xna.Framework.Audio
                     writer.Close();
                     mStream.Close();
                     
-                    sounds[current_entry] = new SoundEffect(null, mStream.ToArray()).CreateInstance();
+                    sounds[current_entry] = new SoundEffect(null, false, mStream.ToArray()).CreateInstance();
                     
                 } else if (codec == MiniForamtTag_WMA) { //WMA or xWMA (or XMA2)
                     byte[] wmaSig = {0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x0, 0xaa, 0x0, 0x62, 0xce, 0x6c};

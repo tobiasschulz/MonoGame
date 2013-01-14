@@ -114,7 +114,15 @@ namespace Microsoft.Xna.Framework.Content
                 Name = input.AssetName,
             };
 #else
-            byte[] soundData = null;
+            var count = data.Length;
+            var format = (int)BitConverter.ToUInt16(header, 0);
+            var sampleRate = (int)BitConverter.ToUInt16(header, 4);
+            var channels = BitConverter.ToUInt16(header, 2);
+            //var avgBPS = (int)BitConverter.ToUInt16(header, 8);
+            var blockAlignment = (int)BitConverter.ToUInt16(header, 12);
+            //var bps = (int)BitConverter.ToUInt16(header, 14);
+
+            byte[] soundData;
             // Proper use of "using" corectly disposes of BinaryWriter which in turn disposes the underlying stream
             MemoryStream mStream = new MemoryStream(20 + header.Length + 8 + data.Length);
             using (BinaryWriter writer = new BinaryWriter(mStream))
@@ -137,7 +145,7 @@ namespace Microsoft.Xna.Framework.Content
             }
             if (soundData == null)
                 throw new ContentLoadException("Failed to load SoundEffect");
-			return new SoundEffect(input.AssetName, soundData);
+			return new SoundEffect(input.AssetName, format == 1, soundData);
 #endif
 		}
 	}
