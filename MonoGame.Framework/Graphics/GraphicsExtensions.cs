@@ -30,6 +30,96 @@ namespace Microsoft.Xna.Framework.Graphics
     public static class GraphicsExtensions
     {
 #if !WINRT && !PSM
+        public static bool UseArbFramebuffer;
+
+        public static bool IsRenderbuffer(uint renderbuffer)
+        {
+            return UseArbFramebuffer ? GL.IsRenderbuffer(renderbuffer) : GL.Ext.IsRenderbuffer(renderbuffer);
+        }
+        public static void BindRenderbuffer(RenderbufferTarget target, uint renderbuffer)
+        {
+            if (UseArbFramebuffer)  GL.BindRenderbuffer(target, renderbuffer);
+            else                    GL.Ext.BindRenderbuffer(target, renderbuffer);
+        }
+        public static void DeleteRenderbuffers(int n, ref uint renderbuffers)
+        {
+            if (UseArbFramebuffer)  GL.DeleteRenderbuffers(n, ref renderbuffers);
+            else                    GL.Ext.DeleteRenderbuffers(n, ref renderbuffers);
+        }
+        public static void GenRenderbuffers(int n, out uint renderbuffers)
+        {
+            if (UseArbFramebuffer)  GL.GenRenderbuffers(n, out renderbuffers);
+            else                    GL.Ext.GenRenderbuffers(n, out renderbuffers);
+        }
+        public static void RenderbufferStorage(RenderbufferTarget target, RenderbufferStorage internalformat, int width, int height)
+        {
+            if (UseArbFramebuffer)  GL.RenderbufferStorage(target, internalformat, width, height);
+            else                    GL.Ext.RenderbufferStorage(target, internalformat, width, height);
+        }
+        public static void RenderbufferStorageMultisample(RenderbufferTarget target, int samples, RenderbufferStorage internalformat, int width, int height)
+        {
+            if (UseArbFramebuffer)  GL.RenderbufferStorageMultisample(target, samples, internalformat, width, height);
+            else                    GL.Ext.RenderbufferStorageMultisample((ExtFramebufferMultisample)target, samples, (ExtFramebufferMultisample)internalformat, width, height);
+        }
+        public static void GetRenderbufferParameter(RenderbufferTarget target, RenderbufferParameterName pname, RenderbufferStorage internalformat, out int @params)
+        {
+            if (UseArbFramebuffer)  GL.GetRenderbufferParameter(target, pname, out @params);
+            else                    GL.Ext.GetRenderbufferParameter(target, pname, out @params);
+        }
+        public static bool IsFramebuffer(uint framebuffer)
+        {
+            return UseArbFramebuffer ? GL.IsFramebuffer(framebuffer) : GL.Ext.IsFramebuffer(framebuffer);
+        }
+        public static void BindFramebuffer(FramebufferTarget target, uint framebuffer)
+        {
+            if (UseArbFramebuffer)  GL.BindFramebuffer(target, framebuffer);
+            else                    GL.Ext.BindFramebuffer(target, framebuffer);
+        }
+        public static void BindFramebuffer(FramebufferTarget target, int framebuffer)
+        {
+            if (UseArbFramebuffer)  GL.BindFramebuffer(target, framebuffer);
+            else                    GL.Ext.BindFramebuffer(target, framebuffer);
+        }
+        public static void DeleteFramebuffers(int n, ref uint framebuffers)
+        {
+            if (UseArbFramebuffer)  GL.DeleteFramebuffers(n, ref framebuffers);
+            else                    GL.Ext.DeleteFramebuffers(n, ref framebuffers);
+        }
+        public static void GenFramebuffers(int n, out uint framebuffers)
+        {
+            if (UseArbFramebuffer)  GL.GenFramebuffers(n, out framebuffers);
+            else                    GL.Ext.GenFramebuffers(n, out framebuffers);
+        }
+        public static FramebufferErrorCode CheckFramebufferStatus(FramebufferTarget target)
+        {
+            return UseArbFramebuffer ? GL.CheckFramebufferStatus(target) : GL.Ext.CheckFramebufferStatus(target);
+        }
+        public static void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, uint texture, int level)
+        {
+            if (UseArbFramebuffer)  GL.FramebufferTexture2D(target, attachment, textarget, texture, level);
+            else                    GL.Ext.FramebufferTexture2D(target, attachment, textarget, texture, level);
+        }
+        public static void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, int texture, int level)
+        {
+            if (UseArbFramebuffer)  GL.FramebufferTexture2D(target, attachment, textarget, texture, level);
+            else                    GL.Ext.FramebufferTexture2D(target, attachment, textarget, texture, level);
+        }
+        public static void FramebufferRenderbuffer(FramebufferTarget target, FramebufferAttachment attachment, RenderbufferTarget renderbuffertarget, uint renderbuffer)
+        {
+            if (UseArbFramebuffer)  GL.FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+            else                    GL.Ext.FramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+        }
+        public static void GetFramebufferAttachmentParameter(FramebufferTarget target, FramebufferAttachment attachment, FramebufferParameterName pname, out int @params)
+        {
+            if (UseArbFramebuffer)  GL.GetFramebufferAttachmentParameter(target, attachment, pname, out @params);
+            else                    GL.Ext.GetFramebufferAttachmentParameter(target, attachment, pname, out @params);
+        }
+        public static void GenerateMipmap(GenerateMipmapTarget target)
+        {
+            if (UseArbFramebuffer)  GL.GenerateMipmap(target);
+            else                    GL.Ext.GenerateMipmap(target);
+        }
+
         public static All OpenGL11(CullMode cull)
         {
             switch (cull)
@@ -610,7 +700,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return prevTexture;
         }
 
-        [System.Diagnostics.Conditional("DEBUG")]
+        //[System.Diagnostics.Conditional("DEBUG")]
         public static void CheckGLError()
         {
 #if GLES

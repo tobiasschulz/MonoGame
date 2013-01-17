@@ -350,6 +350,11 @@ namespace Microsoft.Xna.Framework.Graphics
             var extstring = GL.GetString(StringName.Extensions);	
 #endif
             GraphicsExtensions.CheckGLError();
+
+            GraphicsExtensions.UseArbFramebuffer = extstring.Contains("GL_ARB_framebuffer_object");
+            if (!GraphicsExtensions.UseArbFramebuffer && !extstring.Contains("GL_EXT_framebuffer_object"))
+                throw new InvalidOperationException("Framebuffers are not supported by the current OpenGL driver, please update your drivers and try again!"); 
+
             if (!string.IsNullOrEmpty(extstring))
             {
                 _extensions.AddRange(extstring.Split(' '));
@@ -1311,7 +1316,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 lock (_d3dContext) 
                     _d3dContext.OutputMerger.SetTargets(_currentDepthStencilView, _currentRenderTargets);                
 #elif OPENGL
-				GL.BindFramebuffer(GLFramebuffer, this.glFramebuffer);
+                GraphicsExtensions.BindFramebuffer(GLFramebuffer, this.glFramebuffer);
                 GraphicsExtensions.CheckGLError();
 #endif
 
@@ -1353,7 +1358,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #if GLES
 					GL.GenFramebuffers(1, ref renderTarget.glFramebuffer);
 #else
-					GL.GenFramebuffers(1, out renderTarget.glFramebuffer);
+                    GraphicsExtensions.GenFramebuffers(1, out renderTarget.glFramebuffer);
 #endif
                     GraphicsExtensions.CheckGLError();
                 }
@@ -1361,22 +1366,22 @@ namespace Microsoft.Xna.Framework.Graphics
                 // TODO : This prevented the "incomplete" bug but doesn't solve the visual glitch
                 Threading.BlockOnUIThread(() =>
                 {
-				    GL.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
+                    GraphicsExtensions.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
                     GraphicsExtensions.CheckGLError();
-                    GL.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
+                    GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
                     GraphicsExtensions.CheckGLError();
                     if (renderTarget.DepthStencilFormat != DepthFormat.None)
 				    {
-					    GL.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+                        GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
                         GraphicsExtensions.CheckGLError();
                         if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
 					    {
-						    GL.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+                            GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
                             GraphicsExtensions.CheckGLError();
                         }
 				    }
 
-				    var status = GL.CheckFramebufferStatus(GLFramebuffer);
+				    var status = GraphicsExtensions.CheckFramebufferStatus(GLFramebuffer);
 				    if (status != GLFramebufferComplete)
 				    {
 					    string message = "Framebuffer Incomplete.";
