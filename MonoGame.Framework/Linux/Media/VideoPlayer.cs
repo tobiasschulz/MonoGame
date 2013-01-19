@@ -15,26 +15,14 @@ namespace Microsoft.Xna.Framework.Media
         #region Public Member Data: XNA VideoPlayer Implementation
         public bool IsDisposed
         {
-            get
-            {
-                return IsDisposed;
-            }
-            private set
-            {
-                IsDisposed = value;
-            }
+            get;
+            private set;
         }
         
         public bool IsLooped
         {
-            get
-            {
-                return IsLooped;
-            }
-            set
-            {
-                IsLooped = value;
-            }
+            get;
+            set;
         }
         
         public bool IsMuted
@@ -60,26 +48,14 @@ namespace Microsoft.Xna.Framework.Media
         
         public MediaState State
         {
-            get
-            {
-                return State;
-            }
-            private set
-            {
-                State = value;
-            }
+            get;
+            private set;
         }
         
         public Video Video
         {
-            get
-            {
-                return Video;
-            }
-            private set
-            {
-                Video = value;
-            }
+            get;
+            private set;
         }
         
         public float Volume
@@ -327,10 +303,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Force stop the OpenAL source.
             AL.SourceStop(audioSourceIndex);
-            
-            // Reset the current A/V data to the start.
-            currentVideo = getVideoFrame(videoStream);
-            currentAudio = getAudioPacket(audioStream);
             
             // Stop and unassign the decoder.
             if (theoraDecoder != IntPtr.Zero)
