@@ -85,10 +85,10 @@ namespace Microsoft.Xna.Framework.Media
         
         #region Private Member Data: XNA VideoPlayer Implementation
         // We use this to update our PlayPosition.
-        Stopwatch timer;
+        private Stopwatch timer;
         
         // Thread containing our video player.
-        Thread playerThread;
+        private Thread playerThread;
         #endregion
         
         #region Private Member Data: TheoraPlay
