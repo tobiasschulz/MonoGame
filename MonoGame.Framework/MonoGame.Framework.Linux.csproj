@@ -43,6 +43,9 @@
     <Reference Include="OpenTK">
       <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="TheoraPlay">
+      <HintPath>..\ThirdParty\Libs\TheoraPlay.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
