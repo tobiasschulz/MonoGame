@@ -356,7 +356,7 @@ namespace Microsoft.Xna.Framework.Media
                 audioStream = IntPtr.Zero;
             }
             
-            // We're not any video anymore.
+            // We're not playing any video anymore.
             Video = null;
         }
         
@@ -404,7 +404,7 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region The Theora video player thread
-        public void RunVideo()
+        private void RunVideo()
         {
             timer.Start();
             
