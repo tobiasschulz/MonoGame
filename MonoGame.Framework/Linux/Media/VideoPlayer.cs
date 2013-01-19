@@ -25,15 +25,16 @@ namespace Microsoft.Xna.Framework.Media
             set;
         }
         
+        private bool backing_ismuted;
         public bool IsMuted
         {
             get
             {
-                return IsMuted;
+                return backing_ismuted;
             }
             set
             {
-                IsMuted = value;
+                backing_ismuted = value;
                 UpdateVolume();
             }
         }
@@ -58,25 +59,26 @@ namespace Microsoft.Xna.Framework.Media
             private set;
         }
         
+        private float backing_volume;
         public float Volume
         {
             get
             {
-                return Volume;
+                return backing_volume;
             }
             set
             {
                 if (value > 1.0f)
                 {
-                    Volume = 1.0f;
+                    backing_volume = 1.0f;
                 }
                 else if (value < 0.0f)
                 {
-                    Volume = 0.0f;
+                    backing_volume = 0.0f;
                 }
                 else
                 {
-                    Volume = value;
+                    backing_volume = value;
                 }
                 UpdateVolume();
             }
@@ -168,18 +170,18 @@ namespace Microsoft.Xna.Framework.Media
             videoStream = IntPtr.Zero;
             audioStream = IntPtr.Zero;
             
-            // Initialize the OpenAL source
+            // Initialize the OpenAL source.
             audioBufferIndex = AL.GenBuffer();
             audioSourceIndex = AL.GenSource();
             
-            // Initialize public members
+            // Initialize public members.
             IsDisposed = false;
             IsLooped = false;
             IsMuted = false;
             State = MediaState.Stopped;
             Volume = 1.0f;
             
-            // Initialize private members
+            // Initialize private members.
             timer = new Stopwatch();
             playerThread = new Thread(new ThreadStart(this.RunVideo));
         }
