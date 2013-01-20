@@ -2,6 +2,7 @@
 // TODO: IsLooped usage
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using OpenTK.Audio.OpenAL;
@@ -102,7 +103,7 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region Private Member Data: OpenAL
-        private int audioBufferIndex;
+        private List<int> audioBuffers;
         private int audioSourceIndex;
         #endregion
         
@@ -169,10 +170,9 @@ namespace Microsoft.Xna.Framework.Media
             videoStream = IntPtr.Zero;
             audioStream = IntPtr.Zero;
             
-            // Initialize the OpenAL source.
-            audioBufferIndex = AL.GenBuffer();
+            // Initialize the OpenAL source and buffer list.
+            audioBuffers = new List<int>();
             audioSourceIndex = AL.GenSource();
-            AL.Source(audioSourceIndex, ALSourcei.Buffer, audioBufferIndex);
             
             // Initialize public members.
             IsDisposed = false;
@@ -191,9 +191,8 @@ namespace Microsoft.Xna.Framework.Media
             // Stop the VideoPlayer. This gets almost everything...
             Stop();
             
-            // Get rid of the OpenAL data.
+            // Get rid of the OpenAL source.
             AL.DeleteSource(audioSourceIndex);
-            AL.DeleteBuffer(audioBufferIndex);
             
             // Okay, we out.
             IsDisposed = true;
@@ -307,6 +306,9 @@ namespace Microsoft.Xna.Framework.Media
             if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
             {
                 AL.SourceStop(audioSourceIndex);
+                AL.SourceRewind(audioSourceIndex);
+                AL.DeleteBuffers(audioBuffers.ToArray());
+                audioBuffers.Clear();
             }
             
             // Stop and unassign the decoder.
@@ -393,6 +395,27 @@ namespace Microsoft.Xna.Framework.Media
             
             while (State != MediaState.Stopped)
             {
+                // Regardless of the player state, we should buffer as much audio as possible.
+                if (audioStream != IntPtr.Zero)
+                {
+                    // Buffer...
+                    audioBuffers.Add(AL.GenBuffer());
+                    AL.BufferData(
+                        audioBuffers[audioBuffers.Count - 1],
+                        (currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
+                        currentAudio.samples,
+                        currentAudio.frames * currentAudio.channels,
+                        currentAudio.freq
+                    );
+                    
+                    // Queue...
+                    AL.SourceQueueBuffer(audioSourceIndex, audioBuffers[audioBuffers.Count - 1]);
+                    
+                    // ... Then step.
+                    currentAudio = getAudioPacket(currentAudio.next);
+                }
+                
+                // Sleep when paused, update the video state when playing.
                 if (State == MediaState.Paused)
                 {
                     // Arbitrarily 1 frame in a 30fps movie.
@@ -403,23 +426,11 @@ namespace Microsoft.Xna.Framework.Media
                     // Get the next audio packet from the decoder, if a stream exists.
                     if (audioStream != IntPtr.Zero)
                     {
-                        // Just buffer it as soon as possible.
-                        // FIXME: Assuming 16-bit audio!!!
-                        AL.BufferData(
-                            audioBufferIndex,
-                            (currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
-                            currentAudio.samples,
-                            currentAudio.frames * currentAudio.channels,
-                            currentAudio.freq
-                        );
-                        
+                        // If we're getting here, we should be playing the audio...
                         if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Playing)
                         {
                             AL.SourcePlay(audioSourceIndex);
                         }
-                        
-                        // Step at the end.
-                        currentAudio = getAudioPacket(currentAudio.next);
                     }
                     
                     // Get the next video from from the decoder, if a stream exists.
