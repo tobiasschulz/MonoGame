@@ -213,36 +213,60 @@ namespace Microsoft.Xna.Framework.Media
             // Assign this locally, or else the thread will ruin your face.
             TheoraPlay.THEORAPLAY_VideoFrame currentFrame = currentVideo;
             
+            
+            // FIXME: The rest of this method kind of hurts.
+            
             // Create the Texture2D.
-            // FIXME: Can I have, like, a BGR4 texture instead?
             Texture2D currentTexture = new Texture2D(
                 null, // FIXME: How do we even get the device?!
                 (int) currentFrame.width,
                 (int) currentFrame.height,
                 false,
-                SurfaceFormat.Bgra4444
+                SurfaceFormat.Color
             );
             
             // Create the texture data from the Theora image data.
-            // FIXME: This kind of hurts.
             // FIXME: ASSUMING IYUV!!!
             byte[] theoraPixels = getPixels(
                 currentFrame.pixels,
                 (int) currentFrame.width * (int) currentFrame.height * 12 / 8
             );
-            byte[] pixelBGRA = new byte[theoraPixels.Length / 3 * 4];
-            for (int i = 0, j = 0; i < theoraPixels.Length; i += 3, j += 4)
+            byte[] pixelBGRA = new byte[(int) currentFrame.width * (int) currentFrame.height * 4];
+            for (int i = 0, j = 0; i < theoraPixels.Length; i += 3, j += 8)
             {
                 // The IYUV -> BGR formula. Thanks, Google!
-                int B = (int) (theoraPixels[i] + (1.732446 * (theoraPixels[i + 1] - 128)));
-                int G = (int) (theoraPixels[i] + (0.698001 * (theoraPixels[i + 2] - 128)) - (0.337633 * (theoraPixels[i + 1] - 128)));
-                int R = (int) (theoraPixels[i] + (1.370705 * (theoraPixels[i + 2] - 128)));
+                
+                // YUV is within 12 bits.
+                int Y = theoraPixels[i] >> 4;
+                int U = theoraPixels[i] & 0xF;
+                int V = theoraPixels[i + 1] >> 4;
+                
+                // The actual conversion from YUV to RGB.
+                int R = (int) (Y + (1.370705 * (V - 128)));
+                int G = (int) (Y + (0.698001 * (V - 128)) - (0.337633 * (U - 128)));
+                int B = (int) (Y + (1.732446 * (U - 128)));
                 
                 // Clamp values to 0-255, and set the alpha to max value.
-                pixelBGRA[j] = (byte) ((B < 0) ? 0 : ((B > 256) ? 256 : B));
+                pixelBGRA[j] = (byte) ((R < 0) ? 0 : ((R > 256) ? 256 : R));
                 pixelBGRA[j + 1] = (byte) ((G < 0) ? 0 : ((G > 256) ? 256 : G));
-                pixelBGRA[j + 2] = (byte) ((R < 0) ? 0 : ((R > 256) ? 256 : R));
+                pixelBGRA[j + 2] = (byte) ((B < 0) ? 0 : ((B > 256) ? 256 : B));
                 pixelBGRA[j + 3] = (byte) (255);
+                
+                // 12 + 12 = 24, conveniently 3 full bytes!
+                Y = theoraPixels[i + 1] & 0xF;
+                U = theoraPixels[i + 2] >> 4;
+                V = theoraPixels[i + 2] & 0xF;
+                
+                // Convert again...
+                R = (int) (Y + (1.370705 * (V - 128)));
+                G = (int) (Y + (0.698001 * (V - 128)) - (0.337633 * (U - 128)));
+                B = (int) (Y + (1.732446 * (U - 128)));
+                
+                // Clamp values to 0-255, and set the alpha to max value.
+                pixelBGRA[j + 4] = (byte) ((R < 0) ? 0 : ((R > 256) ? 256 : R));
+                pixelBGRA[j + 5] = (byte) ((G < 0) ? 0 : ((G > 256) ? 256 : G));
+                pixelBGRA[j + 6] = (byte) ((B < 0) ? 0 : ((B > 256) ? 256 : B));
+                pixelBGRA[j + 7] = (byte) (255);
             }
             
             // TexImage2D.
@@ -442,10 +466,9 @@ namespace Microsoft.Xna.Framework.Media
                 }
                 else
                 {
-                    // Get the next audio packet from the decoder, if a stream exists.
+                    // If we're getting here, we should be playing the audio...
                     if (audioStream != IntPtr.Zero)
                     {
-                        // If we're getting here, we should be playing the audio...
                         if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Playing)
                         {
                             AL.SourcePlay(audioSourceIndex);
