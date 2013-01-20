@@ -1,4 +1,3 @@
-// TODO: Actually write the Theora player!
 // TODO: TheoraPlay's stream must eventually end...
 // TODO: IsLooped usage
 
@@ -173,6 +172,7 @@ namespace Microsoft.Xna.Framework.Media
             // Initialize the OpenAL source.
             audioBufferIndex = AL.GenBuffer();
             audioSourceIndex = AL.GenSource();
+            AL.Source(audioSourceIndex, ALSourcei.Buffer, audioBufferIndex);
             
             // Initialize public members.
             IsDisposed = false;
@@ -304,7 +304,10 @@ namespace Microsoft.Xna.Framework.Media
             timer.Reset();
             
             // Force stop the OpenAL source.
-            AL.SourceStop(audioSourceIndex);
+            if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
+            {
+                AL.SourceStop(audioSourceIndex);
+            }
             
             // Stop and unassign the decoder.
             if (theoraDecoder != IntPtr.Zero)
@@ -352,7 +355,10 @@ namespace Microsoft.Xna.Framework.Media
             
             // Pause the OpenAL source.
             // We do this as late as possible in case of leaking audio packets.
-            AL.SourcePause(audioSourceIndex);
+            if (AL.GetSourceState(audioSourceIndex) == ALSourceState.Playing)
+            {
+                AL.SourcePause(audioSourceIndex);
+            }
         }
         
         public void Resume()
@@ -373,7 +379,10 @@ namespace Microsoft.Xna.Framework.Media
             
             // Force resume the OpenAL source.
             // We do this in case the stream fell behind when we paused.
-            AL.SourcePlay(audioSourceIndex);
+            if (AL.GetSourceState(audioSourceIndex) == ALSourceState.Paused)
+            {
+                AL.SourcePlay(audioSourceIndex);
+            }
         }
         #endregion
         
@@ -391,24 +400,36 @@ namespace Microsoft.Xna.Framework.Media
                 }
                 else
                 {
-                    // FIXME: The actual freaking player.
-                    
                     // Get the next audio packet from the decoder, if a stream exists.
                     if (audioStream != IntPtr.Zero)
                     {
-                        // FIXME: OpenAL buffer data and play it.
-                        // FIXME: Framerate timing.
+                        // Just buffer it as soon as possible.
+                        // FIXME: Assuming 16-bit audio!!!
+                        AL.BufferData(
+                            audioBufferIndex,
+                            (currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
+                            currentAudio.samples,
+                            currentAudio.frames * currentAudio.channels,
+                            currentAudio.freq
+                        );
+                        
+                        if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Playing)
+                        {
+                            AL.SourcePlay(audioSourceIndex);
+                        }
                         
                         // Step at the end.
                         currentAudio = getAudioPacket(currentAudio.next);
                     }
                     
+                    // Get the next video from from the decoder, if a stream exists.
                     if (videoStream != IntPtr.Zero)
                     {
-                        // FIXME: Framerate timing.
-                        
-                        // Step at the end.
-                        currentVideo = getVideoFrame(currentVideo.next);
+                        // Only step when it's time to show the next frame.
+                        if (currentVideo.playms <= timer.ElapsedMilliseconds)
+                        {
+                            currentVideo = getVideoFrame(currentVideo.next);
+                        }
                     }
                 }
             }
