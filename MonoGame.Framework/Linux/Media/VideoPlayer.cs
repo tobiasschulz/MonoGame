@@ -1,6 +1,3 @@
-// TODO: TheoraPlay's stream must eventually end...
-// TODO: IsLooped usage
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -216,6 +213,7 @@ namespace Microsoft.Xna.Framework.Media
             
             // FIXME: The rest of this method kind of hurts.
             
+            
             // Create the Texture2D.
             Texture2D currentTexture = new Texture2D(
                 null, // FIXME: How do we even get the device?!
@@ -331,55 +329,17 @@ namespace Microsoft.Xna.Framework.Media
                 return;
             }
             
-            // Update the player state now, to try and end the thread early.
+            // Update the player state.
             State = MediaState.Stopped;
             
-            // Stop the thread hardcore anyway!
-            System.Console.Write("Stopping Theora player...");
-            playerThread.Abort();
-            System.Console.Write(" Waiting for termination...");
+            // Wait for the player to end if it's still going.
+            if (!playerThread.IsAlive)
+            {
+                return;
+            }
+            System.Console.Write("Signaled Theora player to stop, waiting...");
             playerThread.Join();
             System.Console.WriteLine(" Done!");
-            
-            // Reset the video timer.
-            timer.Stop();
-            timer.Reset();
-            
-            // Force stop the OpenAL source.
-            if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
-            {
-                AL.SourceStop(audioSourceIndex);
-                AL.SourceRewind(audioSourceIndex);
-                AL.DeleteBuffers(audioBuffers.ToArray());
-                audioBuffers.Clear();
-            }
-            
-            // Stop and unassign the decoder.
-            if (theoraDecoder != IntPtr.Zero)
-            {
-                if (TheoraPlay.THEORAPLAY_isDecoding(theoraDecoder) != 0)
-                {
-                    TheoraPlay.THEORAPLAY_stopDecode(theoraDecoder);
-                }
-                theoraDecoder = IntPtr.Zero;
-            }
-            
-            // Free and unassign the video stream.
-            if (videoStream != IntPtr.Zero)
-            {
-                TheoraPlay.THEORAPLAY_freeVideo(videoStream);
-                videoStream = IntPtr.Zero;
-            }
-            
-            // Free and unassign the audio stream.
-            if (audioStream != IntPtr.Zero)
-            {
-                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
-                audioStream = IntPtr.Zero;
-            }
-            
-            // We're not playing any video anymore.
-            Video = null;
         }
         
         public void Pause()
@@ -414,12 +374,13 @@ namespace Microsoft.Xna.Framework.Media
         #region The Theora video player thread
         private void RunVideo()
         {
-            timer.Start();
+            // Used to check when we're done with the audio buffering.
+            bool audioBuffering = true;
             
             while (State != MediaState.Stopped)
             {
                 // Regardless of the player state, we should buffer as much audio as possible.
-                if (audioStream != IntPtr.Zero)
+                if (audioStream != IntPtr.Zero && audioBuffering)
                 {
                     // Buffer...
                     audioBuffers.Add(AL.GenBuffer());
@@ -434,14 +395,21 @@ namespace Microsoft.Xna.Framework.Media
                     // Queue...
                     AL.SourceQueueBuffer(audioSourceIndex, audioBuffers[audioBuffers.Count - 1]);
                     
-                    // ... Then step.
-                    currentAudio = getAudioPacket(currentAudio.next);
+                    // No more packets? Assume we have hit the end.
+                    if (currentAudio.next == IntPtr.Zero)
+                    {
+                        audioBuffering = false;
+                    }
+                    else
+                    {
+                        currentAudio = getAudioPacket(currentAudio.next);
+                    }
                 }
                 
                 // Sleep when paused, update the video state when playing.
                 if (State == MediaState.Paused)
                 {
-                    // Pause the OpenAL source as soon as we know it's paused.
+                    // Pause the OpenAL source.
                     if (AL.GetSourceState(audioSourceIndex) == ALSourceState.Playing)
                     {
                         AL.SourcePause(audioSourceIndex);
@@ -458,7 +426,7 @@ namespace Microsoft.Xna.Framework.Media
                 }
                 else
                 {
-                    // Start the timer again if we unpaused.
+                    // Start the timer, whether we're starting or unpausing.
                     if (!timer.IsRunning)
                     {
                         timer.Start();
@@ -479,11 +447,75 @@ namespace Microsoft.Xna.Framework.Media
                         // Only step when it's time to show the next frame.
                         if (currentVideo.playms <= timer.ElapsedMilliseconds)
                         {
-                            currentVideo = getVideoFrame(currentVideo.next);
+                            // No more frames? Assume we have hit the end.
+                            if (currentVideo.next == IntPtr.Zero)
+                            {
+                                // Stop and reset the timer.
+                                // If we're looping, the loop will start it again.
+                                timer.Stop();
+                                timer.Reset();
+                                
+                                // Rewind if we're looping, otherwise end the thread.
+                                if (IsLooped)
+                                {
+                                    currentVideo = getVideoFrame(videoStream);
+                                    AL.SourceStop(audioSourceIndex);
+                                    AL.SourceRewind(audioSourceIndex);
+                                    AL.SourcePlay(audioSourceIndex);
+                                }
+                                else
+                                {
+                                    State = MediaState.Stopped;
+                                }
+                            }
+                            else
+                            {
+                                currentVideo = getVideoFrame(currentVideo.next);
+                            }
                         }
                     }
                 }
             }
+            
+            // Reset the video timer.
+            timer.Stop();
+            timer.Reset();
+            
+            // Force stop the OpenAL source.
+            if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
+            {
+                AL.SourceStop(audioSourceIndex);
+            }
+            AL.SourceRewind(audioSourceIndex);
+            AL.DeleteBuffers(audioBuffers.ToArray());
+            audioBuffers.Clear();
+            
+            // Stop and unassign the decoder.
+            if (theoraDecoder != IntPtr.Zero)
+            {
+                if (TheoraPlay.THEORAPLAY_isDecoding(theoraDecoder) != 0)
+                {
+                    TheoraPlay.THEORAPLAY_stopDecode(theoraDecoder);
+                }
+                theoraDecoder = IntPtr.Zero;
+            }
+            
+            // Free and unassign the video stream.
+            if (videoStream != IntPtr.Zero)
+            {
+                TheoraPlay.THEORAPLAY_freeVideo(videoStream);
+                videoStream = IntPtr.Zero;
+            }
+            
+            // Free and unassign the audio stream.
+            if (audioStream != IntPtr.Zero)
+            {
+                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
+                audioStream = IntPtr.Zero;
+            }
+            
+            // We're not playing any video anymore.
+            Video = null;
         }
         #endregion
     }
