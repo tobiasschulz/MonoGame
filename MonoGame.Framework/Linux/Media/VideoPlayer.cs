@@ -392,18 +392,8 @@ namespace Microsoft.Xna.Framework.Media
                 return;
             }
             
-            // Stop the timer.
-            timer.Stop();
-            
             // Update the player state.
             State = MediaState.Paused;
-            
-            // Pause the OpenAL source.
-            // We do this as late as possible in case of leaking audio packets.
-            if (AL.GetSourceState(audioSourceIndex) == ALSourceState.Playing)
-            {
-                AL.SourcePause(audioSourceIndex);
-            }
         }
         
         public void Resume()
@@ -416,18 +406,8 @@ namespace Microsoft.Xna.Framework.Media
                 return;
             }
             
-            // Resume the timer.
-            timer.Start();
-            
             // Update the player state.
             State = MediaState.Playing;
-            
-            // Force resume the OpenAL source.
-            // We do this in case the stream fell behind when we paused.
-            if (AL.GetSourceState(audioSourceIndex) == ALSourceState.Paused)
-            {
-                AL.SourcePlay(audioSourceIndex);
-            }
         }
         #endregion
         
@@ -461,11 +441,29 @@ namespace Microsoft.Xna.Framework.Media
                 // Sleep when paused, update the video state when playing.
                 if (State == MediaState.Paused)
                 {
+                    // Pause the OpenAL source as soon as we know it's paused.
+                    if (AL.GetSourceState(audioSourceIndex) == ALSourceState.Playing)
+                    {
+                        AL.SourcePause(audioSourceIndex);
+                    }
+                    
+                    // Stop the timer in here so we know when we really stopped.
+                    if (timer.IsRunning)
+                    {
+                        timer.Stop();
+                    }
+                    
                     // Arbitrarily 1 frame in a 30fps movie.
                     Thread.Sleep(33);
                 }
                 else
                 {
+                    // Start the timer again if we unpaused.
+                    if (!timer.IsRunning)
+                    {
+                        timer.Start();
+                    }
+                    
                     // If we're getting here, we should be playing the audio...
                     if (audioStream != IntPtr.Zero)
                     {
