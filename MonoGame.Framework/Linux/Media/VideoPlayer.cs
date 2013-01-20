@@ -213,21 +213,40 @@ namespace Microsoft.Xna.Framework.Media
             // Assign this locally, or else the thread will ruin your face.
             TheoraPlay.THEORAPLAY_VideoFrame currentFrame = currentVideo;
             
-            // Create the Texture2D from the frame data.
-            // FIXME: ASSUMING IYUV!!!
+            // Create the Texture2D.
+            // FIXME: Can I have, like, a BGR4 texture instead?
             Texture2D currentTexture = new Texture2D(
                 null, // FIXME: How do we even get the device?!
                 (int) currentFrame.width,
                 (int) currentFrame.height,
                 false,
-                SurfaceFormat.Color // FIXME: Uhhhh
+                SurfaceFormat.Bgra4444
             );
-            currentTexture.SetData<byte>(
-                getPixels(
-                    currentFrame.pixels,
-                    (int) currentFrame.width * (int) currentFrame.height * 12 / 8
-                )
+            
+            // Create the texture data from the Theora image data.
+            // FIXME: This kind of hurts.
+            // FIXME: ASSUMING IYUV!!!
+            byte[] theoraPixels = getPixels(
+                currentFrame.pixels,
+                (int) currentFrame.width * (int) currentFrame.height * 12 / 8
             );
+            byte[] pixelBGRA = new byte[theoraPixels.Length / 3 * 4];
+            for (int i = 0, j = 0; i < theoraPixels.Length; i += 3, j += 4)
+            {
+                // The IYUV -> BGR formula. Thanks, Google!
+                int B = (int) (theoraPixels[i] + (1.732446 * (theoraPixels[i + 1] - 128)));
+                int G = (int) (theoraPixels[i] + (0.698001 * (theoraPixels[i + 2] - 128)) - (0.337633 * (theoraPixels[i + 1] - 128)));
+                int R = (int) (theoraPixels[i] + (1.370705 * (theoraPixels[i + 2] - 128)));
+                
+                // Clamp values to 0-255, and set the alpha to max value.
+                pixelBGRA[j] = (byte) ((B < 0) ? 0 : ((B > 256) ? 256 : B));
+                pixelBGRA[j + 1] = (byte) ((G < 0) ? 0 : ((G > 256) ? 256 : G));
+                pixelBGRA[j + 2] = (byte) ((R < 0) ? 0 : ((R > 256) ? 256 : R));
+                pixelBGRA[j + 3] = (byte) (255);
+            }
+            
+            // TexImage2D.
+            currentTexture.SetData<byte>(pixelBGRA);
 
             return currentTexture;
         }
