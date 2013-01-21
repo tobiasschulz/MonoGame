@@ -16,6 +16,14 @@ namespace Microsoft.Xna.Framework.Audio
 			
 			byte flags = soundReader.ReadByte ();
 			complexSound = (flags & 1) != 0;
+            
+            // FIXME: What is the 0x03 flag?! -flibit
+            if (flags == 0x03)
+            {
+                System.Console.WriteLine("WARNING! ABORTING XACTSOUND CREATION ON 0x03 FLAG!");
+                soundReader.BaseStream.Seek (oldPosition, SeekOrigin.Begin);
+                return;
+            }
 			
 			uint category = soundReader.ReadUInt16 ();
 			soundReader.ReadByte (); //unkn

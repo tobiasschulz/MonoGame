@@ -77,31 +77,35 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Pause ()
 		{
-			throw new NotImplementedException ();
+			System.Console.WriteLine("WARNING: ATTEMPTED TO PAUSE CATEGORY: " + name);
 		}
 
 		public void Resume ()
 		{
-			throw new NotImplementedException ();
+            System.Console.WriteLine("WARNING: ATTEMPTED TO RESUME CATEGORY: " + name);
 		}
 
 		public void Stop ()
 		{
-			throw new NotImplementedException ();
+            System.Console.WriteLine("WARNING: ATTEMPTED TO STOP CATEGORY: " + name);
 		}
 
 		public void Stop (AudioStopOptions option)
 		{
-			throw new NotImplementedException ();
+            System.Console.WriteLine("WARNING: ATTEMPTED TO STOP CATEGORY: " +
+                                     name + " " + option);
 		}
 		public void SetVolume(float volume) {
-			throw new NotImplementedException();
+            System.Console.WriteLine("WARNING: ATTEMPTED TO SET CATEGORY VOLUME: " +
+                                     name + " " + volume);
 		}
 
 		
 		public bool Equals(AudioCategory other)
 		{
-			throw new NotImplementedException();
+            System.Console.WriteLine("WARNING: ATTEMPTED TO COMPARE CATEGORIES: " +
+                                     name + " " + other.name);
+            return false;
 		}
 		
 	}
