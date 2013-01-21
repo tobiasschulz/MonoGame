@@ -283,9 +283,7 @@ namespace Microsoft.Xna.Framework
             keys = new List<Keys>();
 
             // Make the foreground context the current context
-            IGraphicsContext currentContext = GraphicsContext.CurrentContext;
-            
-            if (currentContext == null || !currentContext.IsCurrent)
+            if (!GraphicsContext.CurrentContext.IsCurrent)
                 window.MakeCurrent();
             
             // mouse
