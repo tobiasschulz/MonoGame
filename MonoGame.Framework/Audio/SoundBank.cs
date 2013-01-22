@@ -232,7 +232,9 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		public void PlayCue (string name, AudioListener listener, AudioEmitter emitter)
 		{
-			throw new NotImplementedException();
+            var musicCue = GetCue(name);
+            musicCue.Apply3D(listener, emitter);
+            musicCue.Play();
 		}
 
 		#region IDisposable implementation

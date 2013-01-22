@@ -11,6 +11,7 @@ namespace Microsoft.Xna.Framework.Audio
 			public XactClip clip;
 			
 			public abstract void Play();
+            public abstract void PlayPositional(AudioListener listener, AudioEmitter emitter);
 			public abstract void Stop();
 			public abstract void Pause();
 			public abstract bool Playing { get; }
@@ -24,6 +25,12 @@ namespace Microsoft.Xna.Framework.Audio
 				if (wave.State == SoundState.Playing) wave.Stop ();
 				wave.Play ();
 			}
+            public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
+                wave.Volume =  clip.Volume;
+                if (wave.State == SoundState.Playing) wave.Stop();
+                wave.Apply3D(listener, emitter);
+                wave.Play();
+            }
 			public override void Stop() {
 				wave.Stop ();
 			}
@@ -116,6 +123,12 @@ namespace Microsoft.Xna.Framework.Audio
 				events[0].Volume = value;
 			}
 		}
+        
+        // Needed for positional audio
+        internal void PlayPositional(AudioListener listener, AudioEmitter emitter) {
+            // TODO: run events
+            events[0].PlayPositional(listener, emitter);
+        }
 		
 	}
 }

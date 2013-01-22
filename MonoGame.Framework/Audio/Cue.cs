@@ -51,6 +51,11 @@ namespace Microsoft.Xna.Framework.Audio
 		float[] probs;
 		XactSound curSound;
 		Random variationRand;
+        
+        // Positional sound variables
+        private bool positionalAudio; // Only enabled when Apply3D is called before a Play().
+        private AudioListener listener;
+        private AudioEmitter emitter;
 		
 		bool paused = false;
 		float volume = 1.0f;
@@ -121,7 +126,16 @@ namespace Microsoft.Xna.Framework.Audio
 			curSound = sounds[variationRand.Next (sounds.Length)];
 			
 			curSound.Volume = volume;
-			curSound.Play ();
+            if (positionalAudio)
+            {
+                curSound.PlayPositional(listener, emitter);
+                positionalAudio = false;
+            }
+            else
+            {
+                curSound.Play();
+            }
+            
 			paused = false;
 		}
 		
@@ -163,7 +177,9 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 		
 		public void Apply3D(AudioListener listener, AudioEmitter emitter) {
-			
+			this.listener = listener;
+            this.emitter = emitter;
+            positionalAudio = true;
 		}
 		
 		public bool IsDisposed { get { return false; } }

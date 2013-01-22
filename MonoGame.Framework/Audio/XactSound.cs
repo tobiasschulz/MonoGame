@@ -61,6 +61,7 @@ namespace Microsoft.Xna.Framework.Audio
 			complexSound = false;
 			wave = sound;
 		}		
+        
 		public void Play() {
 			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
@@ -71,6 +72,18 @@ namespace Microsoft.Xna.Framework.Audio
 				wave.Play ();
 			}
 		}
+        
+        internal void PlayPositional(AudioListener listener, AudioEmitter emitter) {
+            if (complexSound) {
+                foreach (XactClip clip in soundClips) {
+                    clip.PlayPositional(listener, emitter);
+                }
+            } else {
+                if (wave.State == SoundState.Playing) wave.Stop();
+                wave.Apply3D(listener, emitter);
+                wave.Play();
+            }
+        }
 		
 		public void Stop() {
 			if (complexSound) {
