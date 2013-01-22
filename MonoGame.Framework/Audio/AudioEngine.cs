@@ -51,6 +51,8 @@ namespace Microsoft.Xna.Framework.Audio
 		public const int ContentVersion = 46;
 		
 		internal Dictionary<string, WaveBank> Wavebanks = new Dictionary<string, WaveBank>();
+        
+        internal List<SoundBank> SoundBanks = new List<SoundBank>();
 
 		AudioCategory[] categories;
 		Dictionary<string, int> categoryLookup = new Dictionary<string, int>();
@@ -231,7 +233,10 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		public void Update ()
 		{
-			// TODO throw new NotImplementedException ();
+			foreach (SoundBank curBank in SoundBanks)
+            {
+                curBank.Update();
+            }
 		}
 		
 		public AudioCategory GetCategory (string name)

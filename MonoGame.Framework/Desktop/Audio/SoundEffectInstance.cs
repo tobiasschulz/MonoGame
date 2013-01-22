@@ -155,6 +155,10 @@ namespace Microsoft.Xna.Framework.Audio
 				finalPos = Vector3.Transform(finalPos, orientation);
 				Vector3 finalVel = emitter.Velocity;
 				finalVel = Vector3.Transform(finalVel, orientation);
+             
+                // FIXME: This is totally arbitrary. I dunno the exact ratio here.
+                finalPos /= 100.0f;
+                finalVel /= 100.0f;
 				
 				// set the position based on relative positon
 				AL.Source(sourceId, ALSource3f.Position, finalPos.X, finalPos.Y, finalPos.Z);

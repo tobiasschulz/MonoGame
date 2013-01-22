@@ -53,7 +53,10 @@ namespace Microsoft.Xna.Framework.Audio
 		Random variationRand;
         
         // Positional sound variables
-        private bool positionalAudio; // Only enabled when Apply3D is called before a Play().
+        // Only enabled when Apply3D is called before a Play().
+        
+        // FIXME: Once you go positional, you can't go back. *Cough*
+        private bool positionalAudio;
         private AudioListener listener;
         private AudioEmitter emitter;
 		
@@ -129,7 +132,6 @@ namespace Microsoft.Xna.Framework.Audio
             if (positionalAudio)
             {
                 curSound.PlayPositional(listener, emitter);
-                positionalAudio = false;
             }
             else
             {
@@ -181,6 +183,14 @@ namespace Microsoft.Xna.Framework.Audio
             this.emitter = emitter;
             positionalAudio = true;
 		}
+        
+        internal void UpdatePosition()
+        {
+            if (positionalAudio && curSound != null)
+            {
+                curSound.UpdatePosition(listener, emitter);
+            }
+        }
 		
 		public bool IsDisposed { get { return false; } }
 		

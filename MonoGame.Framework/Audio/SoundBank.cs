@@ -208,6 +208,8 @@ namespace Microsoft.Xna.Framework.Audio
 					}
 				}
 			}
+            
+            audioengine.SoundBanks.Add(this);
 			
 			loaded = true;
         }
@@ -236,6 +238,14 @@ namespace Microsoft.Xna.Framework.Audio
             musicCue.Apply3D(listener, emitter);
             musicCue.Play();
 		}
+        
+        internal void Update()
+        {
+            foreach(KeyValuePair<string, Cue> curCue in cues)
+            {
+                curCue.Value.UpdatePosition();
+            }
+        }
 
 		#region IDisposable implementation
 		public void Dispose ()

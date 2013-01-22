@@ -84,6 +84,18 @@ namespace Microsoft.Xna.Framework.Audio
                 wave.Play();
             }
         }
+        
+        internal void UpdatePosition(AudioListener listener, AudioEmitter emitter)
+        {
+            if (complexSound) {
+                foreach (XactClip clip in soundClips) {
+                    clip.UpdatePosition(listener, emitter);
+                }
+            } else {
+                wave.Apply3D(listener, emitter);
+            }
+            
+        }
 		
 		public void Stop() {
 			if (complexSound) {
