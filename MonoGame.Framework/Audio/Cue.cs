@@ -186,7 +186,7 @@ namespace Microsoft.Xna.Framework.Audio
         
         internal void UpdatePosition()
         {
-            if (positionalAudio && curSound != null)
+            if (positionalAudio && curSound != null && IsPlaying)
             {
                 curSound.UpdatePosition(listener, emitter);
             }
