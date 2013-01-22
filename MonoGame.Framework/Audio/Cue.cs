@@ -62,6 +62,7 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		bool paused = false;
 		float volume = 1.0f;
+        float categoryVolume = 1.0f;
 		
 		public bool IsPaused
 		{
@@ -128,7 +129,7 @@ namespace Microsoft.Xna.Framework.Audio
 			//TODO: Probabilities
 			curSound = sounds[variationRand.Next (sounds.Length)];
 			
-			curSound.Volume = volume;
+			curSound.Volume = volume * categoryVolume;
             if (positionalAudio)
             {
                 curSound.PlayPositional(listener, emitter);
@@ -159,11 +160,17 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		public void SetVariable (string name, float value)
 		{
+            // FIXME: This is pretty ugly.
 			if (name == "Volume") {
 				volume = value;
 				if (curSound != null) {
-					curSound.Volume = value;
+					curSound.Volume = value * categoryVolume;
 				}
+            } else if (name == "CategoryVolume") {
+                categoryVolume = value;
+                if (curSound != null) {
+                    curSound.Volume = volume * value;
+                }
 			} else {
 				engine.SetGlobalVariable (name, value);
 			}

@@ -127,9 +127,13 @@ namespace Microsoft.Xna.Framework.Audio
 						uint soundOffset = soundbankreader.ReadUInt32 ();
 						XactSound sound = new XactSound(this, soundbankreader, soundOffset);
 						Cue cue = new Cue(audioengine, cueNames[i], sound);
+                        
+                        audioengine.categories[sound.category].categoryCues.Add(cue);
 						
 						cues.Add(cue.Name, cue);
 					}
+                    
+                    // FIXME: AudioCategories for ComplexCues.
 					
 					soundbankstream.Seek (complexCuesOffset, SeekOrigin.Begin);
 					for (int i=0; i<numComplexCues; i++) {

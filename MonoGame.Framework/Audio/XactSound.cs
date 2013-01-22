@@ -5,6 +5,8 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	internal class XactSound
 	{
+        internal uint category;
+        
 		bool complexSound;
 		XactClip[] soundClips;
 		SoundEffectInstance wave;
@@ -17,7 +19,7 @@ namespace Microsoft.Xna.Framework.Audio
 			byte flags = soundReader.ReadByte ();
 			complexSound = (flags & 1) != 0;
 			
-			uint category = soundReader.ReadUInt16 ();
+			category = soundReader.ReadUInt16 ();
 			soundReader.ReadByte (); //unkn
 			uint volume = soundReader.ReadUInt16 (); //maybe pitch?
 			soundReader.ReadByte (); //unkn
