@@ -196,6 +196,7 @@
     <Compile Include="Audio\AudioListener.cs" />
     <Compile Include="Audio\AudioStopOptions.cs" />
     <Compile Include="Audio\Cue.cs" />
+    <Compile Include="Audio\MSADPCMToPCM.cs" />
     <Compile Include="Audio\InstancePlayLimitException.cs" />
     <Compile Include="Audio\NoAudioHardwareException.cs" />
     <Compile Include="Audio\SoundBank.cs" />
