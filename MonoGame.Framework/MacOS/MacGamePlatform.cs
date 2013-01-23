@@ -297,7 +297,10 @@ namespace Microsoft.Xna.Framework
                 if (oldTitle != null)
                     _gameWindow.Title = oldTitle;
 
-                _mainWindow.IsVisible = false;
+                // FIXME: Uh, what the hell was this line? -flibit
+                // _mainWindow.IsVisible = false;
+
+
                 // FIXME: EnterFullScreen gets called very early and interferes
                 //        with Synchronous mode, so disabling this for now.
                 //        Hopefully this does not cause excessive havoc.
@@ -340,7 +343,9 @@ namespace Microsoft.Xna.Framework
                 // Set the level here to normal
                 _mainWindow.Level = NSWindowLevel.Normal;
 
-                _mainWindow.IsVisible = false;
+                // FIXME: Uh, what the hell was this line? -flibit
+                // _mainWindow.IsVisible = false;
+
                 // FIXME: EnterFullScreen gets called very early and interferes
                 //        with Synchronous mode, so disabling this for now.
                 //        Hopefully this does not cause excessive havoc.
