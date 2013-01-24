@@ -20,8 +20,8 @@ namespace Microsoft.Xna.Framework.Audio
 			complexSound = (flags & 1) != 0;
 			
 			category = soundReader.ReadUInt16 ();
-			soundReader.ReadByte (); //unkn
-			uint volume = soundReader.ReadUInt16 (); //maybe pitch?
+			uint volume = soundReader.ReadByte (); // FIXME: Maybe wrong?
+			uint pitch = soundReader.ReadUInt16 (); // FIXME: Maybe wrong?
 			soundReader.ReadByte (); //unkn
 			uint entryLength = soundReader.ReadUInt16 ();
 			
@@ -51,6 +51,9 @@ namespace Microsoft.Xna.Framework.Audio
 					soundClips[i] = new XactClip(soundBank, soundReader, clipOffset);
 				}
 			}
+            
+            // FIXME: This is totally arbitrary. I dunno the exact ratio here.
+            Volume = volume / 256.0f;
 			
 			soundReader.BaseStream.Seek (oldPosition, SeekOrigin.Begin);
 		}

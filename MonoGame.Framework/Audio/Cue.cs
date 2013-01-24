@@ -129,7 +129,8 @@ namespace Microsoft.Xna.Framework.Audio
 			//TODO: Probabilities
 			curSound = sounds[variationRand.Next (sounds.Length)];
 			
-			curSound.Volume = volume * categoryVolume;
+            // FIXME: Why was this here?
+			// curSound.Volume = volume * categoryVolume;
             if (positionalAudio)
             {
                 curSound.PlayPositional(listener, emitter);
