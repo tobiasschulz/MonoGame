@@ -36,9 +36,34 @@ namespace Microsoft.Xna.Framework.Audio
 			
 			if ( (flags & 0x1E) != 0 ) {
 				uint extraDataLen = soundReader.ReadUInt16 ();
-				//TODO: Parse RPC+DSP stuff
-				
-				soundReader.BaseStream.Seek (extraDataLen - 2, SeekOrigin.Current);
+                
+                if ((flags & 0x10) != 0) { // FIXME: Verify this!
+                    throw new NotImplementedException("XACT DSP Preset tables!");
+                } else if ((flags == 0x02) || (flags == 0x03)) { // FIXME: Verify this!
+                    
+                    // The number of RPC presets that affect this sound.
+                    uint numRPCPresets = soundReader.ReadByte();
+                    
+                    for (uint i = 0; i < numRPCPresets; i++) {
+                        byte rpcTable = soundReader.ReadByte();
+                        
+                        // !!! FIXME: Anyone know how these bytes work? -flibit
+                        
+                        // System.Console.WriteLine(rpcTable);
+                        
+                        // Codename lolno has these RPC entries...
+                        // All affect Volume, based on the Distance variable.
+                        // 1 1 0 0 0 1 1 0 --- 198 - Attenuation
+                        // 1 1 1 1 1 0 0 0 --- 248 - Attenuation_high
+                        // 0 0 1 0 0 0 0 1 --- 033 - Attenuation_low
+                    }
+                    
+                    // Seek to the end of this block.
+                    soundReader.BaseStream.Seek(extraDataLen - 3 - numRPCPresets, SeekOrigin.Current);
+                } else {
+                    // Screw it, just skip the block.
+                    soundReader.BaseStream.Seek (extraDataLen - 2, SeekOrigin.Current);
+                }
 			}
 			
 			if (complexSound) {
