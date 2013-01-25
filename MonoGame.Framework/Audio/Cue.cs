@@ -176,11 +176,11 @@ namespace Microsoft.Xna.Framework.Audio
                 if (curSound != null) {
                     curSound.Volume = volume * value * rpcVolume;
                 }
-            } else if (name == "INTERNAL_RPCVOLUME") {
-                rpcVolume = value;
-                if (curSound != null) {
-                    curSound.Volume = volume * categoryVolume * rpcVolume;
-                }
+            } else if (curSound != null && curSound.rpcVariables.ContainsKey(name)) {
+                // FIXME: Multiple volumes?
+                curSound.rpcVariables[name] = value;
+                rpcVolume = 1.0f + (value / 10000.0f);
+                curSound.Volume = volume * categoryVolume * rpcVolume;
 			} else {
 				engine.SetGlobalVariable (name, value);
 			}
@@ -223,7 +223,7 @@ namespace Microsoft.Xna.Framework.Audio
                         AudioEngine.RpcParameter parameter = curve.parameter;
                         
                         // The variable that this curve is looking at
-                        float varValue = variables[curve.variable].value;
+                        float varValue = curSound.rpcVariables[variables[curve.variable].name];
                         
                         // Applying this when we're done...
                         float curveResult = 0.0f;
@@ -248,12 +248,6 @@ namespace Microsoft.Xna.Framework.Audio
                         {
                             // Last defined point to infinity
                             curveResult = curve.points[curve.points.Length - 1].y / (curve.points[curve.points.Length - 1].x / varValue);
-                            
-                            // Clamp it down, we can't have massive results.
-                            if (curveResult > 10000.0f)
-                                curveResult = 10000.0f;
-                            else if (curveResult < -10000.0f)
-                                curveResult = -10000.0f;
                         }
                         else
                         {
@@ -274,12 +268,21 @@ namespace Microsoft.Xna.Framework.Audio
                                 }
                             }
                         }
+                            
+                        // Clamp it down, we can't have massive results.
+                        if (curveResult > 10000.0f)
+                        {
+                            curveResult = 10000.0f;
+                        }
+                        else if (curveResult < -10000.0f)
+                        {
+                            curveResult = -10000.0f;
+                        }
                         
                         // FIXME: All parameter types!
                         if (parameter == AudioEngine.RpcParameter.Volume)
                         {
-                            // FIXME: The 10000.0 is based on what I'm seeing in the XAP.
-                            SetVariable("INTERNAL_RPCVOLUME", 1.0f + (curveResult / 10000.0f));
+                            SetVariable(variables[curve.variable].name, curveResult);
                         }
                         else
                         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Xna.Framework.Audio
@@ -8,6 +9,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal uint category;
         
         internal byte[] rpcEffects;
+        internal Dictionary<string, float> rpcVariables;
         
 		bool complexSound;
 		XactClip[] soundClips;
@@ -72,6 +74,16 @@ namespace Microsoft.Xna.Framework.Audio
                         } else {
                             throw new NotImplementedException("Check the XACT RPC parsing!");
                         }
+                    }
+                    
+                    // Create the variable table
+                    rpcVariables = new Dictionary<string, float>();
+                    for (int i = 0; i < rpcEffects.Length; i++)
+                    {
+                        rpcVariables.Add(
+                            soundBank.audioengine.variables[soundBank.audioengine.rpcCurves[rpcEffects[i]].variable].name,
+                            soundBank.audioengine.variables[soundBank.audioengine.rpcCurves[rpcEffects[i]].variable].initValue
+                        );
                     }
                     
                     // Seek to the end of this block.

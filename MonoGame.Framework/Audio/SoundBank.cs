@@ -33,16 +33,15 @@ namespace Microsoft.Xna.Framework.Audio
 {
     public class SoundBank : IDisposable
     {
+        internal AudioEngine audioengine;
+        
         string name;
 		string filename;
-		AudioEngine audioengine;
+        
 		WaveBank[] waveBanks;
 		Dictionary<string, Cue> cues = new Dictionary<string, Cue>();
         
 		bool loaded = false;
-        
-        AudioEngine.RpcCurve[] rpcCurves;
-        AudioEngine.Variable[] globalVariables;
 		
         public SoundBank(AudioEngine audioEngine, string fileName)
         {
@@ -217,8 +216,6 @@ namespace Microsoft.Xna.Framework.Audio
 			}
             
             audioengine.SoundBanks.Add(this);
-            rpcCurves = audioengine.rpcCurves;
-            globalVariables = audioengine.variables;
 			
 			loaded = true;
         }
@@ -252,7 +249,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             foreach(KeyValuePair<string, Cue> curCue in cues)
             {
-                curCue.Value.Update(rpcCurves, globalVariables);
+                curCue.Value.Update(audioengine.rpcCurves, audioengine.variables);
             }
         }
 

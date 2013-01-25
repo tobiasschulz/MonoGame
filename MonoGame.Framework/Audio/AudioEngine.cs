@@ -251,7 +251,8 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void SetGlobalVariable (string name, float value)
 		{
-			variables [variableLookup [name]].value = value;
+            if (variableLookup.ContainsKey(name))
+			    variables [variableLookup [name]].value = value;
 		}
 		
 		#region IDisposable implementation
