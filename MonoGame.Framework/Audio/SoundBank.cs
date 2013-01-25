@@ -40,6 +40,9 @@ namespace Microsoft.Xna.Framework.Audio
 		Dictionary<string, Cue> cues = new Dictionary<string, Cue>();
         
 		bool loaded = false;
+        
+        AudioEngine.RpcCurve[] rpcCurves;
+        AudioEngine.Variable[] globalVariables;
 		
         public SoundBank(AudioEngine audioEngine, string fileName)
         {
@@ -214,6 +217,8 @@ namespace Microsoft.Xna.Framework.Audio
 			}
             
             audioengine.SoundBanks.Add(this);
+            rpcCurves = audioengine.rpcCurves;
+            globalVariables = audioengine.variables;
 			
 			loaded = true;
         }
@@ -247,7 +252,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             foreach(KeyValuePair<string, Cue> curCue in cues)
             {
-                curCue.Value.UpdatePosition();
+                curCue.Value.Update(rpcCurves, globalVariables);
             }
         }
 

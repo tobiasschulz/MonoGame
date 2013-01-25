@@ -63,6 +63,9 @@ namespace Microsoft.Xna.Framework.Audio
 		bool paused = false;
 		float volume = 1.0f;
         float categoryVolume = 1.0f;
+        
+        // FIXME: This should really be an array for each RPC table and type.
+        float rpcVolume = 1.0f;
 		
 		public bool IsPaused
 		{
@@ -165,12 +168,17 @@ namespace Microsoft.Xna.Framework.Audio
 			if (name == "Volume") {
 				volume = value;
 				if (curSound != null) {
-					curSound.Volume = value * categoryVolume;
+					curSound.Volume = value * categoryVolume * rpcVolume;
 				}
             } else if (name == "CategoryVolume") {
                 categoryVolume = value;
                 if (curSound != null) {
-                    curSound.Volume = volume * value;
+                    curSound.Volume = volume * value * rpcVolume;
+                }
+            } else if (name == "INTERNAL_RPCVOLUME") {
+                rpcVolume = value;
+                if (curSound != null) {
+                    curSound.Volume = volume * categoryVolume * rpcVolume;
                 }
 			} else {
 				engine.SetGlobalVariable (name, value);
@@ -192,11 +200,77 @@ namespace Microsoft.Xna.Framework.Audio
             positionalAudio = true;
 		}
         
-        internal void UpdatePosition()
+        internal void Update(AudioEngine.RpcCurve[] rpcCurves, AudioEngine.Variable[] variables)
         {
-            if (positionalAudio && curSound != null && IsPlaying)
+            if (curSound != null && IsPlaying)
             {
-                curSound.UpdatePosition(listener, emitter);
+                // Positional audio update
+                if (positionalAudio)
+                {
+                    curSound.UpdatePosition(listener, emitter);
+                }
+                
+                // RPC effects update
+                if (curSound.rpcEffects  != null)
+                {
+                    for (int i = 0; i < curSound.rpcEffects.Length; i++)
+                    {
+                        // The current curve from the RPC effects
+                        AudioEngine.RpcCurve curve = rpcCurves[curSound.rpcEffects[i]];
+                        
+                        // The sound property we're modifying
+                        AudioEngine.RpcParameter parameter = curve.parameter;
+                        
+                        // The variable that this curve is looking at
+                        float varValue = variables[curve.variable].value;
+                        
+                        // Applying this when we're done...
+                        float curveResult = 0.0f;
+                        
+                        // FIXME: ALL OF THIS IS ASSUMING LINEAR CURVES!
+                        
+                        if (varValue <= curve.points[0].x)
+                        {
+                            // Zero to first defined point
+                            curveResult = curve.points[0].y / (varValue / curve.points[0].x);
+                        }
+                        else if (varValue >= curve.points[curve.points.Length - 1].x)
+                        {
+                            // Last defined point to infinity
+                            curveResult = curve.points[curve.points.Length - 1].y / (curve.points[curve.points.Length - 1].x / varValue);
+                        }
+                        else
+                        {
+                            // Something between points...
+                            for (int x = 0; x < curve.points.Length - 1; x++)
+                            {
+                                // y = b
+                                curveResult = curve.points[x].y;
+                                if (varValue >= curve.points[x].x && varValue <= curve.points[x + 1].x)
+                                {
+                                    // y += mx
+                                    curveResult +=
+                                        ((curve.points[x + 1].y - curve.points[x].y) /
+                                        (curve.points[x + 1].x - curve.points[x].x)) *
+                                            (varValue - curve.points[x].x);
+                                    // Pre-algebra, rockin`!
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // FIXME: All parameter types!
+                        if (parameter == AudioEngine.RpcParameter.Volume)
+                        {
+                            // FIXME: The 100.0f is totally arbitrary. I dunno the exact ratio.
+                            SetVariable("INTERNAL_RPCVOLUME", curveResult / 100.0f);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("RPC Parameter Types!");
+                        }
+                    }
+                }
             }
         }
 		

@@ -7,6 +7,8 @@ namespace Microsoft.Xna.Framework.Audio
 	{
         internal uint category;
         
+        internal byte[] rpcEffects;
+        
 		bool complexSound;
 		XactClip[] soundClips;
 		SoundEffectInstance wave;
@@ -44,6 +46,8 @@ namespace Microsoft.Xna.Framework.Audio
                     // The number of RPC presets that affect this sound.
                     uint numRPCPresets = soundReader.ReadByte();
                     
+                    rpcEffects = new byte[numRPCPresets];
+                    
                     for (uint i = 0; i < numRPCPresets; i++) {
                         byte rpcTable = soundReader.ReadByte();
                         
@@ -51,11 +55,23 @@ namespace Microsoft.Xna.Framework.Audio
                         
                         // System.Console.WriteLine(rpcTable);
                         
+                        // !!! HACK: Screw it, I need these working. -flibit
+                        
                         // Codename lolno has these RPC entries...
                         // All affect Volume, based on the Distance variable.
                         // 1 1 0 0 0 1 1 0 --- 198 - Attenuation
                         // 1 1 1 1 1 0 0 0 --- 248 - Attenuation_high
                         // 0 0 1 0 0 0 0 1 --- 033 - Attenuation_low
+                        
+                        if (rpcTable == 198) {
+                            rpcEffects[i] = 0;
+                        } else if (rpcTable == 248) {
+                            rpcEffects[i] = 1;
+                        } else if (rpcTable == 033) {
+                            rpcEffects[i] = 2;
+                        } else {
+                            throw new NotImplementedException("Check the XACT RPC parsing!");
+                        }
                     }
                     
                     // Seek to the end of this block.
