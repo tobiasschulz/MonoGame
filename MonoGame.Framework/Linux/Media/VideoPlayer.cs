@@ -195,7 +195,8 @@ namespace Microsoft.Xna.Framework.Media
             IsDisposed = true;
         }
         
-        public Texture2D GetTexture()
+        // FIXME: HACK!!! THIS BREAKS THE API!!!
+        public Texture2D GetTexture(GraphicsDevice device)
         {
             checkDisposed();
             
@@ -216,7 +217,7 @@ namespace Microsoft.Xna.Framework.Media
             
             // Create the Texture2D.
             Texture2D currentTexture = new Texture2D(
-                null, // FIXME: How do we even get the device?!
+                device,
                 (int) currentFrame.width,
                 (int) currentFrame.height,
                 false,
@@ -290,22 +291,32 @@ namespace Microsoft.Xna.Framework.Media
             // FIXME: ASSUMING IYUV!!!
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 Video.FileName,
-                uint.MaxValue,
+                30, // FIXME: Assuming 30 frames is enough.
                 TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
             );
             
-            // Initialize the video stream pointer and get our first frame.
-            if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
+            // Initialize the audio stream pointer and get our first packet.
+            // FIXME: This check doesn't work.
+            // if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
             {
-                TheoraPlay.THEORAPLAY_getVideo(videoStream);
-                currentVideo = getVideoFrame(videoStream);
+                while (audioStream == IntPtr.Zero)
+                {
+                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
+                    Thread.Sleep(10);
+                }
+                currentAudio = getAudioPacket(audioStream);
             }
             
-            // Initialize the audio stream pointer and get our first packet.
-            if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
+            // Initialize the video stream pointer and get our first frame.
+            // FIXME: This check doesn't work.
+            //if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
             {
-                TheoraPlay.THEORAPLAY_getAudio(audioStream);
-                currentAudio = getAudioPacket(audioStream);
+                while (videoStream == IntPtr.Zero)
+                {
+                    videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
+                    Thread.Sleep(10);
+                }
+                currentVideo = getVideoFrame(videoStream);
             }
             
             // Update the player state now, for the thread we're about to make.
@@ -395,14 +406,18 @@ namespace Microsoft.Xna.Framework.Media
                     // Queue...
                     AL.SourceQueueBuffer(audioSourceIndex, audioBuffers[audioBuffers.Count - 1]);
                     
+                    // Free current packet, get next packet.
+                    TheoraPlay.THEORAPLAY_freeAudio(audioStream);
+                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
+                    
                     // No more packets? Assume we have hit the end.
-                    if (currentAudio.next == IntPtr.Zero)
+                    if (audioStream == IntPtr.Zero)
                     {
                         audioBuffering = false;
                     }
                     else
                     {
-                        currentAudio = getAudioPacket(currentAudio.next);
+                        currentAudio = getAudioPacket(audioStream);
                     }
                 }
                 
@@ -444,34 +459,37 @@ namespace Microsoft.Xna.Framework.Media
                     // Get the next video from from the decoder, if a stream exists.
                     if (videoStream != IntPtr.Zero)
                     {
-                        // Only step when it's time to show the next frame.
+                        // Only step when it's time to do so.
                         if (currentVideo.playms <= timer.ElapsedMilliseconds)
                         {
-                            // No more frames? Assume we have hit the end.
-                            if (currentVideo.next == IntPtr.Zero)
+                            // Free current frame, get next frame.
+                            TheoraPlay.THEORAPLAY_freeVideo(videoStream);
+                            videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
+                            if (videoStream != IntPtr.Zero)
                             {
-                                // Stop and reset the timer.
-                                // If we're looping, the loop will start it again.
-                                timer.Stop();
-                                timer.Reset();
-                                
-                                // Rewind if we're looping, otherwise end the thread.
-                                if (IsLooped)
-                                {
-                                    currentVideo = getVideoFrame(videoStream);
-                                    AL.SourceStop(audioSourceIndex);
-                                    AL.SourceRewind(audioSourceIndex);
-                                    AL.SourcePlay(audioSourceIndex);
-                                }
-                                else
-                                {
-                                    State = MediaState.Stopped;
-                                }
+                                currentVideo = getVideoFrame(videoStream);
                             }
-                            else
-                            {
-                                currentVideo = getVideoFrame(currentVideo.next);
-                            }
+                        }
+                    }
+                    else
+                    {
+                        // Stop and reset the timer.
+                        // If we're looping, the loop will start it again.
+                        timer.Stop();
+                        timer.Reset();
+                        
+                        // If looping, go back to the start. Otherwise, we'll be exiting.
+                        if (IsLooped)
+                        {
+                            // FIXME: Er, wait, shit.
+                            throw new NotImplementedException("Theora looping not implemented!");
+                            // Revert to first frame.
+                            // AL Stop
+                            // AL Rewind
+                        }
+                        else
+                        {
+                            State = MediaState.Stopped;
                         }
                     }
                 }
