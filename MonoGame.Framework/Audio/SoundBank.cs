@@ -249,7 +249,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             foreach(KeyValuePair<string, Cue> curCue in cues)
             {
-                curCue.Value.Update(audioengine.rpcCurves, audioengine.variables);
+                curCue.Value.Update();
             }
         }
 

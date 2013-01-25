@@ -177,10 +177,7 @@ namespace Microsoft.Xna.Framework.Audio
                     curSound.Volume = volume * value * rpcVolume;
                 }
             } else if (curSound != null && curSound.rpcVariables.ContainsKey(name)) {
-                // FIXME: Multiple volumes?
                 curSound.rpcVariables[name] = value;
-                rpcVolume = 1.0f + (value / 10000.0f);
-                curSound.Volume = volume * categoryVolume * rpcVolume;
 			} else {
 				engine.SetGlobalVariable (name, value);
 			}
@@ -201,7 +198,7 @@ namespace Microsoft.Xna.Framework.Audio
             positionalAudio = true;
 		}
         
-        internal void Update(AudioEngine.RpcCurve[] rpcCurves, AudioEngine.Variable[] variables)
+        internal void Update()
         {
             if (curSound != null && IsPlaying)
             {
@@ -210,20 +207,25 @@ namespace Microsoft.Xna.Framework.Audio
                 {
                     curSound.UpdatePosition(listener, emitter);
                 }
-                
+                UpdateRPCVariables();
+            }
+        }
+        
+        private void UpdateRPCVariables()
+        {
                 // RPC effects update
-                if (curSound.rpcEffects  != null)
+                if (curSound.rpcEffects != null)
                 {
                     for (int i = 0; i < curSound.rpcEffects.Length; i++)
                     {
                         // The current curve from the RPC effects
-                        AudioEngine.RpcCurve curve = rpcCurves[curSound.rpcEffects[i]];
+                        AudioEngine.RpcCurve curve = engine.rpcCurves[curSound.rpcEffects[i]];
                         
                         // The sound property we're modifying
                         AudioEngine.RpcParameter parameter = curve.parameter;
                         
                         // The variable that this curve is looking at
-                        float varValue = curSound.rpcVariables[variables[curve.variable].name];
+                        float varValue = curSound.rpcVariables[engine.variables[curve.variable].name];
                         
                         // Applying this when we're done...
                         float curveResult = 0.0f;
@@ -282,7 +284,9 @@ namespace Microsoft.Xna.Framework.Audio
                         // FIXME: All parameter types!
                         if (parameter == AudioEngine.RpcParameter.Volume)
                         {
-                            SetVariable(variables[curve.variable].name, curveResult);
+                            // FIXME: Multiple volumes?
+                            rpcVolume = 1.0f + (curveResult / 10000.0f);
+                            curSound.Volume = volume * categoryVolume * rpcVolume;
                         }
                         else
                         {
@@ -290,7 +294,6 @@ namespace Microsoft.Xna.Framework.Audio
                         }
                     }
                 }
-            }
         }
 		
 		public bool IsDisposed { get { return false; } }
