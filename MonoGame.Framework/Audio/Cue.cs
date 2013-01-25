@@ -183,10 +183,12 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 		
-		public float GetVariable (string name, float value)
+		public float GetVariable (string name)
 		{
 			if (name == "Volume") {
 				return volume;
+            } else if (curSound != null && curSound.rpcVariables.ContainsKey(name)) {
+                return curSound.rpcVariables[name];
 			} else {
 				return engine.GetGlobalVariable (name);
 			}
