@@ -229,7 +229,16 @@ namespace Microsoft.Xna.Framework.Audio
                         
                         // FIXME: ALL OF THIS IS ASSUMING LINEAR CURVES!
                         
-                        if (varValue <= curve.points[0].x)
+                        if (varValue == 0.0f)
+                        {
+                            // If it's 0, we're just at the stock value.
+                            if (curve.points[0].x == 0.0f)
+                            {
+                                // Some curves may start x->0 elsewhre.
+                                curveResult = curve.points[0].y;
+                            }
+                        }
+                        else if (varValue <= curve.points[0].x)
                         {
                             // Zero to first defined point
                             curveResult = curve.points[0].y / (varValue / curve.points[0].x);
@@ -263,7 +272,7 @@ namespace Microsoft.Xna.Framework.Audio
                         if (parameter == AudioEngine.RpcParameter.Volume)
                         {
                             // FIXME: The 100.0f is totally arbitrary. I dunno the exact ratio.
-                            SetVariable("INTERNAL_RPCVOLUME", curveResult / 100.0f);
+                            SetVariable("INTERNAL_RPCVOLUME", 1.0f - (curveResult / 100.0f));
                         }
                         else
                         {
