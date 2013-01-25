@@ -234,7 +234,7 @@ namespace Microsoft.Xna.Framework.Audio
                             // If it's 0, we're just at the stock value.
                             if (curve.points[0].x == 0.0f)
                             {
-                                // Some curves may start x->0 elsewhre.
+                                // Some curves may start x->0 elsewhere.
                                 curveResult = curve.points[0].y;
                             }
                         }
@@ -247,6 +247,12 @@ namespace Microsoft.Xna.Framework.Audio
                         {
                             // Last defined point to infinity
                             curveResult = curve.points[curve.points.Length - 1].y / (curve.points[curve.points.Length - 1].x / varValue);
+                            
+                            // Clamp it down, we can't have massive results.
+                            if (curveResult > 10000.0f)
+                                curveResult = 10000.0f;
+                            else if (curveResult < -10000.0f)
+                                curveResult = -10000.0f;
                         }
                         else
                         {
