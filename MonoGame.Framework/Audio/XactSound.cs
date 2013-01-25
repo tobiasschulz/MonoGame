@@ -9,7 +9,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal uint category;
         
         internal byte[] rpcEffects;
-        internal Dictionary<string, float> rpcVariables;
+        internal Dictionary<string, float> rpcVariables = new Dictionary<string, float>();
         
 		bool complexSound;
 		XactClip[] soundClips;
@@ -77,7 +77,6 @@ namespace Microsoft.Xna.Framework.Audio
                     }
                     
                     // Create the variable table
-                    rpcVariables = new Dictionary<string, float>();
                     for (int i = 0; i < rpcEffects.Length; i++)
                     {
                         rpcVariables.Add(
