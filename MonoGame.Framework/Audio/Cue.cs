@@ -110,8 +110,9 @@ namespace Microsoft.Xna.Framework.Audio
 			variationRand = new Random();
 		}
 		
-		internal Cue(string cuename, XactSound[] _sounds, float[] _probs)
+		internal Cue(AudioEngine engine, string cuename, XactSound[] _sounds, float[] _probs)
 		{
+            this.engine = engine;
 			name = cuename;
 			sounds = _sounds;
 			probs = _probs;

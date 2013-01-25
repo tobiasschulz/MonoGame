@@ -203,7 +203,7 @@ namespace Microsoft.Xna.Framework.Audio
 							
 							soundbankstream.Seek (savepos, SeekOrigin.Begin);
 							
-							cue = new Cue(cueNames[numSimpleCues+i], cueSounds, probs);
+							cue = new Cue(audioengine, cueNames[numSimpleCues+i], cueSounds, probs);
 						}
 						
 						//Instance Limit
