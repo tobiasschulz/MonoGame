@@ -271,8 +271,8 @@ namespace Microsoft.Xna.Framework.Audio
                         // FIXME: All parameter types!
                         if (parameter == AudioEngine.RpcParameter.Volume)
                         {
-                            // FIXME: The 100.0f is totally arbitrary. I dunno the exact ratio.
-                            SetVariable("INTERNAL_RPCVOLUME", 1.0f - (curveResult / 100.0f));
+                            // FIXME: The 10000.0 is based on what I'm seeing in the XAP.
+                            SetVariable("INTERNAL_RPCVOLUME", 1.0f - (curveResult / 10000.0f));
                         }
                         else
                         {
