@@ -102,7 +102,7 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region Private Member Data: OpenAL
-        private List<int> audioBuffers;
+        private Queue<int> audioBuffers;
         private int audioSourceIndex;
         #endregion
         
@@ -170,7 +170,7 @@ namespace Microsoft.Xna.Framework.Media
             audioStream = IntPtr.Zero;
             
             // Initialize the OpenAL source and buffer list.
-            audioBuffers = new List<int>();
+            audioBuffers = new Queue<int>();
             audioSourceIndex = AL.GenSource();
             
             // Initialize public members.
@@ -391,31 +391,19 @@ namespace Microsoft.Xna.Framework.Media
         #region The Theora audio decoder thread
         private void DecodeAudio()
         {
-            // Used to remove buffers from the source queue.
-            int processedBuffers;
-            
             // FIXME: Need a way to check when we're done!
             while (true)
             {
                 // Buffer...
-                audioBuffers.Add(AL.GenBuffer());
+                int buffer = AL.GenBuffer();
+                audioBuffers.Enqueue(buffer);
                 AL.BufferData(
-                    audioBuffers[audioBuffers.Count - 1],
+                    buffer,
                     (currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
                     currentAudio.samples,
                     currentAudio.frames * currentAudio.channels,
                     currentAudio.freq
                 );
-                
-                // Queue...
-                AL.SourceQueueBuffer(audioSourceIndex, audioBuffers[audioBuffers.Count - 1]);
-                
-                // Unqueue buffers, while we're at it.
-                AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processedBuffers);
-                if (processedBuffers > 0)
-                {
-                    AL.SourceUnqueueBuffers(audioSourceIndex, processedBuffers);
-                }
                 
                 // Free current packet, get next packet.
                 TheoraPlay.THEORAPLAY_freeAudio(audioStream);
@@ -433,8 +421,27 @@ namespace Microsoft.Xna.Framework.Media
         #region The Theora video player thread
         private void RunVideo()
         {
+            // We need a starting audio stream before we go about our business.
+            // FIXME: Assuming audio stream exists.
+            while (audioBuffers.Count < currentAudio.freq / 4096);
+            for (int i = 0; i < currentAudio.freq / 4096; i++)
+            {
+                AL.SourceQueueBuffer(audioSourceIndex, audioBuffers.Dequeue());
+            }
+            
             while (State != MediaState.Stopped)
             {
+                // Update the OpenAL source buffer queue.
+                int processedBuffers;
+                AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processedBuffers);
+                System.Console.WriteLine(processedBuffers);
+                while (processedBuffers-- > 0)
+                {
+                    int buffer = AL.SourceUnqueueBuffer(audioSourceIndex);
+                    AL.SourceQueueBuffer(audioSourceIndex, audioBuffers.Dequeue());
+                    AL.DeleteBuffer(buffer);
+                }
+                
                 // Sleep when paused, update the video state when playing.
                 if (State == MediaState.Paused)
                 {
