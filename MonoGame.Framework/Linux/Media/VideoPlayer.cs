@@ -204,7 +204,8 @@ namespace Microsoft.Xna.Framework.Media
             checkDisposed();
             
             // Be sure we can even get something from TheoraPlay...
-            if (    theoraDecoder == IntPtr.Zero ||
+            if (    State == MediaState.Stopped ||
+                    theoraDecoder == IntPtr.Zero ||
                     TheoraPlay.THEORAPLAY_isInitialized(theoraDecoder) == 0 ||
                     videoStream == IntPtr.Zero  )
             {
@@ -356,7 +357,7 @@ namespace Microsoft.Xna.Framework.Media
                 AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out sourceBufferCounts);
                 while (sourceBufferCounts-- > 0)
                 {
-                    System.Console.WriteLine("KILLING BUFFERS " + sourceBufferCounts);
+                    // System.Console.WriteLine("KILLING BUFFERS " + sourceBufferCounts);
                     int delBuffer = AL.SourceUnqueueBuffer(audioSourceIndex);
                     AL.DeleteBuffer(delBuffer);
                 }
@@ -365,7 +366,7 @@ namespace Microsoft.Xna.Framework.Media
                         sourceBufferCounts < currentAudio.freq / 4096;
                         AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersQueued, out sourceBufferCounts)    )
                 {
-                    System.Console.WriteLine("ADDING BUFFERS " + sourceBufferCounts);
+                    // System.Console.WriteLine("ADDING BUFFERS " + sourceBufferCounts);
                     if (audioBuffers.Count < 1)
                     {
                         break; // Oh well.
@@ -444,10 +445,11 @@ namespace Microsoft.Xna.Framework.Media
                         if (currentVideo.playms <= timer.ElapsedMilliseconds)
                         {
                             // Free current frame, get next frame.
-                            TheoraPlay.THEORAPLAY_freeVideo(videoStream);
+                            IntPtr hold = videoStream;
                             videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
                             if (videoStream != IntPtr.Zero)
                             {
+                                TheoraPlay.THEORAPLAY_freeVideo(hold);
                                 currentVideo = getVideoFrame(videoStream);
                             }
                         }
