@@ -102,7 +102,6 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region Private Member Data: OpenAL
-        private Queue<int> audioBuffers;
         private int audioSourceIndex;
         #endregion
         
@@ -145,6 +144,13 @@ namespace Microsoft.Xna.Framework.Media
             System.Runtime.InteropServices.Marshal.Copy(pixels, thePixels, 0, imageSize);
             return thePixels;
         }
+        
+        private float[] getSamples(IntPtr samples, int packetSize)
+        {
+            float[] theSamples = new float[packetSize];
+            System.Runtime.InteropServices.Marshal.Copy(samples, theSamples, 0, packetSize);
+            return theSamples;
+        }
         #endregion
         
         #region Private Methods: OpenAL
@@ -170,7 +176,6 @@ namespace Microsoft.Xna.Framework.Media
             audioStream = IntPtr.Zero;
             
             // Initialize the OpenAL source and buffer list.
-            audioBuffers = new Queue<int>();
             audioSourceIndex = AL.GenSource();
             
             // Initialize public members.
@@ -347,53 +352,65 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region The Theora audio decoder thread
-        private void DecodeAudio()
+        private void StreamAudio(int buffer)
         {
-            // FIXME: Need a way to check when we're done!
-            while (true)
+            List<float> data = new List<float>();
+            while (data.Count < 4096 * 16)
             {
-                // Update the OpenAL source buffer queue.
-                int sourceBufferCounts;
-                AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out sourceBufferCounts);
-                while (sourceBufferCounts-- > 0)
+                while (audioStream == IntPtr.Zero)
                 {
-                    // System.Console.WriteLine("KILLING BUFFERS " + sourceBufferCounts);
-                    int delBuffer = AL.SourceUnqueueBuffer(audioSourceIndex);
-                    AL.DeleteBuffer(delBuffer);
+                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
+                }
+                currentAudio = getAudioPacket(audioStream);
+                data.AddRange(
+                    getSamples(
+                        currentAudio.samples,
+                        currentAudio.frames * currentAudio.channels
+                    )
+                );
+                
+                if (currentAudio.frames > 0 && currentAudio.frames < 2048)
+                {
+                    // We've probably hit the end of the stream.
+                    break;
                 }
                 
-                for (   AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersQueued, out sourceBufferCounts);
-                        sourceBufferCounts < currentAudio.freq / 4096;
-                        AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersQueued, out sourceBufferCounts)    )
+                if ((4096 * 16) - data.Count < 4096)
                 {
-                    // System.Console.WriteLine("ADDING BUFFERS " + sourceBufferCounts);
-                    if (audioBuffers.Count < 1)
-                    {
-                        break; // Oh well.
-                    }
-                    AL.SourceQueueBuffer(audioSourceIndex, audioBuffers.Dequeue());
+                    break;
                 }
-                
-                // Buffer...
-                int buffer = AL.GenBuffer();
-                audioBuffers.Enqueue(buffer);
+            }
+            
+            if (data.Count > 0)
+            {
                 AL.BufferData(
                     buffer,
                     (currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
-                    currentAudio.samples,
-                    currentAudio.frames * currentAudio.channels,
+                    data.ToArray(),
+                    data.Count,
                     currentAudio.freq
                 );
-                
-                // Free current packet.
-                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
-                
-                // Get next packet. Hard.
-                do
+            }
+        }
+        
+        private void DecodeAudio()
+        {
+            int[] buffers = AL.GenBuffers(2);
+            StreamAudio(buffers[0]);
+            StreamAudio(buffers[1]);
+            AL.SourceQueueBuffers(audioSourceIndex, 2, buffers);
+            
+            // FIXME: Need a proper way out of this!
+            while (true)
+            {
+                int processed;
+                AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processed);
+                while (processed-- > 0)
                 {
-                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
-                } while (audioStream == IntPtr.Zero);
-                currentAudio = getAudioPacket(audioStream);
+                    int buffer = AL.SourceUnqueueBuffer(audioSourceIndex);
+                    StreamAudio(buffer);
+                    AL.SourceQueueBuffer(audioSourceIndex, buffer);
+                }
             }
         }
         #endregion
@@ -430,7 +447,8 @@ namespace Microsoft.Xna.Framework.Media
                     }
                     
                     // If we're getting here, we should be playing the audio...
-                    if (audioStream != IntPtr.Zero)
+                    // FIXME: Need a proper check for this.
+                    //if (audioStream != IntPtr.Zero)
                     {
                         if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Playing)
                         {
@@ -449,7 +467,6 @@ namespace Microsoft.Xna.Framework.Media
                             videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
                             if (videoStream != IntPtr.Zero)
                             {
-                                TheoraPlay.THEORAPLAY_freeVideo(hold);
                                 currentVideo = getVideoFrame(videoStream);
                             }
                         }
@@ -492,8 +509,7 @@ namespace Microsoft.Xna.Framework.Media
                 AL.SourceStop(audioSourceIndex);
             }
             AL.SourceRewind(audioSourceIndex);
-            AL.DeleteBuffers(audioBuffers.ToArray());
-            audioBuffers.Clear();
+            AL.DeleteBuffers(AL.SourceUnqueueBuffers(audioSourceIndex, 2));
             
             // Stop and unassign the decoder.
             if (theoraDecoder != IntPtr.Zero)
