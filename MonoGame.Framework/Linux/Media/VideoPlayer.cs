@@ -354,7 +354,10 @@ namespace Microsoft.Xna.Framework.Media
         #region The Theora audio decoder thread
         private void StreamAudio(int buffer)
         {
+            // Store our abstracted buffer into here.
             List<float> data = new List<float>();
+            
+            // Add to the buffer from the decoder until it's large enough.
             while (data.Count < 4096 * 16)
             {
                 data.AddRange(
@@ -376,6 +379,7 @@ namespace Microsoft.Xna.Framework.Media
                 }
             }
             
+            // If we actually got data, buffer it into OpenAL.
             if (data.Count > 0)
             {
                 AL.BufferData(
@@ -390,13 +394,17 @@ namespace Microsoft.Xna.Framework.Media
         
         private void DecodeAudio()
         {
+            // We'll use two alternative buffers.
             int[] buffers = AL.GenBuffers(2);
+            
+            // Fill and queue the buffers.
             StreamAudio(buffers[0]);
             StreamAudio(buffers[1]);
             AL.SourceQueueBuffers(audioSourceIndex, 2, buffers);
             
             while (State != MediaState.Stopped)
             {
+                // When a buffer has been processed, refill it.
                 int processed;
                 AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processed);
                 while (processed-- > 0)
@@ -493,7 +501,6 @@ namespace Microsoft.Xna.Framework.Media
             timer.Reset();
             
             // Stop the decoding, we don't need it anymore.
-            audioDecoderThread.Abort();
             audioDecoderThread.Join();
             
             // Force stop the OpenAL source.
