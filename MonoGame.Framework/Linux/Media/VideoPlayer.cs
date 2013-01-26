@@ -214,10 +214,6 @@ namespace Microsoft.Xna.Framework.Media
             // Assign this locally, or else the thread will ruin your face.
             TheoraPlay.THEORAPLAY_VideoFrame currentFrame = currentVideo;
             
-            
-            // FIXME: The rest of this method kind of hurts.
-            
-            
             // Create the Texture2D.
             Texture2D currentTexture = new Texture2D(
                 device,
@@ -227,52 +223,14 @@ namespace Microsoft.Xna.Framework.Media
                 SurfaceFormat.Color
             );
             
-            // Create the texture data from the Theora image data.
-            // FIXME: ASSUMING IYUV!!!
+            // Get the array of pixels from the frame's IntPtr.
             byte[] theoraPixels = getPixels(
                 currentFrame.pixels,
-                (int) currentFrame.width * (int) currentFrame.height * 12 / 8
+                (int) currentFrame.width * (int) currentFrame.height * 4
             );
-            byte[] pixelBGRA = new byte[(int) currentFrame.width * (int) currentFrame.height * 4];
-            for (int i = 0, j = 0; i < theoraPixels.Length; i += 3, j += 8)
-            {
-                // The IYUV -> BGR formula. Thanks, Google!
-                
-                // YUV is within 12 bits.
-                int Y = theoraPixels[i] >> 4;
-                int U = theoraPixels[i] & 0xF;
-                int V = theoraPixels[i + 1] >> 4;
-                
-                // The actual conversion from YUV to RGB.
-                int R = (int) (Y + (1.370705 * (V - 128)));
-                int G = (int) (Y + (0.698001 * (V - 128)) - (0.337633 * (U - 128)));
-                int B = (int) (Y + (1.732446 * (U - 128)));
-                
-                // Clamp values to 0-255, and set the alpha to max value.
-                pixelBGRA[j] = (byte) ((R < 0) ? 0 : ((R > 256) ? 256 : R));
-                pixelBGRA[j + 1] = (byte) ((G < 0) ? 0 : ((G > 256) ? 256 : G));
-                pixelBGRA[j + 2] = (byte) ((B < 0) ? 0 : ((B > 256) ? 256 : B));
-                pixelBGRA[j + 3] = (byte) (255);
-                
-                // 12 + 12 = 24, conveniently 3 full bytes!
-                Y = theoraPixels[i + 1] & 0xF;
-                U = theoraPixels[i + 2] >> 4;
-                V = theoraPixels[i + 2] & 0xF;
-                
-                // Convert again...
-                R = (int) (Y + (1.370705 * (V - 128)));
-                G = (int) (Y + (0.698001 * (V - 128)) - (0.337633 * (U - 128)));
-                B = (int) (Y + (1.732446 * (U - 128)));
-                
-                // Clamp values to 0-255, and set the alpha to max value.
-                pixelBGRA[j + 4] = (byte) ((R < 0) ? 0 : ((R > 256) ? 256 : R));
-                pixelBGRA[j + 5] = (byte) ((G < 0) ? 0 : ((G > 256) ? 256 : G));
-                pixelBGRA[j + 6] = (byte) ((B < 0) ? 0 : ((B > 256) ? 256 : B));
-                pixelBGRA[j + 7] = (byte) (255);
-            }
             
             // TexImage2D.
-            currentTexture.SetData<byte>(pixelBGRA);
+            currentTexture.SetData<byte>(theoraPixels);
 
             return currentTexture;
         }
@@ -291,11 +249,10 @@ namespace Microsoft.Xna.Framework.Media
             }
             
             // Initialize the decoder.
-            // FIXME: ASSUMING IYUV!!!
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 Video.FileName,
                 uint.MaxValue,
-                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
+                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_RGBA
             );
             
             // Initialize the audio stream pointer and get our first packet.
@@ -394,6 +351,28 @@ namespace Microsoft.Xna.Framework.Media
             // FIXME: Need a way to check when we're done!
             while (true)
             {
+                // Update the OpenAL source buffer queue.
+                int sourceBufferCounts;
+                AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out sourceBufferCounts);
+                while (sourceBufferCounts-- > 0)
+                {
+                    System.Console.WriteLine("KILLING BUFFERS " + sourceBufferCounts);
+                    int delBuffer = AL.SourceUnqueueBuffer(audioSourceIndex);
+                    AL.DeleteBuffer(delBuffer);
+                }
+                
+                for (   AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersQueued, out sourceBufferCounts);
+                        sourceBufferCounts < currentAudio.freq / 4096;
+                        AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersQueued, out sourceBufferCounts)    )
+                {
+                    System.Console.WriteLine("ADDING BUFFERS " + sourceBufferCounts);
+                    if (audioBuffers.Count < 1)
+                    {
+                        break; // Oh well.
+                    }
+                    AL.SourceQueueBuffer(audioSourceIndex, audioBuffers.Dequeue());
+                }
+                
                 // Buffer...
                 int buffer = AL.GenBuffer();
                 audioBuffers.Enqueue(buffer);
@@ -405,7 +384,7 @@ namespace Microsoft.Xna.Framework.Media
                     currentAudio.freq
                 );
                 
-                // Free current packet, get next packet.
+                // Free current packet.
                 TheoraPlay.THEORAPLAY_freeAudio(audioStream);
                 
                 // Get next packet. Hard.
@@ -421,27 +400,8 @@ namespace Microsoft.Xna.Framework.Media
         #region The Theora video player thread
         private void RunVideo()
         {
-            // We need a starting audio stream before we go about our business.
-            // FIXME: Assuming audio stream exists.
-            while (audioBuffers.Count < currentAudio.freq / 4096);
-            for (int i = 0; i < currentAudio.freq / 4096; i++)
-            {
-                AL.SourceQueueBuffer(audioSourceIndex, audioBuffers.Dequeue());
-            }
-            
             while (State != MediaState.Stopped)
             {
-                // Update the OpenAL source buffer queue.
-                int processedBuffers;
-                AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processedBuffers);
-                System.Console.WriteLine(processedBuffers);
-                while (processedBuffers-- > 0)
-                {
-                    int buffer = AL.SourceUnqueueBuffer(audioSourceIndex);
-                    AL.SourceQueueBuffer(audioSourceIndex, audioBuffers.Dequeue());
-                    AL.DeleteBuffer(buffer);
-                }
-                
                 // Sleep when paused, update the video state when playing.
                 if (State == MediaState.Paused)
                 {
