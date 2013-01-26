@@ -357,11 +357,6 @@ namespace Microsoft.Xna.Framework.Media
             List<float> data = new List<float>();
             while (data.Count < 4096 * 16)
             {
-                while (audioStream == IntPtr.Zero)
-                {
-                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
-                }
-                currentAudio = getAudioPacket(audioStream);
                 data.AddRange(
                     getSamples(
                         currentAudio.samples,
@@ -369,13 +364,13 @@ namespace Microsoft.Xna.Framework.Media
                     )
                 );
                 
-                if (currentAudio.frames > 0 && currentAudio.frames < 2048)
+                do
                 {
-                    // We've probably hit the end of the stream.
-                    break;
-                }
+                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
+                } while (audioStream == IntPtr.Zero);
+                currentAudio = getAudioPacket(audioStream);
                 
-                if ((4096 * 16) - data.Count < 4096)
+                if (((4096 * 16) - data.Count) < 4096)
                 {
                     break;
                 }
@@ -400,8 +395,7 @@ namespace Microsoft.Xna.Framework.Media
             StreamAudio(buffers[1]);
             AL.SourceQueueBuffers(audioSourceIndex, 2, buffers);
             
-            // FIXME: Need a proper way out of this!
-            while (true)
+            while (State != MediaState.Stopped)
             {
                 int processed;
                 AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processed);
@@ -463,7 +457,6 @@ namespace Microsoft.Xna.Framework.Media
                         if (currentVideo.playms <= timer.ElapsedMilliseconds)
                         {
                             // Free current frame, get next frame.
-                            IntPtr hold = videoStream;
                             videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
                             if (videoStream != IntPtr.Zero)
                             {
