@@ -112,6 +112,9 @@ namespace Microsoft.Xna.Framework
                 // We set the current directory to the ResourcePath on Mac
                 Directory.SetCurrentDirectory(NSBundle.MainBundle.ResourcePath);
             }
+            
+            Tao.Sdl.Sdl.SDL_InitSubSystem(Tao.Sdl.Sdl.SDL_INIT_AUDIO);
+            Tao.Sdl.SdlMixer.Mix_OpenAudio(44100, (short) Tao.Sdl.Sdl.AUDIO_S16SYS, 2, 1024);
         }
 
         private void InitializeMainWindow()
@@ -235,6 +238,8 @@ namespace Microsoft.Xna.Framework
                 var windowController = (NSWindowController)_mainWindow.WindowController;
                 windowController.Close();
             }
+            
+            Tao.Sdl.SdlMixer.Mix_CloseAudio();
         }
 
         public override void StartRunLoop()
