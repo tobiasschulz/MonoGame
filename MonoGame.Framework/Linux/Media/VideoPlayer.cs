@@ -354,11 +354,14 @@ namespace Microsoft.Xna.Framework.Media
         #region The Theora audio decoder thread
         private void StreamAudio(int buffer)
         {
+            // The size of our abstracted buffer.
+            const int BUFFER_SIZE = 4096 * 16;
+            
             // Store our abstracted buffer into here.
             List<float> data = new List<float>();
             
             // Add to the buffer from the decoder until it's large enough.
-            while (data.Count < 4096 * 16)
+            while (data.Count < BUFFER_SIZE)
             {
                 data.AddRange(
                     getSamples(
@@ -373,7 +376,7 @@ namespace Microsoft.Xna.Framework.Media
                 } while (audioStream == IntPtr.Zero);
                 currentAudio = getAudioPacket(audioStream);
                 
-                if (((4096 * 16) - data.Count) < 4096)
+                if ((BUFFER_SIZE - data.Count) < 4096)
                 {
                     break;
                 }
@@ -394,13 +397,18 @@ namespace Microsoft.Xna.Framework.Media
         
         private void DecodeAudio()
         {
-            // We'll use two alternative buffers.
-            int[] buffers = AL.GenBuffers(2);
+            // The number of AL buffers to queue into the source.
+            const int NUM_BUFFERS = 2;
+            
+            // Generate the alternating buffers.
+            int[] buffers = AL.GenBuffers(NUM_BUFFERS);
             
             // Fill and queue the buffers.
-            StreamAudio(buffers[0]);
-            StreamAudio(buffers[1]);
-            AL.SourceQueueBuffers(audioSourceIndex, 2, buffers);
+            for (int i = 0; i < NUM_BUFFERS; i++)
+            {
+                StreamAudio(buffers[i]);
+            }
+            AL.SourceQueueBuffers(audioSourceIndex, NUM_BUFFERS, buffers);
             
             while (State != MediaState.Stopped)
             {
