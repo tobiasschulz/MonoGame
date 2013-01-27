@@ -389,7 +389,7 @@ namespace Microsoft.Xna.Framework.Media
                     buffer,
                     (currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
                     data.ToArray(),
-                    data.Count,
+                    data.Count * 2 * currentAudio.channels, // Dear OpenAL: WTF?! Love, flibit
                     currentAudio.freq
                 );
             }
