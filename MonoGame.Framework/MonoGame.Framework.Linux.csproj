@@ -406,6 +406,7 @@
     <Compile Include="Utilities\Hash.cs" />
     <Compile Include="Content\ResourceContentManager.cs" />
     <Compile Include="Audio\MSADPCMToPCM.cs" />
+    <Compile Include="Media\VideoSoundtrackType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.Linux.csproj">
