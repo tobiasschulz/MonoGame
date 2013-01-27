@@ -2,7 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+#if MONOMAC
+using MonoMac.OpenAL;
+#else
 using OpenTK.Audio.OpenAL;
+#endif
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Media

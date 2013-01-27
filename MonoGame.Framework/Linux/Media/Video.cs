@@ -52,9 +52,13 @@ namespace Microsoft.Xna.Framework.Media
 		
 		internal Video(string FileName)
 		{
+#if MONOMAC
+			_fileName = FileName;
+#else
             // FIXME: Force .ogv extension
 			_fileName = FileName.Substring(0, FileName.IndexOf('.'));
             _fileName += ".ogv";
+#endif
 		}
 				
 		public Color BackgroundColor

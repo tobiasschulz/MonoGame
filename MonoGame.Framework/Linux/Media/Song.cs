@@ -56,18 +56,35 @@ namespace Microsoft.Xna.Framework.Media
 		private int _playCount;
 		private int _volume; // in SDL units from 0 to 128
 
+#if MONOMAC
+		private static bool _mixerStarted = false;
+#endif
+
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
 		
 		internal Song(string fileName)
 		{			
 			_name = fileName;
-
+#if MONOMAC
+			if (!_mixerStarted)
+			{
+				Tao.Sdl.Sdl.SDL_InitSubSystem(Tao.Sdl.Sdl.SDL_INIT_AUDIO);
+				Tao.Sdl.SdlMixer.Mix_OpenAudio(44100, (short) Tao.Sdl.Sdl.AUDIO_S16SYS, 2, 1024);
+				_mixerStarted = true;
+			}
+#endif
 			_audioData = Tao.Sdl.SdlMixer.Mix_LoadMUS(fileName);
 		}
 		
 		internal void OnFinishedPlaying ()
 		{
 			MediaPlayer.OnSongFinishedPlaying(null, null);
+#if MONOMAC
+			if (_mixerStarted)
+			{
+				Tao.Sdl.SdlMixer.Mix_CloseAudio();
+			}
+#endif
 		}
 		
 		/// <summary>
@@ -144,7 +161,7 @@ namespace Microsoft.Xna.Framework.Media
 			// also, the DonePlaying handler of this class will only be set while the song is actually played in MediaPlayer.
 			// when the next song starts playing, this will then be overwritten, which shouldn't be a problem
 			SdlMixer.Mix_HookMusicFinished(OnFinishedPlaying);
-			SdlMixer.Mix_PlayMusic(_audioData, 0);
+			if (SdlMixer.Mix_PlayMusic(_audioData, 0) == -1) throw new Exception(SdlMixer.Mix_GetError());
 			_playCount++;
 		}
 
