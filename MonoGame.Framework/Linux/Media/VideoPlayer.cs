@@ -407,6 +407,9 @@ namespace Microsoft.Xna.Framework.Media
         private TheoraPlay.THEORAPLAY_AudioPacket currentAudio;
         
         private Thread audioDecoderThread;
+        
+        // Used to prevent a frame from getting lost before we get the texture.
+        private bool frameLocked;
         #endregion
         
         #region Private Member Data: OpenAL
@@ -499,6 +502,7 @@ namespace Microsoft.Xna.Framework.Media
             timer = new Stopwatch();
             playerThread = new Thread(new ThreadStart(this.RunVideo));
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
+            frameLocked = false;
             
 #if VIDEOPLAYER_OPENGL
             // Initialize the OpenGL bits.
@@ -538,13 +542,13 @@ namespace Microsoft.Xna.Framework.Media
             }
             
             // Assign this locally, or else the thread will ruin your face.
-            TheoraPlay.THEORAPLAY_VideoFrame currentFrame = currentVideo;
+            frameLocked = true;
             
             // Create the Texture2D.
             Texture2D currentTexture = new Texture2D(
                 device,
-                (int) currentFrame.width,
-                (int) currentFrame.height,
+                (int) currentVideo.width,
+                (int) currentVideo.height,
                 false,
                 SurfaceFormat.Color
             );
@@ -601,11 +605,11 @@ namespace Microsoft.Xna.Framework.Media
                 0,
                 0,
                 0,
-                (int) currentFrame.width,
-                (int) currentFrame.height,
+                (int) currentVideo.width,
+                (int) currentVideo.height,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
-                currentFrame.pixels
+                currentVideo.pixels
             );
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, yuvTextures[1]);
@@ -614,13 +618,13 @@ namespace Microsoft.Xna.Framework.Media
                 0,
                 0,
                 0,
-                (int) currentFrame.width / 2,
-                (int) currentFrame.height / 2,
+                (int) currentVideo.width / 2,
+                (int) currentVideo.height / 2,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 new IntPtr(
-                    currentFrame.pixels.ToInt64() +
-                    (currentFrame.width * currentFrame.height)
+                    currentVideo.pixels.ToInt64() +
+                    (currentVideo.width * currentVideo.height)
                 )
             );
             GL.ActiveTexture(TextureUnit.Texture2);
@@ -630,14 +634,14 @@ namespace Microsoft.Xna.Framework.Media
                 0,
                 0,
                 0,
-                (int) currentFrame.width / 2,
-                (int) currentFrame.height / 2,
+                (int) currentVideo.width / 2,
+                (int) currentVideo.height / 2,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 new IntPtr(
-                    currentFrame.pixels.ToInt64() +
-                    (currentFrame.width * currentFrame.height) +
-                    (currentFrame.width / 2 * currentFrame.height / 2)
+                    currentVideo.pixels.ToInt64() +
+                    (currentVideo.width * currentVideo.height) +
+                    (currentVideo.width / 2 * currentVideo.height / 2)
                 )
             );
             
@@ -666,8 +670,8 @@ namespace Microsoft.Xna.Framework.Media
             try
             {
                 byte[] theoraPixels = getPixels(
-                    currentFrame.pixels,
-                    (int) currentFrame.width * (int) currentFrame.height * 4
+                    currentVideo.pixels,
+                    (int) currentVideo.width * (int) currentVideo.height * 4
                 );
                 
                 // TexImage2D.
@@ -682,7 +686,10 @@ namespace Microsoft.Xna.Framework.Media
                 return null;
             }
 #endif
-
+   
+            // Release the lock on the frame, we're done.
+            frameLocked = false;
+            
             return currentTexture;
         }
         
@@ -826,6 +833,9 @@ namespace Microsoft.Xna.Framework.Media
                     )
                 );
                 
+                // We've copied the audio, so free this.
+                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
+                
                 do
                 {
                     audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
@@ -928,11 +938,19 @@ namespace Microsoft.Xna.Framework.Media
                         // Only step when it's time to do so.
                         if (currentVideo.playms <= timer.ElapsedMilliseconds)
                         {
-                            // Free current frame, get next frame.
+                            // Get next frame ready...
+                            IntPtr hold = videoStream;
                             videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
                             if (videoStream != IntPtr.Zero)
                             {
+                                // Wait until GetTexture() is done.
+                                
+                                // FIXME: Maybe use an actual thread synchronization technique.
+                                while (frameLocked);
+                                
+                                // Assign next frame, free old one.
                                 currentVideo = getVideoFrame(videoStream);
+                                TheoraPlay.THEORAPLAY_freeVideo(hold);
                             }
                         }
                     }
