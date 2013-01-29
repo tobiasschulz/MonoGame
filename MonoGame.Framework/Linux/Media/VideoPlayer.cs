@@ -96,8 +96,17 @@ namespace Microsoft.Xna.Framework.Media
         private float[] vert_pos;
         private float[] vert_tex;
         
+        // Used to restore our previous GL state.
+        private int[] oldTextures;
+        private int oldShader;
+        private int oldFramebuffer;
+        private int oldActiveTexture;
+        
         private void GL_initialize()
         {
+            // Initialize the texture storage array.
+            oldTextures = new int[3];
+            
             // Create the YUV textures.
             yuvTextures = new int[3];
             GL.GenTextures(3, yuvTextures);
@@ -160,6 +169,109 @@ namespace Microsoft.Xna.Framework.Media
             
             // Delete the YUV textures.
             GL.DeleteTextures(3, yuvTextures);
+        }
+        
+        private void GL_setupTargets(int width, int height)
+        {
+            // We're going to be messing with things to do this...
+            GL_pushState();
+            
+            // Allocate this now, because Mono is a derp
+            theoraPixels = new uint[currentVideo.width * currentVideo.height];
+            
+            // We'll just use this for all the texture work.
+            GL.ActiveTexture(TextureUnit.Texture0);
+            
+            // Bind our framebuffer, create and attach our result texture.
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
+            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Rgba,
+                width,
+                height,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedInt,
+                IntPtr.Zero
+            );
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                rgbaResult,
+                0
+            );
+            
+            // Allocate YUV GL textures
+            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[0]);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Luminance,
+                width,
+                height,
+                0,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte,
+                IntPtr.Zero
+            );
+            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[1]);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Luminance,
+                width / 2,
+                height / 2,
+                0,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte,
+                IntPtr.Zero
+            );
+            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[2]);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Luminance,
+                width / 2,
+                height / 2,
+                0,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte,
+                IntPtr.Zero
+            );
+            
+            // Aaand we should be set now.
+            GL_popState();
+        }
+        
+        // FIXME: Oh Christ, how much do we need to push?
+        private void GL_pushState()
+        {
+            GL.GetInteger(GetPName.CurrentProgram, out oldShader);
+            GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[0]);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[1]);
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[2]);
+            GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
+        }
+        
+        // FIXME: Oh gracious, how much are we cleaning up...
+        private void GL_popState()
+        {
+            GL.UseProgram(oldShader);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, oldTextures[0]);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, oldTextures[1]);
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
+            GL.ActiveTexture((TextureUnit) oldActiveTexture);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
         }
 #endif
         #endregion
@@ -397,24 +509,8 @@ namespace Microsoft.Xna.Framework.Media
             );
             
 #if VIDEOPLAYER_OPENGL
-            // Used to restore our previous GL state.
-            int[] oldTextures = new int[3];
-            int oldShader;
-            int oldFramebuffer;
-            int oldActiveTexture;
-            
-            // FIXME: Oh Christ, how much do we need to push?
-            
-            // flibitPushState();
-            GL.GetInteger(GetPName.CurrentProgram, out oldShader);
-            GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[0]);
-            GL.ActiveTexture(TextureUnit.Texture1);
-            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[1]);
-            GL.ActiveTexture(TextureUnit.Texture2);
-            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[2]);
-            GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
+            // Set up an environment to muck about in.
+            GL_pushState();
             
             // Bind our shader program.
             GL.UseProgram(shaderProgram);
@@ -455,50 +551,30 @@ namespace Microsoft.Xna.Framework.Media
             
             // Bind our framebuffer, create and attach our result texture.
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.Rgba,
-                (int) currentFrame.width,
-                (int) currentFrame.height,
-                0,
-                PixelFormat.Rgba,
-                PixelType.UnsignedInt,
-                IntPtr.Zero
-            );
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                rgbaResult,
-                0
-            );
             
             // Prepare YUV GL textures
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, yuvTextures[0]);
-            GL.TexImage2D(
+            GL.TexSubImage2D(
                 TextureTarget.Texture2D,
                 0,
-                PixelInternalFormat.Luminance,
+                0,
+                0,
                 (int) currentFrame.width,
                 (int) currentFrame.height,
-                0,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 currentFrame.pixels
             );
             GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.Texture2D, yuvTextures[1]);
-            GL.TexImage2D(
+            GL.TexSubImage2D(
                 TextureTarget.Texture2D,
                 0,
-                PixelInternalFormat.Luminance,
+                0,
+                0,
                 (int) currentFrame.width / 2,
                 (int) currentFrame.height / 2,
-                0,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 new IntPtr(
@@ -508,17 +584,18 @@ namespace Microsoft.Xna.Framework.Media
             );
             GL.ActiveTexture(TextureUnit.Texture2);
             GL.BindTexture(TextureTarget.Texture2D, yuvTextures[2]);
-            GL.TexImage2D(
+            GL.TexSubImage2D(
                 TextureTarget.Texture2D,
                 0,
-                PixelInternalFormat.Luminance,
+                0,
+                0,
                 (int) currentFrame.width / 2,
                 (int) currentFrame.height / 2,
-                0,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 new IntPtr(
                     currentFrame.pixels.ToInt64() +
+                    (currentFrame.width * currentFrame.height) +
                     (currentFrame.width / 2 * currentFrame.height / 2)
                 )
             );
@@ -527,8 +604,8 @@ namespace Microsoft.Xna.Framework.Media
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
             // Bind the result texture, dump it to the managed array.
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
+            //GL.ActiveTexture(TextureUnit.Texture0);
+            //GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
             GL.GetTexImage(
                 TextureTarget.Texture2D,
                 0,
@@ -537,18 +614,8 @@ namespace Microsoft.Xna.Framework.Media
                 theoraPixels
             );
             
-            // FIXME: Oh gracious, how much are we cleaning up...
-            
-            // flibitPopState();
-            GL.UseProgram(oldShader);
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, oldTextures[0]);
-            GL.ActiveTexture(TextureUnit.Texture1);
-            GL.BindTexture(TextureTarget.Texture2D, oldTextures[1]);
-            GL.ActiveTexture(TextureUnit.Texture2);
-            GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
-            GL.ActiveTexture((TextureUnit) oldActiveTexture);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
+            // Clean up after ourselves.
+            GL_popState();
             
             // TexImage2D.
             currentTexture.SetData<uint>(theoraPixels);
@@ -617,8 +684,10 @@ namespace Microsoft.Xna.Framework.Media
                 }
                 currentVideo = getVideoFrame(videoStream);
 #if VIDEOPLAYER_OPENGL
-                // Allocate this now, because Mono is a derp
-                theoraPixels = new uint[currentVideo.width * currentVideo.height];
+                GL_setupTargets(
+                    (int) currentVideo.width,
+                    (int) currentVideo.height
+                );
 #endif
             }
             
