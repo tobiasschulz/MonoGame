@@ -89,6 +89,10 @@ namespace Microsoft.Xna.Framework.Media
         private int rgbaFramebuffer;
         private int rgbaResult;
         
+        // The Mono runtime explodes when we allocate this during GetTexture().
+        // We're going to have to allocate this when we hit Play() instead.
+        private uint[] theoraPixels;
+        
         private float[] vert_pos;
         private float[] vert_tex;
         
@@ -519,12 +523,12 @@ namespace Microsoft.Xna.Framework.Media
                 )
             );
             
+            // Draw the YUV textures to the framebuffer with our shader.
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
-            uint[] theoraPixels = new uint[currentFrame.width * currentFrame.height];
-            // FIXME: THIS DON'T WORK, LOL
-            //GL.ActiveTexture(TextureUnit.Texture0);
-            //GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
+            // Bind the result texture, dump it to the managed array.
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
             GL.GetTexImage(
                 TextureTarget.Texture2D,
                 0,
@@ -612,6 +616,10 @@ namespace Microsoft.Xna.Framework.Media
                     Thread.Sleep(10);
                 }
                 currentVideo = getVideoFrame(videoStream);
+#if VIDEOPLAYER_OPENGL
+                // Allocate this now, because Mono is a derp
+                theoraPixels = new uint[currentVideo.width * currentVideo.height];
+#endif
             }
             
             // Update the player state now, for the thread we're about to make.
