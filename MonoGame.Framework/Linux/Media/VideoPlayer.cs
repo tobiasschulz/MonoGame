@@ -89,12 +89,8 @@ namespace Microsoft.Xna.Framework.Media
         private int rgbaFramebuffer;
         private int rgbaResult;
         
-        private struct vert_struct
-        {
-            public float[] pos;
-            public float[] tex;
-        };
-        private vert_struct[] drawVerts;
+        private float[] vert_pos;
+        private float[] vert_tex;
         
         private void GL_initialize()
         {
@@ -107,31 +103,24 @@ namespace Microsoft.Xna.Framework.Media
             rgbaResult = GL.GenTexture();
             
             // Create our pile of vertices.
-            drawVerts = new vert_struct[4];
-                drawVerts[0].pos = new float[2];
-                    drawVerts[0].pos[0] = -1.0f;
-                    drawVerts[0].pos[1] =  1.0f;
-                drawVerts[0].tex = new float[2];
-                    drawVerts[0].tex[0] =  0.0f;
-                    drawVerts[0].tex[1] =  0.0f;
-                drawVerts[1].pos = new float[2];
-                    drawVerts[1].pos[0] =  1.0f;
-                    drawVerts[1].pos[1] =  1.0f;
-                drawVerts[1].tex = new float[2];
-                    drawVerts[1].tex[0] =  1.0f;
-                    drawVerts[1].tex[1] =  0.0f;
-                drawVerts[2].pos = new float[2];
-                    drawVerts[2].pos[0] = -1.0f;
-                    drawVerts[2].pos[1] = -1.0f;
-                drawVerts[2].tex = new float[2];
-                    drawVerts[2].tex[0] =  0.0f;
-                    drawVerts[2].tex[1] =  1.0f;
-                drawVerts[3].pos = new float[2];
-                    drawVerts[3].pos[0] =  1.0f;
-                    drawVerts[3].pos[1] = -1.0f;
-                drawVerts[3].tex = new float[2];
-                    drawVerts[3].tex[0] =  1.0f;
-                    drawVerts[3].tex[1] =  1.0f;
+            vert_pos = new float[2 * 4]; // 2 dimensions * 4 vertices
+            vert_tex = new float[2 * 4];
+                    vert_pos[0] = -1.0f;
+                    vert_pos[1] =  1.0f;
+                    vert_tex[0] =  0.0f;
+                    vert_tex[1] =  0.0f;
+                    vert_pos[2] =  1.0f;
+                    vert_pos[3] =  1.0f;
+                    vert_tex[2] =  1.0f;
+                    vert_tex[3] =  0.0f;
+                    vert_pos[4] = -1.0f;
+                    vert_pos[5] = -1.0f;
+                    vert_tex[4] =  0.0f;
+                    vert_tex[5] =  1.0f;
+                    vert_pos[6] =  1.0f;
+                    vert_pos[7] = -1.0f;
+                    vert_tex[6] =  1.0f;
+                    vert_tex[7] =  1.0f;
             
             // Create the vertex/fragment shaders.
             int vshader_id = GL.CreateShader(ShaderType.VertexShader);
@@ -404,7 +393,6 @@ namespace Microsoft.Xna.Framework.Media
             );
             
 #if VIDEOPLAYER_OPENGL
-            
             // Used to restore our previous GL state.
             int[] oldTextures = new int[3];
             int oldShader;
@@ -447,16 +435,16 @@ namespace Microsoft.Xna.Framework.Media
                 2,
                 VertexAttribPointerType.Float,
                 false,
-                16, // FIXME: CHECK THIS!!!
-                drawVerts[0].pos
+                8,
+                vert_pos
             );
             GL.VertexAttribPointer(
                 1,
                 2,
                 VertexAttribPointerType.Float,
                 false,
-                16, // FIXME: CHECK THIS!!!
-                drawVerts[0].tex
+                8,
+                vert_tex
             );
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
@@ -531,8 +519,7 @@ namespace Microsoft.Xna.Framework.Media
                 )
             );
             
-            // FIXME: Uh, I think something is fucked.
-            // GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
+            GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
             // FIXME: Oh gracious, how much are we cleaning up...
             
@@ -558,7 +545,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // TexImage2D.
             currentTexture.SetData<uint>(theoraPixels);
-            
 #else
             // Just copy it to an array, since it's RGBA anyway.
             byte[] theoraPixels = getPixels(
