@@ -28,7 +28,8 @@
 
 #region VideoPlayer Graphics Define
 #if LINUX || MONOMAC || (WINDOWS && OPENGL)
-#define VIDEOPLAYER_OPENGL
+// FIXME: The GL image processor is really, REALLY broken.
+// #define VIDEOPLAYER_OPENGL
 #endif
 #endregion
 
