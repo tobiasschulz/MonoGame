@@ -435,7 +435,7 @@ namespace Microsoft.Xna.Framework.Media
                 2,
                 VertexAttribPointerType.Float,
                 false,
-                8,
+                2 * sizeof(float),
                 vert_pos
             );
             GL.VertexAttribPointer(
@@ -443,7 +443,7 @@ namespace Microsoft.Xna.Framework.Media
                 2,
                 VertexAttribPointerType.Float,
                 false,
-                8,
+                2 * sizeof(float),
                 vert_tex
             );
             GL.EnableVertexAttribArray(0);
@@ -521,6 +521,18 @@ namespace Microsoft.Xna.Framework.Media
             
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
+            uint[] theoraPixels = new uint[currentFrame.width * currentFrame.height];
+            // FIXME: THIS DON'T WORK, LOL
+            //GL.ActiveTexture(TextureUnit.Texture0);
+            //GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
+            GL.GetTexImage(
+                TextureTarget.Texture2D,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedInt,
+                theoraPixels
+            );
+            
             // FIXME: Oh gracious, how much are we cleaning up...
             
             // flibitPopState();
@@ -533,15 +545,6 @@ namespace Microsoft.Xna.Framework.Media
             GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
             GL.ActiveTexture((TextureUnit) oldActiveTexture);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
-            
-            uint[] theoraPixels = new uint[currentFrame.width * currentFrame.height];
-            GL.GetTexImage(
-                TextureTarget.Texture2D,
-                0,
-                PixelFormat.Rgba,
-                PixelType.UnsignedInt,
-                theoraPixels
-            );
             
             // TexImage2D.
             currentTexture.SetData<uint>(theoraPixels);
