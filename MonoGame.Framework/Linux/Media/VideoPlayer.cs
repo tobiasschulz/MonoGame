@@ -171,6 +171,62 @@ namespace Microsoft.Xna.Framework.Media
             GL.DeleteTextures(3, yuvTextures);
         }
         
+        private void GL_internal_genTexture(    int texID,
+                                                int width,
+                                                int height,
+                                                PixelInternalFormat internalFormat,
+                                                PixelFormat format,
+                                                PixelType type  )
+        {
+            // Bind the desired texture.
+            GL.BindTexture(TextureTarget.Texture2D, texID);
+            
+            // Set the texture parameters, for completion/consistency's sake.
+            GL.TexParameter(
+                TextureTarget.Texture2D,
+                TextureParameterName.TextureWrapS,
+                (int) TextureWrapMode.ClampToEdge
+            );
+            GL.TexParameter(
+                TextureTarget.Texture2D,
+                TextureParameterName.TextureWrapT,
+                (int) TextureWrapMode.ClampToEdge
+            );
+            GL.TexParameter(
+                TextureTarget.Texture2D,
+                TextureParameterName.TextureMinFilter,
+                (int) TextureMinFilter.Linear
+            );
+            GL.TexParameter(
+                TextureTarget.Texture2D,
+                TextureParameterName.TextureMagFilter,
+                (int) TextureMagFilter.Linear
+            );
+            GL.TexParameter(
+                TextureTarget.Texture2D,
+                TextureParameterName.TextureBaseLevel,
+                0
+            );
+            GL.TexParameter(
+                TextureTarget.Texture2D,
+                TextureParameterName.TextureMaxLevel,
+                0
+            );
+            
+            // Allocate the texture data.
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                internalFormat,
+                width,
+                height,
+                0,
+                format,
+                type,
+                IntPtr.Zero
+            );
+        }
+        
         private void GL_setupTargets(int width, int height)
         {
             // We're going to be messing with things to do this...
@@ -184,17 +240,13 @@ namespace Microsoft.Xna.Framework.Media
             
             // Bind our framebuffer, create and attach our result texture.
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
-            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.Rgba,
+            GL_internal_genTexture(
+                rgbaResult,
                 width,
                 height,
-                0,
+                PixelInternalFormat.Rgba,
                 PixelFormat.Rgba,
-                PixelType.UnsignedInt,
-                IntPtr.Zero
+                PixelType.UnsignedInt
             );
             GL.FramebufferTexture2D(
                 FramebufferTarget.Framebuffer,
@@ -205,41 +257,29 @@ namespace Microsoft.Xna.Framework.Media
             );
             
             // Allocate YUV GL textures
-            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[0]);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.Luminance,
+            GL_internal_genTexture(
+                yuvTextures[0],
                 width,
                 height,
-                0,
-                PixelFormat.Luminance,
-                PixelType.UnsignedByte,
-                IntPtr.Zero
-            );
-            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[1]);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
                 PixelInternalFormat.Luminance,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte
+            );
+            GL_internal_genTexture(
+                yuvTextures[1],
                 width / 2,
                 height / 2,
-                0,
-                PixelFormat.Luminance,
-                PixelType.UnsignedByte,
-                IntPtr.Zero
-            );
-            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[2]);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
                 PixelInternalFormat.Luminance,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte
+            );
+            GL_internal_genTexture(
+                yuvTextures[2],
                 width / 2,
                 height / 2,
-                0,
+                PixelInternalFormat.Luminance,
                 PixelFormat.Luminance,
-                PixelType.UnsignedByte,
-                IntPtr.Zero
+                PixelType.UnsignedByte
             );
             
             // Aaand we should be set now.
@@ -549,10 +589,10 @@ namespace Microsoft.Xna.Framework.Media
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
             
-            // Bind our framebuffer, create and attach our result texture.
+            // Bind our target framebuffer.
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
             
-            // Prepare YUV GL textures
+            // Prepare YUV GL textures with our current frame data
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, yuvTextures[0]);
             GL.TexSubImage2D(
@@ -604,8 +644,9 @@ namespace Microsoft.Xna.Framework.Media
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
             // Bind the result texture, dump it to the managed array.
-            //GL.ActiveTexture(TextureUnit.Texture0);
-            //GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
+            // FIXME: GAH, this is borked still.
+            // GL.ActiveTexture(TextureUnit.Texture0);
+            // GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
             GL.GetTexImage(
                 TextureTarget.Texture2D,
                 0,
