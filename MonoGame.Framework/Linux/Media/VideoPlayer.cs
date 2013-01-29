@@ -155,7 +155,7 @@ namespace Microsoft.Xna.Framework.Media
         private void GL_dispose()
         {
             // Delete the shader program.
-#if LINUX
+#if LINUX || WINDOWS
             GL.DeleteProgram(shaderProgram);
 #elif MONOMAC
             GL.DeleteProgram(1, ref shaderProgram);
