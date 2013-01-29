@@ -531,7 +531,7 @@ namespace Microsoft.Xna.Framework.Media
             GL.BindTexture(TextureTarget.Texture2D, oldTextures[1]);
             GL.ActiveTexture(TextureUnit.Texture2);
             GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
-            GL.ActiveTexture(TextureUnit.Texture0 + oldActiveTexture);
+            GL.ActiveTexture((TextureUnit) oldActiveTexture);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
             
             uint[] theoraPixels = new uint[currentFrame.width * currentFrame.height];
