@@ -663,13 +663,24 @@ namespace Microsoft.Xna.Framework.Media
             currentTexture.SetData<uint>(theoraPixels);
 #else
             // Just copy it to an array, since it's RGBA anyway.
-            byte[] theoraPixels = getPixels(
-                currentFrame.pixels,
-                (int) currentFrame.width * (int) currentFrame.height * 4
-            );
-            
-            // TexImage2D.
-            currentTexture.SetData<byte>(theoraPixels);
+            try
+            {
+                byte[] theoraPixels = getPixels(
+                    currentFrame.pixels,
+                    (int) currentFrame.width * (int) currentFrame.height * 4
+                );
+                
+                // TexImage2D.
+                currentTexture.SetData<byte>(theoraPixels);
+            }
+            catch(Exception e)
+            {
+                System.Console.WriteLine(
+                    "WARNING: THEORA FRAME COPY FAILED: " +
+                    e.Message
+                );
+                return null;
+            }
 #endif
 
             return currentTexture;
