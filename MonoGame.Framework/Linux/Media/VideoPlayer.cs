@@ -39,7 +39,7 @@ using System.Diagnostics;
 using System.Threading;
 #if MONOMAC
 using MonoMac.OpenAL;
-// FIXME: MONOMAC OPENGL!!!
+using MonoMac.OpenGL;
 #else
 using OpenTK.Audio.OpenAL;
 using OpenTK.Graphics.OpenGL;
@@ -103,7 +103,7 @@ namespace Microsoft.Xna.Framework.Media
             GL.GenTextures(3, yuvTextures);
             
             // Create the RGBA framebuffer/texture.
-            rgbaFramebuffer = GL.GenFramebuffer();
+            GL.GenFramebuffers(1, out rgbaFramebuffer);
             rgbaResult = GL.GenTexture();
             
             // Create our pile of vertices.
@@ -155,10 +155,14 @@ namespace Microsoft.Xna.Framework.Media
         private void GL_dispose()
         {
             // Delete the shader program.
+#if LINUX
             GL.DeleteProgram(shaderProgram);
+#elif MONOMAC
+            GL.DeleteProgram(1, ref shaderProgram);
+#endif
             
             // Delete the RGBA framebuffer/texture.
-            GL.DeleteFramebuffer(rgbaFramebuffer);
+            GL.DeleteFramebuffers(1, ref rgbaFramebuffer);
             GL.DeleteTexture(rgbaResult);
             
             // Delete the YUV textures.
