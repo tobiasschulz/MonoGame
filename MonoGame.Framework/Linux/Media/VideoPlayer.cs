@@ -24,7 +24,12 @@
  * Ethan "flibitijibibo" Lee <flibitijibibo@flibitijibibo.com>
  *
  */
+#endregion
 
+#region VideoPlayer Graphics Define
+#if LINUX || MONOMAC || (WINDOWS && OPENGL)
+#define VIDEOPLAYER_OPENGL
+#endif
 #endregion
 
 #region Using Statements
@@ -47,6 +52,7 @@ namespace Microsoft.Xna.Framework.Media
     public sealed class VideoPlayer : IDisposable
     {
         #region Hardware-accelerated YUV -> RGBA
+#if VIDEOPLAYER_OPENGL
         private const string shader_vertex =
             "#version 110\n" +
             "attribute vec2 pos;\n" +
@@ -158,6 +164,7 @@ namespace Microsoft.Xna.Framework.Media
             // Delete the YUV textures.
             GL.DeleteTextures(3, yuvTextures);
         }
+#endif
         #endregion
         
         #region Public Member Data: XNA VideoPlayer Implementation
@@ -289,19 +296,21 @@ namespace Microsoft.Xna.Framework.Media
             return thePacket;
         }
         
-        private byte[] getPixels(IntPtr pixels, int imageSize)
-        {
-            byte[] thePixels = new byte[imageSize];
-            System.Runtime.InteropServices.Marshal.Copy(pixels, thePixels, 0, imageSize);
-            return thePixels;
-        }
-        
         private float[] getSamples(IntPtr samples, int packetSize)
         {
             float[] theSamples = new float[packetSize];
             System.Runtime.InteropServices.Marshal.Copy(samples, theSamples, 0, packetSize);
             return theSamples;
         }
+        
+#if !VIDEOPLAYER_OPENGL
+        private byte[] getPixels(IntPtr pixels, int imageSize)
+        {
+            byte[] thePixels = new byte[imageSize];
+            System.Runtime.InteropServices.Marshal.Copy(pixels, thePixels, 0, imageSize);
+            return thePixels;
+        }
+#endif
         #endregion
         
         #region Private Methods: OpenAL
@@ -341,8 +350,10 @@ namespace Microsoft.Xna.Framework.Media
             playerThread = new Thread(new ThreadStart(this.RunVideo));
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             
+#if VIDEOPLAYER_OPENGL
             // Initialize the OpenGL bits.
             GL_initialize();
+#endif
         }
         
         public void Dispose()
@@ -353,8 +364,10 @@ namespace Microsoft.Xna.Framework.Media
             // Get rid of the OpenAL source.
             AL.DeleteSource(audioSourceIndex);
             
+#if VIDEOPLAYER_OPENGL
             // Destroy the OpenGL bits.
             GL_dispose();
+#endif
             
             // Okay, we out.
             IsDisposed = true;
@@ -386,9 +399,7 @@ namespace Microsoft.Xna.Framework.Media
                 SurfaceFormat.Color
             );
             
-            ////////////////////////////////////////
-            // BEGIN OPENGL INSANITY
-            ////////////////////////////////////////
+#if VIDEOPLAYER_OPENGL
             
             // Used to restore our previous GL state.
             int[] oldTextures = new int[3];
@@ -541,12 +552,19 @@ namespace Microsoft.Xna.Framework.Media
                 theoraPixels
             );
             
-            ////////////////////////////////////////
-            // END OPENGL INSANITY
-            ////////////////////////////////////////
-            
             // TexImage2D.
             currentTexture.SetData<uint>(theoraPixels);
+            
+#else
+            // Just copy it to an array, since it's RGBA anyway.
+            byte[] theoraPixels = getPixels(
+                currentFrame.pixels,
+                (int) currentFrame.width * (int) currentFrame.height * 4
+            );
+            
+            // TexImage2D.
+            currentTexture.SetData<byte>(theoraPixels);
+#endif
 
             return currentTexture;
         }
@@ -568,7 +586,12 @@ namespace Microsoft.Xna.Framework.Media
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 Video.FileName,
                 uint.MaxValue,
+#if VIDEOPLAYER_OPENGL
                 TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
+#else
+                // Use the TheoraPlay software converter.
+                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_RGBA
+#endif
             );
             
             // Initialize the audio stream pointer and get our first packet.
