@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Threading;
 #if MONOMAC
 using MonoMac.OpenAL;
+// FIXME: MONOMAC OPENGL!!!
 #else
 using OpenTK.Audio.OpenAL;
+using OpenTK.Graphics.OpenGL;
 #endif
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,6 +15,47 @@ namespace Microsoft.Xna.Framework.Media
 {
     public sealed class VideoPlayer : IDisposable
     {
+        #region YUV Shaders
+        private int shaderProgram;
+        
+        private struct vert_struct
+        {
+            public float[] pos;
+            public float[] tex;
+        };
+        
+        private const string shader_vertex =
+            "#version 110\n" +
+            "attribute vec2 pos;\n" +
+            "attribute vec2 tex;\n" +
+            "void main() {\n" +
+            "   gl_Position = vec4(pos.xy, 0.0, 1.0);\n" +
+            "   gl_TexCoord[0].xy = tex;\n" +
+            "}\n";
+        private const string shader_fragment =
+            "#version 110\n" +
+            "uniform sampler2D samp0;\n" +
+            "uniform sampler2D samp1;\n" +
+            "uniform sampler2D samp2;\n" +
+            "const vec3 offset = vec3(-0.0625, -0.5, -0.5);\n" +
+            "const vec3 Rcoeff = vec3(1.164,  0.000,  1.596);\n" +
+            "const vec3 Gcoeff = vec3(1.164, -0.391, -0.813);\n" +
+            "const vec3 Bcoeff = vec3(1.164,  2.018,  0.000);\n" +
+            "void main() {\n" +
+            "   vec2 tcoord;\n" +
+            "   vec3 yuv, rgb;\n" +
+            "   tcoord = gl_TexCoord[0].xy;\n" +
+            "   yuv.x = texture2D(samp0, tcoord).r;\n" +
+            "   yuv.y = texture2D(samp1, tcoord).r;\n" +
+            "   yuv.z = texture2D(samp2, tcoord).r;\n" +
+            "   yuv += offset;\n" +
+            "   rgb.r = dot(yuv, Rcoeff);\n" +
+            "   rgb.g = dot(yuv, Gcoeff);\n" +
+            "   rgb.b = dot(yuv, Bcoeff);\n" +
+            "   gl_FragColor = vec4(rgb, 1.0);\n" +
+            "}\n";
+        #endregion
+        
         #region Public Member Data: XNA VideoPlayer Implementation
         public bool IsDisposed
         {
@@ -193,6 +236,24 @@ namespace Microsoft.Xna.Framework.Media
             timer = new Stopwatch();
             playerThread = new Thread(new ThreadStart(this.RunVideo));
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
+            
+            // Create the vertex/fragment shaders.
+            int vshader_id = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(vshader_id, shader_vertex);
+            GL.CompileShader(vshader_id);
+            int fshader_id = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fshader_id, shader_fragment);
+            GL.CompileShader(fshader_id);
+            
+            // Create the shader program.
+            shaderProgram = GL.CreateProgram();
+            GL.AttachShader(shaderProgram, vshader_id);
+            GL.AttachShader(shaderProgram, fshader_id);
+            GL.BindAttribLocation(shaderProgram, 0, "pos");
+            GL.BindAttribLocation(shaderProgram, 1, "tex");
+            GL.LinkProgram(shaderProgram);
+            GL.DeleteShader(vshader_id);
+            GL.DeleteShader(fshader_id);
         }
         
         public void Dispose()
@@ -202,6 +263,9 @@ namespace Microsoft.Xna.Framework.Media
             
             // Get rid of the OpenAL source.
             AL.DeleteSource(audioSourceIndex);
+            
+            // Delete the shader program.
+            GL.DeleteProgram(shaderProgram);
             
             // Okay, we out.
             IsDisposed = true;
@@ -233,14 +297,201 @@ namespace Microsoft.Xna.Framework.Media
                 SurfaceFormat.Color
             );
             
-            // Get the array of pixels from the frame's IntPtr.
-            byte[] theoraPixels = getPixels(
-                currentFrame.pixels,
-                (int) currentFrame.width * (int) currentFrame.height * 4
+            // FIXME: Pull some of this to class-wide. Less glGenCrap().
+            
+            // YUV textures
+            int[] glTextures = new int[3];
+            GL.GenTextures(3, glTextures);
+            
+            // Framebuffer and texture to dump to
+            int glFramebuffer = GL.GenFramebuffer();
+            int glResult = GL.GenTexture();
+            
+            // Used to restore our previous GL state.
+            int[] oldTextures = new int[3];
+            int oldShader;
+            int oldFramebuffer;
+            int oldActiveTexture;
+            
+            // FIXME: Oh Christ, how much do we need to push?
+            
+            // flibitPushState();
+            GL.GetInteger(GetPName.CurrentProgram, out oldShader);
+            GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[0]);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[1]);
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[2]);
+            GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
+            
+            // Bind our shader program.
+            GL.UseProgram(shaderProgram);
+            
+            // Set uniform values.
+            GL.Uniform1(
+                GL.GetUniformLocation(shaderProgram, "samp0"),
+                0
+            );
+            GL.Uniform1(
+                GL.GetUniformLocation(shaderProgram, "samp1"),
+                1
+            );
+            GL.Uniform1(
+                GL.GetUniformLocation(shaderProgram, "samp2"),
+                2
+            );
+            
+            // Our pile of vertices.
+            vert_struct[] verts = new vert_struct[4];
+                verts[0].pos = new float[2];
+                    verts[0].pos[0] = -1.0f;
+                    verts[0].pos[1] =  1.0f;
+                verts[0].tex = new float[2];
+                    verts[0].tex[0] =  0.0f;
+                    verts[0].tex[1] =  0.0f;
+                verts[1].pos = new float[2];
+                    verts[1].pos[0] =  1.0f;
+                    verts[1].pos[1] =  1.0f;
+                verts[1].tex = new float[2];
+                    verts[1].tex[0] =  1.0f;
+                    verts[1].tex[1] =  0.0f;
+                verts[2].pos = new float[2];
+                    verts[2].pos[0] = -1.0f;
+                    verts[2].pos[1] = -1.0f;
+                verts[2].tex = new float[2];
+                    verts[2].tex[0] =  0.0f;
+                    verts[2].tex[1] =  1.0f;
+                verts[3].pos = new float[2];
+                    verts[3].pos[0] =  1.0f;
+                    verts[3].pos[1] = -1.0f;
+                verts[3].tex = new float[2];
+                    verts[3].tex[0] =  1.0f;
+                    verts[3].tex[1] =  1.0f;
+            
+            // Set up the vertex pointers/arrays.
+            GL.VertexAttribPointer(
+                0,
+                2,
+                VertexAttribPointerType.Float,
+                false,
+                16, // FIXME: CHECK THIS!!!
+                verts[0].pos
+            );
+            GL.VertexAttribPointer(
+                1,
+                2,
+                VertexAttribPointerType.Float,
+                false,
+                16, // FIXME: CHECK THIS!!!
+                verts[0].tex
+            );
+            GL.EnableVertexAttribArray(0);
+            GL.EnableVertexAttribArray(1);
+            
+            // Bind our framebuffer, create and attach our result texture.
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, glFramebuffer);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, glResult);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Rgba,
+                (int) currentFrame.width,
+                (int) currentFrame.height,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedInt,
+                IntPtr.Zero
+            );
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                glResult,
+                0
+            );
+            
+            // Prepare YUV GL textures
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, glTextures[0]);
+            GL.TexSubImage2D(
+                TextureTarget.Texture2D,
+                0,
+                0,
+                0,
+                (int) currentFrame.width,
+                (int) currentFrame.height,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte,
+                currentFrame.pixels
+            );
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, glTextures[1]);
+            GL.TexSubImage2D(
+                TextureTarget.Texture2D,
+                0,
+                0,
+                0,
+                (int) currentFrame.width / 2,
+                (int) currentFrame.height / 2,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte,
+                new IntPtr(
+                    currentFrame.pixels.ToInt64() +
+                    (currentFrame.width * currentFrame.height)
+                )
+            );
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.BindTexture(TextureTarget.Texture2D, glTextures[2]);
+            GL.TexSubImage2D(
+                TextureTarget.Texture2D,
+                0,
+                0,
+                0,
+                (int) currentFrame.width / 2,
+                (int) currentFrame.height / 2,
+                PixelFormat.Luminance,
+                PixelType.UnsignedByte,
+                new IntPtr(
+                    currentFrame.pixels.ToInt64() +
+                    (currentFrame.width / 2 * currentFrame.height / 2)
+                )
+            );
+            
+            // FIXME: Uh, I think something is fucked.
+            // GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
+            
+            // FIXME: Oh gracious, how much are we cleaning up...
+            
+            // flibitPopState();
+            GL.UseProgram(oldShader);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, oldTextures[0]);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, oldTextures[1]);
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
+            GL.ActiveTexture(TextureUnit.Texture0 + oldActiveTexture);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
+            
+            uint[] theoraPixels = new uint[currentFrame.width * currentFrame.height];
+            GL.GetTexImage(
+                TextureTarget.Texture2D,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedInt,
+                theoraPixels
             );
             
             // TexImage2D.
-            currentTexture.SetData<byte>(theoraPixels);
+            currentTexture.SetData<uint>(theoraPixels);
+            
+            // Clean up after ourselves.
+            GL.DeleteTextures(3, glTextures);
+            GL.DeleteTexture(glResult);
+            GL.DeleteFramebuffer(glFramebuffer);
 
             return currentTexture;
         }
@@ -262,7 +513,7 @@ namespace Microsoft.Xna.Framework.Media
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 Video.FileName,
                 uint.MaxValue,
-                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_RGBA
+                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
             );
             
             // Initialize the audio stream pointer and get our first packet.
