@@ -683,6 +683,7 @@ namespace Microsoft.Xna.Framework.Media
                     "WARNING: THEORA FRAME COPY FAILED: " +
                     e.Message
                 );
+                frameLocked = false;
                 return null;
             }
 #endif
