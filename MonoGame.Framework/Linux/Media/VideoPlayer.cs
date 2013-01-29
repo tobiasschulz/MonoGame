@@ -1,3 +1,33 @@
+#region License
+/* TheoraPlay VideoPlayer for MonoGame
+ *
+ * Copyright (c) 2013 Ethan Lee.
+ *
+ * This software is provided 'as-is', without any express or implied warranty.
+ * In no event will the authors be held liable for any damages arising from
+ * the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ * claim that you wrote the original software. If you use this software in a
+ * product, an acknowledgment in the product documentation would be
+ * appreciated but is not required.
+ *
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ * misrepresented as being the original software.
+ *
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ * Ethan "flibitijibibo" Lee <flibitijibibo@flibitijibibo.com>
+ *
+ */
+
+#endregion
+
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,20 +40,13 @@ using OpenTK.Audio.OpenAL;
 using OpenTK.Graphics.OpenGL;
 #endif
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Media
 {
     public sealed class VideoPlayer : IDisposable
     {
-        #region YUV Shaders
-        private int shaderProgram;
-        
-        private struct vert_struct
-        {
-            public float[] pos;
-            public float[] tex;
-        };
-        
+        #region Hardware-accelerated YUV -> RGBA
         private const string shader_vertex =
             "#version 110\n" +
             "attribute vec2 pos;\n" +
@@ -54,6 +77,87 @@ namespace Microsoft.Xna.Framework.Media
             "   rgb.b = dot(yuv, Bcoeff);\n" +
             "   gl_FragColor = vec4(rgb, 1.0);\n" +
             "}\n";
+        
+        private int shaderProgram;
+        private int[] yuvTextures;
+        private int rgbaFramebuffer;
+        private int rgbaResult;
+        
+        private struct vert_struct
+        {
+            public float[] pos;
+            public float[] tex;
+        };
+        private vert_struct[] drawVerts;
+        
+        private void GL_initialize()
+        {
+            // Create the YUV textures.
+            yuvTextures = new int[3];
+            GL.GenTextures(3, yuvTextures);
+            
+            // Create the RGBA framebuffer/texture.
+            rgbaFramebuffer = GL.GenFramebuffer();
+            rgbaResult = GL.GenTexture();
+            
+            // Create our pile of vertices.
+            drawVerts = new vert_struct[4];
+                drawVerts[0].pos = new float[2];
+                    drawVerts[0].pos[0] = -1.0f;
+                    drawVerts[0].pos[1] =  1.0f;
+                drawVerts[0].tex = new float[2];
+                    drawVerts[0].tex[0] =  0.0f;
+                    drawVerts[0].tex[1] =  0.0f;
+                drawVerts[1].pos = new float[2];
+                    drawVerts[1].pos[0] =  1.0f;
+                    drawVerts[1].pos[1] =  1.0f;
+                drawVerts[1].tex = new float[2];
+                    drawVerts[1].tex[0] =  1.0f;
+                    drawVerts[1].tex[1] =  0.0f;
+                drawVerts[2].pos = new float[2];
+                    drawVerts[2].pos[0] = -1.0f;
+                    drawVerts[2].pos[1] = -1.0f;
+                drawVerts[2].tex = new float[2];
+                    drawVerts[2].tex[0] =  0.0f;
+                    drawVerts[2].tex[1] =  1.0f;
+                drawVerts[3].pos = new float[2];
+                    drawVerts[3].pos[0] =  1.0f;
+                    drawVerts[3].pos[1] = -1.0f;
+                drawVerts[3].tex = new float[2];
+                    drawVerts[3].tex[0] =  1.0f;
+                    drawVerts[3].tex[1] =  1.0f;
+            
+            // Create the vertex/fragment shaders.
+            int vshader_id = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(vshader_id, shader_vertex);
+            GL.CompileShader(vshader_id);
+            int fshader_id = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fshader_id, shader_fragment);
+            GL.CompileShader(fshader_id);
+            
+            // Create the shader program.
+            shaderProgram = GL.CreateProgram();
+            GL.AttachShader(shaderProgram, vshader_id);
+            GL.AttachShader(shaderProgram, fshader_id);
+            GL.BindAttribLocation(shaderProgram, 0, "pos");
+            GL.BindAttribLocation(shaderProgram, 1, "tex");
+            GL.LinkProgram(shaderProgram);
+            GL.DeleteShader(vshader_id);
+            GL.DeleteShader(fshader_id);
+        }
+        
+        private void GL_dispose()
+        {
+            // Delete the shader program.
+            GL.DeleteProgram(shaderProgram);
+            
+            // Delete the RGBA framebuffer/texture.
+            GL.DeleteFramebuffer(rgbaFramebuffer);
+            GL.DeleteTexture(rgbaResult);
+            
+            // Delete the YUV textures.
+            GL.DeleteTextures(3, yuvTextures);
+        }
         #endregion
         
         #region Public Member Data: XNA VideoPlayer Implementation
@@ -237,23 +341,8 @@ namespace Microsoft.Xna.Framework.Media
             playerThread = new Thread(new ThreadStart(this.RunVideo));
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             
-            // Create the vertex/fragment shaders.
-            int vshader_id = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(vshader_id, shader_vertex);
-            GL.CompileShader(vshader_id);
-            int fshader_id = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fshader_id, shader_fragment);
-            GL.CompileShader(fshader_id);
-            
-            // Create the shader program.
-            shaderProgram = GL.CreateProgram();
-            GL.AttachShader(shaderProgram, vshader_id);
-            GL.AttachShader(shaderProgram, fshader_id);
-            GL.BindAttribLocation(shaderProgram, 0, "pos");
-            GL.BindAttribLocation(shaderProgram, 1, "tex");
-            GL.LinkProgram(shaderProgram);
-            GL.DeleteShader(vshader_id);
-            GL.DeleteShader(fshader_id);
+            // Initialize the OpenGL bits.
+            GL_initialize();
         }
         
         public void Dispose()
@@ -264,8 +353,8 @@ namespace Microsoft.Xna.Framework.Media
             // Get rid of the OpenAL source.
             AL.DeleteSource(audioSourceIndex);
             
-            // Delete the shader program.
-            GL.DeleteProgram(shaderProgram);
+            // Destroy the OpenGL bits.
+            GL_dispose();
             
             // Okay, we out.
             IsDisposed = true;
@@ -297,15 +386,9 @@ namespace Microsoft.Xna.Framework.Media
                 SurfaceFormat.Color
             );
             
-            // FIXME: Pull some of this to class-wide. Less glGenCrap().
-            
-            // YUV textures
-            int[] glTextures = new int[3];
-            GL.GenTextures(3, glTextures);
-            
-            // Framebuffer and texture to dump to
-            int glFramebuffer = GL.GenFramebuffer();
-            int glResult = GL.GenTexture();
+            ////////////////////////////////////////
+            // BEGIN OPENGL INSANITY
+            ////////////////////////////////////////
             
             // Used to restore our previous GL state.
             int[] oldTextures = new int[3];
@@ -343,33 +426,6 @@ namespace Microsoft.Xna.Framework.Media
                 2
             );
             
-            // Our pile of vertices.
-            vert_struct[] verts = new vert_struct[4];
-                verts[0].pos = new float[2];
-                    verts[0].pos[0] = -1.0f;
-                    verts[0].pos[1] =  1.0f;
-                verts[0].tex = new float[2];
-                    verts[0].tex[0] =  0.0f;
-                    verts[0].tex[1] =  0.0f;
-                verts[1].pos = new float[2];
-                    verts[1].pos[0] =  1.0f;
-                    verts[1].pos[1] =  1.0f;
-                verts[1].tex = new float[2];
-                    verts[1].tex[0] =  1.0f;
-                    verts[1].tex[1] =  0.0f;
-                verts[2].pos = new float[2];
-                    verts[2].pos[0] = -1.0f;
-                    verts[2].pos[1] = -1.0f;
-                verts[2].tex = new float[2];
-                    verts[2].tex[0] =  0.0f;
-                    verts[2].tex[1] =  1.0f;
-                verts[3].pos = new float[2];
-                    verts[3].pos[0] =  1.0f;
-                    verts[3].pos[1] = -1.0f;
-                verts[3].tex = new float[2];
-                    verts[3].tex[0] =  1.0f;
-                    verts[3].tex[1] =  1.0f;
-            
             // Set up the vertex pointers/arrays.
             GL.VertexAttribPointer(
                 0,
@@ -377,7 +433,7 @@ namespace Microsoft.Xna.Framework.Media
                 VertexAttribPointerType.Float,
                 false,
                 16, // FIXME: CHECK THIS!!!
-                verts[0].pos
+                drawVerts[0].pos
             );
             GL.VertexAttribPointer(
                 1,
@@ -385,15 +441,15 @@ namespace Microsoft.Xna.Framework.Media
                 VertexAttribPointerType.Float,
                 false,
                 16, // FIXME: CHECK THIS!!!
-                verts[0].tex
+                drawVerts[0].tex
             );
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
             
             // Bind our framebuffer, create and attach our result texture.
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, glFramebuffer);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, glResult);
+            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
             GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
@@ -409,33 +465,33 @@ namespace Microsoft.Xna.Framework.Media
                 FramebufferTarget.Framebuffer,
                 FramebufferAttachment.ColorAttachment0,
                 TextureTarget.Texture2D,
-                glResult,
+                rgbaResult,
                 0
             );
             
             // Prepare YUV GL textures
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, glTextures[0]);
-            GL.TexSubImage2D(
+            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[0]);
+            GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
-                0,
-                0,
+                PixelInternalFormat.Luminance,
                 (int) currentFrame.width,
                 (int) currentFrame.height,
+                0,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 currentFrame.pixels
             );
             GL.ActiveTexture(TextureUnit.Texture1);
-            GL.BindTexture(TextureTarget.Texture2D, glTextures[1]);
-            GL.TexSubImage2D(
+            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[1]);
+            GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
-                0,
-                0,
+                PixelInternalFormat.Luminance,
                 (int) currentFrame.width / 2,
                 (int) currentFrame.height / 2,
+                0,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 new IntPtr(
@@ -444,14 +500,14 @@ namespace Microsoft.Xna.Framework.Media
                 )
             );
             GL.ActiveTexture(TextureUnit.Texture2);
-            GL.BindTexture(TextureTarget.Texture2D, glTextures[2]);
-            GL.TexSubImage2D(
+            GL.BindTexture(TextureTarget.Texture2D, yuvTextures[2]);
+            GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
-                0,
-                0,
+                PixelInternalFormat.Luminance,
                 (int) currentFrame.width / 2,
                 (int) currentFrame.height / 2,
+                0,
                 PixelFormat.Luminance,
                 PixelType.UnsignedByte,
                 new IntPtr(
@@ -485,13 +541,12 @@ namespace Microsoft.Xna.Framework.Media
                 theoraPixels
             );
             
+            ////////////////////////////////////////
+            // END OPENGL INSANITY
+            ////////////////////////////////////////
+            
             // TexImage2D.
             currentTexture.SetData<uint>(theoraPixels);
-            
-            // Clean up after ourselves.
-            GL.DeleteTextures(3, glTextures);
-            GL.DeleteTexture(glResult);
-            GL.DeleteFramebuffer(glFramebuffer);
 
             return currentTexture;
         }
