@@ -89,10 +89,6 @@ namespace Microsoft.Xna.Framework.Media
         private int rgbaFramebuffer;
         private int rgbaResult;
         
-        // The Mono runtime explodes when we allocate this during GetTexture().
-        // We're going to have to allocate this when we hit Play() instead.
-        private uint[] theoraPixels;
-        
         private float[] vert_pos;
         private float[] vert_tex;
         
@@ -235,9 +231,6 @@ namespace Microsoft.Xna.Framework.Media
         {
             // We're going to be messing with things to do this...
             GL_pushState();
-            
-            // Allocate this now, because Mono is a derp
-            theoraPixels = new uint[width * height];
             
             // We'll just use this for all the texture work.
             GL.ActiveTexture(TextureUnit.Texture0);
