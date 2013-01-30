@@ -237,6 +237,16 @@ namespace Microsoft.Xna.Framework.Media
             // We'll just use this for all the texture work.
             GL.ActiveTexture(TextureUnit.Texture0);
             
+            // Attach the Texture2D to the framebuffer.
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                videoTexture.glTexture,
+                0
+            );
+            
             // Allocate YUV GL textures
             GL_internal_genTexture(
                 yuvTextures[0],
@@ -403,6 +413,10 @@ namespace Microsoft.Xna.Framework.Media
         
         // Thread containing our video player.
         private Thread playerThread;
+        
+        // Store this to optimize things on our end. API BREAKS HERE!!!
+        private GraphicsDevice graphicsDevice;
+        private Texture2D videoTexture;
         #endregion
         
         #region Private Member Data: TheoraPlay
@@ -488,7 +502,8 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region Public Methods: XNA VideoPlayer Implementation
-        public VideoPlayer()
+        // FIXME: HACK!!! THIS BREAKS THE API!!!
+        public VideoPlayer(GraphicsDevice device)
         {
             // Set everything to NULL. Yes, this actually matters later.
             theoraDecoder = IntPtr.Zero;
@@ -510,6 +525,9 @@ namespace Microsoft.Xna.Framework.Media
             playerThread = new Thread(new ThreadStart(this.RunVideo));
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             frameLocked = false;
+            
+            // API BREAKS HERE!!!
+            graphicsDevice = device;
             
 #if VIDEOPLAYER_OPENGL
             // Initialize the OpenGL bits.
@@ -534,8 +552,7 @@ namespace Microsoft.Xna.Framework.Media
             IsDisposed = true;
         }
         
-        // FIXME: HACK!!! THIS BREAKS THE API!!!
-        public Texture2D GetTexture(GraphicsDevice device)
+        public Texture2D GetTexture()
         {
             checkDisposed();
             
@@ -550,15 +567,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Assign this locally, or else the thread will ruin your face.
             frameLocked = true;
-            
-            // Create the Texture2D.
-            Texture2D currentTexture = new Texture2D(
-                device,
-                (int) currentVideo.width,
-                (int) currentVideo.height,
-                false,
-                SurfaceFormat.Color
-            );
             
 #if VIDEOPLAYER_OPENGL
             // Set up an environment to muck about in.
@@ -603,15 +611,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Bind our target framebuffer.
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
-            
-            // Attach our return texture to the framebuffer.
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                currentTexture.glTexture,
-                0
-            );
             
             // Prepare YUV GL textures with our current frame data
             GL.ActiveTexture(TextureUnit.Texture0);
@@ -672,15 +671,6 @@ namespace Microsoft.Xna.Framework.Media
             // Draw the YUV textures to the framebuffer with our shader.
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
-            // Let's be sure about the color attachment.
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                0,
-                0
-            );
-            
             // Clean up after ourselves.
             GL_popState();
 #else
@@ -709,7 +699,7 @@ namespace Microsoft.Xna.Framework.Media
             // Release the lock on the frame, we're done.
             frameLocked = false;
             
-            return currentTexture;
+            return videoTexture;
         }
         
         public void Play(Video video)
@@ -762,6 +752,13 @@ namespace Microsoft.Xna.Framework.Media
                     Thread.Sleep(10);
                 }
                 currentVideo = getVideoFrame(videoStream);
+                videoTexture = new Texture2D(
+                    graphicsDevice,
+                    (int) currentVideo.width,
+                    (int) currentVideo.height,
+                    false,
+                    SurfaceFormat.Color
+                );
 #if VIDEOPLAYER_OPENGL
                 GL_setupTargets(
                     (int) currentVideo.width,
