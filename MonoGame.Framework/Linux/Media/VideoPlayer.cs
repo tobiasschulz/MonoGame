@@ -28,8 +28,7 @@
 
 #region VideoPlayer Graphics Define
 #if LINUX || MONOMAC || (WINDOWS && OPENGL)
-// FIXME: The GL image processor is really, REALLY broken.
-// #define VIDEOPLAYER_OPENGL
+#define VIDEOPLAYER_OPENGL
 #endif
 #endregion
 
@@ -102,9 +101,13 @@ namespace Microsoft.Xna.Framework.Media
         private int oldShader;
         private int oldFramebuffer;
         private int oldActiveTexture;
+        private int[] oldViewport;
         
         private void GL_initialize()
         {
+            // Initialize the old viewport array.
+            oldViewport = new int[4];
+            
             // Initialize the texture storage array.
             oldTextures = new int[3];
             
@@ -122,19 +125,19 @@ namespace Microsoft.Xna.Framework.Media
                     vert_pos[0] = -1.0f;
                     vert_pos[1] =  1.0f;
                     vert_tex[0] =  0.0f;
-                    vert_tex[1] =  0.0f;
+                    vert_tex[1] =  1.0f;
                     vert_pos[2] =  1.0f;
                     vert_pos[3] =  1.0f;
                     vert_tex[2] =  1.0f;
-                    vert_tex[3] =  0.0f;
+                    vert_tex[3] =  1.0f;
                     vert_pos[4] = -1.0f;
                     vert_pos[5] = -1.0f;
                     vert_tex[4] =  0.0f;
-                    vert_tex[5] =  1.0f;
+                    vert_tex[5] =  0.0f;
                     vert_pos[6] =  1.0f;
                     vert_pos[7] = -1.0f;
                     vert_tex[6] =  1.0f;
-                    vert_tex[7] =  1.0f;
+                    vert_tex[7] =  0.0f;
             
             // Create the vertex/fragment shaders.
             int vshader_id = GL.CreateShader(ShaderType.VertexShader);
@@ -234,7 +237,7 @@ namespace Microsoft.Xna.Framework.Media
             GL_pushState();
             
             // Allocate this now, because Mono is a derp
-            theoraPixels = new uint[currentVideo.width * currentVideo.height];
+            theoraPixels = new uint[width * height];
             
             // We'll just use this for all the texture work.
             GL.ActiveTexture(TextureUnit.Texture0);
@@ -247,7 +250,7 @@ namespace Microsoft.Xna.Framework.Media
                 height,
                 PixelInternalFormat.Rgba,
                 PixelFormat.Rgba,
-                PixelType.UnsignedInt
+                PixelType.UnsignedByte
             );
             GL.FramebufferTexture2D(
                 FramebufferTarget.Framebuffer,
@@ -290,6 +293,7 @@ namespace Microsoft.Xna.Framework.Media
         // FIXME: Oh Christ, how much do we need to push?
         private void GL_pushState()
         {
+            GL.GetInteger(GetPName.Viewport, oldViewport);
             GL.GetInteger(GetPName.CurrentProgram, out oldShader);
             GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
             GL.ActiveTexture(TextureUnit.Texture0);
@@ -304,6 +308,7 @@ namespace Microsoft.Xna.Framework.Media
         // FIXME: Oh gracious, how much are we cleaning up...
         private void GL_popState()
         {
+            GL.Viewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
             GL.UseProgram(oldShader);
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, oldTextures[0]);
@@ -645,18 +650,25 @@ namespace Microsoft.Xna.Framework.Media
                 )
             );
             
+            // Flip the viewport, because loldirectx
+            GL.Viewport(
+                0,
+                0,
+                (int) currentVideo.width,
+                (int) currentVideo.height
+            );
+            
             // Draw the YUV textures to the framebuffer with our shader.
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
             // Bind the result texture, dump it to the managed array.
-            // FIXME: GAH, this is borked still.
-            // GL.ActiveTexture(TextureUnit.Texture0);
-            // GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
             GL.GetTexImage(
                 TextureTarget.Texture2D,
                 0,
                 PixelFormat.Rgba,
-                PixelType.UnsignedInt,
+                PixelType.UnsignedByte,
                 theoraPixels
             );
             
