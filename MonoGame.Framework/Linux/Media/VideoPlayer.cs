@@ -683,7 +683,7 @@ namespace Microsoft.Xna.Framework.Media
                 );
                 
                 // TexImage2D.
-                currentTexture.SetData<byte>(theoraPixels);
+                videoTexture.SetData<byte>(theoraPixels);
             }
             catch(Exception e)
             {
