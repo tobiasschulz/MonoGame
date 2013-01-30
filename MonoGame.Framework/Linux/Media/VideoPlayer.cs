@@ -87,7 +87,6 @@ namespace Microsoft.Xna.Framework.Media
         private int shaderProgram;
         private int[] yuvTextures;
         private int rgbaFramebuffer;
-        private int rgbaResult;
         
         private float[] vert_pos;
         private float[] vert_tex;
@@ -99,6 +98,10 @@ namespace Microsoft.Xna.Framework.Media
         private int oldActiveTexture;
         private int[] oldViewport;
         private bool oldCullState;
+        private bool oldDepthMask;
+        private bool oldDepthTest;
+        private bool oldAlphaTest;
+        private bool oldBlendState;
         
         private void GL_initialize()
         {
@@ -112,9 +115,8 @@ namespace Microsoft.Xna.Framework.Media
             yuvTextures = new int[3];
             GL.GenTextures(3, yuvTextures);
             
-            // Create the RGBA framebuffer/texture.
+            // Create the RGBA framebuffer target.
             GL.GenFramebuffers(1, out rgbaFramebuffer);
-            rgbaResult = GL.GenTexture();
             
             // Create our pile of vertices.
             vert_pos = new float[2 * 4]; // 2 dimensions * 4 vertices
@@ -164,9 +166,8 @@ namespace Microsoft.Xna.Framework.Media
             GL.DeleteProgram(1, ref shaderProgram);
 #endif
             
-            // Delete the RGBA framebuffer/texture.
+            // Delete the RGBA framebuffer target.
             GL.DeleteFramebuffers(1, ref rgbaFramebuffer);
-            GL.DeleteTexture(rgbaResult);
             
             // Delete the YUV textures.
             GL.DeleteTextures(3, yuvTextures);
@@ -236,24 +237,6 @@ namespace Microsoft.Xna.Framework.Media
             // We'll just use this for all the texture work.
             GL.ActiveTexture(TextureUnit.Texture0);
             
-            // Bind our framebuffer, create and attach our result texture.
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
-            GL_internal_genTexture(
-                rgbaResult,
-                width,
-                height,
-                PixelInternalFormat.Rgba,
-                PixelFormat.Rgba,
-                PixelType.UnsignedByte
-            );
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                rgbaResult,
-                0
-            );
-            
             // Allocate YUV GL textures
             GL_internal_genTexture(
                 yuvTextures[0],
@@ -284,7 +267,6 @@ namespace Microsoft.Xna.Framework.Media
             GL_popState();
         }
         
-        // FIXME: Oh Christ, how much do we need to push?
         private void GL_pushState()
         {
             GL.GetInteger(GetPName.Viewport, oldViewport);
@@ -299,9 +281,16 @@ namespace Microsoft.Xna.Framework.Media
             GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
             oldCullState = GL.IsEnabled(EnableCap.CullFace);
             GL.Disable(EnableCap.CullFace);
+            GL.GetBoolean(GetPName.DepthWritemask, out oldDepthMask);
+            GL.DepthMask(false);
+            oldDepthTest = GL.IsEnabled(EnableCap.DepthTest);
+            GL.Disable(EnableCap.DepthTest);
+            oldAlphaTest = GL.IsEnabled(EnableCap.AlphaTest);
+            GL.Disable(EnableCap.AlphaTest);
+            oldBlendState = GL.IsEnabled(EnableCap.Blend);
+            GL.Disable(EnableCap.Blend);
         }
         
-        // FIXME: Oh gracious, how much are we cleaning up...
         private void GL_popState()
         {
             GL.Viewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
@@ -317,6 +306,19 @@ namespace Microsoft.Xna.Framework.Media
             if (oldCullState)
             {
                 GL.Enable(EnableCap.CullFace);
+            }
+            GL.DepthMask(oldDepthMask);
+            if (oldDepthTest)
+            {
+                GL.Enable(EnableCap.DepthTest);
+            }
+            if (oldAlphaTest)
+            {
+                GL.Enable(EnableCap.AlphaTest);
+            }
+            if (oldBlendState)
+            {
+                GL.Enable(EnableCap.Blend);
             }
         }
 #endif
@@ -602,6 +604,15 @@ namespace Microsoft.Xna.Framework.Media
             // Bind our target framebuffer.
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
             
+            // Attach our return texture to the framebuffer.
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                currentTexture.glTexture,
+                0
+            );
+            
             // Prepare YUV GL textures with our current frame data
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, yuvTextures[0]);
@@ -661,12 +672,17 @@ namespace Microsoft.Xna.Framework.Media
             // Draw the YUV textures to the framebuffer with our shader.
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
+            // Let's be sure about the color attachment.
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                0,
+                0
+            );
+            
             // Clean up after ourselves.
             GL_popState();
-            
-            // We don't have to TexImage2D, just give it our texture handle.
-            GL.DeleteTexture(currentTexture.glTexture);
-            currentTexture.glTexture = rgbaResult;
 #else
             // Just copy it to an array, since it's RGBA anyway.
             try
