@@ -665,6 +665,7 @@ namespace Microsoft.Xna.Framework.Media
             GL_popState();
             
             // We don't have to TexImage2D, just give it our texture handle.
+            GL.DeleteTexture(currentTexture.glTexture);
             currentTexture.glTexture = rgbaResult;
 #else
             // Just copy it to an array, since it's RGBA anyway.
