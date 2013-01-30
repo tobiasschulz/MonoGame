@@ -661,22 +661,11 @@ namespace Microsoft.Xna.Framework.Media
             // Draw the YUV textures to the framebuffer with our shader.
             GL.DrawArrays(BeginMode.TriangleStrip, 0, 4);
             
-            // Bind the result texture, dump it to the managed array.
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, rgbaResult);
-            GL.GetTexImage(
-                TextureTarget.Texture2D,
-                0,
-                PixelFormat.Rgba,
-                PixelType.UnsignedByte,
-                theoraPixels
-            );
-            
             // Clean up after ourselves.
             GL_popState();
             
-            // TexImage2D.
-            currentTexture.SetData<uint>(theoraPixels);
+            // We don't have to TexImage2D, just give it our texture handle.
+            currentTexture.glTexture = rgbaResult;
 #else
             // Just copy it to an array, since it's RGBA anyway.
             try
