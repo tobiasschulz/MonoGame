@@ -98,6 +98,7 @@ namespace Microsoft.Xna.Framework.Media
         private int oldFramebuffer;
         private int oldActiveTexture;
         private int[] oldViewport;
+        private bool oldCullState;
         
         private void GL_initialize()
         {
@@ -296,6 +297,8 @@ namespace Microsoft.Xna.Framework.Media
             GL.ActiveTexture(TextureUnit.Texture2);
             GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[2]);
             GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
+            oldCullState = GL.IsEnabled(EnableCap.CullFace);
+            GL.Disable(EnableCap.CullFace);
         }
         
         // FIXME: Oh gracious, how much are we cleaning up...
@@ -311,6 +314,10 @@ namespace Microsoft.Xna.Framework.Media
             GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
             GL.ActiveTexture((TextureUnit) oldActiveTexture);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
+            if (oldCullState)
+            {
+                GL.Enable(EnableCap.CullFace);
+            }
         }
 #endif
         #endregion
