@@ -318,10 +318,13 @@ namespace Microsoft.Xna.Framework
 
         internal void ChangeClientBounds(Rectangle clientBounds)
         {
-            if (!updateClientBounds)
+            // FIXME: These two FIXME's get it to start right.
+            //if (!updateClientBounds)
             {
                 updateClientBounds = true;
                 this.clientBounds = clientBounds;
+                // FIXME: No, seriously, come on.
+                window.ClientSize = new Size(clientBounds.Width, clientBounds.Height);
             }
         }
 
