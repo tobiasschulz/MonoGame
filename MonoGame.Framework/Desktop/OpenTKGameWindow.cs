@@ -318,13 +318,21 @@ namespace Microsoft.Xna.Framework
 
         internal void ChangeClientBounds(Rectangle clientBounds)
         {
-            // FIXME: These two FIXME's get it to start right.
+            // FIXME: This entire function is probably a hack. -flibit
             //if (!updateClientBounds)
             {
+                // Unlock the window...
+                AllowUserResizing = true;
+                
+                // Set the variables...
                 updateClientBounds = true;
                 this.clientBounds = clientBounds;
-                // FIXME: No, seriously, come on.
+                
+                // Actually change the window size...
                 window.ClientSize = new Size(clientBounds.Width, clientBounds.Height);
+                
+                // ... and lock again. We out.
+                AllowUserResizing = false;
             }
         }
 
