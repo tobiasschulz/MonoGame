@@ -2152,7 +2152,7 @@ namespace Microsoft.Xna.Framework
             ret.M43 = matrix.M34;
             ret.M44 = matrix.M44;
             
-            result = tsktsk;
+            result = ret;
         }
         #endregion Public Methods
 		
