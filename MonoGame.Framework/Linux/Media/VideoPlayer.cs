@@ -715,10 +715,13 @@ namespace Microsoft.Xna.Framework.Media
                 return;
             }
             
+            // Update the player state now, for the thread we're about to make.
+            State = MediaState.Playing;
+            
             // Initialize the decoder.
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 Video.FileName,
-                uint.MaxValue,
+                150, // Arbitrarily 5 seconds in a 30fps movie.
 #if VIDEOPLAYER_OPENGL
                 TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
 #else
@@ -727,9 +730,14 @@ namespace Microsoft.Xna.Framework.Media
 #endif
             );
             
+            // Wait until the decoder is ready.
+            while (TheoraPlay.THEORAPLAY_isInitialized(theoraDecoder) == 0)
+            {
+                Thread.Sleep(10);
+            }
+            
             // Initialize the audio stream pointer and get our first packet.
-            // FIXME: This check doesn't work.
-            // if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
+            if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
             {
                 while (audioStream == IntPtr.Zero)
                 {
@@ -743,8 +751,7 @@ namespace Microsoft.Xna.Framework.Media
             }
             
             // Initialize the video stream pointer and get our first frame.
-            // FIXME: This check doesn't work.
-            //if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
+            if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
             {
                 while (videoStream == IntPtr.Zero)
                 {
@@ -766,9 +773,6 @@ namespace Microsoft.Xna.Framework.Media
                 );
 #endif
             }
-            
-            // Update the player state now, for the thread we're about to make.
-            State = MediaState.Playing;
             
             // Initialize the thread!
             System.Console.Write("Starting Theora player...");
@@ -840,7 +844,7 @@ namespace Microsoft.Xna.Framework.Media
             List<float> data = new List<float>();
             
             // Add to the buffer from the decoder until it's large enough.
-            while (data.Count < BUFFER_SIZE)
+            while (data.Count < BUFFER_SIZE && State != MediaState.Stopped)
             {
                 data.AddRange(
                     getSamples(
@@ -855,6 +859,11 @@ namespace Microsoft.Xna.Framework.Media
                 do
                 {
                     audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
+                    if (State == MediaState.Stopped)
+                    {
+                        // Screw it, just bail out ASAP.
+                        return;
+                    }
                 } while (audioStream == IntPtr.Zero);
                 currentAudio = getAudioPacket(audioStream);
                 
@@ -939,8 +948,7 @@ namespace Microsoft.Xna.Framework.Media
                     }
                     
                     // If we're getting here, we should be playing the audio...
-                    // FIXME: Need a proper check for this.
-                    //if (audioStream != IntPtr.Zero)
+                    if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
                     {
                         if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Playing)
                         {
@@ -949,7 +957,7 @@ namespace Microsoft.Xna.Framework.Media
                     }
                     
                     // Get the next video from from the decoder, if a stream exists.
-                    if (videoStream != IntPtr.Zero)
+                    if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
                     {
                         // Only step when it's time to do so.
                         if (currentVideo.playms <= timer.ElapsedMilliseconds)
@@ -970,7 +978,9 @@ namespace Microsoft.Xna.Framework.Media
                             }
                         }
                     }
-                    else
+                    
+                    // If we're done decoding, we hit the end.
+                    if (TheoraPlay.THEORAPLAY_isDecoding(theoraDecoder) == 0)
                     {
                         // Stop and reset the timer.
                         // If we're looping, the loop will start it again.
@@ -1012,10 +1022,7 @@ namespace Microsoft.Xna.Framework.Media
             // Stop and unassign the decoder.
             if (theoraDecoder != IntPtr.Zero)
             {
-                if (TheoraPlay.THEORAPLAY_isDecoding(theoraDecoder) != 0)
-                {
-                    TheoraPlay.THEORAPLAY_stopDecode(theoraDecoder);
-                }
+                TheoraPlay.THEORAPLAY_stopDecode(theoraDecoder);
                 theoraDecoder = IntPtr.Zero;
             }
             
