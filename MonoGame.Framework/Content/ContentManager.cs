@@ -310,7 +310,7 @@ namespace Microsoft.Xna.Framework.Content
 	
 				if (string.IsNullOrEmpty(assetName))
 				{
-					throw new ContentLoadException("Could not load " + originalAssetName + " asset!");
+					throw new ContentLoadException("Could not load " + originalAssetName + " asset as a non-content file!", ex);
 				}
 
                 result = ReadRawAsset<T>(assetName, originalAssetName);
@@ -381,7 +381,7 @@ namespace Microsoft.Xna.Framework.Content
                 //result = new SpriteFont(Texture2D.FromFile(graphicsDeviceService.GraphicsDevice,assetName), null, null, null, 0, 0.0f, null, null);
                 throw new NotImplementedException();
             }
-#if !WINRT
+#if !DIRECTX
             else if ((typeof(T) == typeof(Song)))
             {
                 return new Song(assetName);
@@ -666,6 +666,8 @@ namespace Microsoft.Xna.Framework.Content
             {
 #if WINDOWS || LINUX || MACOS
 				return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RootDirectory);
+#elif WINRT
+                return Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, RootDirectory);
 #else
                 return RootDirectory;
 #endif

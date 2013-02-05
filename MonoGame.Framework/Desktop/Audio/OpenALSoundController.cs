@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-#if IOS || WINDOWS || LINUX
 using System.IO;
 using System.Threading;
+
+#if IOS || WINDOWS || LINUX
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 #elif MONOMAC

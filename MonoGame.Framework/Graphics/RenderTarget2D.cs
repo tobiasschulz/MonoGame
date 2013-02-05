@@ -40,6 +40,7 @@
 
 using System;
 
+#if OPENGL
 #if MONOMAC
 using MonoMac.OpenGL;
 #elif WINDOWS || LINUX
@@ -48,6 +49,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics.ES20;
 using RenderbufferTarget = OpenTK.Graphics.ES20.All;
 using RenderbufferStorage = OpenTK.Graphics.ES20.All;
+#endif
 #endif
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -61,9 +63,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		const RenderbufferStorage GLDepth24Stencil8 = RenderbufferStorage.Depth24Stencil8Oes;
 #elif OPENGL
         static readonly RenderbufferTarget GLRenderbuffer = GraphicsExtensions.UseArbFramebuffer ? RenderbufferTarget.Renderbuffer : RenderbufferTarget.RenderbufferExt;
-		static readonly RenderbufferStorage GLDepthComponent16 = RenderbufferStorage.DepthComponent16;
-		static readonly RenderbufferStorage GLDepthComponent24 = RenderbufferStorage.DepthComponent24;
-		static readonly RenderbufferStorage GLDepth24Stencil8 = RenderbufferStorage.Depth24Stencil8;
+		const RenderbufferStorage GLDepthComponent16 = RenderbufferStorage.DepthComponent16;
+		const RenderbufferStorage GLDepthComponent24 = RenderbufferStorage.DepthComponent24;
+		const RenderbufferStorage GLDepth24Stencil8 = RenderbufferStorage.Depth24Stencil8;
 #endif
 
 #if DIRECTX

@@ -17,10 +17,28 @@ namespace Microsoft.Xna.Framework.Input
             if (!controller.IsConnected)
                 return new Microsoft.Xna.Framework.Input.GamePadCapabilities(); // GamePadCapabilities.IsConnected = false by default
 
-           var capabilities = controller.GetCapabilities(SharpDX.XInput.DeviceQueryType.Any);
+            var capabilities = controller.GetCapabilities(SharpDX.XInput.DeviceQueryType.Any);
             var ret = new Microsoft.Xna.Framework.Input.GamePadCapabilities();
             switch (capabilities.SubType)
             {
+#if DIRECTX11_1
+                case SharpDX.XInput.DeviceSubType.ArcadePad:
+                    Debug.WriteLine("XInput's DeviceSubType.ArcadePad is not supported in XNA");
+                    ret.GamePadType = GamePadType.Unknown; // TODO: Should this be BigButtonPad?
+                    break;
+                case SharpDX.XInput.DeviceSubType.FlightStick:
+                    ret.GamePadType = GamePadType.FlightStick;
+                    break;
+                case SharpDX.XInput.DeviceSubType.GuitarAlternate:
+                    ret.GamePadType = GamePadType.AlternateGuitar;
+                    break;
+                case SharpDX.XInput.DeviceSubType.GuitarBass:
+                    // Note: XNA doesn't distinguish between Guitar and GuitarBass, but 
+                    // GuitarBass is identical to Guitar in XInput, distinguished only
+                    // to help setup for those controllers. 
+                    ret.GamePadType = GamePadType.Guitar;
+                    break;
+#endif
                 case SharpDX.XInput.DeviceSubType.ArcadeStick:
                     ret.GamePadType = GamePadType.ArcadeStick;
                     break;
@@ -104,17 +122,17 @@ namespace Microsoft.Xna.Framework.Input
 
             var gamepad = controller.GetState().Gamepad;
 
-            Microsoft.Xna.Framework.Input.GamePadThumbSticks thumbSticks = new Microsoft.Xna.Framework.Input.GamePadThumbSticks(
+            var thumbSticks = new GamePadThumbSticks(
                 leftPosition: ConvertThumbStick(gamepad.LeftThumbX, gamepad.LeftThumbY,
                     SharpDX.XInput.Gamepad.LeftThumbDeadZone, deadZoneMode),
                 rightPosition: ConvertThumbStick(gamepad.RightThumbX, gamepad.RightThumbY,
                     SharpDX.XInput.Gamepad.RightThumbDeadZone, deadZoneMode));
 
-            Microsoft.Xna.Framework.Input.GamePadTriggers triggers = new Microsoft.Xna.Framework.Input.GamePadTriggers(
+            var triggers = new GamePadTriggers(
                     leftTrigger: gamepad.LeftTrigger / (float)byte.MaxValue,
                     rightTrigger: gamepad.RightTrigger / (float)byte.MaxValue);
 
-            Microsoft.Xna.Framework.Input.GamePadState state = new Microsoft.Xna.Framework.Input.GamePadState(
+            var state = new Microsoft.Xna.Framework.Input.GamePadState(
                 thumbSticks: thumbSticks,
                 triggers: triggers,
                 buttons: ConvertToButtons(
@@ -272,7 +290,7 @@ namespace Microsoft.Xna.Framework.Input
             byte leftTrigger,
             byte rightTrigger)
         {
-            Microsoft.Xna.Framework.Input.Buttons ret = new Microsoft.Xna.Framework.Input.Buttons();
+            var ret = new Microsoft.Xna.Framework.Input.Buttons();
             for (int i = 0; i < buttonMap.Count; i++)
             {
                 var curMap = buttonMap[i];
