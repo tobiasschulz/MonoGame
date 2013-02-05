@@ -83,6 +83,15 @@
     <DefineConstants>TRACE;WINDOWS;OPENGL</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ManagedSquish">
+      <HintPath>..\..\Fez\MonoGame\packages\ManagedSquish.2.0.0.0\lib\net40\ManagedSquish.dll</HintPath>
+    </Reference>
+    <Reference Include="NativeSquish_x64">
+      <HintPath>..\..\Fez\MonoGame\packages\ManagedSquish.2.0.0.0\lib\net40\NativeSquish_x64.dll</HintPath>
+    </Reference>
+    <Reference Include="NativeSquish_x86">
+      <HintPath>..\..\Fez\MonoGame\packages\ManagedSquish.2.0.0.0\lib\net40\NativeSquish_x86.dll</HintPath>
+    </Reference>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
@@ -483,5 +492,8 @@
     <EmbeddedResource Include="Graphics\Effect\Resources\DualTextureEffect.ogl.mgfxo" />
     <EmbeddedResource Include="Graphics\Effect\Resources\EnvironmentMapEffect.ogl.mgfxo" />
     <EmbeddedResource Include="Graphics\Effect\Resources\SkinnedEffect.ogl.mgfxo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
