@@ -7,26 +7,26 @@ using System.Diagnostics;
 namespace Microsoft.Xna.Framework.Graphics
 {
     [DebuggerDisplay("{ParameterClass} {ParameterType} {Name} : {Semantic}")]
-	public class EffectParameter
-	{
+    public class EffectParameter
+    {
         /// <summary>
         /// The next state key used when an effect parameter
         /// is updated by any of the 'set' methods.
         /// </summary>
         internal static ulong NextStateKey { get; private set; }
 
-        internal EffectParameter(   EffectParameterClass class_, 
-                                    EffectParameterType type, 
-                                    string name, 
-                                    int rowCount, 
+        internal EffectParameter(EffectParameterClass class_,
+                                    EffectParameterType type,
+                                    string name,
+                                    int rowCount,
                                     int columnCount,
                                     int registerCount,
-                                    string semantic, 
+                                    string semantic,
                                     EffectAnnotationCollection annotations,
                                     EffectParameterCollection elements,
                                     EffectParameterCollection structMembers,
-                                    object data )
-		{
+                                    object data)
+        {
             ParameterClass = class_;
             ParameterType = type;
 
@@ -35,7 +35,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Annotations = annotations;
 
             RowCount = rowCount;
-			ColumnCount = columnCount;
+            ColumnCount = columnCount;
 
             RegisterCount = registerCount;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             Data = data;
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
         internal EffectParameter(EffectParameter cloneSource)
         {
@@ -68,15 +68,15 @@ namespace Microsoft.Xna.Framework.Graphics
             StateKey = unchecked(NextStateKey++);
         }
 
-		public string Name { get; private set; }
+        public string Name { get; private set; }
 
         public string Semantic { get; private set; }
 
-		public EffectParameterClass ParameterClass { get; private set; }
+        public EffectParameterClass ParameterClass { get; private set; }
 
-		public EffectParameterType ParameterType { get; private set; }
+        public EffectParameterType ParameterType { get; private set; }
 
-		public int RowCount { get; private set; }
+        public int RowCount { get; private set; }
 
         public int ColumnCount { get; private set; }
 
@@ -97,38 +97,38 @@ namespace Microsoft.Xna.Framework.Graphics
 
         /// <summary>
         /// The current state key which is used to detect
-		/// if the parameter value has been changed.
+        /// if the parameter value has been changed.
         /// </summary>
         internal ulong StateKey { get; private set; }
 
-		public void SetValue (object value)
-		{
-			throw new NotImplementedException();
-		}
+        public void SetValue(object value)
+        {
+            throw new NotImplementedException();
+        }
 
-		public bool GetValueBoolean ()
-		{
-			throw new NotImplementedException();
-		}
+        public bool GetValueBoolean()
+        {
+            throw new NotImplementedException();
+        }
 
-		public bool[] GetValueBooleanArray ()
-		{
-			throw new NotImplementedException();
-		}
+        public bool[] GetValueBooleanArray()
+        {
+            throw new NotImplementedException();
+        }
 
-		public int GetValueInt32 ()
-		{
+        public int GetValueInt32()
+        {
             return (int)Data;
-		}
+        }
 
-		public int[] GetValueInt32Array ()
-		{
-			throw new NotImplementedException();
-		}
+        public int[] GetValueInt32Array()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Matrix GetValueMatrix ()
-		{
-			if (RowCount == 4 && ColumnCount == 4)
+        public Matrix GetValueMatrix()
+        {
+            if (RowCount == 4 && ColumnCount == 4)
             {
                 float[] floatData = (float[])Data;
                 return new Matrix(floatData[0], floatData[4], floatData[8], floatData[12],
@@ -137,137 +137,137 @@ namespace Microsoft.Xna.Framework.Graphics
                     floatData[3], floatData[7], floatData[11], floatData[15]);
             }
             throw new Exception("Matrix data incorrect or missing!");
-		}
+        }
 
-		public Matrix[] GetValueMatrixArray (int count)
-		{
-			throw new NotImplementedException();
-		}
+        public Matrix[] GetValueMatrixArray(int count)
+        {
+            throw new NotImplementedException();
+        }
 
-		public Quaternion GetValueQuaternion ()
-		{
-			throw new NotImplementedException();
-		}
+        public Quaternion GetValueQuaternion()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Quaternion[] GetValueQuaternionArray ()
-		{
-			throw new NotImplementedException();
-		}
+        public Quaternion[] GetValueQuaternionArray()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Single GetValueSingle ()
-		{
-			switch(ParameterType) 
+        public Single GetValueSingle()
+        {
+            switch (ParameterType)
             {
-			case EffectParameterType.Int32:
-				return (Single)(int)Data;
-			default:
-				return (Single)Data;
-			}
-		}
+                case EffectParameterType.Int32:
+                    return (Single)(int)Data;
+                default:
+                    return (Single)Data;
+            }
+        }
 
-		public Single[] GetValueSingleArray ()
-		{
-			if (Elements != null && Elements.Count > 0)
+        public Single[] GetValueSingleArray()
+        {
+            if (Elements != null && Elements.Count > 0)
             {
                 var ret = new Single[RowCount * ColumnCount * Elements.Count];
-				for (int i=0; i<Elements.Count; i++)
+                for (int i = 0; i < Elements.Count; i++)
                 {
                     var elmArray = Elements[i].GetValueSingleArray();
                     for (var j = 0; j < elmArray.Length; j++)
-						ret[RowCount*ColumnCount*i+j] = elmArray[j];
-				}
-				return ret;
-			}
-			
-			switch(ParameterClass) 
+                        ret[RowCount * ColumnCount * i + j] = elmArray[j];
+                }
+                return ret;
+            }
+
+            switch (ParameterClass)
             {
-			case EffectParameterClass.Scalar:
-				return new Single[] { GetValueSingle () };
-            case EffectParameterClass.Vector:
-			case EffectParameterClass.Matrix:
+                case EffectParameterClass.Scalar:
+                    return new Single[] { GetValueSingle() };
+                case EffectParameterClass.Vector:
+                case EffectParameterClass.Matrix:
                     if (Data is Matrix)
                         return Matrix.ToFloatArray((Matrix)Data);
                     else
                         return (float[])Data;
-			default:
-				throw new NotImplementedException();
-			}
-		}
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
-		public string GetValueString ()
-		{
-			throw new NotImplementedException();
-		}
+        public string GetValueString()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Texture2D GetValueTexture2D ()
-		{
-			return (Texture2D)Data;
-		}
+        public Texture2D GetValueTexture2D()
+        {
+            return (Texture2D)Data;
+        }
 
         // TODO: Add Texture3D support!
-		//		public Texture3D GetValueTexture3D ()
-		//		{
-		//			return new Texture3D ();
-		//		}
+        //		public Texture3D GetValueTexture3D ()
+        //		{
+        //			return new Texture3D ();
+        //		}
 
-		public TextureCube GetValueTextureCube ()
-		{
-			throw new NotImplementedException();
-		}
+        public TextureCube GetValueTextureCube()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Vector2 GetValueVector2 ()
-		{
+        public Vector2 GetValueVector2()
+        {
             var vecInfo = (float[])Data;
-			return new Vector2(vecInfo[0],vecInfo[1]);
-		}
+            return new Vector2(vecInfo[0], vecInfo[1]);
+        }
 
-		public Vector2[] GetValueVector2Array ()
-		{
-			throw new NotImplementedException();
-		}
+        public Vector2[] GetValueVector2Array()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Vector3 GetValueVector3 ()
-		{
+        public Vector3 GetValueVector3()
+        {
             var vecInfo = (float[])Data;
-			return new Vector3(vecInfo[0],vecInfo[1],vecInfo[2]);
-		}
+            return new Vector3(vecInfo[0], vecInfo[1], vecInfo[2]);
+        }
 
-		public Vector3[] GetValueVector3Array ()
-		{
-			throw new NotImplementedException();
-		}
+        public Vector3[] GetValueVector3Array()
+        {
+            throw new NotImplementedException();
+        }
 
-		public Vector4 GetValueVector4 ()
-		{
+        public Vector4 GetValueVector4()
+        {
             var vecInfo = (float[])Data;
-			return new Vector4(vecInfo[0],vecInfo[1],vecInfo[2],vecInfo[3]);
-		}
+            return new Vector4(vecInfo[0], vecInfo[1], vecInfo[2], vecInfo[3]);
+        }
 
-		public Vector4[] GetValueVector4Array ()
-		{
-			throw new NotImplementedException();
-		}
+        public Vector4[] GetValueVector4Array()
+        {
+            throw new NotImplementedException();
+        }
 
-		public void SetValue (bool value)
-		{
-			throw new NotImplementedException();
-		}
+        public void SetValue(bool value)
+        {
+            throw new NotImplementedException();
+        }
 
-		public void SetValue (bool[] value)
-		{
-			throw new NotImplementedException();
-		}
+        public void SetValue(bool[] value)
+        {
+            throw new NotImplementedException();
+        }
 
-		public void SetValue (int value)
-		{
-			Data = value;
+        public void SetValue(int value)
+        {
+            Data = value;
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (int[] value)
-		{
-			throw new NotImplementedException();
-		}
+        public void SetValue(int[] value)
+        {
+            throw new NotImplementedException();
+        }
 
         public void SetValue(Matrix value)
         {
@@ -356,8 +356,8 @@ namespace Microsoft.Xna.Framework.Graphics
             StateKey = unchecked(NextStateKey++);
         }
 
-		public void SetValueTranspose(Matrix value)
-		{
+        public void SetValueTranspose(Matrix value)
+        {
             // HLSL expects matrices to be transposed by default, so copying them straight
             // from the in-memory version effectively transposes them back to row-major.
             if (RowCount == 4 && ColumnCount == 4)
@@ -440,11 +440,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 fData[8] = value.M33;
             }
 
-			StateKey = unchecked(NextStateKey++);
-		}
+            StateKey = unchecked(NextStateKey++);
+        }
 
-		public void SetValue (Matrix[] value)
-		{
+        public void SetValue(Matrix[] value)
+        {
             var arrayData = Data as float[];
             if (Data == null || arrayData.Length < value.Length * 16)
                 Data = arrayData = new float[value.Length * 16];
@@ -453,7 +453,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 var m = value[i];
 
-                arrayData[i * 16]     = m.M11;
+                arrayData[i * 16] = m.M11;
                 arrayData[i * 16 + 1] = m.M21;
                 arrayData[i * 16 + 2] = m.M31;
                 arrayData[i * 16 + 3] = m.M41;
@@ -463,8 +463,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 arrayData[i * 16 + 6] = m.M32;
                 arrayData[i * 16 + 7] = m.M42;
 
-                arrayData[i * 16 + 8]  = m.M13;
-                arrayData[i * 16 + 9]  = m.M23;
+                arrayData[i * 16 + 8] = m.M13;
+                arrayData[i * 16 + 9] = m.M23;
                 arrayData[i * 16 + 10] = m.M33;
                 arrayData[i * 16 + 11] = m.M43;
 
@@ -475,99 +475,99 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Quaternion value)
-		{
-			throw new NotImplementedException();
-		}
+        public void SetValue(Quaternion value)
+        {
+            throw new NotImplementedException();
+        }
 
-		public void SetValue (Quaternion[] value)
-		{
-			throw new NotImplementedException();
-		}
+        public void SetValue(Quaternion[] value)
+        {
+            throw new NotImplementedException();
+        }
 
-		public void SetValue (Single value)
-		{
-			switch (ParameterClass) 
+        public void SetValue(Single value)
+        {
+            switch (ParameterClass)
             {
-			case EffectParameterClass.Matrix:
-			case EffectParameterClass.Vector:
-				((float[])Data)[0] = value;
-				break;
-			case EffectParameterClass.Scalar:
-				Data = value;
-				break;
-			default:
-				throw new NotImplementedException();
-			}
+                case EffectParameterClass.Matrix:
+                case EffectParameterClass.Vector:
+                    ((float[])Data)[0] = value;
+                    break;
+                case EffectParameterClass.Scalar:
+                    Data = value;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
 
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Single[] value)
-		{
-			for (var i=0; i<value.Length; i++)
-				Elements[i].SetValue (value[i]);
+        public void SetValue(Single[] value)
+        {
+            for (var i = 0; i < value.Length; i++)
+                Elements[i].SetValue(value[i]);
 
             StateKey = unchecked(NextStateKey++);
-		}
-		
-		public void SetValue (string value)
-		{
-			throw new NotImplementedException();
-		}
+        }
 
-		public void SetValue (Texture value)
-		{
-			Data = value;
+        public void SetValue(string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetValue(Texture value)
+        {
+            Data = value;
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Vector2 value)
-		{
+        public void SetValue(Vector2 value)
+        {
             float[] fData = (float[])Data;
             fData[0] = value.X;
             fData[1] = value.Y;
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Vector2[] value)
-		{
+        public void SetValue(Vector2[] value)
+        {
             for (var i = 0; i < value.Length; i++)
-				Elements[i].SetValue (value[i]);
+                Elements[i].SetValue(value[i]);
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Vector3 value)
-		{
+        public void SetValue(Vector3 value)
+        {
             float[] fData = (float[])Data;
             fData[0] = value.X;
             fData[1] = value.Y;
             fData[2] = value.Z;
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Vector3[] value)
-		{
+        public void SetValue(Vector3[] value)
+        {
             for (var i = 0; i < value.Length; i++)
-				Elements[i].SetValue (value[i]);
+                Elements[i].SetValue(value[i]);
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Vector4 value)
-		{
-			float[] fData = (float[])Data;
+        public void SetValue(Vector4 value)
+        {
+            float[] fData = (float[])Data;
             fData[0] = value.X;
             fData[1] = value.Y;
             fData[2] = value.Z;
             fData[3] = value.W;
             StateKey = unchecked(NextStateKey++);
-		}
+        }
 
-		public void SetValue (Vector4[] value)
-		{
-		    var arrayData = Data as float[];
+        public void SetValue(Vector4[] value)
+        {
+            var arrayData = Data as float[];
             if (Data == null || arrayData.Length < value.Length * 4)
                 Data = arrayData = new float[value.Length * 4];
 
@@ -578,7 +578,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 arrayData[i * 4 + 2] = value[i].Z;
                 arrayData[i * 4 + 3] = value[i].W;
             }
-            
+
             StateKey = unchecked(NextStateKey++);
-		}
-	}
+        }
+    }
+}

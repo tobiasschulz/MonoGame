@@ -243,7 +243,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #if OPENGL
         internal int glFramebuffer;
         internal int MaxVertexAttributes;        
-        internal readonly HashSet<string> extensions = new HashSet<string>();
+        internal readonly HashSet<string> _extensions = new HashSet<string>();
         internal int _maxTextureSize = 0;
 #endif
         
@@ -345,7 +345,7 @@ namespace Microsoft.Xna.Framework.Graphics
             GL.GetInteger(GetPName.MaxTextureSize, out _maxTextureSize);
             GraphicsExtensions.CheckGLError();
 #endif
-            _extensions = GetGLExtensions();
+            GetGLExtensions();
 #endif // OPENGL
 
             Textures = new TextureCollection (MaxTextureSlots);
@@ -361,9 +361,8 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
 #if OPENGL
-        List<string> GetGLExtensions()
+        void GetGLExtensions()
         {
-#if OPENGL
             // Check version
             var versionString = GL.GetString(StringName.Version);
             var majorVersion = int.Parse(versionString.Substring(0, 1));
@@ -377,27 +376,25 @@ namespace Microsoft.Xna.Framework.Graphics
                 int extensionCount;
                 GL.GetInteger(GetPName.NumExtensions, out extensionCount);
                 for (int i = 0; i < extensionCount; i++)
-                    extensions.Add(GL.GetString(StringName.Extensions, i));
+                    _extensions.Add(GL.GetString(StringName.Extensions, i));
             }
             else
                 foreach (var extension in GL.GetString(StringName.Extensions).Split(' '))
-                    extensions.Add(extension);
+                    _extensions.Add(extension);
 
             // Test extensions
-            GraphicsExtensions.UseArbFramebuffer = extensions.Contains("GL_ARB_framebuffer_object");
+            GraphicsExtensions.UseArbFramebuffer = _extensions.Contains("GL_ARB_framebuffer_object");
             if (!GraphicsExtensions.UseArbFramebuffer)
             {
-                if (!extensions.Contains("GL_EXT_framebuffer_object"))
+                if (!_extensions.Contains("GL_EXT_framebuffer_object"))
                     throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "GL_ARB_framebuffer_object not supported : will use GL_EXT_framebuffer_object instead.");
             }
 
             GraphicsExtensions.UseDxtCompression = int.Parse(versionString.Substring(0, 1)) > 2 && // Don't trust OpenGL 2's texture compression, crashed on at least one driver
-                                                   extensions.Contains("GL_EXT_texture_compression_s3tc");
+                                                   _extensions.Contains("GL_EXT_texture_compression_s3tc");
             if (!GraphicsExtensions.UseDxtCompression)
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "No S3TC/DXT support : will decompress DXT textures at load time.");
-
-            return extensions;
         }
 #endif // OPENGL
 
