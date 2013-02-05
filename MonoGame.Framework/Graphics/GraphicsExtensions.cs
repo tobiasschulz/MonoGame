@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -31,6 +32,7 @@ namespace Microsoft.Xna.Framework.Graphics
     {
 #if !WINRT && !PSM
         public static bool UseArbFramebuffer;
+        public static bool UseDxtCompression;
 
         public static bool IsRenderbuffer(uint renderbuffer)
         {
@@ -708,16 +710,19 @@ namespace Microsoft.Xna.Framework.Graphics
             if (error != All.False)
                 throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
 #elif OPENGL
-            ErrorCode error = GL.GetError();
-            if (error != ErrorCode.NoError)
-                throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
+            if (Threading.IsOnUIThread())
+            {
+                ErrorCode error = GL.GetError();
+                if (error != ErrorCode.NoError)
+                    throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
+            }
 #endif
 
         }
 #endif
 
 #if OPENGL
-        [System.Diagnostics.Conditional("DEBUG")]
+        //[System.Diagnostics.Conditional("DEBUG")]
         public static void LogGLError(string location)
         {
             try
@@ -729,10 +734,37 @@ namespace Microsoft.Xna.Framework.Graphics
 #if ANDROID
                 // Todo: Add generic MonoGame logging interface
                 Android.Util.Log.Debug("MonoGame", "MonoGameGLException at " + location + " - " + ex.Message);
+#else
+                LogToFile(LogSeverity.Error, ex.ToString());
 #endif
             }
         }
 #endif
+
+        public enum LogSeverity { Information, Warning, Error }
+        public static void LogToFile(string message)
+        {
+            LogToFile(LogSeverity.Information, message);
+        }
+        public static void LogToFile(LogSeverity severity, string message)
+        {
+            const string TimeFormat = "HH:mm:ss.fff";
+            try 
+            {
+                using (var stream = File.Open("Debug Log.txt", FileMode.Append))
+                {
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        writer.WriteLine("({0}) [{1}] {2} : {3}", 
+                            DateTime.Now.ToString(TimeFormat), "MonoGame", severity.ToString().ToUpper(), message);
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                // NOT THAT BIG A DEAL GUYS
+            }
+        }
     }
 
     public class MonoGameGLException : Exception

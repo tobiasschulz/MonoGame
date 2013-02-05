@@ -230,7 +230,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		//public event EventHandler<ResourceCreatedEventArgs> ResourceCreated;
 		//public event EventHandler<ResourceDestroyedEventArgs> ResourceDestroyed;
 
-        readonly List<string> _extensions = new List<string>();
+        readonly HashSet<string> extensions = new HashSet<string>();
 
 #if OPENGL
         internal int glFramebuffer;
@@ -342,34 +342,39 @@ namespace Microsoft.Xna.Framework.Graphics
 
         internal void Initialize()
         {
-            // Setup extensions.
 #if OPENGL
-#if GLES
-            var extstring = GL.GetString(RenderbufferStorage.Extensions);            			
-#else
-            var extstring = GL.GetString(StringName.Extensions);	
-#endif
+            // Check version
+            var versionString = GL.GetString(StringName.Version);
+            var majorVersion = int.Parse(versionString.Substring(0, 1));
+
+            GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Information, "OpenGL version " + versionString);
             GraphicsExtensions.CheckGLError();
 
-            GraphicsExtensions.UseArbFramebuffer = extstring.Contains("GL_ARB_framebuffer_object");
-            if (!GraphicsExtensions.UseArbFramebuffer && !extstring.Contains("GL_EXT_framebuffer_object"))
-                throw new InvalidOperationException("Framebuffers are not supported by the current OpenGL driver, please update your drivers and try again!"); 
-
-            if (!string.IsNullOrEmpty(extstring))
+            // Setup extensions
+            if (majorVersion >= 3)
             {
-                _extensions.AddRange(extstring.Split(' '));
-#if ANDROID
-                Android.Util.Log.Debug("MonoGame", "Supported extensions:");
-#else
-                System.Diagnostics.Debug.WriteLine("Supported extensions:");
-#endif
-                foreach (string extension in _extensions)
-#if ANDROID
-                    Android.Util.Log.Debug("MonoGame", extension);
-#else
-                    System.Diagnostics.Debug.WriteLine(extension);
-#endif
+                int extensionCount;
+                GL.GetInteger(GetPName.NumExtensions, out extensionCount);
+                for (int i = 0; i < extensionCount; i++)
+                    extensions.Add(GL.GetString(StringName.Extensions, i));
             }
+            else
+                foreach (var extension in GL.GetString(StringName.Extensions).Split(' '))
+                    extensions.Add(extension);
+
+            // Test extensions
+            GraphicsExtensions.UseArbFramebuffer = extensions.Contains("GL_ARB_framebuffer_object");
+            if (!GraphicsExtensions.UseArbFramebuffer)
+            {
+                if (!extensions.Contains("GL_EXT_framebuffer_object"))
+                    throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
+                GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "GL_ARB_framebuffer_object not supported : will use GL_EXT_framebuffer_object instead.");
+            }
+
+            GraphicsExtensions.UseDxtCompression = int.Parse(versionString.Substring(0, 1)) > 2 && // Don't trust OpenGL 2's texture compression, crashed on at least one driver
+                                                   extensions.Contains("GL_EXT_texture_compression_s3tc");
+            if (!GraphicsExtensions.UseDxtCompression)
+                GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "No S3TC/DXT support : will decompress DXT textures at load time.");
 
 #endif // OPENGL
 

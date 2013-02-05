@@ -26,7 +26,7 @@ SOFTWARE.
 #endregion License
 
 using System;
-
+using ManagedSquish;
 using Microsoft.Xna;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -80,7 +80,7 @@ namespace Microsoft.Xna.Framework.Content
             {
 				surfaceFormat = (SurfaceFormat)reader.ReadInt32 ();
 			}
-			
+
 			int width = (reader.ReadInt32 ());
 			int height = (reader.ReadInt32 ());
 			int levelCount = (reader.ReadInt32 ());
@@ -110,12 +110,24 @@ namespace Microsoft.Xna.Framework.Content
 					convertedFormat = SurfaceFormat.Color;
 					break;
 			}
+
+            if (!GraphicsExtensions.UseDxtCompression)
+            {
+                switch (surfaceFormat)
+                {
+                    case SurfaceFormat.Dxt1:
+                    case SurfaceFormat.Dxt3:
+                    case SurfaceFormat.Dxt5:
+                        convertedFormat = SurfaceFormat.Color;
+                        break;
+                }
+            }
 			
             if (existingInstance == null)
 			    texture = new Texture2D(reader.GraphicsDevice, width, height, levelCount > 1, convertedFormat);
             else
                 texture = existingInstance;
-			
+
 			for (int level=0; level<levelCount; level++)
 			{
 				int levelDataSizeInBytes = (reader.ReadInt32 ());
@@ -212,7 +224,21 @@ namespace Microsoft.Xna.Framework.Content
 						}
 						break;
 				}
-				
+
+                if (!GraphicsExtensions.UseDxtCompression)
+                    switch (surfaceFormat)
+                    {
+                        case SurfaceFormat.Dxt1:
+                        case SurfaceFormat.Dxt3:
+                        case SurfaceFormat.Dxt5:
+                            var newData = Squish.DecompressImage(levelData, width, height,
+                                                                 surfaceFormat == SurfaceFormat.Dxt1 ? SquishFlags.Dxt1 : 
+                                                                 surfaceFormat == SurfaceFormat.Dxt3 ? SquishFlags.Dxt3 : 
+                                                                                                       SquishFlags.Dxt5);
+                            levelData = newData;
+                            break;
+                    }
+
 				texture.SetData(level, null, levelData, 0, levelData.Length);	
 			}
 			

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 #if IOS || WINDOWS || LINUX
+using System.IO;
 using System.Threading;
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
@@ -49,7 +50,24 @@ namespace Microsoft.Xna.Framework.Audio
 
         private OpenALSoundController()
         {
-            context = new AudioContext();
+            // choose the right DLL!
+            File.Delete("openal32.dll");
+            if (IntPtr.Size == 8)   File.Copy("soft_oal_64.dll", "openal32.dll");
+            else                    File.Copy("soft_oal_32.dll", "openal32.dll");
+
+            try
+            {
+                context = new AudioContext();
+            }
+            catch (AccessViolationException)
+            {
+                // Badly advertised, but we're using the wrong DLL... try the other one.
+                File.Delete("openal32.dll");
+                if (IntPtr.Size != 8)   File.Copy("soft_oal_64.dll", "openal32.dll");
+                else                    File.Copy("soft_oal_32.dll", "openal32.dll");
+
+                context = new AudioContext();
+            }
 
             filterId = ALHelper.Efx.GenFilter();
             ALHelper.Efx.Filter(filterId, EfxFilteri.FilterType, (int)EfxFilterType.Lowpass);
