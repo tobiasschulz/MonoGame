@@ -66,7 +66,7 @@ namespace Microsoft.Xna.Framework.Media
 		internal Song(string fileName)
 		{			
 			_name = fileName;
-            
+
 			_audioData = Tao.Sdl.SdlMixer.Mix_LoadMUS(fileName);
 		}
 		

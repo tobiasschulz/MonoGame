@@ -89,13 +89,8 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			
 			int durationMS = input.ReadObject<int>();
-            
-#if LINUX || MONOMAC
-            // FIXME: I guess we fell out of date here? -flibit
-            return new Song(path);
-#else
+
             return new Song(path, durationMS);
-#endif
 		}
 	}
 }
