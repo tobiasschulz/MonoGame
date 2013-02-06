@@ -108,7 +108,7 @@ namespace Microsoft.Xna.Framework.Net
 		private int hostGamerIndex = -1;
 		private NetworkGamer hostingGamer;
 		
-		internal MonoGamerPeer networkPeer;
+		//internal MonoGamerPeer networkPeer;
 		
 		private NetworkSession (NetworkSessionType sessionType, int maxGamers, int privateGamerSlots, NetworkSessionProperties sessionProperties, bool isHost, int hostGamer)
 			: this(sessionType, maxGamers, privateGamerSlots, sessionProperties, isHost, hostGamer, null)
@@ -150,13 +150,13 @@ namespace Microsoft.Xna.Framework.Net
 			this.sessionProperties = sessionProperties;
 			this.isHost = isHost;
 			this.hostGamerIndex = hostGamer;            
-            if (isHost)
-                networkPeer = new MonoGamerPeer(this, null);
-            else
-            {
-                if (networkPeer == null)
-                    networkPeer = new MonoGamerPeer(this, availableSession);
-            }
+//            if (isHost)
+//                networkPeer = new MonoGamerPeer(this, null);
+//            else
+//            {
+//                if (networkPeer == null)
+//                    networkPeer = new MonoGamerPeer(this, availableSession);
+//            }
             			
 			CommandGamerJoined gj = new CommandGamerJoined(hostGamer, this.isHost, true);
 			commandQueue.Enqueue(new CommandEvent(gj));
@@ -258,14 +258,14 @@ namespace Microsoft.Xna.Framework.Net
                     }
 
                     // Make sure we shut down our server instance as we no longer need it.
-                    if (networkPeer != null)
-                    {
-                        networkPeer.ShutDown();
-                    }
-                    if (networkPeer != null)
-                    {
-                        networkPeer.ShutDown();
-                    }
+//                    if (networkPeer != null)
+//                    {
+//                        networkPeer.ShutDown();
+//                    }
+//                    if (networkPeer != null)
+//                    {
+//                        networkPeer.ShutDown();
+//                    }
                 }
 
                 this._isDisposed = true;
@@ -502,7 +502,7 @@ namespace Microsoft.Xna.Framework.Net
 				if (asyncResult.AsyncDelegate is NetworkSessionAsynchronousFind) {
 					returnValue = ((NetworkSessionAsynchronousFind)asyncResult.AsyncDelegate).EndInvoke (result);                    
 				
-					MonoGamerPeer.FindResults(networkSessions);
+//					MonoGamerPeer.FindResults(networkSessions);
                 }
 #endif
 
@@ -605,7 +605,7 @@ namespace Microsoft.Xna.Framework.Net
 					throw new ArgumentOutOfRangeException ( "maxLocalGamers must be between 1 and 4." );
 
 				List<AvailableNetworkSession> availableNetworkSessions = new List<AvailableNetworkSession> ();
-				MonoGamerPeer.Find(sessionType);
+//				MonoGamerPeer.Find(sessionType);
 				return new AvailableNetworkSessionCollection ( availableNetworkSessions );
 			} finally {
 			}
@@ -697,61 +697,61 @@ namespace Microsoft.Xna.Framework.Net
 		public void Update ()
 		{
 			// Updates the state of the multiplayer session. 
-			try {
-				while (commandQueue.Count > 0 && networkPeer.IsReady) {
-					var command = (CommandEvent)commandQueue.Dequeue();
-					
-					// for some screwed up reason we are dequeueing something
-					// that is null so we will just continue.  I am not sure
-					// if is jumbled data coming in from the connection or
-					// something that is not being done correctly in code
-					//  For sure this needs to be looked at although it is not
-					//  causing any real problems right now.
-					if (command == null) {
-						continue;
-					}
-					
-					switch (command.Command) {
-					case CommandEventType.SendData:
-						ProcessSendData((CommandSendData)command.CommandObject);
-						break;						
-					case CommandEventType.ReceiveData:
-						ProcessReceiveData((CommandReceiveData)command.CommandObject);
-						break;	
-					case CommandEventType.GamerJoined:
-						ProcessGamerJoined((CommandGamerJoined)command.CommandObject);
-						break;
-					case CommandEventType.GamerLeft:
-						ProcessGamerLeft((CommandGamerLeft)command.CommandObject);
-						break;
-					case CommandEventType.SessionStateChange:
-						ProcessSessionStateChange((CommandSessionStateChange)command.CommandObject);
-						break;
-					case CommandEventType.GamerStateChange:
-						ProcessGamerStateChange((CommandGamerStateChange)command.CommandObject);
-						break;							
-					
-					}					
-				}
-			} 
-			catch (Exception exc) {
-#if DEBUG				
-				Console.WriteLine("Error in NetworkSession Update: " + exc.Message);
-#endif	
-			}
-			finally {
-			}
+//			try {
+//				while (commandQueue.Count > 0 && networkPeer.IsReady) {
+//					var command = (CommandEvent)commandQueue.Dequeue();
+//					
+//					// for some screwed up reason we are dequeueing something
+//					// that is null so we will just continue.  I am not sure
+//					// if is jumbled data coming in from the connection or
+//					// something that is not being done correctly in code
+//					//  For sure this needs to be looked at although it is not
+//					//  causing any real problems right now.
+//					if (command == null) {
+//						continue;
+//					}
+//					
+//					switch (command.Command) {
+//					case CommandEventType.SendData:
+//						ProcessSendData((CommandSendData)command.CommandObject);
+//						break;						
+//					case CommandEventType.ReceiveData:
+//						ProcessReceiveData((CommandReceiveData)command.CommandObject);
+//						break;	
+//					case CommandEventType.GamerJoined:
+//						ProcessGamerJoined((CommandGamerJoined)command.CommandObject);
+//						break;
+//					case CommandEventType.GamerLeft:
+//						ProcessGamerLeft((CommandGamerLeft)command.CommandObject);
+//						break;
+//					case CommandEventType.SessionStateChange:
+//						ProcessSessionStateChange((CommandSessionStateChange)command.CommandObject);
+//						break;
+//					case CommandEventType.GamerStateChange:
+//						ProcessGamerStateChange((CommandGamerStateChange)command.CommandObject);
+//						break;							
+//					
+//					}					
+//				}
+//			} 
+//			catch (Exception exc) {
+//#if DEBUG				
+//				Console.WriteLine("Error in NetworkSession Update: " + exc.Message);
+//#endif	
+//			}
+//			finally {
+//			}
 		}
 		
 		private void ProcessGamerStateChange(CommandGamerStateChange command) 
 		{
 			
-			networkPeer.SendGamerStateChange(command.Gamer);	
+//			networkPeer.SendGamerStateChange(command.Gamer);	
 		}
 		
 		private void ProcessSendData(CommandSendData command)
 		{
-			networkPeer.SendData(command.data, command.options);
+//			networkPeer.SendData(command.data, command.options);
 
 			NetworkGamer sender;
 			CommandReceiveData crd = new CommandReceiveData (command.sender.RemoteUniqueIdentifier,
@@ -862,16 +862,16 @@ namespace Microsoft.Xna.Framework.Net
 			if (GamerJoined != null) {
 				GamerJoined(this, new GamerJoinedEventArgs(gamer));
 			}
-			
-			if (networkPeer !=  null && (command.State & GamerStates.Local) == 0) {
-				
-				networkPeer.SendPeerIntroductions(gamer);
-			}
-			
-			if (networkPeer != null)
-			{
-				networkPeer.UpdateLiveSession(this);
-			}
+//			
+//			if (networkPeer !=  null && (command.State & GamerStates.Local) == 0) {
+//				
+//				networkPeer.SendPeerIntroductions(gamer);
+//			}
+//			
+//			if (networkPeer != null)
+//			{
+//				networkPeer.UpdateLiveSession(this);
+//			}
 			
 			
 		}
@@ -893,10 +893,10 @@ namespace Microsoft.Xna.Framework.Net
 				
 			}
 			
-			if (networkPeer != null)
-			{
-				networkPeer.UpdateLiveSession(this);
-			}
+//			if (networkPeer != null)
+//			{
+//				networkPeer.UpdateLiveSession(this);
+//			}
 		}		
 
 		void HandleGamerPropertyChanged (object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1075,14 +1075,14 @@ namespace Microsoft.Xna.Framework.Net
 
 		public float SimulatedPacketLoss {
 			get {
-                if (networkPeer != null)
-                {
-                    simulatedPacketLoss = networkPeer.SimulatedPacketLoss;                   
-                }
+//                if (networkPeer != null)
+//                {
+//                    simulatedPacketLoss = networkPeer.SimulatedPacketLoss;                   
+//                }
                 return simulatedPacketLoss;
 			}
 			set {
-                if (networkPeer != null) networkPeer.SimulatedPacketLoss = value;
+//                if (networkPeer != null) networkPeer.SimulatedPacketLoss = value;
                 simulatedPacketLoss = value;
 			}
 		}			
