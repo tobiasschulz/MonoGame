@@ -318,6 +318,9 @@ namespace Microsoft.Xna.Framework
                 Mouse.State.LeftButton = ButtonState.Released;
                 Mouse.State.RightButton = ButtonState.Released;
                 Mouse.State.MiddleButton = ButtonState.Released;
+
+                // We need to keep mouse focus!
+                Window.Window.MakeFirstResponder(Window);
             }
             finally { ResumeUpdatingAndDrawing(); }
         }
@@ -363,6 +366,9 @@ namespace Microsoft.Xna.Framework
                 Mouse.State.LeftButton = ButtonState.Released;
                 Mouse.State.RightButton = ButtonState.Released;
                 Mouse.State.MiddleButton = ButtonState.Released;
+
+                // We need to keep mouse focus!
+                Window.Window.MakeFirstResponder(Window);
             }
             finally { ResumeUpdatingAndDrawing(); }
         }
