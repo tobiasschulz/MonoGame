@@ -90,12 +90,13 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-                return _view.Window.VSync == OpenTK.VSyncMode.On ? true : false;
+                return _view.Window.VSync == OpenTK.VSyncMode.On;
             }
             
             set
             {
                 _view.Window.VSync = value ? OpenTK.VSyncMode.On : OpenTK.VSyncMode.Off;
+                _view.Window.Context.SwapInterval = value ? 1 : 0;
             }
         }
         
