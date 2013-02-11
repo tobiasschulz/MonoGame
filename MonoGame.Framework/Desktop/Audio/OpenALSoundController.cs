@@ -59,7 +59,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 context = new AudioContext();
             }
-            catch (AccessViolationException)
+            catch (TypeInitializationException)
             {
                 // Badly advertised, but we're using the wrong DLL... try the other one.
                 File.Delete("openal32.dll");
