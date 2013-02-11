@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define ADPCM
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
@@ -18,10 +20,12 @@ namespace MonoGameContentProcessors.Processors
     {
         public override SoundEffectContent Process(AudioContent input, ContentProcessorContext context)
         {
+#if !ADPCM
             // Fallback if we aren't buiding for iOS.
-            /*var platform = ContentHelper.GetMonoGamePlatform();
+            var platform = ContentHelper.GetMonoGamePlatform();
             if (platform != MonoGamePlatform.iOS)
-                return base.Process(input, context);*/
+                return base.Process(input, context);
+#endif
 
             bool useAdpcm = false;
             var targetSampleRate = input.Format.SampleRate;
