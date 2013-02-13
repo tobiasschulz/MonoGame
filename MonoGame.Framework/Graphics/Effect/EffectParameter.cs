@@ -446,7 +446,7 @@ namespace Microsoft.Xna.Framework.Graphics
         public void SetValue(Matrix[] value)
         {
             var arrayData = Data as float[];
-            if (Data == null || arrayData.Length < value.Length * 16)
+            if (arrayData == null || arrayData.Length < value.Length * 16)
                 Data = arrayData = new float[value.Length * 16];
 
             for (int i = 0; i < value.Length; i++)
@@ -507,9 +507,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SetValue(Single[] value)
         {
-            for (var i = 0; i < value.Length; i++)
-                Elements[i].SetValue(value[i]);
+            var arrayData = Data as float[];
+            if (arrayData == null || arrayData.Length < value.Length)
+                Data = arrayData = new float[value.Length];
 
+            Array.Copy(value, arrayData, value.Length);
+            
             StateKey = unchecked(NextStateKey++);
         }
 
@@ -568,7 +571,7 @@ namespace Microsoft.Xna.Framework.Graphics
         public void SetValue(Vector4[] value)
         {
             var arrayData = Data as float[];
-            if (Data == null || arrayData.Length < value.Length * 4)
+            if (arrayData == null || arrayData.Length < value.Length * 4)
                 Data = arrayData = new float[value.Length * 4];
 
             for (int i = 0; i < value.Length; i++)
