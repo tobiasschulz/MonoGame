@@ -26,7 +26,6 @@ SOFTWARE.
 #endregion License
 
 using System;
-using ManagedSquish;
 using Microsoft.Xna;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -110,18 +109,13 @@ namespace Microsoft.Xna.Framework.Content
 				case SurfaceFormat.Dxt5:
 					convertedFormat = SurfaceFormat.RgbaPvrtc4Bpp;
 					break;
-#elif ANDROID || PSM
-				case SurfaceFormat.Dxt1:
-				case SurfaceFormat.Dxt3:
-				case SurfaceFormat.Dxt5:
-					convertedFormat = SurfaceFormat.Color;
-					break;
 #endif
 				case SurfaceFormat.NormalizedByte4:
 					convertedFormat = SurfaceFormat.Color;
 					break;
 			}
 
+            // If compression is not supported, we'll decompress later; declare it as colour
             if (!GraphicsExtensions.UseDxtCompression)
             {
                 switch (surfaceFormat)
@@ -151,21 +145,24 @@ namespace Microsoft.Xna.Framework.Content
                     continue;
                 }
 
-				//Convert the image data if required
+                // Decompress if necessary
+                if (!GraphicsExtensions.UseDxtCompression)
+			        switch (surfaceFormat)
+			        {
+			            case SurfaceFormat.Dxt1:
+			                levelData = DxtUtil.DecompressDxt1(levelData, levelWidth, levelHeight);
+			                break;
+			            case SurfaceFormat.Dxt3:
+			                levelData = DxtUtil.DecompressDxt3(levelData, levelWidth, levelHeight);
+			                break;
+			            case SurfaceFormat.Dxt5:
+			                levelData = DxtUtil.DecompressDxt5(levelData, levelWidth, levelHeight);
+			                break;
+			        }
+
+			    //Convert the image data if required
 				switch (surfaceFormat)
 				{
-#if ANDROID || PSM
-					//no Dxt in OpenGL ES
-					case SurfaceFormat.Dxt1:
-						levelData = DxtUtil.DecompressDxt1(levelData, levelWidth, levelHeight);
-						break;
-					case SurfaceFormat.Dxt3:
-						levelData = DxtUtil.DecompressDxt3(levelData, levelWidth, levelHeight);
-						break;
-					case SurfaceFormat.Dxt5:
-						levelData = DxtUtil.DecompressDxt5(levelData, levelWidth, levelHeight);
-						break;
-#endif
 					case SurfaceFormat.Bgr565:
 						{
 							/*
@@ -241,20 +238,6 @@ namespace Microsoft.Xna.Framework.Content
 						}
 						break;
 				}
-
-                if (!GraphicsExtensions.UseDxtCompression)
-                    switch (surfaceFormat)
-                    {
-                        case SurfaceFormat.Dxt1:
-                        case SurfaceFormat.Dxt3:
-                        case SurfaceFormat.Dxt5:
-                            var newData = Squish.DecompressImage(levelData, width, height,
-                                                                 surfaceFormat == SurfaceFormat.Dxt1 ? SquishFlags.Dxt1 : 
-                                                                 surfaceFormat == SurfaceFormat.Dxt3 ? SquishFlags.Dxt3 : 
-                                                                                                       SquishFlags.Dxt5);
-                            levelData = newData;
-                            break;
-                    }
 
 				texture.SetData(level, null, levelData, 0, levelData.Length);	
 			}

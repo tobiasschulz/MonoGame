@@ -393,6 +393,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
             GraphicsExtensions.UseDxtCompression = int.Parse(versionString.Substring(0, 1)) > 2 && // Don't trust OpenGL 2's texture compression, crashed on at least one driver
                                                    _extensions.Contains("GL_EXT_texture_compression_s3tc");
+#if ANDROID || PSM
+            GraphicsExtensions.UseDxtCompression = false;
+#endif
             if (!GraphicsExtensions.UseDxtCompression)
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "No S3TC/DXT support : will decompress DXT textures at load time.");
         }
