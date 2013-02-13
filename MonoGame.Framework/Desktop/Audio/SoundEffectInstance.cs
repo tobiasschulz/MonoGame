@@ -170,7 +170,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
                 pan = value;
-                AL.Source(sourceId, ALSource3f.Position, pan / 1.25f, 0.0f, 0.1f);
+                AL.Source(sourceId, ALSource3f.Position, pan / 5f, 0.0f, 0.1f);
                 ALHelper.Check();
             }
         }
