@@ -55,9 +55,9 @@ namespace Microsoft.Xna.Framework.Media
 #if MONOMAC
 			_fileName = FileName;
 #else
-            // FIXME: Force .ogv extension
-			_fileName = FileName.Substring(0, FileName.IndexOf('.'));
-            _fileName += ".ogv";
+			// FIXME: Force .ogv extension
+			_fileName = FileName.Substring(0, FileName.LastIndexOf('.'));
+			_fileName += ".ogv";
 #endif
 		}
 				
