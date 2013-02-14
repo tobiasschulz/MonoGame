@@ -323,7 +323,6 @@
     <Compile Include="Audio\AudioEngine.cs" />
     <Compile Include="Audio\AudioStopOptions.cs" />
     <Compile Include="Audio\Cue.cs" />
-    <Compile Include="Audio\MSADPCMToPCM.cs" />
     <Compile Include="Audio\SoundBank.cs" />
     <Compile Include="Audio\WaveBank.cs" />
     <Compile Include="Net\CommandEvent.cs" />
@@ -443,6 +442,7 @@
     <Compile Include="Linux\Media\Video.cs" />
     <Compile Include="Linux\Media\VideoPlayer.cs" />
     <Compile Include="Media\VideoSoundtrackType.cs" />
+    <Compile Include="Audio\MSADPCMToPCM.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MacOS\" />
