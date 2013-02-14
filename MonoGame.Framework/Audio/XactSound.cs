@@ -89,7 +89,7 @@ namespace Microsoft.Xna.Framework.Audio
                     soundReader.BaseStream.Seek(extraDataLen - 3 - numRPCPresets, SeekOrigin.Current);
                 } else {
                     // Screw it, just skip the block.
-                    soundReader.BaseStream.Seek (extraDataLen - 2, SeekOrigin.Current);
+                    soundReader.BaseStream.Seek(extraDataLen - 2, SeekOrigin.Current);
                 }
 			}
 			
