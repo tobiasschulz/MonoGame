@@ -351,6 +351,10 @@ namespace Microsoft.Xna.Framework.Media
 				if (!IsRepeating)
 				{
 					State = MediaState.Stopped;
+
+					// FIXME: Is it really just null, null?
+					ActiveSongChanged.Invoke(null, null);
+
 					return;
 				}
 			}
@@ -413,6 +417,9 @@ namespace Microsoft.Xna.Framework.Media
                 Stop();
             else            
                 Play(nextSong);                            
+            
+            // FIXME: Is it really just null, null?
+            ActiveSongChanged.Invoke(null, null);
 		}
     }
 }
