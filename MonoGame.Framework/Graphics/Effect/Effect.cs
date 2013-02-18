@@ -462,14 +462,21 @@ namespace Microsoft.Xna.Framework.Graphics
 					{
 						case EffectParameterType.Bool:
 						case EffectParameterType.Int32:
-						{
-							var buffer = new int[rowCount * columnCount];
-							for (var j = 0; j < buffer.Length; j++)
-								buffer[j] = reader.ReadInt32();
-							data = buffer;
-							break;
-						}
-						
+#if DIRECTX
+                            // Under DirectX we properly store integers and booleans
+                            // in an integer type.
+                            //
+                            // MojoShader on the otherhand stores everything in float
+                            // types which is why this code is disabled under OpenGL.
+					        {
+					            var buffer = new int[rowCount * columnCount];								
+                                for (var j = 0; j < buffer.Length; j++)
+                                    buffer[j] = reader.ReadInt32();
+                                data = buffer;
+                                break;
+					        }
+#endif
+
 						case EffectParameterType.Single:
 						{
 							var buffer = new float[rowCount * columnCount];
@@ -481,7 +488,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						
 						case EffectParameterType.String:
 							throw new NotImplementedException();
-					};
+					}
 				}
 				
 				var param = new EffectParameter(

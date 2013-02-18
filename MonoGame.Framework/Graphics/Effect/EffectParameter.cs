@@ -108,7 +108,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public bool GetValueBoolean()
         {
-            throw new NotImplementedException();
+            if (ParameterClass != EffectParameterClass.Scalar || ParameterType != EffectParameterType.Bool)
+                throw new InvalidCastException();
+
+#if DIRECTX
+            return ((int[])Data)[0] != 0;
+#else
+            // MojoShader encodes even booleans into a float.
+            return ((float[])Data)[0] != 0.0f;
+#endif
         }
 
         public bool[] GetValueBooleanArray()
@@ -118,7 +126,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public int GetValueInt32()
         {
-            return (int)Data;
+            if (ParameterClass != EffectParameterClass.Scalar || ParameterType != EffectParameterType.Int32)
+                throw new InvalidCastException();
+
+#if DIRECTX
+            return ((int[])Data)[0];
+#else
+            // MojoShader encodes integers into a float.
+            return (int)((float[])Data)[0];
+#endif
         }
 
         public int[] GetValueInt32Array()
@@ -130,7 +146,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             if (RowCount == 4 && ColumnCount == 4)
             {
-                float[] floatData = (float[])Data;
+                var floatData = (float[])Data;
                 return new Matrix(floatData[0], floatData[4], floatData[8], floatData[12],
                     floatData[1], floatData[5], floatData[9], floatData[13],
                     floatData[2], floatData[6], floatData[10], floatData[14],
@@ -196,19 +212,29 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public string GetValueString()
         {
-            throw new NotImplementedException();
+            if (ParameterClass != EffectParameterClass.Object || ParameterType != EffectParameterType.String)
+                throw new InvalidCastException();
+
+		    return ((string[])Data)[0];
         }
 
         public Texture2D GetValueTexture2D()
         {
-            return (Texture2D)Data;
-        }
+            if (ParameterClass != EffectParameterClass.Object || ParameterType != EffectParameterType.Texture2D)
+                throw new InvalidCastException();
 
-        // TODO: Add Texture3D support!
-        //		public Texture3D GetValueTexture3D ()
-        //		{
-        //			return new Texture3D ();
-        //		}
+			return (Texture2D)Data;
+		}
+
+#if !GLES
+	    public Texture3D GetValueTexture3D()
+	    {
+            if (ParameterClass != EffectParameterClass.Object || ParameterType != EffectParameterType.Texture3D)
+                throw new InvalidCastException();
+
+            return (Texture3D)Data;
+	    }
+#endif
 
         public TextureCube GetValueTextureCube()
         {
@@ -217,6 +243,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public Vector2 GetValueVector2()
         {
+            if (ParameterClass != EffectParameterClass.Vector || ParameterType != EffectParameterType.Single)
+                throw new InvalidCastException();
+
             var vecInfo = (float[])Data;
             return new Vector2(vecInfo[0], vecInfo[1]);
         }
@@ -228,6 +257,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public Vector3 GetValueVector3()
         {
+            if (ParameterClass != EffectParameterClass.Vector || ParameterType != EffectParameterType.Single)
+                throw new InvalidCastException();
+
             var vecInfo = (float[])Data;
             return new Vector3(vecInfo[0], vecInfo[1], vecInfo[2]);
         }
@@ -239,6 +271,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public Vector4 GetValueVector4()
         {
+            if (ParameterClass != EffectParameterClass.Vector || ParameterType != EffectParameterType.Single)
+                throw new InvalidCastException();
+
             var vecInfo = (float[])Data;
             return new Vector4(vecInfo[0], vecInfo[1], vecInfo[2], vecInfo[3]);
         }
@@ -250,8 +285,19 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SetValue(bool value)
         {
-            throw new NotImplementedException();
-        }
+            if (ParameterClass != EffectParameterClass.Scalar || ParameterType != EffectParameterType.Bool)
+                throw new InvalidCastException();
+
+#if DIRECTX
+            // We store the bool as an integer as that
+            // is what the constant buffers expect.
+            ((int[])Data)[0] = value ? 1 : 0;
+#else
+            // MojoShader encodes even booleans into a float.
+            ((float[])Data)[0] = value ? 1 : 0;
+#endif
+            StateKey = unchecked(NextStateKey++);
+		}
 
         public void SetValue(bool[] value)
         {
@@ -275,7 +321,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // These unrolled loops do the transpose during assignment.
             if (RowCount == 4 && ColumnCount == 4)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M21;
@@ -299,7 +345,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else if (RowCount == 4 && ColumnCount == 3)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M21;
@@ -318,7 +364,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else if (RowCount == 3 && ColumnCount == 4)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M21;
@@ -338,7 +384,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else if (RowCount == 3 && ColumnCount == 3)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M21;
@@ -362,7 +408,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // from the in-memory version effectively transposes them back to row-major.
             if (RowCount == 4 && ColumnCount == 4)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M12;
@@ -386,7 +432,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else if (RowCount == 4 && ColumnCount == 3)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M12;
@@ -406,7 +452,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else if (RowCount == 3 && ColumnCount == 4)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M12;
@@ -425,7 +471,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else if (RowCount == 3 && ColumnCount == 3)
             {
-                float[] fData = (float[])Data;
+                var fData = (float[])Data;
 
                 fData[0] = value.M11;
                 fData[1] = value.M12;
@@ -523,13 +569,25 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SetValue(Texture value)
         {
+            if (this.ParameterType != EffectParameterType.Texture && 
+                this.ParameterType != EffectParameterType.Texture1D &&
+                this.ParameterType != EffectParameterType.Texture2D &&
+                this.ParameterType != EffectParameterType.Texture3D &&
+                this.ParameterType != EffectParameterType.TextureCube) 
+            {
+                throw new InvalidCastException();
+            }
+
             Data = value;
             StateKey = unchecked(NextStateKey++);
         }
 
         public void SetValue(Vector2 value)
         {
-            float[] fData = (float[])Data;
+            if (ParameterClass != EffectParameterClass.Vector || ParameterType != EffectParameterType.Single)
+                throw new InvalidCastException();
+
+            var fData = (float[])Data;
             fData[0] = value.X;
             fData[1] = value.Y;
             StateKey = unchecked(NextStateKey++);
@@ -544,7 +602,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SetValue(Vector3 value)
         {
-            float[] fData = (float[])Data;
+            if (ParameterClass != EffectParameterClass.Vector || ParameterType != EffectParameterType.Single)
+                throw new InvalidCastException();
+
+            var fData = (float[])Data;
             fData[0] = value.X;
             fData[1] = value.Y;
             fData[2] = value.Z;
@@ -560,7 +621,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SetValue(Vector4 value)
         {
-            float[] fData = (float[])Data;
+            if (ParameterClass != EffectParameterClass.Vector || ParameterType != EffectParameterType.Single)
+                throw new InvalidCastException();
+
+            var fData = (float[])Data;
             fData[0] = value.X;
             fData[1] = value.Y;
             fData[2] = value.Z;

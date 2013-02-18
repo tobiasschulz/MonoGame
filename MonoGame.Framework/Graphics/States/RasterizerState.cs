@@ -114,12 +114,19 @@ namespace Microsoft.Xna.Framework.Graphics
 				GL.Disable(EnableCap.ScissorTest);
             GraphicsExtensions.CheckGLError();
 
-            // Depth bias implementation differs in OpenGL from DX, see
-            // http://aras-p.info/blog/2008/06/12/depth-bias-and-the-power-of-deceiving-yourself/
-            // for where the constant comes from (fiddled with the original 4.8e7 though)
-            const float DepthBiasMultiplier = 10000000;
-            GL.Enable(EnableCap.PolygonOffsetFill);
-            GL.PolygonOffset(SlopeScaleDepthBias, DepthBias * DepthBiasMultiplier);
+            if (this.DepthBias != 0 || this.SlopeScaleDepthBias != 0)
+            {
+            	// Depth bias implementation differs in OpenGL from DX, see
+            	// http://aras-p.info/blog/2008/06/12/depth-bias-and-the-power-of-deceiving-yourself/
+            	// for where the constant comes from (fiddled with the original 4.8e7 though)
+            	const float DepthBiasMultiplier = 10000000;
+            	GL.Enable(EnableCap.PolygonOffsetFill);
+            	GL.PolygonOffset(SlopeScaleDepthBias, DepthBias * DepthBiasMultiplier);
+            }
+            else
+            	GL.Disable(EnableCap.PolygonOffsetFill);
+
+            GraphicsExtensions.CheckGLError();
 
             // TODO: MultiSampleAntiAlias
         }

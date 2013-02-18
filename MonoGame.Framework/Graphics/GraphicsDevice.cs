@@ -114,6 +114,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private RenderTargetBinding[] _currentRenderTargetBindings;
 
+#if OPENGL && !GLES
+		private DrawBuffersEnum[] _drawBuffers;
+#endif
+
         private static readonly RenderTargetBinding[] EmptyRenderTargetBinding = new RenderTargetBinding[0];
 
         public TextureCollection Textures { get; private set; }
@@ -344,6 +348,13 @@ namespace Microsoft.Xna.Framework.Graphics
             
             GL.GetInteger(GetPName.MaxTextureSize, out _maxTextureSize);
             GraphicsExtensions.CheckGLError();
+
+			// Initialize draw buffer attachment array
+			int maxDrawBuffers;
+			GL.GetInteger(GetPName.MaxDrawBuffers, out maxDrawBuffers);
+			_drawBuffers = new DrawBuffersEnum[maxDrawBuffers];
+			for (int i = 0; i < maxDrawBuffers; i++)
+				_drawBuffers[i] = (DrawBuffersEnum)(FramebufferAttachment.ColorAttachment0Ext + i);
 #endif
             GetGLExtensions();
 #endif // OPENGL
@@ -1612,8 +1623,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GraphicsExtensions.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
                     GraphicsExtensions.CheckGLError();
-                    GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
-                    GraphicsExtensions.CheckGLError();
+                    //GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
+                    //GraphicsExtensions.CheckGLError();
                     if (renderTarget.DepthStencilFormat != DepthFormat.None)
 				    {
                         GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
@@ -1624,6 +1635,19 @@ namespace Microsoft.Xna.Framework.Graphics
                             GraphicsExtensions.CheckGLError();
                         }
 				    }
+
+#if !GLES
+					for (int i = 0; i < _currentRenderTargetBindings.Length; i++)
+					{
+						GL.BindTexture(TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture);
+						GraphicsExtensions.CheckGLError();
+						GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0 + i, TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture, 0);
+						GraphicsExtensions.CheckGLError();
+					}
+
+					GL.DrawBuffers(_currentRenderTargetBindings.Length, _drawBuffers);
+					GraphicsExtensions.CheckGLError();
+#endif
 
 				    var status = GraphicsExtensions.CheckFramebufferStatus(GLFramebuffer);
 				    if (status != GLFramebufferComplete)
@@ -2059,15 +2083,17 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             DynamicIndexBuffer buffer;
 
-            var indexSize = typeof(T) == typeof(short) ? IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits;
+            var indexType = typeof(T);
+            var indexSize = Marshal.SizeOf(indexType);
+            var indexElementSize = indexSize == 2 ? IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits;
 
-            if (!_userIndexBuffers.TryGetValue(indexSize, out buffer) || buffer.IndexCount < indexCount)
+            if (!_userIndexBuffers.TryGetValue(indexElementSize, out buffer) || buffer.IndexCount < indexCount)
             {
                 if (buffer != null)
                     buffer.Dispose();
 
-                buffer = new DynamicIndexBuffer(this, indexSize, Math.Max(indexCount, 6000), BufferUsage.WriteOnly);
-                _userIndexBuffers[indexSize] = buffer;
+                buffer = new DynamicIndexBuffer(this, indexElementSize, Math.Max(indexCount, 6000), BufferUsage.WriteOnly);
+                _userIndexBuffers[indexElementSize] = buffer;
             }
 
             var startIndex = buffer.UserOffset;
@@ -2075,7 +2101,7 @@ namespace Microsoft.Xna.Framework.Graphics
             if ((indexCount + buffer.UserOffset) < buffer.IndexCount)
             {
                 buffer.UserOffset += indexCount;
-                buffer.SetData(startIndex * 2, indexData, indexOffset, indexCount, SetDataOptions.NoOverwrite);
+                buffer.SetData(startIndex * indexSize, indexData, indexOffset, indexCount, SetDataOptions.NoOverwrite);
             }
             else
             {
@@ -2272,9 +2298,11 @@ namespace Microsoft.Xna.Framework.Graphics
             var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
             var ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
 
+            var vertexAddr = (IntPtr)(vbHandle.AddrOfPinnedObject().ToInt64() + vertexDeclaration.VertexStride * vertexOffset);
+
             // Setup the vertex declaration to point at the VB data.
             vertexDeclaration.GraphicsDevice = this;
-            vertexDeclaration.Apply(_vertexShader, vbHandle.AddrOfPinnedObject());
+            vertexDeclaration.Apply(_vertexShader, vertexAddr);
 
             //Draw
             GL.DrawElements(    PrimitiveTypeGL(primitiveType),
@@ -2328,9 +2356,11 @@ namespace Microsoft.Xna.Framework.Graphics
             var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
             var ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
 
+            var vertexAddr = (IntPtr)(vbHandle.AddrOfPinnedObject().ToInt64() + vertexDeclaration.VertexStride * vertexOffset);
+
             // Setup the vertex declaration to point at the VB data.
             vertexDeclaration.GraphicsDevice = this;
-            vertexDeclaration.Apply(_vertexShader, vbHandle.AddrOfPinnedObject());
+            vertexDeclaration.Apply(_vertexShader, vertexAddr);
 
             //Draw
             GL.DrawElements(    PrimitiveTypeGL(primitiveType),

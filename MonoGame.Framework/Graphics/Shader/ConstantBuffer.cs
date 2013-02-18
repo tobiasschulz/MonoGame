@@ -187,6 +187,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     case EffectParameterType.Single:
 					case EffectParameterType.Int32:
+                    case EffectParameterType.Bool:
                         // HLSL assumes matrices are column-major, whereas in-memory we use row-major.
                         // TODO: HLSL can be told to use row-major. We should handle that too.
                         if (param.ParameterClass == EffectParameterClass.Matrix)
