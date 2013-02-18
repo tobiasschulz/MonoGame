@@ -569,13 +569,29 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SetValue(Texture value)
         {
-            if (this.ParameterType != EffectParameterType.Texture && 
-                this.ParameterType != EffectParameterType.Texture1D &&
-                this.ParameterType != EffectParameterType.Texture2D &&
-                this.ParameterType != EffectParameterType.Texture3D &&
-                this.ParameterType != EffectParameterType.TextureCube) 
-            {
+            if (ParameterClass != EffectParameterClass.Object)
                 throw new InvalidCastException();
+
+            if (value != null)
+            {
+                if (value is Texture2D)
+                {
+                    if (ParameterType != EffectParameterType.Texture1D &&
+                        ParameterType != EffectParameterType.Texture2D)
+                        throw new InvalidCastException();
+                }
+#if !GLES
+                else if (value is Texture3D)
+                {
+                    if (ParameterType != EffectParameterType.Texture3D)
+                        throw new InvalidCastException();
+                }
+#endif
+                else
+                {
+                    if (!(value is TextureCube) || ParameterType != EffectParameterType.TextureCube)
+                        throw new InvalidCastException();
+                }
             }
 
             Data = value;
