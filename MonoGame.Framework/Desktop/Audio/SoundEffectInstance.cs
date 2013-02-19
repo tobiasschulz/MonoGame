@@ -300,8 +300,12 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 			bool isSourceAvailable = controller.ReserveSource (soundBuffer);
             if (!isSourceAvailable)
-                throw new InstancePlayLimitException();
-
+            {
+                System.Console.WriteLine("WARNING: AL SOURCE WAS NOT AVAILABLE. SKIPPING.");
+                return;
+                //throw new InstancePlayLimitException();
+            }
+            
             int bufferId = soundBuffer.OpenALDataBuffer;
             AL.Source(soundBuffer.SourceId, ALSourcei.Buffer, bufferId);
 			ApplyState ();
@@ -329,7 +333,11 @@ namespace Microsoft.Xna.Framework.Audio
             }
             else
             {
-                Play();
+                /* We cannot assume that Resume is the same thing as Play.
+                 * Resume should only work in cooperation with Pause!
+                 * -flibit
+                 */
+                // Play();
             }
 		}
 
