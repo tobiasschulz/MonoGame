@@ -190,7 +190,7 @@ namespace Microsoft.Xna.Framework
         {
             var winWidth = window.ClientRectangle.Width;
             var winHeight = window.ClientRectangle.Height;
-            var winRect = new Rectangle(0, 0, winWidth, winHeight);
+            var winRect = new Rectangle(window.ClientRectangle.X, window.ClientRectangle.Y, winWidth, winHeight);
             
             // If window size is zero, leave bounds unchanged
             // OpenTK appears to set the window client size to 1x1 when minimizing
@@ -204,10 +204,12 @@ namespace Microsoft.Xna.Framework
             Game.GraphicsDevice.PresentationParameters.BackBufferWidth = winWidth;
             Game.GraphicsDevice.PresentationParameters.BackBufferHeight = winHeight;
 
-            Game.GraphicsDevice.Viewport = new Viewport(0, 0, winWidth, winHeight);
-
             ChangeClientBounds(winRect);
+   
+            UpdateWindowState();
 
+            Game.GraphicsDevice.Viewport = new Viewport(window.ClientRectangle.X, window.ClientRectangle.Y, winWidth, winHeight);
+            
             OnClientSizeChanged();
         }
 
