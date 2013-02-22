@@ -787,6 +787,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             waitEvent.Wait();
 
+#elif OPENGL
+            SaveAsImage(ImageFormat.Jpeg, stream, width, height);
 #else
             throw new NotImplementedException();
 #endif
@@ -796,9 +798,9 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 #if WINDOWS_STOREAPP
             SaveAsImage(BitmapEncoder.PngEncoderId, stream, width, height);
+#elif OPENGL
+            SaveAsImage(ImageFormat.Png, stream, width, height);
 #else
-            // TODO: We need to find a simple stand alone
-            // PNG encoder if we want to support this.
             throw new NotImplementedException();
 #endif
         }
