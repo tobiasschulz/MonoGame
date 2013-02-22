@@ -271,10 +271,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				GL.TexParameter(target, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
                 GraphicsExtensions.CheckGLError();
 				break;
-            case TextureFilter.MinLinearMagPointMipLinear:
-                GL.TexParameter(target, TextureParameterName.TextureMinFilter, (int)(useMipmaps ? TextureMinFilter.LinearMipmapLinear : TextureMinFilter.Linear));
-				GL.TexParameter(target, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			    break;
 			case TextureFilter.Linear:
                 GL.TexParameter(target, TextureParameterNameTextureMaxAnisotropy, 1.0f);
                 GraphicsExtensions.CheckGLError();
