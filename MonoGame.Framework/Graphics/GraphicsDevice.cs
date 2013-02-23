@@ -1434,6 +1434,15 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             if (DeviceReset != null)
                 DeviceReset(this, EventArgs.Empty);
+
+            // on resize, this is necessary so it gets re-generated
+            if (this.glRenderTargetFrameBuffer > 0)
+            {
+                GL.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
+                GraphicsExtensions.CheckGLError();
+
+                glRenderTargetFrameBuffer = 0;
+            }
         }
 
         public DisplayMode DisplayMode
