@@ -39,6 +39,7 @@ purpose and non-infringement.
 #endregion License
 
 #region Using Statements
+
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -48,7 +49,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenTK;
 using OpenTK.Graphics;
-
 
 #endregion Using Statements
 
@@ -107,7 +107,6 @@ namespace Microsoft.Xna.Framework
             set
             {
                 if (_isResizable != value)
-                if (_allowUserResizing)
                     _isResizable = value;
                 else
                     return;
