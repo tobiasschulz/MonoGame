@@ -73,7 +73,6 @@ namespace Microsoft.Xna.Framework.Graphics
         internal SharpDX.Direct3D11.DepthStencilView _depthStencilView;
 #elif OPENGL
 		internal uint glDepthStencilBuffer;
-        internal uint glFramebuffer;
 #endif
 
 		public DepthFormat DepthStencilFormat { get; private set; }
@@ -196,12 +195,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     {
                         GraphicsExtensions.DeleteRenderbuffers(1, ref this.glDepthStencilBuffer);
                         GraphicsExtensions.CheckGLError();
-
-                        if (this.glFramebuffer > 0)
-                        {
-                            GraphicsExtensions.DeleteFramebuffers(1, ref this.glFramebuffer);
-                            GraphicsExtensions.CheckGLError();
-                        }
                     });
                 }
 #endif

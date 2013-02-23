@@ -106,8 +106,6 @@ namespace Microsoft.Xna.Framework
             _view = new OpenTKGameWindow();
             _view.Game = game;
             this.Window = _view;
-
-            this.IsMouseVisible = true;
 			
 			// Setup our OpenALSoundController to handle our SoundBuffer pools
 			soundControllerInstance = OpenALSoundController.Instance;
@@ -116,6 +114,10 @@ namespace Microsoft.Xna.Framework
             // also set up SdlMixer to play background music. If one of these functions fails, we will not get any background music (but that should rarely happen)
             Tao.Sdl.Sdl.SDL_InitSubSystem(Tao.Sdl.Sdl.SDL_INIT_AUDIO);
             Tao.Sdl.SdlMixer.Mix_OpenAudio(44100, (short)Tao.Sdl.Sdl.AUDIO_S16SYS, 2, 1024);			
+
+            //even though this method is called whenever IsMouseVisible is changed it needs to be called during startup
+            //so that the cursor can be put in the correct inital state (hidden)
+            OnIsMouseVisibleChanged();
 #endif
         }
 
@@ -250,7 +252,7 @@ namespace Microsoft.Xna.Framework
         {
             
         }
-  
+#if LINUX
         protected override void OnIsMouseVisibleChanged()
         {
             // This is necessary in Windows 7 as well, not just in Linux
@@ -260,6 +262,7 @@ namespace Microsoft.Xna.Framework
             System.Drawing.Point mousePos = _view.Window.PointToScreen(new System.Drawing.Point(oldState.X, oldState.Y));
             OpenTK.Input.Mouse.SetPosition(mousePos.X, mousePos.Y);
         }
+#endif
         
         public override void Log(string Message)
         {

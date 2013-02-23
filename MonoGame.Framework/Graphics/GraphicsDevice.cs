@@ -246,6 +246,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if OPENGL
         internal int glFramebuffer;
+        internal int glRenderTargetFrameBuffer;
         internal int MaxVertexAttributes;        
         internal readonly HashSet<string> _extensions = new HashSet<string>();
         internal int _maxTextureSize = 0;
@@ -350,11 +351,11 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
 
 			// Initialize draw buffer attachment array
-//			int maxDrawBuffers;
-//			GL.GetInteger(GetPName.MaxDrawBuffers, out maxDrawBuffers);
-//			_drawBuffers = new DrawBuffersEnum[maxDrawBuffers];
-//			for (int i = 0; i < maxDrawBuffers; i++)
-//				_drawBuffers[i] = (DrawBuffersEnum)(FramebufferAttachment.ColorAttachment0Ext + i);
+			int maxDrawBuffers;
+			GL.GetInteger(GetPName.MaxDrawBuffers, out maxDrawBuffers);
+			_drawBuffers = new DrawBuffersEnum[maxDrawBuffers];
+			for (int i = 0; i < maxDrawBuffers; i++)
+				_drawBuffers[i] = (DrawBuffersEnum)(FramebufferAttachment.ColorAttachment0Ext + i);
 #endif
             GetGLExtensions();
 #endif // OPENGL
@@ -1191,16 +1192,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #endif // OPENGL
         }
-
-        public void Clear(ClearOptions options, Color color, float depth, int stencil, Rectangle[] regions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Clear(ClearOptions options, Vector4 color, float depth, int stencil, Rectangle[] regions)
-        {
-            throw new NotImplementedException();
-        }
 		
         public void Dispose()
         {
@@ -1287,6 +1278,15 @@ namespace Microsoft.Xna.Framework.Graphics
 #if OPENGL
                     // Free all the cached shader programs.
                     _programCache.Dispose();
+
+                    GraphicsDevice.AddDisposeAction(() =>
+                                                    {
+                        if (this.glRenderTargetFrameBuffer > 0)
+                        {
+                            GL.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
+                            GraphicsExtensions.CheckGLError();
+                        }
+                    });
 #endif
 
 #if PSM
@@ -1608,12 +1608,12 @@ namespace Microsoft.Xna.Framework.Graphics
                     _d3dContext.OutputMerger.SetTargets(_currentDepthStencilView, _currentRenderTargets);
 
 #elif OPENGL
-				if (renderTarget.glFramebuffer == 0)
+				if (this.glRenderTargetFrameBuffer == 0)
 				{
 #if GLES
-					GL.GenFramebuffers(1, ref renderTarget.glFramebuffer);
+                    GL.GenFramebuffers(1, ref this.glRenderTargetFrameBuffer);
 #else
-                    GraphicsExtensions.GenFramebuffers(1, out renderTarget.glFramebuffer);
+                    GL.GenFramebuffers(1, out this.glRenderTargetFrameBuffer);
 #endif
                     GraphicsExtensions.CheckGLError();
                 }
@@ -1621,7 +1621,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 // TODO : This prevented the "incomplete" bug but doesn't solve the visual glitch
                 Threading.BlockOnUIThread(() =>
                 {
-                    GraphicsExtensions.BindFramebuffer(GLFramebuffer, renderTarget.glFramebuffer);
+                    GraphicsExtensions.BindFramebuffer(GLFramebuffer, this.glRenderTargetFrameBuffer);
                     GraphicsExtensions.CheckGLError();
                     GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
                     GraphicsExtensions.CheckGLError();
@@ -1636,18 +1636,18 @@ namespace Microsoft.Xna.Framework.Graphics
                         }
 				    }
 
-//#if !GLES
-//					for (int i = 0; i < _currentRenderTargetBindings.Length; i++)
-//					{
-//						GL.BindTexture(TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture);
-//						GraphicsExtensions.CheckGLError();
-//						GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0 + i, TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture, 0);
-//						GraphicsExtensions.CheckGLError();
-//					}
-//
-//					GL.DrawBuffers(_currentRenderTargetBindings.Length, _drawBuffers);
-//					GraphicsExtensions.CheckGLError();
-//#endif
+#if !GLES
+					for (int i = 0; i < _currentRenderTargetBindings.Length; i++)
+					{
+						GL.BindTexture(TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture);
+						GraphicsExtensions.CheckGLError();
+						GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0 + i, TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture, 0);
+						GraphicsExtensions.CheckGLError();
+					}
+
+					GL.DrawBuffers(_currentRenderTargetBindings.Length, _drawBuffers);
+					GraphicsExtensions.CheckGLError();
+#endif
 
 				    var status = GraphicsExtensions.CheckFramebufferStatus(GLFramebuffer);
 				    if (status != GLFramebufferComplete)
