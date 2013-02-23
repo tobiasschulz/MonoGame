@@ -115,7 +115,7 @@ namespace Microsoft.Xna.Framework.Graphics
         private RenderTargetBinding[] _currentRenderTargetBindings;
 
 #if OPENGL && !GLES
-		private DrawBuffersEnum[] _drawBuffers;
+//		private DrawBuffersEnum[] _drawBuffers;
 #endif
 
         private static readonly RenderTargetBinding[] EmptyRenderTargetBinding = new RenderTargetBinding[0];
@@ -351,11 +351,11 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.CheckGLError();
 
 			// Initialize draw buffer attachment array
-			int maxDrawBuffers;
-			GL.GetInteger(GetPName.MaxDrawBuffers, out maxDrawBuffers);
-			_drawBuffers = new DrawBuffersEnum[maxDrawBuffers];
-			for (int i = 0; i < maxDrawBuffers; i++)
-				_drawBuffers[i] = (DrawBuffersEnum)(FramebufferAttachment.ColorAttachment0Ext + i);
+//			int maxDrawBuffers;
+//			GL.GetInteger(GetPName.MaxDrawBuffers, out maxDrawBuffers);
+//			_drawBuffers = new DrawBuffersEnum[maxDrawBuffers];
+//			for (int i = 0; i < maxDrawBuffers; i++)
+//				_drawBuffers[i] = (DrawBuffersEnum)(FramebufferAttachment.ColorAttachment0Ext + i);
 #endif
             GetGLExtensions();
 #endif // OPENGL
@@ -1637,16 +1637,16 @@ namespace Microsoft.Xna.Framework.Graphics
 				    }
 
 #if !GLES
-					for (int i = 0; i < _currentRenderTargetBindings.Length; i++)
-					{
-						GL.BindTexture(TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture);
-						GraphicsExtensions.CheckGLError();
-						GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0 + i, TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture, 0);
-						GraphicsExtensions.CheckGLError();
-					}
-
-					GL.DrawBuffers(_currentRenderTargetBindings.Length, _drawBuffers);
-					GraphicsExtensions.CheckGLError();
+//					for (int i = 0; i < _currentRenderTargetBindings.Length; i++)
+//					{
+//						GL.BindTexture(TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture);
+//						GraphicsExtensions.CheckGLError();
+//						GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0 + i, TextureTarget.Texture2D, _currentRenderTargetBindings[i].RenderTarget.glTexture, 0);
+//						GraphicsExtensions.CheckGLError();
+//					}
+//
+//					GL.DrawBuffers(_currentRenderTargetBindings.Length, _drawBuffers);
+//					GraphicsExtensions.CheckGLError();
 #endif
 
 				    var status = GraphicsExtensions.CheckFramebufferStatus(GLFramebuffer);
