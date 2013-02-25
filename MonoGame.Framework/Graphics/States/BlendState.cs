@@ -197,13 +197,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 this.AlphaSourceBlend.GetBlendFactorSrc(), 
                 this.AlphaDestinationBlend.GetBlendFactorDest());
             GraphicsExtensions.CheckGLError();
-
-            GL.ColorMask(
-                (this.ColorWriteChannels & ColorWriteChannels.Red) != 0,
-                (this.ColorWriteChannels & ColorWriteChannels.Green) != 0,
-                (this.ColorWriteChannels & ColorWriteChannels.Blue) != 0,
-                (this.ColorWriteChannels & ColorWriteChannels.Alpha) != 0);
-            GraphicsExtensions.CheckGLError();
         }
 
 #elif DIRECTX
