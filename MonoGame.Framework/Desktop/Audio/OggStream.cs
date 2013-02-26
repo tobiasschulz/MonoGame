@@ -75,6 +75,7 @@ namespace Microsoft.Xna.Framework.Audio
             }
 
             Volume = 1;
+            lowPass = true;
 
             underlyingStream = stream;
         }
@@ -103,6 +104,18 @@ namespace Microsoft.Xna.Framework.Audio
                         Precache(asynchronous: asynchronous);
                     }
                 }
+            }
+        }
+
+        bool lowPass;
+        public bool LowPass
+        {
+            get { return lowPass; }
+            set
+            {
+                if (lowPass != value)
+                    OpenALSoundController.Instance.SetSourceFiltered(alSourceId, value);
+                lowPass = value;
             }
         }
 
