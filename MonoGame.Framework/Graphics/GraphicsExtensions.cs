@@ -703,7 +703,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return prevTexture;
         }
 
-        //[System.Diagnostics.Conditional("DEBUG")]
+        [System.Diagnostics.Conditional("DEBUG")]
         public static void CheckGLError()
         {
 #if GLES
@@ -723,7 +723,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 
 #if OPENGL
-        //[System.Diagnostics.Conditional("DEBUG")]
+        [System.Diagnostics.Conditional("DEBUG")]
         public static void LogGLError(string location)
         {
             try

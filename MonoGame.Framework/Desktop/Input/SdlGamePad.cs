@@ -52,7 +52,7 @@ namespace Microsoft.Xna.Framework.Input
     //     Allows retrieval of user interaction with an Xbox 360 Controller and setting
     //     of controller vibration motors. Reference page contains links to related
     //     code samples.
-    public static class GamePad
+    public static class SdlGamePad
     {
 		static bool running;		
         static bool sdl;
