@@ -238,8 +238,8 @@ namespace Microsoft.Xna.Framework.Graphics
         /// We should avoid supporting old versions for very long as
         /// users should be rebuilding content when packaging their game.
         /// </remarks>
-        private const int MGFXVersion = 4;
-        private const int MinSupportedMGFXVersion = 3;
+        private const int MGFXVersion = 5;
+        private const int MinSupportedMGFXVersion = 4;
 
 	    int version;
 

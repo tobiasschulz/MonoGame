@@ -126,6 +126,13 @@ namespace Microsoft.Xna.Framework
             get { return GameRunBehavior.Synchronous; }
         }
 
+#if WINDOWS
+        protected override void OnIsMouseVisibleChanged()
+        {
+            _view.MouseVisibleToggled();
+        }
+#endif
+
         public override void RunLoop()
         {
             ResetWindowBounds(false);

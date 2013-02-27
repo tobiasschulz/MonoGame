@@ -60,6 +60,7 @@ namespace Microsoft.Xna.Framework
         private bool _isBorderless;
 #if WINDOWS
         private bool _isMouseHidden;
+        private bool _isMouseInBounds;
 #endif
         private DisplayOrientation _currentOrientation;
         private IntPtr _windowHandle = IntPtr.Zero;
@@ -288,6 +289,7 @@ namespace Microsoft.Xna.Framework
 #if WINDOWS
         private void OnMouseEnter(object sender, EventArgs e)
         {
+            _isMouseInBounds = true;
             if (!game.IsMouseVisible && !_isMouseHidden)
             {
                 _isMouseHidden = true;
@@ -299,10 +301,14 @@ namespace Microsoft.Xna.Framework
         {
             //There is a bug in OpenTK where the MouseLeave event is raised when the mouse button
             //is down while the cursor is still in the window bounds.
-            if (_isMouseHidden && Mouse.GetState().LeftButton == ButtonState.Released)
+            if (Mouse.GetState().LeftButton == ButtonState.Released)
             {
-                _isMouseHidden = false;
-                System.Windows.Forms.Cursor.Show();
+                _isMouseInBounds = false;
+                if (_isMouseHidden)
+                {
+                    _isMouseHidden = false;
+                    System.Windows.Forms.Cursor.Show();
+                }
             }
         }
 #endif
@@ -321,7 +327,7 @@ namespace Microsoft.Xna.Framework
             window.Closing += new EventHandler<CancelEventArgs>(OpenTkGameWindow_Closing);
             window.Resize += OnResize;
             window.Keyboard.KeyDown += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyDown);
-            window.Keyboard.KeyUp += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyUp);                        
+            window.Keyboard.KeyUp += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyUp);
 #if WINDOWS
             window.MouseEnter += OnMouseEnter;
             window.MouseLeave += OnMouseLeave;
@@ -431,6 +437,25 @@ namespace Microsoft.Xna.Framework
         {
 
         }
+
+#if WINDOWS
+        public void MouseVisibleToggled()
+        {
+            if (game.IsMouseVisible)
+            {
+                if (_isMouseHidden)
+                {
+                    System.Windows.Forms.Cursor.Show();
+                    _isMouseHidden = false;
+                }
+            }
+            else if (!_isMouseHidden && _isMouseInBounds)
+            {
+                System.Windows.Forms.Cursor.Hide();
+                _isMouseHidden = true;
+            }
+        }
+#endif
 
         #endregion
     }
