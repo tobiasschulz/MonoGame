@@ -450,7 +450,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				var rowCount = (int)reader.ReadByte();
 				var columnCount = (int)reader.ReadByte();
 
-				var registerCount = version >= 4 ? reader.ReadByte() : rowCount;
+                var registerCount = version >= MGFXVersion ? reader.ReadByte() : rowCount;
 
 				var elements = ReadParameters(reader);
 				var structMembers = ReadParameters(reader);

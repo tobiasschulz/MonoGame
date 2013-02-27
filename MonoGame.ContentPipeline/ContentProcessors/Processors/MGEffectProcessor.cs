@@ -17,7 +17,7 @@ namespace MonoGameContentProcessors.Processors
     {
         public override CompiledEffectContent Process(EffectContent input, ContentProcessorContext context)
         {
-            //System.Diagnostics.Debugger.Launch();
+            //System.Diagnostics.Debugger.Break();
 
             // If this isn't a MonoGame platform then do the default processing.
             var platform = ContentHelper.GetMonoGamePlatform();
