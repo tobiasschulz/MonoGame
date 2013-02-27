@@ -113,8 +113,10 @@ namespace Microsoft.Xna.Framework.Audio
             get { return lowPass; }
             set
             {
+#if !FAKE
                 if (lowPass != value)
                     OpenALSoundController.Instance.SetSourceFiltered(alSourceId, value);
+#endif
                 lowPass = value;
             }
         }
