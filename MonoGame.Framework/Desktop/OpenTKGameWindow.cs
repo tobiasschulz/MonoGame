@@ -233,16 +233,15 @@ namespace Microsoft.Xna.Framework
                 window.ClientRectangle = new System.Drawing.Rectangle(targetBounds.X,
                                      targetBounds.Y, targetBounds.Width, targetBounds.Height);
 
-                // TODO : is still necessary?
-                // Make sure we're within bounds on the primary display before changing to fullscreen
+                // Center in on the primary display no matter what
                 //if (windowState == WindowState.Fullscreen && window.WindowState != WindowState.Fullscreen)
-                //{
-                //    var primaryDisplay = DisplayDevice.GetDisplay(DisplayIndex.Primary);
-                //    //window.X = (int)MathHelper.Clamp(window.X, 0, primaryDisplay.Width - window.Width);
-                //    //window.Y = (int)MathHelper.Clamp(window.Y, 0, primaryDisplay.Height - window.Height);
-                //    window.X = (primaryDisplay.Width - window.Width) / 2;
-                //    window.Y = (primaryDisplay.Height - window.Height) / 2;
-                //}                                 
+                {
+                    var primaryDisplay = DisplayDevice.GetDisplay(DisplayIndex.Primary);
+                    //window.X = (int)MathHelper.Clamp(window.X, 0, primaryDisplay.Width - window.Width);
+                    //window.Y = (int)MathHelper.Clamp(window.Y, 0, primaryDisplay.Height - window.Height);
+                    window.X = (primaryDisplay.Width - window.Width) / 2;
+                    window.Y = (primaryDisplay.Height - window.Height) / 2;
+                }                                 
                 
                 // if the window-state is set from the outside (maximized button pressed) we have to update it here.
                 // if it was set from the inside (.IsFullScreen changed), we have to change the window.
