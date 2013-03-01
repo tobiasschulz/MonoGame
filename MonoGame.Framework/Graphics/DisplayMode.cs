@@ -80,7 +80,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Constructors
         
-        public DisplayMode(int width, int height, int refreshRate, SurfaceFormat format)
+        internal DisplayMode(int width, int height, int refreshRate, SurfaceFormat format)
         {
             this.width = width;
             this.height = height;
