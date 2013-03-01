@@ -87,10 +87,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.XInput, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SharpDX.XInput, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.XInput.dll</HintPath>
     </Reference>
     <Reference Include="System" />
