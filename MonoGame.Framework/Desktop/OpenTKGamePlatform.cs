@@ -300,7 +300,7 @@ namespace Microsoft.Xna.Framework
             }
 
             soundControllerInstance.Dispose();
-            //SdlGamePad.Cleanup();
+            SdlGamePad.Cleanup();
 
 			base.Dispose(disposing);
         }

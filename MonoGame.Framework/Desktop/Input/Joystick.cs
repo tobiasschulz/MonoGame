@@ -117,11 +117,8 @@ namespace Microsoft.Xna.Framework.Input
 
         }
 
-
-
-        internal static void Cleanup()
+        internal void Cleanup()
         {
-            throw new NotImplementedException();
         }
     }
 

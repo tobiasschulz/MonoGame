@@ -81,13 +81,13 @@ namespace Microsoft.Xna.Framework.Input
 				PadConfig pc = new PadConfig(Sdl.SDL_JoystickName(x), x);
 				devices[x] = Sdl.SDL_JoystickOpen(pc.Index);
 
-				pc.Button_A.ID = 0;
+				pc.Button_A.ID = 1;
 				pc.Button_A.Type = InputType.Button;
 
-				pc.Button_B.ID = 1;
+				pc.Button_B.ID = 2;
 				pc.Button_B.Type = InputType.Button;
 
-				pc.Button_X.ID = 2;
+				pc.Button_X.ID = 0;
 				pc.Button_X.Type = InputType.Button;
 
 				pc.Button_Y.ID = 3;
@@ -99,16 +99,16 @@ namespace Microsoft.Xna.Framework.Input
 				pc.Button_RB.ID = 5;
 				pc.Button_RB.Type = InputType.Button;
 
-				pc.Button_Back.ID = 6;
+				pc.Button_Back.ID = 8;
 				pc.Button_Back.Type = InputType.Button;
 
-				pc.Button_Start.ID = 7;
+				pc.Button_Start.ID = 9;
 				pc.Button_Start.Type = InputType.Button;
 
-				pc.LeftStick.Press.ID = 8;
+				pc.LeftStick.Press.ID = 10;
 				pc.LeftStick.Press.Type = InputType.Button;
 
-				pc.RightStick.Press.ID = 9;
+				pc.RightStick.Press.ID = 11;
 				pc.RightStick.Press.Type = InputType.Button;
 
 				pc.LeftStick.X.Negative.ID = 0;
@@ -127,6 +127,14 @@ namespace Microsoft.Xna.Framework.Input
 				pc.LeftStick.Y.Positive.Type = InputType.Axis;
 				pc.LeftStick.Y.Positive.Negative = false;
 
+                pc.RightStick.X.Negative.ID = 2;
+                pc.RightStick.X.Negative.Type = InputType.Axis;
+                pc.RightStick.X.Negative.Negative = true;
+
+                pc.RightStick.X.Positive.ID = 2;
+                pc.RightStick.X.Positive.Type = InputType.Axis;
+                pc.RightStick.X.Positive.Negative = false;
+
 				pc.RightStick.Y.Negative.ID = 3;
 				pc.RightStick.Y.Negative.Type = InputType.Axis;
 				pc.RightStick.Y.Negative.Negative = true;
@@ -134,14 +142,6 @@ namespace Microsoft.Xna.Framework.Input
 				pc.RightStick.Y.Positive.ID = 3;
 				pc.RightStick.Y.Positive.Type = InputType.Axis;
 				pc.RightStick.Y.Positive.Negative = false;
-
-				pc.RightStick.X.Negative.ID = 4;
-				pc.RightStick.X.Negative.Type = InputType.Axis;
-				pc.RightStick.X.Negative.Negative = true;
-
-				pc.RightStick.X.Positive.ID = 4;
-				pc.RightStick.X.Positive.Type = InputType.Axis;
-				pc.RightStick.X.Positive.Negative = false;
 
 				pc.Dpad.Up.ID = 0;
 				pc.Dpad.Up.Type = InputType.PovUp;
@@ -155,13 +155,11 @@ namespace Microsoft.Xna.Framework.Input
 				pc.Dpad.Right.ID = 0;
 				pc.Dpad.Right.Type = InputType.PovRight;
 
-				pc.LeftTrigger.ID = 2;
-				pc.LeftTrigger.Type = InputType.Axis;
-				pc.LeftTrigger.Negative = false;
+				pc.LeftTrigger.ID = 6;
+				pc.LeftTrigger.Type = InputType.Button;
 
-				pc.RightTrigger.ID = 2;
-				pc.RightTrigger.Type = InputType.Axis;
-				pc.RightTrigger.Negative = true;
+				pc.RightTrigger.ID = 7;
+				pc.RightTrigger.Type = InputType.Button;
 
 				// Suggestion: Xbox Guide button <=> BigButton
 				//pc.BigButton.ID = 8;
@@ -225,10 +223,17 @@ namespace Microsoft.Xna.Framework.Input
 
 
         }
+
         //Disposes of SDL
         public static void Cleanup()
         {
-            Joystick.Cleanup();
+            for (int i = 0; i < GetPadCount(); i++)
+            {
+                var device = GetDevice(PlayerIndex.One + i);
+                if (Sdl.SDL_JoystickOpened(Sdl.SDL_JoystickIndex(device)) == 1)
+                    Sdl.SDL_JoystickClose(device);
+            }
+
             running = false;
         }
 
@@ -237,9 +242,29 @@ namespace Microsoft.Xna.Framework.Input
             return devices[(int)index];
         }
 
-        static PadConfig GetConfig(PlayerIndex index)
+        public static PadConfig GetConfig(PlayerIndex index)
         {
             return Settings[(int)index];
+        }
+
+        public static int? GetPressedButtonId()
+        {
+            for (int i = 0; i < GetPadCount(); i++)
+            {
+                var device = GetDevice(PlayerIndex.One + i);
+                for (int j = 0; j < Sdl.SDL_JoystickNumButtons(device); j++)
+                {
+                    if (Sdl.SDL_JoystickGetButton(device, j) > 0)
+                        return j;
+                }
+            }
+
+            return null;
+        }
+
+        public static int GetPadCount()
+        {
+            return devices.Length;
         }
 
         static Buttons ReadButtons(IntPtr device, PadConfig c, float deadZoneSize)
