@@ -226,7 +226,7 @@ namespace Microsoft.Xna.Framework.Input
 
         }
         //Disposes of SDL
-        static void Cleanup()
+        public static void Cleanup()
         {
             Joystick.Cleanup();
             running = false;
