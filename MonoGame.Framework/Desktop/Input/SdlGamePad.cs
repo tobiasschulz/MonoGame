@@ -227,12 +227,13 @@ namespace Microsoft.Xna.Framework.Input
         //Disposes of SDL
         public static void Cleanup()
         {
-            for (int i = 0; i < GetPadCount(); i++)
-            {
-                var device = GetDevice(PlayerIndex.One + i);
-                if (Sdl.SDL_JoystickOpened(Sdl.SDL_JoystickIndex(device)) == 1)
-                    Sdl.SDL_JoystickClose(device);
-            }
+            if (running)
+                for (int i = 0; i < GetPadCount(); i++)
+                {
+                    var device = GetDevice(PlayerIndex.One + i);
+                    if (Sdl.SDL_JoystickOpened(Sdl.SDL_JoystickIndex(device)) == 1)
+                        Sdl.SDL_JoystickClose(device);
+                }
 
             running = false;
         }
@@ -249,7 +250,7 @@ namespace Microsoft.Xna.Framework.Input
 
         public static int? GetPressedButtonId()
         {
-            for (int i = 0; i < GetPadCount(); i++)
+            for (int i = 0; i < devices.Length; i++)
             {
                 var device = GetDevice(PlayerIndex.One + i);
                 for (int j = 0; j < Sdl.SDL_JoystickNumButtons(device); j++)
@@ -264,7 +265,7 @@ namespace Microsoft.Xna.Framework.Input
 
         public static int GetPadCount()
         {
-            return devices.Length;
+            return devices.Count(x => x != IntPtr.Zero);
         }
 
         static Buttons ReadButtons(IntPtr device, PadConfig c, float deadZoneSize)
