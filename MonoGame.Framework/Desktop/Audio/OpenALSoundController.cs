@@ -50,6 +50,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         private OpenALSoundController()
         {
+            if (File.Exists("openal32.dll"))
             try
             {
                 File.SetAttributes("openal32.dll", FileAttributes.Normal);
@@ -74,8 +75,11 @@ namespace Microsoft.Xna.Framework.Audio
             catch (TypeInitializationException)
             {
                 // Badly advertised, but we're using the wrong DLL... try the other one. (and hope that it works!)
-                File.SetAttributes("openal32.dll", FileAttributes.Normal);
-                File.Delete("openal32.dll");
+                if (File.Exists("openal32.dll"))
+                {
+                    File.SetAttributes("openal32.dll", FileAttributes.Normal);
+                    File.Delete("openal32.dll");
+                }
 
                 if (IntPtr.Size != 8)   File.Copy("soft_oal_64.dll", "openal32.dll");
                 else                    File.Copy("soft_oal_32.dll", "openal32.dll");
