@@ -379,7 +379,7 @@ namespace Microsoft.Xna.Framework.Audio
                     throw new InvalidOperationException("Already running");
 
                 Instance = this;
-                underlyingThread = new Thread(EnsureBuffersFilled) { Priority = ThreadPriority.Lowest, Name = "Ogg Streamer" };
+                underlyingThread = new Thread(EnsureBuffersFilled) { Priority = ThreadPriority.BelowNormal, Name = "Ogg Streamer" };
                 underlyingThread.Start();
             }
 
