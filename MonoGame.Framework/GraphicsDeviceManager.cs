@@ -71,7 +71,7 @@ namespace Microsoft.Xna.Framework
         private bool _synchronizedWithVerticalRetrace = true;
         bool disposed;
 
-#if !WINRT
+#if !(WINDOWS || LINUX || WINRT)
         private bool _wantFullScreen = false;
 #endif
         public static readonly int DefaultBackBufferHeight = 480;
@@ -106,6 +106,11 @@ namespace Microsoft.Xna.Framework
 
             _game.Services.AddService(typeof(IGraphicsDeviceManager), this);
             _game.Services.AddService(typeof(IGraphicsDeviceService), this);
+
+#if (WINDOWS && !DIRECTX) || LINUX
+            // TODO: This should not occur here... it occurs during Game.Initialize().
+            CreateDevice();
+#endif
         }
 
         ~GraphicsDeviceManager()
@@ -390,7 +395,9 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-#if WINRT
+#if WINDOWS || LINUX
+                return _graphicsDevice.PresentationParameters.IsFullScreen;
+#elif WINRT
                 return true;
 #else
                 if (_graphicsDevice != null)
@@ -401,7 +408,9 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
-#if WINRT
+#if WINDOWS || LINUX
+                _graphicsDevice.PresentationParameters.IsFullScreen = value;
+#elif WINRT
                 // Just ignore this as it is not relevant on Windows 8
 #else
                 _wantFullScreen = value;
@@ -516,8 +525,10 @@ namespace Microsoft.Xna.Framework
             set
             {
                 _supportedOrientations = value;
-                if (_game.Window != null)
-                    _game.Window.SetSupportedOrientations(_supportedOrientations);
+
+#if !MONOMAC && !LINUX
+                _game.Window.SetSupportedOrientations(_supportedOrientations);
+#endif
             }
         }
 

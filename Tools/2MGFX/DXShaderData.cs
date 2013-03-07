@@ -7,8 +7,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public struct Sampler
 		{
 			public MojoShader.MOJOSHADER_samplerType type;
-			public int textureSlot;
-            public int samplerSlot;
+			public int index;
 			public string samplerName;
 			public string parameterName;
 			public int parameter;

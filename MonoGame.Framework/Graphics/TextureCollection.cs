@@ -112,7 +112,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GraphicsExtensions.CheckGLError();
                 }
 #elif DIRECTX
-                if (_textures[i] == null || _textures[i].IsDisposed)
+                if (_textures[i] == null)
                     pixelShaderStage.SetShaderResource(i, null);
                 else
                     pixelShaderStage.SetShaderResource(i, _textures[i].GetShaderResourceView());

@@ -9,11 +9,9 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Model
 	{
-		private static Matrix[] sharedDrawBoneMatrices;
-		
 		private GraphicsDevice graphicsDevice;
 		private List<ModelBone> bones;
-		private List<ModelMesh> meshes;		
+		private List<ModelMesh> meshes;
 
 		// Summary:
 		//     Gets a collection of ModelBone objects which describe how each mesh in the
@@ -80,17 +78,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 		
 		public void Draw(Matrix world, Matrix view, Matrix projection) 
-		{       
-			int boneCount = this.bones.Count;
-			
-			if (sharedDrawBoneMatrices == null ||
-				sharedDrawBoneMatrices.Length < boneCount)
-			{
-				sharedDrawBoneMatrices = new Matrix[boneCount];    
-			}
-			
-			// Look up combined bone matrices for the entire model.            
-			CopyAbsoluteBoneTransformsTo(sharedDrawBoneMatrices);
+		{       			
+			// Look up combined bone matrices for the entire model.
+            Matrix[] boneTransforms = new Matrix[bones.Count];
+			CopyAbsoluteBoneTransformsTo(boneTransforms);
 
             // Draw the model.
             foreach (ModelMesh mesh in Meshes)
@@ -101,7 +92,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					if (effectMatricies == null) {
 						throw new InvalidOperationException();
 					}
-                    effectMatricies.World = sharedDrawBoneMatrices[mesh.ParentBone.Index] * world;
+                    effectMatricies.World = boneTransforms[mesh.ParentBone.Index] * world;
                     effectMatricies.View = view;
                     effectMatricies.Projection = projection;
                 }

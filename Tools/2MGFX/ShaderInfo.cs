@@ -181,6 +181,8 @@ namespace TwoMGFX
 	    {
             set
             {
+                if (_minFilter == value) 
+                    return;
                 _minFilter = value;
                 _dirty = true;
             }
@@ -190,6 +192,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_magFilter == value) 
+                    return;
                 _magFilter = value;
                 _dirty = true;
             }
@@ -199,6 +203,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_mipFilter == value) 
+                    return;
                 _mipFilter = value;
                 _dirty = true;
             }
@@ -208,6 +214,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_addressU == value)
+                    return;
                 _addressU = value;
                 _dirty = true;
             }
@@ -217,6 +225,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_addressV == value)
+                    return;
                 _addressV = value;
                 _dirty = true;
             }
@@ -226,6 +236,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_addressW == value)
+                    return;
                 _addressW = value;
                 _dirty = true;
             }
@@ -235,6 +247,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_maxAnisotropy == value)
+                    return;
                 _maxAnisotropy = value;
                 _dirty = true;
             }
@@ -244,6 +258,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_maxMipLevel == value)
+                    return;
                 _maxMipLevel = value;
                 _dirty = true;
             }
@@ -253,6 +269,8 @@ namespace TwoMGFX
         {
             set
             {
+                if (_mipMapLevelOfDetailBias == value)
+                    return;
                 _mipMapLevelOfDetailBias = value;
                 _dirty = true;
             }

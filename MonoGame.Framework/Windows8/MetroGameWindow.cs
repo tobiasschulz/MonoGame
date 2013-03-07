@@ -148,8 +148,6 @@ namespace Microsoft.Xna.Framework
 
             var bounds = _coreWindow.Bounds;
             SetClientBounds(bounds.Width, bounds.Height);
-
-            SetCursor(false);
         }
 
         private void Window_FocusChanged(CoreWindow sender, WindowActivatedEventArgs args)

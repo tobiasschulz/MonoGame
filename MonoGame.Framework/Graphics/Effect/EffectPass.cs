@@ -130,9 +130,9 @@ namespace Microsoft.Xna.Framework.Graphics
 					// and leave whatever set directly on the device.
 					if (texture != null)
 					{
-						device.Textures[sampler.textureSlot] = texture;
+						device.Textures[sampler.index] = texture;
 						if (sampler.state != null)
-							device.SamplerStates[sampler.samplerSlot] = sampler.state;
+							device.SamplerStates[sampler.index] = sampler.state;
 					}
                 }
                 

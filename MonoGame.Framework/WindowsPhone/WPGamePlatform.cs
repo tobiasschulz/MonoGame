@@ -161,7 +161,7 @@ namespace MonoGame.Framework.WindowsPhone
         
         public override void Exit()
         {
-            System.Windows.Application.Current.Terminate();
+            throw new System.NotImplementedException();
         }
 
         public override bool BeforeUpdate(GameTime gameTime)

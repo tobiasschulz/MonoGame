@@ -60,7 +60,6 @@ namespace Microsoft.Xna.Framework
         private bool _isBorderless;
 #if WINDOWS
         private bool _isMouseHidden;
-        private bool _isMouseInBounds;
 #endif
         private DisplayOrientation _currentOrientation;
         private IntPtr _windowHandle = IntPtr.Zero;
@@ -72,7 +71,6 @@ namespace Microsoft.Xna.Framework
         // we need this variables to make changes beetween threads
         private WindowState windowState;
         private Rectangle clientBounds;
-        private Rectangle targetBounds;
         private bool updateClientBounds;
         bool disposed;
 
@@ -232,9 +230,10 @@ namespace Microsoft.Xna.Framework
             // we should wait until window's not fullscreen to resize
             if (updateClientBounds)
             {
+                window.ClientRectangle = new System.Drawing.Rectangle(clientBounds.X,
+                                     clientBounds.Y, clientBounds.Width, clientBounds.Height);
+
                 updateClientBounds = false;
-                window.ClientRectangle = new System.Drawing.Rectangle(targetBounds.X,
-                                     targetBounds.Y, targetBounds.Width, targetBounds.Height);
                 
                 // if the window-state is set from the outside (maximized button pressed) we have to update it here.
                 // if it was set from the inside (.IsFullScreen changed), we have to change the window.
@@ -281,7 +280,6 @@ namespace Microsoft.Xna.Framework
 #if WINDOWS
         private void OnMouseEnter(object sender, EventArgs e)
         {
-            _isMouseInBounds = true;
             if (!game.IsMouseVisible && !_isMouseHidden)
             {
                 _isMouseHidden = true;
@@ -293,23 +291,14 @@ namespace Microsoft.Xna.Framework
         {
             //There is a bug in OpenTK where the MouseLeave event is raised when the mouse button
             //is down while the cursor is still in the window bounds.
-            if (Mouse.GetState().LeftButton == ButtonState.Released)
+            if (_isMouseHidden && Mouse.GetState().LeftButton == ButtonState.Released)
             {
-                _isMouseInBounds = false;
-                if (_isMouseHidden)
-                {
-                    _isMouseHidden = false;
-                    System.Windows.Forms.Cursor.Show();
-                }
+                _isMouseHidden = false;
+                System.Windows.Forms.Cursor.Show();
             }
         }
 #endif
 
-        private void OnKeyPress(object sender, KeyPressEventArgs e)
-        {
-            OnTextInput(sender, new TextInputEventArgs(e.KeyChar));
-        }
-        
         #endregion
 
         private void Initialize()
@@ -327,8 +316,6 @@ namespace Microsoft.Xna.Framework
             window.MouseEnter += OnMouseEnter;
             window.MouseLeave += OnMouseLeave;
 #endif
-
-            window.KeyPress += OnKeyPress;
             
             // FIXME: Window icon. Do we really need libgdiplus?
             
@@ -447,25 +434,6 @@ namespace Microsoft.Xna.Framework
         {
 
         }
-
-#if WINDOWS
-        public void MouseVisibleToggled()
-        {
-            if (game.IsMouseVisible)
-            {
-                if (_isMouseHidden)
-                {
-                    System.Windows.Forms.Cursor.Show();
-                    _isMouseHidden = false;
-                }
-            }
-            else if (!_isMouseHidden && _isMouseInBounds)
-            {
-                System.Windows.Forms.Cursor.Hide();
-                _isMouseHidden = true;
-            }
-        }
-#endif
 
         #endregion
     }
