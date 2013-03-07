@@ -321,6 +321,11 @@ namespace Microsoft.Xna.Framework
         }
 #endif
 
+        private void OnKeyPress(object sender, KeyPressEventArgs e)
+        {
+            OnTextInput(sender, new TextInputEventArgs(e.KeyChar));
+        }
+        
         #endregion
 
         private void Initialize()
@@ -343,6 +348,8 @@ namespace Microsoft.Xna.Framework
             window.MouseEnter += OnMouseEnter;
             window.MouseLeave += OnMouseLeave;
 #endif
+
+            window.KeyPress += OnKeyPress;
             
             // Set the window icon.
             window.Icon = Icon.ExtractAssociatedIcon(Assembly.GetEntryAssembly().Location);
