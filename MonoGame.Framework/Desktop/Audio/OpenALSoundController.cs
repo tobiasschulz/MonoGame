@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 #if IOS || WINDOWS || LINUX
@@ -48,6 +50,68 @@ namespace Microsoft.Xna.Framework.Audio
         int totalSources, totalBuffers;
         float lowpassGainHf = 1;
 
+        static void Log(string message)
+        {
+            try
+            {
+                using (var stream = File.Open("Debug Log.txt", FileMode.Append))
+                {
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        writer.WriteLine("({0}) [{1}] {2} : {3}",
+                            DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", "INFORMATION", message);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // NOT THAT BIG A DEAL GUYS
+            }
+        }
+
+        [DllImport("kernel32", SetLastError = true)]
+        static extern bool FreeLibrary(IntPtr hModule);
+
+        public static void UnloadModule(string moduleName)
+        {
+            var module = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
+                .SingleOrDefault(m => m.ModuleName == moduleName);
+
+            if (module != null)
+                FreeLibrary(module.BaseAddress);
+        }
+
+        private static bool IsFileLocked(Exception exception)
+        {
+            int errorCode = Marshal.GetHRForException(exception) & ((1 << 16) - 1);
+            return errorCode == 32 || errorCode == 33;
+        }
+        protected static bool IsFileLocked(FileInfo file)
+        {
+            FileStream stream = null;
+
+            try
+            {
+                stream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Close();
+            }
+
+            //file is not locked
+            return false;
+        }
+
         private OpenALSoundController()
         {
             if (File.Exists("openal32.dll"))
@@ -56,9 +120,10 @@ namespace Microsoft.Xna.Framework.Audio
                 File.SetAttributes("openal32.dll", FileAttributes.Normal);
                 File.Delete("openal32.dll");
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception ex)
             {
                 // no big deal, we either already have the right openal32.dll file, or we're about to create it
+                Log("Exception while deleting, ignored : " + ex);
             }
 
             if (!File.Exists("openal32.dll"))
@@ -74,15 +139,39 @@ namespace Microsoft.Xna.Framework.Audio
             }
             catch (TypeInitializationException)
             {
+                // Unload OpenAL DLL
+                UnloadModule("openal32.dll");
+
                 // Badly advertised, but we're using the wrong DLL... try the other one. (and hope that it works!)
                 if (File.Exists("openal32.dll"))
                 {
-                    File.SetAttributes("openal32.dll", FileAttributes.Normal);
-                    File.Delete("openal32.dll");
+                    try
+                    {
+                        Log("Attempting to delete openal32.dll because of failed initialization");
+                        File.SetAttributes("openal32.dll", FileAttributes.Normal);
+
+                        // try to wait 1 second for the lock to clear
+                        int millisecondsWaited = 0;
+                        while (millisecondsWaited < 1000 && IsFileLocked(new FileInfo("openal32.dll")))
+                        {
+                            Thread.Sleep(50);
+                            millisecondsWaited += 50;
+                        }
+
+                        File.Delete("openal32.dll");
+                        Log("Deleted!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log("Exception while deleting : " + ex);
+                        if (IsFileLocked(ex))
+                            Log("File was locked.");
+                        throw;
+                    }
                 }
 
-                if (IntPtr.Size != 8)   File.Copy("soft_oal_64.dll", "openal32.dll");
-                else                    File.Copy("soft_oal_32.dll", "openal32.dll");
+                if (IntPtr.Size != 8) File.Copy("soft_oal_64.dll", "openal32.dll");
+                else File.Copy("soft_oal_32.dll", "openal32.dll");
 
                 context = new AudioContext();
             }
