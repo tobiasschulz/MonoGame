@@ -127,7 +127,6 @@ namespace Microsoft.Xna.Framework
 
         private readonly TimeSpan _maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
-
         private bool _suppressDraw;
         
         public Game()

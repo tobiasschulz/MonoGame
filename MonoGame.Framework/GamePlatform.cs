@@ -137,6 +137,8 @@ namespace Microsoft.Xna.Framework
             get; private set;
         }
 
+        protected bool DeactivateForBounds { get; set; }
+
         private bool _isActive;
         public bool IsActive
         {
@@ -146,7 +148,7 @@ namespace Microsoft.Xna.Framework
                 if (_isActive != value)
                 {
                     _isActive = value;
-                    Raise(_isActive ? Activated : Deactivated, EventArgs.Empty);
+                    Raise(_isActive ? Activated : Deactivated, new ActiveEventArgs(DeactivateForBounds));
                 }
             }
         }
@@ -407,6 +409,15 @@ namespace Microsoft.Xna.Framework
         #endregion
 
         public virtual void Present() {}
+    }
+
+    public class ActiveEventArgs : EventArgs
+    {
+        public bool ForBounds { get; private set; }
+        public ActiveEventArgs(bool forBounds)
+        {
+            ForBounds = forBounds;
+        }
     }
 }
 

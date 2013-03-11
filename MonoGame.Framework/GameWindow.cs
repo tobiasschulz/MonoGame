@@ -177,10 +177,11 @@ namespace Microsoft.Xna.Framework {
 		}
 
 #if WINDOWS || LINUX
-        	protected void OnTextInput(object sender, TextInputEventArgs e)
-        	{
-            		TextInput(sender, e);
-        	}
+        protected void OnTextInput(object sender, TextInputEventArgs e)
+        {
+            if (TextInput != null)
+                TextInput(sender, e);
+        }
 #endif
 
 		protected internal abstract void SetSupportedOrientations (DisplayOrientation orientations);

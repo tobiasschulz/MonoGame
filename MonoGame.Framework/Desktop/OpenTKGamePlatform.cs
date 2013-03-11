@@ -119,6 +119,9 @@ namespace Microsoft.Xna.Framework
             //so that the cursor can be put in the correct inital state (hidden)
             OnIsMouseVisibleChanged();
 #endif
+#if WINDOWS
+            WindowsHelperAccessibilityKeys.AllowAccessibilityShortcutKeys(false);
+#endif
         }
 
         public override GameRunBehavior DefaultRunBehavior
@@ -192,6 +195,7 @@ namespace Microsoft.Xna.Framework
             //have fail-logic and toggle fullscreen in their draw function,
             //so temporarily become inactive so it won't execute.
 
+            DeactivateForBounds = true;
             bool wasActive = IsActive;
             IsActive = false;
 
@@ -248,6 +252,7 @@ namespace Microsoft.Xna.Framework
             isCurrentlyFullScreen = graphicsDeviceManager.IsFullScreen;
 
             IsActive = wasActive;
+            DeactivateForBounds = false;
         }
 
         public override void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight)
@@ -299,8 +304,13 @@ namespace Microsoft.Xna.Framework
                 }
             }
 
-            soundControllerInstance.Dispose();
+            if (soundControllerInstance != null)
+                soundControllerInstance.Dispose();
             SdlGamePad.Cleanup();
+
+#if WINDOWS
+            WindowsHelperAccessibilityKeys.AllowAccessibilityShortcutKeys(true);
+#endif
 
 			base.Dispose(disposing);
         }

@@ -41,6 +41,7 @@ purpose and non-infringement.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input.Touch;
@@ -246,7 +247,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if OPENGL
         internal int glFramebuffer;
-        internal int glRenderTargetFrameBuffer;
+        internal uint glRenderTargetFrameBuffer;
         internal int MaxVertexAttributes;        
         internal readonly HashSet<string> _extensions = new HashSet<string>();
         internal int _maxTextureSize = 0;
@@ -399,7 +400,15 @@ namespace Microsoft.Xna.Framework.Graphics
             if (!GraphicsExtensions.UseArbFramebuffer)
             {
                 if (!_extensions.Contains("GL_EXT_framebuffer_object"))
+                {
+                    MessageBox.Show(
+                        "An essential rendering feature is unsupported in your current drivers." +
+                        "\nTry updating your drivers to the latest version." +
+                        "\n\nIf you are using the latest available drivers, your video card might not be able to run FEZ.",
+                        "Feature not supported", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
                     throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
+                }
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "GL_ARB_framebuffer_object not supported : will use GL_EXT_framebuffer_object instead.");
             }
 
@@ -1667,9 +1676,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (this.glRenderTargetFrameBuffer == 0)
 				{
 #if GLES
-                    GL.GenFramebuffers(1, ref this.glRenderTargetFrameBuffer);
+                    GraphicsExtensions.GenFramebuffers(1, ref this.glRenderTargetFrameBuffer);
 #else
-                    GL.GenFramebuffers(1, out this.glRenderTargetFrameBuffer);
+                    GraphicsExtensions.GenFramebuffers(1, out this.glRenderTargetFrameBuffer);
 #endif
                     GraphicsExtensions.CheckGLError();
                 }

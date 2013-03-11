@@ -31,8 +31,27 @@ namespace Microsoft.Xna.Framework.Audio
 #if DEBUG
                 throw new InvalidOperationException(AL.GetErrorString(error));
 #else
-                Console.WriteLine("AL Error : " + AL.GetErrorString(error));
+                Log("AL Error : " + AL.GetErrorString(error));
 #endif
+        }
+
+        static void Log(string message)
+        {
+            try
+            {
+                Console.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
+                using (var stream = File.Open("Debug Log.txt", FileMode.Append))
+                {
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        writer.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // NOT THAT BIG A DEAL GUYS
+            }
         }
     }
 
@@ -421,7 +440,10 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 musicVolume = value;
-                foreach (var s in streams) if (s.Category == "Music") s.GlobalVolume = value;
+                lock (iterationMutex)
+                {
+                    foreach (var s in streams) if (s.Category == "Music") s.GlobalVolume = value;
+                }
             }
         }
         float ambienceVolume = 1;
@@ -431,7 +453,10 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 ambienceVolume = value;
-                foreach (var s in streams) if (s.Category == "Ambience") s.GlobalVolume = value;
+                lock (iterationMutex)
+                {
+                    foreach (var s in streams) if (s.Category == "Ambience") s.GlobalVolume = value;
+                }
             }
         }
 

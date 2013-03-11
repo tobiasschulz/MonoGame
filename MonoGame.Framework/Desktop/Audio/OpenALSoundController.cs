@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 #if IOS || WINDOWS || LINUX
+using System.Windows.Forms;
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 #elif MONOMAC
@@ -54,12 +55,13 @@ namespace Microsoft.Xna.Framework.Audio
         {
             try
             {
+                Console.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
                 using (var stream = File.Open("Debug Log.txt", FileMode.Append))
                 {
                     using (var writer = new StreamWriter(stream))
                     {
-                        writer.WriteLine("({0}) [{1}] {2} : {3}",
-                            DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", "INFORMATION", message);
+                        writer.WriteLine("({0}) [{1}] {2}",
+                            DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
                     }
                 }
             }
@@ -69,111 +71,77 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
-        [DllImport("kernel32", SetLastError = true)]
-        static extern bool FreeLibrary(IntPtr hModule);
-
-        public static void UnloadModule(string moduleName)
-        {
-            var module = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
-                .SingleOrDefault(m => m.ModuleName == moduleName);
-
-            if (module != null)
-                FreeLibrary(module.BaseAddress);
-        }
-
-        private static bool IsFileLocked(Exception exception)
-        {
-            int errorCode = Marshal.GetHRForException(exception) & ((1 << 16) - 1);
-            return errorCode == 32 || errorCode == 33;
-        }
-        protected static bool IsFileLocked(FileInfo file)
-        {
-            FileStream stream = null;
-
-            try
-            {
-                stream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            }
-            catch (IOException)
-            {
-                //the file is unavailable because it is:
-                //still being written to
-                //or being processed by another thread
-                //or does not exist (has already been processed)
-                return true;
-            }
-            finally
-            {
-                if (stream != null)
-                    stream.Close();
-            }
-
-            //file is not locked
-            return false;
-        }
-
         private OpenALSoundController()
         {
             if (File.Exists("openal32.dll"))
-            try
-            {
-                File.SetAttributes("openal32.dll", FileAttributes.Normal);
-                File.Delete("openal32.dll");
-            }
-            catch (Exception ex)
-            {
-                // no big deal, we either already have the right openal32.dll file, or we're about to create it
-                Log("Exception while deleting, ignored : " + ex);
-            }
+                try
+                {
+                    File.SetAttributes("openal32.dll", FileAttributes.Normal);
+                    File.Delete("openal32.dll");
+                }
+                catch (Exception ex)
+                {
+                    // no big deal, we either already have the right openal32.dll file, or we're about to create it
+                    Log("Exception while deleting openal32.dll, ignored : " + ex);
+                }
 
             if (!File.Exists("openal32.dll"))
             {
-                // choose the right DLL!
-                if (IntPtr.Size == 8) File.Copy("soft_oal_64.dll", "openal32.dll");
-                else File.Copy("soft_oal_32.dll", "openal32.dll");
+                try
+                {
+                    AlcSoft32.CrashTest();
+                    File.Copy("soft_oal_32.dll", "openal32.dll");
+                    Log("32-bit OpenAL-Soft will be used");
+                }
+                catch (AccessViolationException)
+                {
+                    MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                    "(see debug log for more details)", "OpenAL Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    throw;
+                }
+                catch (BadImageFormatException)
+                {
+                    try
+                    {
+                        AlcSoft64.CrashTest();
+                        File.Copy("soft_oal_64.dll", "openal32.dll");
+                        Log("64-bit OpenAL-Soft will be used");
+                    }
+                    catch (AccessViolationException)
+                    {
+                        MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                        "(see debug log for more details)", "OpenAL Error",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                        "(see debug log for more details)", "OpenAL Error",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
+                    }
+                }
             }
 
             try
             {
                 context = new AudioContext();
             }
-            catch (TypeInitializationException)
+            catch (Exception ex)
             {
-                // Unload OpenAL DLL
-                UnloadModule("openal32.dll");
-
-                // Badly advertised, but we're using the wrong DLL... try the other one. (and hope that it works!)
-                if (File.Exists("openal32.dll"))
+                if (ex is DllNotFoundException || (
+                        (ex is TypeInitializationException) &&
+                        (ex as TypeInitializationException).InnerException is DllNotFoundException))
                 {
-                    try
-                    {
-                        Log("Attempting to delete openal32.dll because of failed initialization");
-                        File.SetAttributes("openal32.dll", FileAttributes.Normal);
-
-                        // try to wait 1 second for the lock to clear
-                        int millisecondsWaited = 0;
-                        while (millisecondsWaited < 1000 && IsFileLocked(new FileInfo("openal32.dll")))
-                        {
-                            Thread.Sleep(50);
-                            millisecondsWaited += 50;
-                        }
-
-                        File.Delete("openal32.dll");
-                        Log("Deleted!");
-                    }
-                    catch (Exception ex)
-                    {
-                        Log("Exception while deleting : " + ex);
-                        if (IsFileLocked(ex))
-                            Log("File was locked.");
-                        throw;
-                    }
+                    Log("Last error in enumerator is " + AudioDeviceEnumerator.LastError);
                 }
 
-                if (IntPtr.Size != 8) File.Copy("soft_oal_64.dll", "openal32.dll");
-                else File.Copy("soft_oal_32.dll", "openal32.dll");
-
-                context = new AudioContext();
+                MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                "(see debug log for more details)", "OpenAL Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
             }
 
             filterId = ALHelper.Efx.GenFilter();
@@ -461,8 +429,8 @@ namespace Microsoft.Xna.Framework.Audio
                 totalSources--;
                 tidiedUp = true;
             }
-            //if (tidiedUp)
-            //    Trace.WriteLine("[OpenAL] Tidied sources down to " + totalSources);
+            if (tidiedUp)
+                Trace.WriteLine("[OpenAL] Tidied sources down to " + totalSources);
         }
         void TidyBuffers()
         {
@@ -474,8 +442,8 @@ namespace Microsoft.Xna.Framework.Audio
                 totalBuffers--;
                 tidiedUp = true;
             }
-            //if (tidiedUp)
-            //    Trace.WriteLine("[OpenAL] Tidied buffers down to " + totalBuffers);
+            if (tidiedUp)
+                Trace.WriteLine("[OpenAL] Tidied buffers down to " + totalBuffers);
         }
 
         public void Dispose()
