@@ -31,7 +31,8 @@ namespace Microsoft.Xna.Framework.Audio
 #if DEBUG
                 throw new InvalidOperationException(AL.GetErrorString(error));
 #else
-                Log("AL Error : " + AL.GetErrorString(error));
+//                Log("AL Error : " + AL.GetErrorString(error));
+                Console.WriteLine("AL Error : " + AL.GetErrorString(error));
 #endif
         }
 
