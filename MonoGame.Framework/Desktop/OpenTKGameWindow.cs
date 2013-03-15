@@ -230,19 +230,7 @@ namespace Microsoft.Xna.Framework
             if (updateClientBounds)
             {
                 updateClientBounds = false;
-                window.ClientRectangle = new System.Drawing.Rectangle(targetBounds.X,
-                                     targetBounds.Y, targetBounds.Width, targetBounds.Height);
 
-                // Center in on the primary display no matter what
-                //if (windowState == WindowState.Fullscreen && window.WindowState != WindowState.Fullscreen)
-                {
-                    var primaryDisplay = DisplayDevice.GetDisplay(DisplayIndex.Primary);
-                    //window.X = (int)MathHelper.Clamp(window.X, 0, primaryDisplay.Width - window.Width);
-                    //window.Y = (int)MathHelper.Clamp(window.Y, 0, primaryDisplay.Height - window.Height);
-                    window.X = (primaryDisplay.Width - window.Width) / 2;
-                    window.Y = (primaryDisplay.Height - window.Height) / 2;
-                }                                 
-                
                 // if the window-state is set from the outside (maximized button pressed) we have to update it here.
                 // if it was set from the inside (.IsFullScreen changed), we have to change the window.
                 // this code might not cover all corner cases
@@ -270,9 +258,20 @@ namespace Microsoft.Xna.Framework
 #endif
                 if (desired != window.WindowBorder && window.WindowState != WindowState.Fullscreen)
                     window.WindowBorder = desired;
+
+                window.ClientRectangle = new System.Drawing.Rectangle(targetBounds.X,
+                                     targetBounds.Y, targetBounds.Width, targetBounds.Height);
+
+                // Center in on the primary display no matter what
+                //if (windowState == WindowState.Fullscreen && window.WindowState != WindowState.Fullscreen)
+                {
+                    var primaryDisplay = DisplayDevice.GetDisplay(DisplayIndex.Primary);
+                    //window.X = (int)MathHelper.Clamp(window.X, 0, primaryDisplay.Width - window.Width);
+                    //window.Y = (int)MathHelper.Clamp(window.Y, 0, primaryDisplay.Height - window.Height);
+                    window.X = (primaryDisplay.Width - window.Width) / 2;
+                    window.Y = (primaryDisplay.Height - window.Height) / 2;
+                }               
             }
-
-
         }
 
         private void OnUpdateFrame(object sender, FrameEventArgs e)
