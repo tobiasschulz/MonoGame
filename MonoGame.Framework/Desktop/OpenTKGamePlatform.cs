@@ -202,8 +202,6 @@ namespace Microsoft.Xna.Framework
             var graphicsDeviceManager = (GraphicsDeviceManager)
                 Game.Services.GetService(typeof(IGraphicsDeviceManager));
 
-            VSyncEnabled = graphicsDeviceManager.SynchronizeWithVerticalRetrace;
-
             if (graphicsDeviceManager.IsFullScreen)
             {
                 bounds = new Rectangle(0, 0,graphicsDeviceManager.PreferredBackBufferWidth,graphicsDeviceManager.PreferredBackBufferHeight);
@@ -247,6 +245,8 @@ namespace Microsoft.Xna.Framework
 
             // On Windows 7 we *do* need to set the client bounds even if we remain in fullscreen
             _view.ChangeClientBounds(bounds);
+
+            VSyncEnabled = graphicsDeviceManager.SynchronizeWithVerticalRetrace;
 
             // store the current fullscreen state
             isCurrentlyFullScreen = graphicsDeviceManager.IsFullScreen;
