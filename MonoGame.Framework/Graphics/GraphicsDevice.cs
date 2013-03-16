@@ -1758,13 +1758,10 @@ namespace Microsoft.Xna.Framework.Graphics
 					var renderTarget = previousRenderTargetBindings[i].RenderTarget;
 					if (renderTarget.LevelCount > 1)
 					{
-						throw new NotImplementedException();
-						/*
-						GL.ActiveTexture(TextureUnit.Texture0);
-						GL.BindTexture(TextureTarget.Texture2D, renderTarget.ID);
-						GL.GenerateMipmap(TextureTarget.Texture2D);
-						GL.BindTexture(TextureTarget.Texture2D, 0);
-                        */
+                        if (renderTarget is RenderTarget2D)
+                            (renderTarget as RenderTarget2D).GenerateMipmaps();
+                        else
+                            throw new NotImplementedException();
 					}
 				}
 			}

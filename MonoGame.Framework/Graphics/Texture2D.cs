@@ -964,6 +964,30 @@ namespace Microsoft.Xna.Framework.Graphics
                 GraphicsExtensions.CheckGLError();
             }
         }
+
+        internal void GenerateMipmaps()
+        {
+            Threading.BlockOnUIThread(() =>
+            {
+                // Store the current bound texture.
+                var prevTexture = GraphicsExtensions.GetBoundTexture2D();
+
+                // Generate mipmaps
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture2D, glTexture);
+                GL.Hint(HintTarget.GenerateMipmapHint, HintMode.Nicest);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GraphicsExtensions.CheckGLError();
+                levelCount = CalculateMipLevels(width, height);
+                GL.TexParameter(TextureTarget.Texture2D, 
+                                TextureParameterName.TextureMinFilter, 
+                                (int) TextureMinFilter.LinearMipmapLinear);
+
+                // Restore the bound texture.
+                GL.BindTexture(TextureTarget.Texture2D, prevTexture);
+                GraphicsExtensions.CheckGLError();
+            });
+        }
 #endif
 
 #if ANDROID

@@ -72,6 +72,7 @@ namespace Microsoft.Xna.Framework.Content
             {
                 // Create a fresh SpriteFont instance
                 Texture2D texture = input.ReadObject<Texture2D>();
+                //texture.GenerateMipmaps();
                 List<Rectangle> glyphs = input.ReadObject<List<Rectangle>>();
                 List<Rectangle> cropping = input.ReadObject<List<Rectangle>>();
                 List<char> charMap = input.ReadObject<List<char>>();
