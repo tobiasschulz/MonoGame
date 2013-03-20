@@ -76,6 +76,7 @@ namespace Microsoft.Xna.Framework.Graphics
         private DepthStencilView _depthStencilView;
 #elif OPENGL
 		internal uint glDepthStencilBuffer;
+        //internal uint glColorBuffer;
 #elif PSM
         internal FrameBuffer _frameBuffer;
 #endif
@@ -162,13 +163,22 @@ namespace Microsoft.Xna.Framework.Graphics
 			    case DepthFormat.Depth24: glDepthStencilFormat = GLDepthComponent24; break;
 			    case DepthFormat.Depth24Stencil8: glDepthStencilFormat = GLDepth24Stencil8; break;
 			    }
-		   	    if (MultiSampleCount == 0)
-                    GraphicsExtensions.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
-		        else
-                    GraphicsExtensions.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, glDepthStencilFormat, this.width,
-		                                                              this.height);
-                GraphicsExtensions.CheckGLError();
-            });
+		        //if (MultiSampleCount == 0)
+		            GraphicsExtensions.RenderbufferStorage(GLRenderbuffer, glDepthStencilFormat, this.width, this.height);
+//		        else
+//		        {
+//		            GraphicsExtensions.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, glDepthStencilFormat, this.width, this.height);
+//
+//                    // for multisampling, we also need a new color buffer
+//                    GraphicsExtensions.GenRenderbuffers(1, out glColorBuffer);
+//                    GraphicsExtensions.CheckGLError();
+//                    GraphicsExtensions.BindRenderbuffer(GLRenderbuffer, glColorBuffer);
+//                    GraphicsExtensions.CheckGLError();
+//                    GraphicsExtensions.RenderbufferStorageMultisample(GLRenderbuffer, MultiSampleCount, RenderbufferStorage.Rgba8, this.width, this.height);
+//                    GraphicsExtensions.CheckGLError();
+//		        }
+		        GraphicsExtensions.CheckGLError();
+		    });
 #endif
         }
 		

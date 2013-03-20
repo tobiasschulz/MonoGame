@@ -104,8 +104,18 @@ namespace Microsoft.Xna.Framework.Audio
 
             frequency = sample_rate;
             format = GetSoundFormat(num_channels, bits_per_sample, audio_format == 2);
-            audioData = reader.ReadBytes((int)reader.BaseStream.Length);
 
+            // hack to detect empty sounds
+            if (reader.BaseStream.Length <= 11072)
+            {
+                audioData = new byte[0];
+                size = 0;
+            }
+            else
+            {
+                audioData = reader.ReadBytes((int)reader.BaseStream.Length);
+                size = (data_chunk_size / block_align) * block_align;
+            }
 
             // WAV compression is not supported. Warn our user and 
             // Set size to 0 So that nothing is played.
@@ -114,8 +124,6 @@ namespace Microsoft.Xna.Framework.Audio
                 Console.WriteLine("Wave compression is not supported.");
                 size = 0;
             }*/
-
-            size = (data_chunk_size / block_align) * block_align;
 
             return audioData;
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,8 +19,9 @@ namespace Microsoft.Xna.Framework.Audio
 {
     internal sealed class OpenALSoundController : IDisposable
     {
-        const int PreallocatedBuffers = 24;
-        const int PreallocatedSources = 16;
+        const int PreallocatedBuffers = 256;
+        const int PreallocatedSources = 64;
+        const int ExpandSize = 16;
         const float BufferTimeout = 10; // in seconds
 
         class BufferAllocation
@@ -37,16 +39,18 @@ namespace Microsoft.Xna.Framework.Audio
 
         readonly AudioContext context;
 
-        readonly Stack<int> freeSources;
+        readonly ConcurrentStack<int> freeSources;
+        readonly ConcurrentStack<int> freeBuffers;
+        readonly Dictionary<SoundEffect, BufferAllocation> allocatedBuffers;
+
         readonly HashSet<int> filteredSources;
         readonly List<SoundEffectInstance> activeSoundEffects;
 
-        readonly Stack<int> freeBuffers;
-        readonly Dictionary<SoundEffect, BufferAllocation> allocatedBuffers;
+        static readonly ReaderWriterLockSlim ActiveLock = new ReaderWriterLockSlim();
+        static readonly ReaderWriterLockSlim FilteringLock = new ReaderWriterLockSlim();
+        static readonly ReaderWriterLockSlim AllocationsLock = new ReaderWriterLockSlim();
 
         readonly int filterId;
-
-        //readonly object bufferDataMutex = new object();
 
         int totalSources, totalBuffers;
         float lowpassGainHf = 1;
@@ -144,6 +148,19 @@ namespace Microsoft.Xna.Framework.Audio
                 throw;
             }
 
+            // log how many sources we have access to
+            var attributesSize = new int[1];
+            var device = Alc.GetContextsDevice(Alc.GetCurrentContext());
+            Alc.GetInteger(device, AlcGetInteger.AttributesSize, 1, attributesSize);
+            var attributes = new int[attributesSize[0]];
+            Alc.GetInteger(device, AlcGetInteger.AllAttributes, attributesSize[0], attributes);
+            for (int i = 0; i < attributes.Length; i++)
+                if (attributes[i] == (int) AlcContextAttributes.MonoSources)
+                {
+                    Log("Available mono sources : " + attributes[i + 1]);
+                    break;
+                }
+
             filterId = ALHelper.Efx.GenFilter();
             ALHelper.Efx.Filter(filterId, EfxFilteri.FilterType, (int)EfxFilterType.Lowpass);
             ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGain, 1);
@@ -153,21 +170,24 @@ namespace Microsoft.Xna.Framework.Audio
             AL.DistanceModel(ALDistanceModel.InverseDistanceClamped);
             ALHelper.Check();
 
-            freeBuffers = new Stack<int>(PreallocatedBuffers);
-            ExpandBuffers();
+            freeBuffers = new ConcurrentStack<int>();
+            ExpandBuffers(PreallocatedBuffers);
 
-            allocatedBuffers = new Dictionary<SoundEffect, BufferAllocation>(PreallocatedBuffers);
+            allocatedBuffers = new Dictionary<SoundEffect, BufferAllocation>();
             staleAllocations = new List<KeyValuePair<SoundEffect, BufferAllocation>>();
 
             filteredSources = new HashSet<int>();
             activeSoundEffects = new List<SoundEffectInstance>();
-            freeSources = new Stack<int>(PreallocatedSources);
-            ExpandSources();
+            freeSources = new ConcurrentStack<int>();
+            ExpandSources(PreallocatedSources);
         }
 
         public int RegisterSfxInstance(SoundEffectInstance instance, bool forceNoFilter = false)
         {
+            ActiveLock.EnterWriteLock();
             activeSoundEffects.Add(instance);
+            ActiveLock.ExitWriteLock();
+
             var doFilter = !forceNoFilter &&
                            !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp") &&
                            !instance.SoundEffect.Name.Contains("Zoom");
@@ -177,17 +197,22 @@ namespace Microsoft.Xna.Framework.Audio
         readonly List<KeyValuePair<SoundEffect, BufferAllocation>> staleAllocations;
         public void Update(GameTime gameTime)
         {
+            ActiveLock.EnterUpgradeableReadLock();
             for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
             {
                 var sfx = activeSoundEffects[i];
                 if (sfx.RefreshState())
                 {
+                    ActiveLock.EnterWriteLock();
                     if (!sfx.IsDisposed) sfx.Dispose();
                     activeSoundEffects.RemoveAt(i);
+                    ActiveLock.ExitWriteLock();
                 }
             }
+            ActiveLock.ExitUpgradeableReadLock();
 
             var elapsedSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            AllocationsLock.EnterUpgradeableReadLock();
             foreach (var kvp in allocatedBuffers)
                 if (kvp.Value.SourceCount == 0)
                 {
@@ -198,10 +223,13 @@ namespace Microsoft.Xna.Framework.Audio
 
             foreach (var kvp in staleAllocations)
             {
-                //Trace.WriteLine("[OpenAL] Deleting buffer for " + kvp.Key.Name);
+                Trace.WriteLine("[OpenAL] Deleting buffer for " + kvp.Key.Name);
+                AllocationsLock.EnterWriteLock();
                 allocatedBuffers.Remove(kvp.Key);
+                AllocationsLock.ExitWriteLock();
                 freeBuffers.Push(kvp.Value.BufferId);
             }
+            AllocationsLock.ExitUpgradeableReadLock();
 
             TidySources();
             TidyBuffers();
@@ -209,30 +237,37 @@ namespace Microsoft.Xna.Framework.Audio
             staleAllocations.Clear();
         }
 
-        public void RegisterSoundEffect(SoundEffect soundEffect)
-        {
-            if (allocatedBuffers.ContainsKey(soundEffect)) return;
+//        public void RegisterSoundEffect(SoundEffect soundEffect)
+//        {
+//            if (allocatedBuffers.ContainsKey(soundEffect)) return;
+//
+//            if (freeBuffers.Count == 0) ExpandBuffers();
+//            Trace.WriteLine("[OpenAL] Pre-allocating buffer for " + soundEffect.Name);
+//            BufferAllocation allocation;
+//            allocatedBuffers.Add(soundEffect, allocation = new BufferAllocation { BufferId = freeBuffers.Pop(), SinceUnused = -1 });
+//            //lock (bufferDataMutex)
+//            AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
+//            ALHelper.Check();
+//        }
 
-            if (freeBuffers.Count == 0) ExpandBuffers();
-            Trace.WriteLine("[OpenAL] Pre-allocating buffer for " + soundEffect.Name);
-            BufferAllocation allocation;
-            allocatedBuffers.Add(soundEffect, allocation = new BufferAllocation { BufferId = freeBuffers.Pop(), SinceUnused = -1 });
-            //lock (bufferDataMutex)
-            AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
-            ALHelper.Check();
-        }
         public void DestroySoundEffect(SoundEffect soundEffect)
         {
             BufferAllocation allocation;
+            AllocationsLock.EnterUpgradeableReadLock();
             if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
+            {
+                AllocationsLock.ExitUpgradeableReadLock();
                 return;
+            }
 
             bool foundActive = false;
+            ActiveLock.EnterUpgradeableReadLock();
             for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
             {
                 var sfx = activeSoundEffects[i];
                 if (sfx.SoundEffect == soundEffect)
                 {
+                    ActiveLock.EnterWriteLock();
                     if (!sfx.IsDisposed)
                     {
                         foundActive = true;
@@ -240,37 +275,50 @@ namespace Microsoft.Xna.Framework.Audio
                         sfx.Dispose();
                     }
                     activeSoundEffects.RemoveAt(i);
+                    ActiveLock.ExitWriteLock();
                 }
             }
+            ActiveLock.ExitUpgradeableReadLock();
 
             if (foundActive)
                 Trace.WriteLine("[OpenAL] Delete active sources & buffer for " + soundEffect.Name);
 
             Debug.Assert(allocation.SourceCount == 0);
 
+            AllocationsLock.EnterWriteLock();
             allocatedBuffers.Remove(soundEffect);
+            AllocationsLock.ExitWriteLock();
+
             freeBuffers.Push(allocation.BufferId);
+            AllocationsLock.ExitUpgradeableReadLock();
         }
 
         int TakeSourceFor(SoundEffect soundEffect, bool filter = false)
         {
-            if (freeSources.Count == 0) ExpandSources();
-            var sourceId = freeSources.Pop();
+            int sourceId;
+            while (!freeSources.TryPop(out sourceId))
+                ExpandSources();
+
             if (filter && ALHelper.Efx.IsInitialized)
             {
                 ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
                 ALHelper.Efx.BindFilterToSource(sourceId, filterId);
-                lock (filteredSources)
+                FilteringLock.EnterWriteLock();
                 filteredSources.Add(sourceId);
+                FilteringLock.ExitWriteLock();
             }
 
             BufferAllocation allocation;
+            AllocationsLock.EnterUpgradeableReadLock();
             if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
             {
-                if (freeBuffers.Count == 0) ExpandBuffers();
-                //Trace.WriteLine("[OpenAL] Allocating buffer for " + soundEffect.Name);
-                allocatedBuffers.Add(soundEffect, allocation = new BufferAllocation { BufferId = freeBuffers.Pop() });
-                //lock (bufferDataMutex)
+                Trace.WriteLine("[OpenAL] Allocating buffer for " + soundEffect.Name);
+                allocation = new BufferAllocation();
+                while (!freeBuffers.TryPop(out allocation.BufferId))
+                    ExpandBuffers();
+                AllocationsLock.EnterWriteLock();
+                allocatedBuffers.Add(soundEffect, allocation);
+                AllocationsLock.ExitWriteLock();
                 AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
                 ALHelper.Check();
             }
@@ -278,6 +326,7 @@ namespace Microsoft.Xna.Framework.Audio
 
             AL.BindBufferToSource(sourceId, allocation.BufferId);
             ALHelper.Check();
+            AllocationsLock.ExitUpgradeableReadLock();
 
             return sourceId;
         }
@@ -285,38 +334,41 @@ namespace Microsoft.Xna.Framework.Audio
         public void ReturnSourceFor(SoundEffect soundEffect, int sourceId)
         {
             BufferAllocation allocation;
+            AllocationsLock.EnterReadLock();
             if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
                 throw new InvalidOperationException(soundEffect.Name + " not found");
 
             allocation.SourceCount--;
             if (allocation.SourceCount == 0) allocation.SinceUnused = 0;
             Debug.Assert(allocation.SourceCount >= 0);
+            AllocationsLock.ExitReadLock();
 
             ReturnSource(sourceId);
         }
 
         public int[] TakeBuffers(int count)
         {
-            if (freeBuffers.Count < count) ExpandBuffers();
-
             var buffersIds = new int[count];
-            for (int i = 0; i < count; i++)
-                buffersIds[i] = freeBuffers.Pop();
+            int popped = 0;
+            while ((popped += freeBuffers.TryPopRange(buffersIds, popped, count - popped)) < count)
+                ExpandBuffers();
 
             return buffersIds;
         }
 
         public int TakeSource()
         {
-            if (freeSources.Count == 0) ExpandSources();
-            var sourceId = freeSources.Pop();
+            int sourceId;
+            while (!freeSources.TryPop(out sourceId))
+                ExpandSources();
 
             if (ALHelper.Efx.IsInitialized)
             {
-                lock (filteredSources)
+                FilteringLock.EnterWriteLock();
                 filteredSources.Add(sourceId);
                 ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
                 ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+                FilteringLock.ExitWriteLock();
             }
 
             return sourceId;
@@ -326,26 +378,24 @@ namespace Microsoft.Xna.Framework.Audio
         {
             if (!ALHelper.Efx.IsInitialized) return;
 
-            lock (filteredSources)
+            FilteringLock.EnterWriteLock();
+            if (!filtered && filteredSources.Remove(sourceId))
             {
-                if (!filtered && filteredSources.Remove(sourceId))
-                {
-                    ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
-                    ALHelper.Efx.BindFilterToSource(sourceId, 0);
-                }
-                else if (filtered && !filteredSources.Contains(sourceId))
-                {
-                    filteredSources.Add(sourceId);
-                    ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
-                    ALHelper.Efx.BindFilterToSource(sourceId, filterId);
-                }
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
+                ALHelper.Efx.BindFilterToSource(sourceId, 0);
             }
+            else if (filtered && !filteredSources.Contains(sourceId))
+            {
+                filteredSources.Add(sourceId);
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
+                ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+            }
+            FilteringLock.ExitWriteLock();
         }
 
         public void ReturnBuffers(int[] bufferIds)
         {
-            foreach (var b in bufferIds)
-                freeBuffers.Push(b);
+            freeBuffers.PushRange(bufferIds);
         }
 
         public void ReturnSource(int sourceId)
@@ -356,26 +406,37 @@ namespace Microsoft.Xna.Framework.Audio
         void ResetSource(int sourceId)
         {
             AL.Source(sourceId, ALSourceb.Looping, false);
+            ALHelper.Check();
             AL.Source(sourceId, ALSource3f.Position, 0, 0.0f, 0.1f);
+            ALHelper.Check();
             AL.Source(sourceId, ALSourcef.Pitch, 1);
+            ALHelper.Check();
             AL.Source(sourceId, ALSourcef.Gain, 1);
+            ALHelper.Check();
+            AL.SourceStop(sourceId);
+            ALHelper.Check();
             AL.Source(sourceId, ALSourcei.Buffer, 0);
+            ALHelper.Check();
 
-            lock (filteredSources)
-            if (ALHelper.Efx.IsInitialized && filteredSources.Remove(sourceId))
-                ALHelper.Efx.BindFilterToSource(sourceId, 0);
+            if (ALHelper.Efx.IsInitialized)
+            {
+                FilteringLock.EnterWriteLock();
+                if (filteredSources.Remove(sourceId))
+                    ALHelper.Efx.BindFilterToSource(sourceId, 0);
+                FilteringLock.ExitWriteLock();
+            }
 
             ALHelper.Check();
 
             freeSources.Push(sourceId);
         }
 
-        void ExpandBuffers()
+        void ExpandBuffers(int expandSize = ExpandSize)
         {
-            totalBuffers += PreallocatedBuffers;
+            totalBuffers += expandSize;
             Trace.WriteLine("[OpenAL] Expanding buffers to " + totalBuffers);
 
-            var newBuffers = AL.GenBuffers(PreallocatedBuffers);
+            var newBuffers = AL.GenBuffers(expandSize);
             ALHelper.Check();
 
             if (ALHelper.XRam.IsInitialized)
@@ -383,21 +444,18 @@ namespace Microsoft.Xna.Framework.Audio
                 ALHelper.XRam.SetBufferMode(newBuffers.Length, ref newBuffers[0], XRamExtension.XRamStorage.Hardware);
                 ALHelper.Check();
             }
-
-            foreach (var b in newBuffers)
-                freeBuffers.Push(b);
+            freeBuffers.PushRange(newBuffers);
         }
 
-        void ExpandSources()
+        void ExpandSources(int expandSize = ExpandSize)
         {
-            totalSources += PreallocatedSources;
+            totalSources += expandSize;
             Trace.WriteLine("[OpenAL] Expanding sources to " + totalSources);
 
-            var newSources = AL.GenSources(PreallocatedSources);
+            var newSources = AL.GenSources(expandSize);
             ALHelper.Check();
 
-            foreach (var s in newSources)
-                freeSources.Push(s);
+            freeSources.PushRange(newSources);
         }
 
         public float LowPassHFGain
@@ -406,13 +464,14 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (ALHelper.Efx.IsInitialized)
                 {
-                    lock (filteredSources)
+                    FilteringLock.EnterReadLock();
                     foreach (var s in filteredSources)
                     {
                         ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(value, 0, 1));
                         ALHelper.Efx.BindFilterToSource(s, filterId);
+                        ALHelper.Check();
                     }
-                    ALHelper.Check();
+                    FilteringLock.ExitReadLock();
 
                     lowpassGainHf = value;
                 }
@@ -422,9 +481,10 @@ namespace Microsoft.Xna.Framework.Audio
         void TidySources()
         {
             bool tidiedUp = false;
-            if (freeSources.Count > 2 * PreallocatedSources)
+            int sourceId;
+            if (freeSources.Count > 2 * PreallocatedSources && freeSources.TryPop(out sourceId))
             {
-                AL.DeleteSource(freeSources.Pop());
+                AL.DeleteSource(sourceId);
                 ALHelper.Check();
                 totalSources--;
                 tidiedUp = true;
@@ -435,9 +495,10 @@ namespace Microsoft.Xna.Framework.Audio
         void TidyBuffers()
         {
             bool tidiedUp = false;
-            if (freeBuffers.Count > 2 * PreallocatedBuffers)
+            int bufferId;
+            if (freeBuffers.Count > 2 * PreallocatedBuffers && freeBuffers.TryPop(out bufferId))
             {
-                AL.DeleteBuffer(freeBuffers.Pop());
+                AL.DeleteBuffer(bufferId);
                 ALHelper.Check();
                 totalBuffers--;
                 tidiedUp = true;
@@ -451,8 +512,9 @@ namespace Microsoft.Xna.Framework.Audio
             if (ALHelper.Efx.IsInitialized)
                 ALHelper.Efx.DeleteFilter(filterId);
 
-            while (freeSources.Count > 0) AL.DeleteSource(freeSources.Pop());
-            while (freeBuffers.Count > 0) AL.DeleteBuffer(freeBuffers.Pop());
+            int id;
+            while (freeSources.TryPop(out id)) AL.DeleteSource(id);
+            while (freeBuffers.TryPop(out id)) AL.DeleteBuffer(id);
 
             context.Dispose();
             instance = null;

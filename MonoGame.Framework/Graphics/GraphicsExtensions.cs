@@ -34,6 +34,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #if OPENGL
         public static bool UseArbFramebuffer;
         public static bool UseDxtCompression;
+        public static bool FboMultisampleSupported;
 
         public static bool IsRenderbuffer(uint renderbuffer)
         {

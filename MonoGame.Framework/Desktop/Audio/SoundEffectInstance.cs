@@ -54,7 +54,7 @@ namespace Microsoft.Xna.Framework.Audio
     public class SoundEffectInstance : IDisposable
     {
         readonly SoundEffect soundEffect;
-        readonly int sourceId;
+        readonly int sourceId = -1;
 
         float volume = 1.0f;
         bool looped;
@@ -69,7 +69,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal SoundEffectInstance(SoundEffect soundEffect, bool forceNoFilter = false) : this()
         {
             this.soundEffect = soundEffect;
-            if (OpenALSoundController.Instance != null)
+            if (OpenALSoundController.Instance != null && soundEffect.Size > 0)
                 sourceId = OpenALSoundController.Instance.RegisterSfxInstance(this, forceNoFilter);
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.Xna.Framework.Audio
                 Stop();
 
             isDisposed = true;
-            if (OpenALSoundController.Instance != null)
+            if (OpenALSoundController.Instance != null && sourceId != -1)
                 OpenALSoundController.Instance.ReturnSourceFor(soundEffect, sourceId);
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.Xna.Framework.Audio
         public void Pause()
         {
             if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
-            if (soundState != SoundState.Playing)
+            if (sourceId == -1 || soundState != SoundState.Playing)
                 return;
 
             AL.SourcePause(sourceId);
@@ -109,7 +109,7 @@ namespace Microsoft.Xna.Framework.Audio
         public void Play()
         {
             if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
-            if (soundState == SoundState.Playing)
+            if (sourceId == -1 || soundState == SoundState.Playing)
                 return;
 
             AL.SourcePlay(sourceId);
@@ -120,14 +120,14 @@ namespace Microsoft.Xna.Framework.Audio
         public void Resume()
         {
             if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
-            if (soundState == SoundState.Paused)
+            if (sourceId == -1 || soundState == SoundState.Paused)
                 Play();
         }
 
         public void Stop(bool immediate = false)
         {
             if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
-            if (soundState == SoundState.Stopped)
+            if (sourceId == -1 || soundState == SoundState.Stopped)
                 return;
 
             AL.SourceStop(sourceId);
@@ -157,6 +157,7 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                if (sourceId == -1) return;
                 looped = value;
                 AL.Source(sourceId, ALSourceb.Looping, looped);
                 ALHelper.Check();
@@ -169,6 +170,7 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                if (sourceId == -1) return;
                 pan = value;
                 AL.Source(sourceId, ALSource3f.Position, pan / 5f, 0.0f, 0.1f);
                 ALHelper.Check();
@@ -181,6 +183,7 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                if (sourceId == -1) return;
                 pitch = value;
                 AL.Source(sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(pitch));
                 ALHelper.Check();
@@ -192,6 +195,7 @@ namespace Microsoft.Xna.Framework.Audio
             get { return lowPass; }
             set
             {
+                if (sourceId == -1) return;
                 if (lowPass != value)
                     OpenALSoundController.Instance.SetSourceFiltered(sourceId, value);
                 lowPass = value;
@@ -216,6 +220,7 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 if (isDisposed) throw new ObjectDisposedException("SoundEffectInstance (" + soundEffect.Name + ")");
+                if (sourceId == -1) return;
                 volume = value;
                 AL.Source(sourceId, ALSourcef.Gain, volume * SoundEffect.MasterVolume);
                 ALHelper.Check();

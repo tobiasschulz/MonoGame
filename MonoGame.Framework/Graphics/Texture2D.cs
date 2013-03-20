@@ -112,7 +112,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #elif OPENGL
 		PixelInternalFormat glInternalFormat;
-		GLPixelFormat glFormat;
+		protected GLPixelFormat glFormat;
 		PixelType glType;
 #endif
 	

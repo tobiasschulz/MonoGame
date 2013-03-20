@@ -24,6 +24,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             return AL.GetError() != ALError.NoError;
         }
+        [Conditional("DEBUG")]
         public static void Check()
         {
             ALError error;
@@ -58,7 +59,7 @@ namespace Microsoft.Xna.Framework.Audio
 
     public class OggStream : IDisposable
     {
-        const int DefaultBufferCount = 3;
+        const int DefaultBufferCount = 6;
 
         internal readonly object stopMutex = new object();
         internal readonly object prepareMutex = new object();
@@ -74,8 +75,7 @@ namespace Microsoft.Xna.Framework.Audio
         public int BufferCount { get; private set; }
         public string Name { get; private set; }
 
-        public OggStream(string filename, int bufferCount = DefaultBufferCount)
-            : this(File.OpenRead(filename), bufferCount)
+        public OggStream(string filename, int bufferCount = DefaultBufferCount) : this(File.OpenRead(filename), bufferCount)
         {
             Name = filename;
         }
@@ -352,8 +352,8 @@ namespace Microsoft.Xna.Framework.Audio
 
     public class OggStreamer : IDisposable
     {
-        const float DefaultUpdateRate = 10;
-        const int DefaultBufferSize = 44100;
+        //const float DefaultUpdateRate = 30;
+        const int DefaultBufferSize = 22050;
 
         static readonly object singletonMutex = new object();
 
@@ -362,6 +362,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         readonly float[] readSampleBuffer;
         readonly short[] castBuffer;
+        int[] tempBufferNames;
 
         readonly HashSet<OggStream> streams = new HashSet<OggStream>();
         readonly List<OggStream> threadLocalStreams = new List<OggStream>();
@@ -369,7 +370,7 @@ namespace Microsoft.Xna.Framework.Audio
         readonly Thread underlyingThread;
         volatile bool cancelled;
 
-        public float UpdateRate { get; private set; }
+        //public float UpdateRate { get; private set; }
         public int BufferSize { get; private set; }
 
         static OggStreamer instance;
@@ -391,7 +392,7 @@ namespace Microsoft.Xna.Framework.Audio
             get { lock (singletonMutex) return instance != null; }
         }
 
-        public OggStreamer(int bufferSize = DefaultBufferSize, float updateRate = DefaultUpdateRate)
+        public OggStreamer(int bufferSize = DefaultBufferSize) //, float updateRate = DefaultUpdateRate)
         {
             lock (singletonMutex)
             {
@@ -403,7 +404,7 @@ namespace Microsoft.Xna.Framework.Audio
                 underlyingThread.Start();
             }
 
-            UpdateRate = updateRate;
+            //UpdateRate = updateRate;
             BufferSize = bufferSize;
 
             readSampleBuffer = new float[bufferSize];
@@ -503,7 +504,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             while (!cancelled)
             {
-                Thread.Sleep((int)(1000 / UpdateRate));
+                //Thread.Sleep((int)(1000 / UpdateRate));
                 if (cancelled) break;
 
                 threadLocalStreams.Clear();
@@ -527,17 +528,22 @@ namespace Microsoft.Xna.Framework.Audio
                         AL.GetSource(stream.alSourceId, ALGetSourcei.BuffersProcessed, out processed);
                         ALHelper.Check();
 
-                        if (processed == 0 && queued == stream.BufferCount) continue;
+                        if (processed == 0 && queued >= stream.BufferCount) continue;
 
-                        int[] tempBuffers;
+                        if (tempBufferNames == null || tempBufferNames.Length < stream.BufferCount)
+                            tempBufferNames = new int[stream.BufferCount];
+
                         if (processed > 0)
-                            tempBuffers = AL.SourceUnqueueBuffers(stream.alSourceId, processed);
+                            AL.SourceUnqueueBuffers(stream.alSourceId, processed, tempBufferNames);
                         else
-                            tempBuffers = stream.alBufferIds.Skip(queued).ToArray();
-
-                        for (int i = 0; i < tempBuffers.Length; i++)
                         {
-                            finished |= FillBuffer(stream, tempBuffers[i]);
+                            processed = stream.alBufferIds.Length - queued;
+                            Array.Copy(stream.alBufferIds, queued, tempBufferNames, 0, processed);
+                        }
+
+                        for (int i = 0; i < processed; i++)
+                        {
+                            finished |= FillBuffer(stream, tempBufferNames[i]);
 
                             if (finished)
                             {
@@ -546,12 +552,12 @@ namespace Microsoft.Xna.Framework.Audio
                                 else
                                 {
                                     streams.Remove(stream);
-                                    i = tempBuffers.Length;
+                                    i = tempBufferNames.Length;
                                 }
                             }
                         }
 
-                        AL.SourceQueueBuffers(stream.alSourceId, tempBuffers.Length, tempBuffers);
+                        AL.SourceQueueBuffers(stream.alSourceId, processed, tempBufferNames);
                         ALHelper.Check();
 
                         if (finished && !stream.IsLooped)
@@ -567,6 +573,7 @@ namespace Microsoft.Xna.Framework.Audio
                                 continue;
 
                         var state = AL.GetSourceState(stream.alSourceId);
+                        ALHelper.Check();
                         if (state == ALSourceState.Stopped)
                         {
                             Trace.WriteLine("[OpenAL] Buffer underrun on " + stream.Name);

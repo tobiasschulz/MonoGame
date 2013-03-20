@@ -405,12 +405,17 @@ namespace Microsoft.Xna.Framework.Graphics
                         "An essential rendering feature is unsupported in your current drivers." +
                         "\nTry updating your drivers to the latest version." +
                         "\n\nIf you are using the latest available drivers, your video card might not be able to run FEZ.",
-                        "Feature not supported", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "FEZ - Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                     throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
                 }
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "GL_ARB_framebuffer_object not supported : will use GL_EXT_framebuffer_object instead.");
             }
+
+            GraphicsExtensions.FboMultisampleSupported = (_extensions.Contains("GL_EXT_framebuffer_multisample") || _extensions.Contains("ARB_framebuffer_multisample")) &&
+                                                         _extensions.Contains("GL_EXT_framebuffer_blit");
+//            if (!GraphicsExtensions.FboMultisampleSupported)
+//                GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Information, "Framebuffer multisampling not supported, Polytron logo might look chunky!");
 
             GraphicsExtensions.UseDxtCompression = int.Parse(versionString.Substring(0, 1)) > 2 && // Don't trust OpenGL 2's texture compression, crashed on at least one driver
                                                    _extensions.Contains("GL_EXT_texture_compression_s3tc");
@@ -1688,7 +1693,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GraphicsExtensions.BindFramebuffer(GLFramebuffer, this.glRenderTargetFrameBuffer);
                     GraphicsExtensions.CheckGLError();
-                    GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
+//                    if (renderTarget.MultiSampleCount > 0)
+//                        GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLColorAttachment0, GLRenderbuffer, (uint)renderTarget.glTexture);
+//                    else
+                        GraphicsExtensions.FramebufferTexture2D(GLFramebuffer, GLColorAttachment0, TextureTarget.Texture2D, renderTarget.glTexture, 0);
                     GraphicsExtensions.CheckGLError();
                     if (renderTarget.DepthStencilFormat != DepthFormat.None)
 				    {
@@ -1706,7 +1714,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             //GraphicsExtensions.CheckGLError();
                         }
 				    }
-
 #if !GLES
 //					for (int i = 0; i < _currentRenderTargetBindings.Length; i++)
 //					{
@@ -1723,13 +1730,14 @@ namespace Microsoft.Xna.Framework.Graphics
 				    var status = GraphicsExtensions.CheckFramebufferStatus(GLFramebuffer);
 				    if (status != GLFramebufferComplete)
 				    {
-					    string message = "Framebuffer Incomplete.";
+					    string message = "Framebuffer Incomplete (" + status + ") : ";
 					    switch (status)
 					    {
-					    case FramebufferErrorCode.FramebufferIncompleteAttachment: message = "Not all framebuffer attachment points are framebuffer attachment complete."; break;
-					    case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message = "No images are attached to the framebuffer."; break;
-					    case FramebufferErrorCode.FramebufferUnsupported : message = "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
-					    //case FramebufferErrorCode.FramebufferIncompleteDimensions : message = "Not all attached images have the same width and height."; break;
+					    case FramebufferErrorCode.FramebufferIncompleteAttachment: message += "Not all framebuffer attachment points are framebuffer attachment complete."; break;
+					    case FramebufferErrorCode.FramebufferIncompleteMissingAttachment : message += "No images are attached to the framebuffer."; break;
+					    case FramebufferErrorCode.FramebufferUnsupported : message += "The combination of internal formats of the attached images violates an implementation-dependent set of restrictions."; break;
+					    case FramebufferErrorCode.FramebufferIncompleteDimensionsExt : message += "Not all attached images have the same width and height."; break;
+//                        case FramebufferErrorCode.FramebufferIncompleteMultisample: message += "Mismatch of depth sample count and color sample count."; break;
 					    }
 					    throw new InvalidOperationException(message);
 				    }

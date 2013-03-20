@@ -192,7 +192,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         public bool Play(float volume, float pitch, float pan)
         {
-            if (MasterVolume > 0.0f)
+            if (MasterVolume > 0.0f && Size > 0)
             {
                 SoundEffectInstance instance = CreateInstance();
                 instance.Volume = volume;
