@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NVorbis;
 using OpenTK.Audio.OpenAL;
 
@@ -37,7 +38,7 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
         }
 
-        static void Log(string message)
+        public static void Log(string message)
         {
             try
             {
@@ -64,16 +65,22 @@ namespace Microsoft.Xna.Framework.Audio
         internal readonly object stopMutex = new object();
         internal readonly object prepareMutex = new object();
 
-        internal readonly int alSourceId;
+        internal int alSourceId;
         internal readonly int[] alBufferIds;
+        internal readonly Stack<int> bufferStack;
 
         readonly Stream underlyingStream;
 
         internal VorbisReader Reader { get; private set; }
         internal bool Precaching { get; private set; }
+        internal bool FirstBufferPrecached { get; set; }
+
+        internal int QueuedBuffers { get; set; }
+        internal int ProcessedBuffers { get; set; }
 
         public int BufferCount { get; private set; }
         public string Name { get; private set; }
+        public string RealName { get; set; }
 
         public OggStream(string filename, int bufferCount = DefaultBufferCount) : this(File.OpenRead(filename), bufferCount)
         {
@@ -86,6 +93,7 @@ namespace Microsoft.Xna.Framework.Audio
             BufferCount = bufferCount;
 #if !FAKE
             alBufferIds = OpenALSoundController.Instance.TakeBuffers(BufferCount);
+            bufferStack = new Stack<int>(alBufferIds);
             alSourceId = OpenALSoundController.Instance.TakeSource();
 #endif
             if (ALHelper.XRam.IsInitialized)
@@ -122,6 +130,8 @@ namespace Microsoft.Xna.Framework.Audio
                     {
                         Precaching = true;
                         Precache(asynchronous: asynchronous);
+                        if (!asynchronous)
+                            Precaching = false;
                     }
                 }
             }
@@ -153,7 +163,10 @@ namespace Microsoft.Xna.Framework.Audio
                     return;
             }
 
-            Prepare();
+            if (bufferStack.Count == BufferCount)
+                Prepare();
+            else if (!FirstBufferPrecached)
+                ALHelper.Log("Buffers lost for " + RealName + " with source " + alSourceId);
 
             AL.SourcePlay(alSourceId);
             ALHelper.Check();
@@ -256,30 +269,26 @@ namespace Microsoft.Xna.Framework.Audio
             if (IsDisposed) return;
             IsDisposed = true;
 
-            var state = AL.GetSourceState(alSourceId);
-            if (state == ALSourceState.Playing || state == ALSourceState.Paused)
-                StopPlayback();
+            //Trace.WriteLine("[OpenAL] Disposing " + RealName + " with source " + alSourceId);
 
             lock (prepareMutex)
             {
                 if (OggStreamer.HasInstance)
                     OggStreamer.Instance.RemoveStream(this);
 
-                if (state != ALSourceState.Initial)
-                    Empty();
-
+                StopPlayback();
+                Empty();
                 Close();
-
                 underlyingStream.Dispose();
-            }
+            
 #if !FAKE
-            if (OpenALSoundController.Instance != null)
-            {
-                OpenALSoundController.Instance.ReturnSource(alSourceId);
-                OpenALSoundController.Instance.ReturnBuffers(alBufferIds);
-            }
+                if (OpenALSoundController.Instance != null)
+                {
+                    OpenALSoundController.Instance.ReturnSource(alSourceId);
+                    OpenALSoundController.Instance.ReturnBuffers(alBufferIds);
+                }
 #endif
-            ALHelper.Check();
+            }
         }
 
         void StopPlayback()
@@ -288,7 +297,7 @@ namespace Microsoft.Xna.Framework.Audio
             ALHelper.Check();
         }
 
-        void Empty(bool giveUp = false)
+        void Empty()
         {
             int queued;
             AL.GetSource(alSourceId, ALGetSourcei.BuffersQueued, out queued);
@@ -298,49 +307,43 @@ namespace Microsoft.Xna.Framework.Audio
 
                 if (!ALHelper.TryCheck())
                 {
-                    if (giveUp) return;
+                    // This is no good... let's regenerate the source
+                    //Console.WriteLine("Source " + alSourceId + " was corrupted and needs to be regenerated (used for " + RealName + ")");
 
-                    // This is a bug in the OpenAL implementation
-                    // Salvage what we can
-                    int processed;
-                    AL.GetSource(alSourceId, ALGetSourcei.BuffersProcessed, out processed);
-                    var salvaged = new int[processed];
-                    if (processed > 0)
-                    {
-                        AL.SourceUnqueueBuffers(alSourceId, processed, salvaged);
-                        ALHelper.Check();
-                    }
-
-                    // Try turning it off again?
-                    AL.SourceStop(alSourceId);
-                    ALHelper.Check();
-
-                    Empty(true);
+                    AL.DeleteSource(alSourceId);
+                    alSourceId = AL.GenSource();
                 }
             }
         }
 
-        internal void Open()
+        void Open()
         {
             underlyingStream.Seek(0, SeekOrigin.Begin);
             Reader = new VorbisReader(underlyingStream, false);
         }
 
-        internal void Precache(bool asynchronous = false)
+        void Precache(bool asynchronous = false)
         {
             if (!asynchronous)
             {
                 // Fill first buffer synchronously
-                OggStreamer.Instance.FillBuffer(this, alBufferIds[0]);
-                AL.SourceQueueBuffer(alSourceId, alBufferIds[0]);
+                int buffer = bufferStack.Pop();
+                OggStreamer.Instance.FillBuffer(this, buffer);
+                AL.SourceQueueBuffer(alSourceId, buffer);
                 ALHelper.Check();
+
+                //Trace.WriteLine("[fp] Q (1) : " + RealName + " - s = " + alSourceId);
+
+                FirstBufferPrecached = true;
             }
+            else
+                Interlocked.Increment(ref OggStreamer.Instance.PendingPrecaches);
 
             // Schedule the others asynchronously
             OggStreamer.Instance.AddStream(this);
         }
 
-        internal void Close()
+        void Close()
         {
             if (Reader != null)
             {
@@ -352,7 +355,7 @@ namespace Microsoft.Xna.Framework.Audio
 
     public class OggStreamer : IDisposable
     {
-        //const float DefaultUpdateRate = 30;
+        const float DefaultUpdateRate = 60;
         const int DefaultBufferSize = 22050;
 
         static readonly object singletonMutex = new object();
@@ -362,7 +365,6 @@ namespace Microsoft.Xna.Framework.Audio
 
         readonly float[] readSampleBuffer;
         readonly short[] castBuffer;
-        int[] tempBufferNames;
 
         readonly HashSet<OggStream> streams = new HashSet<OggStream>();
         readonly List<OggStream> threadLocalStreams = new List<OggStream>();
@@ -370,7 +372,9 @@ namespace Microsoft.Xna.Framework.Audio
         readonly Thread underlyingThread;
         volatile bool cancelled;
 
-        //public float UpdateRate { get; private set; }
+        public int PendingPrecaches;
+
+        public float UpdateRate { get; private set; }
         public int BufferSize { get; private set; }
 
         static OggStreamer instance;
@@ -392,7 +396,7 @@ namespace Microsoft.Xna.Framework.Audio
             get { lock (singletonMutex) return instance != null; }
         }
 
-        public OggStreamer(int bufferSize = DefaultBufferSize) //, float updateRate = DefaultUpdateRate)
+        public OggStreamer(int bufferSize = DefaultBufferSize, float updateRate = DefaultUpdateRate)
         {
             lock (singletonMutex)
             {
@@ -404,7 +408,7 @@ namespace Microsoft.Xna.Framework.Audio
                 underlyingThread.Start();
             }
 
-            //UpdateRate = updateRate;
+            UpdateRate = updateRate;
             BufferSize = bufferSize;
 
             readSampleBuffer = new float[bufferSize];
@@ -466,13 +470,28 @@ namespace Microsoft.Xna.Framework.Audio
         {
             //stream.GlobalVolume = stream.Category == "Music" ? musicVolume : ambienceVolume;
 
+            bool added;
             lock (iterationMutex)
-                return streams.Add(stream);
+                added = streams.Add(stream);
+
+            //if (added)
+            //    Trace.WriteLine("[OpenAL] Stream " + stream.RealName + " added with source " + stream.alSourceId);
+
+            return added;
         }
         internal bool RemoveStream(OggStream stream)
         {
+            bool removed;
             lock (iterationMutex)
-                return streams.Remove(stream);
+                removed = streams.Remove(stream);
+
+            //if (removed)
+            //    Trace.WriteLine("[OpenAL] Stream " + stream.RealName + " removed with source " + stream.alSourceId);
+
+            if (removed && !stream.FirstBufferPrecached)
+                Interlocked.Decrement(ref PendingPrecaches);
+
+            return removed;
         }
 
         public bool FillBuffer(OggStream stream, int bufferId)
@@ -481,23 +500,16 @@ namespace Microsoft.Xna.Framework.Audio
             lock (readMutex)
             {
                 readSamples = stream.Reader.ReadSamples(readSampleBuffer, 0, BufferSize);
-                CastBuffer(readSampleBuffer, castBuffer, readSamples);
-            }
-            AL.BufferData(bufferId, stream.Reader.Channels == 1 ? ALFormat.Mono16 : ALFormat.Stereo16, castBuffer,
+
+                for (int i = 0; i < readSamples; i++)
+                    castBuffer[i] = (short)(short.MaxValue * readSampleBuffer[i]);
+
+                AL.BufferData(bufferId, stream.Reader.Channels == 1 ? ALFormat.Mono16 : ALFormat.Stereo16, castBuffer,
                           readSamples * sizeof(short), stream.Reader.SampleRate);
+            }
             ALHelper.Check();
 
             return readSamples != BufferSize;
-        }
-        static void CastBuffer(float[] inBuffer, short[] outBuffer, int length)
-        {
-            for (int i = 0; i < length; i++)
-            {
-                var temp = (int)(short.MaxValue * inBuffer[i]);
-                if (temp > short.MaxValue) temp = short.MaxValue;
-                else if (temp < short.MinValue) temp = short.MinValue;
-                outBuffer[i] = (short)temp;
-            }
         }
 
         void EnsureBuffersFilled()
@@ -511,6 +523,37 @@ namespace Microsoft.Xna.Framework.Audio
                 lock (iterationMutex) threadLocalStreams.AddRange(streams);
 
                 if (threadLocalStreams.Count == 0) continue;
+
+                // look through buffers to know what the heck we should be doing
+                int lowestPlayingBufferCount = int.MaxValue;
+                for (int i = threadLocalStreams.Count - 1; i >= 0; i--)
+                {
+                    var stream = threadLocalStreams[i];
+
+                    lock (iterationMutex)
+                        if (!streams.Contains(stream))
+                        {
+                            threadLocalStreams.RemoveAt(i);
+                            continue;
+                        }
+
+                    int queued;
+                    AL.GetSource(stream.alSourceId, ALGetSourcei.BuffersQueued, out queued);
+                    ALHelper.Check();
+                    stream.QueuedBuffers = queued;
+
+                    int processed;
+                    AL.GetSource(stream.alSourceId, ALGetSourcei.BuffersProcessed, out processed);
+                    ALHelper.Check();
+                    stream.ProcessedBuffers = processed;
+
+                    if (!stream.Precaching)
+                        lowestPlayingBufferCount = Math.Min(lowestPlayingBufferCount, queued - processed);
+                }
+
+                //if (lowestPlayingBufferCount < 5)
+                //    Console.WriteLine("lpbc : " + lowestPlayingBufferCount);
+
                 foreach (var stream in threadLocalStreams)
                 {
                     lock (stream.prepareMutex)
@@ -519,46 +562,47 @@ namespace Microsoft.Xna.Framework.Audio
                             if (!streams.Contains(stream))
                                 continue;
 
-                        bool finished = false;
+                        if (stream.ProcessedBuffers == 0 && stream.bufferStack.Count == 0)
+                        {
+                            if (stream.QueuedBuffers != stream.BufferCount)
+                                ALHelper.Log("Buffers were lost for " + stream.RealName + " with source " + stream.alSourceId);
+                            continue;
+                        }
 
-                        int queued;
-                        AL.GetSource(stream.alSourceId, ALGetSourcei.BuffersQueued, out queued);
-                        ALHelper.Check();
-                        int processed;
-                        AL.GetSource(stream.alSourceId, ALGetSourcei.BuffersProcessed, out processed);
-                        ALHelper.Check();
+                        if (stream.QueuedBuffers + stream.bufferStack.Count != stream.BufferCount)
+                            ALHelper.Log("Stray buffers in source for " + stream.RealName + " with source " + stream.alSourceId);
 
-                        if (processed == 0 && queued >= stream.BufferCount) continue;
+                        if (stream.QueuedBuffers - stream.ProcessedBuffers > lowestPlayingBufferCount)
+                            continue;
+                        if (stream.Precaching && lowestPlayingBufferCount <= stream.BufferCount * 2 / 3)
+                            continue;
 
-                        if (tempBufferNames == null || tempBufferNames.Length < stream.BufferCount)
-                            tempBufferNames = new int[stream.BufferCount];
-
-                        if (processed > 0)
-                            AL.SourceUnqueueBuffers(stream.alSourceId, processed, tempBufferNames);
+                        int buffer;
+                        if (stream.ProcessedBuffers > 0)
+                            buffer = AL.SourceUnqueueBuffer(stream.alSourceId);
                         else
-                        {
-                            processed = stream.alBufferIds.Length - queued;
-                            Array.Copy(stream.alBufferIds, queued, tempBufferNames, 0, processed);
-                        }
+                            buffer = stream.bufferStack.Pop();
 
-                        for (int i = 0; i < processed; i++)
+                        bool finished = FillBuffer(stream, buffer);
+                        if (finished)
                         {
-                            finished |= FillBuffer(stream, tempBufferNames[i]);
-
-                            if (finished)
-                            {
-                                if (stream.IsLooped)
-                                    stream.Reader.DecodedTime = TimeSpan.Zero;
-                                else
-                                {
+                            if (stream.IsLooped)
+                                stream.Reader.DecodedTime = TimeSpan.Zero;
+                            else
+                                lock (iterationMutex)
                                     streams.Remove(stream);
-                                    i = tempBufferNames.Length;
-                                }
-                            }
                         }
 
-                        AL.SourceQueueBuffers(stream.alSourceId, processed, tempBufferNames);
+                        AL.SourceQueueBuffer(stream.alSourceId, buffer);
                         ALHelper.Check();
+                        //Trace.WriteLine((stream.Precaching ? "[p] " : "") + "Q (" + (stream.QueuedBuffers - stream.ProcessedBuffers + 1) + ") : " + stream.RealName + " - s = " + stream.alSourceId + " | lpbc = " + lowestPlayingBufferCount);
+
+                        if (!stream.FirstBufferPrecached)
+                        {
+                            Interlocked.Decrement(ref PendingPrecaches);
+                            stream.FirstBufferPrecached = true;
+                            //Trace.WriteLine("[OpenAL] Buffer " + stream.RealName + " precached with source " + stream.alSourceId);
+                        }
 
                         if (finished && !stream.IsLooped)
                             continue;
@@ -576,7 +620,7 @@ namespace Microsoft.Xna.Framework.Audio
                         ALHelper.Check();
                         if (state == ALSourceState.Stopped)
                         {
-                            Trace.WriteLine("[OpenAL] Buffer underrun on " + stream.Name);
+                            ALHelper.Log("Buffer underrun on " + stream.RealName + " with source " + stream.alSourceId);
                             AL.SourcePlay(stream.alSourceId);
                             ALHelper.Check();
                         }

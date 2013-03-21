@@ -223,7 +223,7 @@ namespace Microsoft.Xna.Framework.Audio
 
             foreach (var kvp in staleAllocations)
             {
-                Trace.WriteLine("[OpenAL] Deleting buffer for " + kvp.Key.Name);
+                //Trace.WriteLine("[OpenAL] Deleting buffer for " + kvp.Key.Name);
                 AllocationsLock.EnterWriteLock();
                 allocatedBuffers.Remove(kvp.Key);
                 AllocationsLock.ExitWriteLock();
@@ -312,7 +312,7 @@ namespace Microsoft.Xna.Framework.Audio
             AllocationsLock.EnterUpgradeableReadLock();
             if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
             {
-                Trace.WriteLine("[OpenAL] Allocating buffer for " + soundEffect.Name);
+                //Trace.WriteLine("[OpenAL] Allocating buffer for " + soundEffect.Name);
                 allocation = new BufferAllocation();
                 while (!freeBuffers.TryPop(out allocation.BufferId))
                     ExpandBuffers();
@@ -396,11 +396,17 @@ namespace Microsoft.Xna.Framework.Audio
         public void ReturnBuffers(int[] bufferIds)
         {
             freeBuffers.PushRange(bufferIds);
+
+            //AL.DeleteBuffers(bufferIds);
+            //freeBuffers.PushRange(AL.GenBuffers(bufferIds.Length));
         }
 
         public void ReturnSource(int sourceId)
         {
             ResetSource(sourceId);
+            
+            //AL.DeleteSource(sourceId);
+            //freeSources.Push(AL.GenSource());
         }
 
         void ResetSource(int sourceId)
