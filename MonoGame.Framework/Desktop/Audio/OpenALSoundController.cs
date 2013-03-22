@@ -201,7 +201,7 @@ namespace Microsoft.Xna.Framework.Audio
             for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
             {
                 var sfx = activeSoundEffects[i];
-                if (sfx.RefreshState())
+                if (sfx.RefreshState() || sfx.IsDisposed)
                 {
                     ActiveLock.EnterWriteLock();
                     if (!sfx.IsDisposed) sfx.Dispose();

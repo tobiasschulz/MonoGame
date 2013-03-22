@@ -69,7 +69,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal readonly int[] alBufferIds;
         internal readonly Stack<int> bufferStack;
 
-        readonly Stream underlyingStream;
+        Stream underlyingStream;
 
         internal VorbisReader Reader { get; private set; }
         internal bool Precaching { get; private set; }
@@ -130,8 +130,6 @@ namespace Microsoft.Xna.Framework.Audio
                     {
                         Precaching = true;
                         Precache(asynchronous: asynchronous);
-                        if (!asynchronous)
-                            Precaching = false;
                     }
                 }
             }
@@ -279,7 +277,6 @@ namespace Microsoft.Xna.Framework.Audio
                 StopPlayback();
                 Empty();
                 Close();
-                underlyingStream.Dispose();
             
 #if !FAKE
                 if (OpenALSoundController.Instance != null)
@@ -319,7 +316,8 @@ namespace Microsoft.Xna.Framework.Audio
         void Open()
         {
             underlyingStream.Seek(0, SeekOrigin.Begin);
-            Reader = new VorbisReader(underlyingStream, false);
+            lock (OggStreamer.Instance.readMutex)
+                Reader = new VorbisReader(underlyingStream, true);
         }
 
         void Precache(bool asynchronous = false)
@@ -349,6 +347,10 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 Reader.Dispose();
                 Reader = null;
+
+                underlyingStream.Close();
+                underlyingStream.Dispose();
+                underlyingStream = null;
             }
         }
     }
@@ -361,7 +363,7 @@ namespace Microsoft.Xna.Framework.Audio
         static readonly object singletonMutex = new object();
 
         readonly object iterationMutex = new object();
-        readonly object readMutex = new object();
+        public readonly object readMutex = new object();
 
         readonly float[] readSampleBuffer;
         readonly short[] castBuffer;
@@ -505,7 +507,7 @@ namespace Microsoft.Xna.Framework.Audio
                     castBuffer[i] = (short)(short.MaxValue * readSampleBuffer[i]);
 
                 AL.BufferData(bufferId, stream.Reader.Channels == 1 ? ALFormat.Mono16 : ALFormat.Stereo16, castBuffer,
-                          readSamples * sizeof(short), stream.Reader.SampleRate);
+                              readSamples * sizeof(short), stream.Reader.SampleRate);
             }
             ALHelper.Check();
 
