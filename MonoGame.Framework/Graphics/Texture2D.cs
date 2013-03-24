@@ -909,14 +909,20 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // TODO: We need to convert from Format to R8G8B8A8!
 
-            using (var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            using (var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
             {
                 var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, width, height),
                                                  ImageLockMode.WriteOnly,
                                                  bitmap.PixelFormat);
-                Marshal.Copy(data, 0, bitmapData.Scan0, data.Length);
+
+                for (int i = 0; i < data.Length / 4; i++)
+                {
+                    Marshal.WriteByte(bitmapData.Scan0, i * 3, data[i * 4 + 2]);
+                    Marshal.WriteByte(bitmapData.Scan0, i * 3 + 1, data[i * 4 + 1]);
+                    Marshal.WriteByte(bitmapData.Scan0, i * 3 + 2, data[i * 4]);
+                }
+
                 bitmap.UnlockBits(bitmapData);
-                bitmap.RGBToBGR();
                 bitmap.Save(stream, outputFormat);
             }
         }
