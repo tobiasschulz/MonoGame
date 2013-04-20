@@ -190,7 +190,7 @@ namespace Microsoft.Xna.Framework.Audio
 
             var doFilter = !forceNoFilter &&
                            !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp") &&
-                           !instance.SoundEffect.Name.Contains("Zoom");
+                           !instance.SoundEffect.Name.Contains("Zoom") && !instance.SoundEffect.Name.Contains("Trixel");
             return TakeSourceFor(instance.SoundEffect, doFilter);
         }
 
