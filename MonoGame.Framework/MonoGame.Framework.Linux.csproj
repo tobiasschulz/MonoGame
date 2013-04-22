@@ -43,9 +43,6 @@
     <Reference Include="OpenTK">
       <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="TheoraPlay">
-      <HintPath>..\ThirdParty\Libs\TheoraPlay.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -424,6 +421,10 @@
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.Linux.csproj">
       <Project>{AE483C29-042E-4226-BA52-D247CE7676DA}</Project>
       <Name>Lidgren.Network.Linux</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\TheoraPlay#\TheoraPlay#.csproj">
+      <Project>{47CF0C2E-3710-4188-BB11-30D248B2B5FB}</Project>
+      <Name>TheoraPlay#</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

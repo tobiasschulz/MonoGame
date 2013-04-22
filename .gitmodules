@@ -10,3 +10,6 @@
 [submodule "ThirdParty/Kickstart"]
 	path = ThirdParty/Kickstart
 	url = https://github.com/OutOfOrder/MonoKickstart.git
+[submodule "ThirdParty/TheoraPlay#"]
+	path = "ThirdParty/TheoraPlay#"
+	url = git://github.com/flibitijibibo/TheoraPlay-CS.git
