@@ -13,3 +13,6 @@
 [submodule "ThirdParty/TheoraPlay#"]
 	path = "ThirdParty/TheoraPlay#"
 	url = git://github.com/flibitijibibo/TheoraPlay-CS.git
+[submodule "ThirdParty/SDL2#"]
+	path = "ThirdParty/SDL2#"
+	url = git://github.com/flibitijibibo/SDL2-CS.git
