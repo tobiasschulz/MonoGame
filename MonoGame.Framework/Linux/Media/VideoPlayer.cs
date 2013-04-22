@@ -447,46 +447,6 @@ namespace Microsoft.Xna.Framework.Media
         }
         #endregion
         
-        #region Private Methods: TheoraPlay
-        private unsafe TheoraPlay.THEORAPLAY_VideoFrame getVideoFrame(IntPtr frame)
-        {
-            TheoraPlay.THEORAPLAY_VideoFrame theFrame;
-            unsafe
-            {
-                TheoraPlay.THEORAPLAY_VideoFrame* framePtr = (TheoraPlay.THEORAPLAY_VideoFrame*) frame;
-                theFrame = *framePtr;
-            }
-            return theFrame;
-        }
-        
-        private unsafe TheoraPlay.THEORAPLAY_AudioPacket getAudioPacket(IntPtr packet)
-        {
-            TheoraPlay.THEORAPLAY_AudioPacket thePacket;
-            unsafe
-            {
-                TheoraPlay.THEORAPLAY_AudioPacket* packetPtr = (TheoraPlay.THEORAPLAY_AudioPacket*) packet;
-                thePacket = *packetPtr;
-            }
-            return thePacket;
-        }
-        
-        private float[] getSamples(IntPtr samples, int packetSize)
-        {
-            float[] theSamples = new float[packetSize];
-            System.Runtime.InteropServices.Marshal.Copy(samples, theSamples, 0, packetSize);
-            return theSamples;
-        }
-        
-#if !VIDEOPLAYER_OPENGL
-        private byte[] getPixels(IntPtr pixels, int imageSize)
-        {
-            byte[] thePixels = new byte[imageSize];
-            System.Runtime.InteropServices.Marshal.Copy(pixels, thePixels, 0, imageSize);
-            return thePixels;
-        }
-#endif
-        #endregion
-        
         #region Private Methods: OpenAL
         private void UpdateVolume()
         {
@@ -744,7 +704,7 @@ namespace Microsoft.Xna.Framework.Media
                     audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
                     Thread.Sleep(10);
                 }
-                currentAudio = getAudioPacket(audioStream);
+                currentAudio = TheoraPlay.getAudioPacket(audioStream);
                 
                 // We're trying to start the decoding ASAP.
                 audioDecoderThread.Start();
@@ -758,7 +718,7 @@ namespace Microsoft.Xna.Framework.Media
                     videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
                     Thread.Sleep(10);
                 }
-                currentVideo = getVideoFrame(videoStream);
+                currentVideo = TheoraPlay.getVideoFrame(videoStream);
                 videoTexture = new Texture2D(
                     graphicsDevice,
                     (int) currentVideo.width,
@@ -847,7 +807,7 @@ namespace Microsoft.Xna.Framework.Media
             while (data.Count < BUFFER_SIZE && State != MediaState.Stopped)
             {
                 data.AddRange(
-                    getSamples(
+                    TheoraPlay.getSamples(
                         currentAudio.samples,
                         currentAudio.frames * currentAudio.channels
                     )
@@ -865,7 +825,7 @@ namespace Microsoft.Xna.Framework.Media
                         return;
                     }
                 } while (audioStream == IntPtr.Zero);
-                currentAudio = getAudioPacket(audioStream);
+                currentAudio = TheoraPlay.getAudioPacket(audioStream);
                 
                 if ((BUFFER_SIZE - data.Count) < 4096)
                 {
@@ -973,7 +933,7 @@ namespace Microsoft.Xna.Framework.Media
                                 while (frameLocked);
                                 
                                 // Assign next frame, free old one.
-                                currentVideo = getVideoFrame(videoStream);
+                                currentVideo = TheoraPlay.getVideoFrame(videoStream);
                                 TheoraPlay.THEORAPLAY_freeVideo(hold);
                             }
                         }
