@@ -62,14 +62,14 @@ namespace Microsoft.Xna.Framework.Audio
     {
         const int DefaultBufferCount = 6;
 
-        internal readonly object stopMutex = new object();
-        internal readonly object prepareMutex = new object();
-
         internal int alSourceId;
         internal readonly int[] alBufferIds;
         internal readonly Stack<int> bufferStack;
 
         Stream underlyingStream;
+
+        internal readonly ReaderWriterLockSlim PreparationLock = new ReaderWriterLockSlim();
+        internal readonly ReaderWriterLockSlim StoppingLock = new ReaderWriterLockSlim();
 
         internal VorbisReader Reader { get; private set; }
         internal bool Precaching { get; private set; }
@@ -112,7 +112,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             var state = AL.GetSourceState(alSourceId);
 
-            lock (stopMutex)
+            StoppingLock.EnterReadLock();
             {
                 switch (state)
                 {
@@ -121,7 +121,7 @@ namespace Microsoft.Xna.Framework.Audio
                         return;
                 }
 
-                lock (prepareMutex)
+                PreparationLock.EnterWriteLock();
                 {
                     if (Reader == null)
                         Open();
@@ -132,7 +132,9 @@ namespace Microsoft.Xna.Framework.Audio
                         Precache(asynchronous: asynchronous);
                     }
                 }
+                PreparationLock.ExitWriteLock();
             }
+            StoppingLock.ExitReadLock();
         }
 
         bool lowPass;
@@ -200,9 +202,12 @@ namespace Microsoft.Xna.Framework.Audio
             if (state == ALSourceState.Playing || state == ALSourceState.Paused)
                 StopPlayback();
 
-            lock (stopMutex)
+            StoppingLock.EnterWriteLock();
+            {
                 if (OggStreamer.HasInstance)
                     OggStreamer.Instance.RemoveStream(this);
+            }
+            StoppingLock.ExitWriteLock();
         }
 
         float volume;
@@ -269,7 +274,7 @@ namespace Microsoft.Xna.Framework.Audio
 
             //Trace.WriteLine("[OpenAL] Disposing " + RealName + " with source " + alSourceId);
 
-            lock (prepareMutex)
+            PreparationLock.EnterWriteLock();
             {
                 if (OggStreamer.HasInstance)
                     OggStreamer.Instance.RemoveStream(this);
@@ -286,6 +291,7 @@ namespace Microsoft.Xna.Framework.Audio
                 }
 #endif
             }
+            PreparationLock.ExitWriteLock();
         }
 
         void StopPlayback()
@@ -316,8 +322,9 @@ namespace Microsoft.Xna.Framework.Audio
         void Open()
         {
             underlyingStream.Seek(0, SeekOrigin.Begin);
-            lock (OggStreamer.Instance.readMutex)
-                Reader = new VorbisReader(underlyingStream, true);
+            OggStreamer.decodeLock.EnterWriteLock();
+            Reader = new VorbisReader(underlyingStream, true);
+            OggStreamer.decodeLock.ExitWriteLock();
         }
 
         void Precache(bool asynchronous = false)
@@ -360,10 +367,10 @@ namespace Microsoft.Xna.Framework.Audio
         const float DefaultUpdateRate = 60;
         const int DefaultBufferSize = 22050;
 
-        static readonly object singletonMutex = new object();
+        static readonly ReaderWriterLockSlim singletonLock = new ReaderWriterLockSlim();
+        static readonly ReaderWriterLockSlim iterationLock = new ReaderWriterLockSlim();
 
-        readonly object iterationMutex = new object();
-        public readonly object readMutex = new object();
+        public static readonly ReaderWriterLockSlim decodeLock = new ReaderWriterLockSlim();
 
         readonly float[] readSampleBuffer;
         readonly short[] castBuffer;
@@ -384,31 +391,45 @@ namespace Microsoft.Xna.Framework.Audio
         {
             get
             {
-                lock (singletonMutex)
-                {
-                    if (instance == null)
-                        throw new InvalidOperationException("No instance running");
-                    return instance;
-                }
+                singletonLock.EnterReadLock();
+                if (instance == null)
+                    throw new InvalidOperationException("No instance running");
+                OggStreamer retValue = instance;
+                singletonLock.ExitReadLock();
+                return retValue;
             }
-            private set { lock (singletonMutex) instance = value; }
+            private set { instance = value; }
         }
         public static bool HasInstance
         {
-            get { lock (singletonMutex) return instance != null; }
+            get
+            {
+                singletonLock.EnterReadLock();
+                bool retValue = instance != null;
+                singletonLock.ExitReadLock();
+                return retValue;
+            }
         }
 
         public OggStreamer(int bufferSize = DefaultBufferSize, float updateRate = DefaultUpdateRate)
         {
-            lock (singletonMutex)
+            try
             {
+                singletonLock.EnterUpgradeableReadLock();
                 if (instance != null)
                     throw new InvalidOperationException("Already running");
 
+                singletonLock.EnterWriteLock();
                 Instance = this;
-                underlyingThread = new Thread(EnsureBuffersFilled) { Priority = ThreadPriority.BelowNormal, Name = "Ogg Streamer" };
-                underlyingThread.Start();
+                singletonLock.ExitWriteLock();
             }
+            finally
+            {
+                singletonLock.ExitUpgradeableReadLock();
+            }
+
+            underlyingThread = new Thread(EnsureBuffersFilled) { Priority = ThreadPriority.BelowNormal, Name = "Ogg Streamer" };
+            underlyingThread.Start();
 
             UpdateRate = updateRate;
             BufferSize = bufferSize;
@@ -419,16 +440,17 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void Dispose()
         {
-            lock (singletonMutex)
-            {
-                Debug.Assert(Instance == this, "Two instances running, somehow...?");
+            singletonLock.EnterWriteLock();
+            Debug.Assert(Instance == this, "Two instances running, or double disposal!");
 
-                cancelled = true;
-                lock (iterationMutex)
-                    streams.Clear();
+            cancelled = true;
+            
+            iterationLock.EnterWriteLock();
+            streams.Clear();
+            iterationLock.ExitWriteLock();
 
-                Instance = null;
-            }
+            Instance = null;
+            singletonLock.ExitWriteLock();
         }
 
         public float LowPassHFGain
@@ -448,10 +470,10 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 musicVolume = value;
-                lock (iterationMutex)
-                {
-                    foreach (var s in streams) if (s.Category == "Music") s.GlobalVolume = value;
-                }
+                iterationLock.EnterReadLock();
+                foreach (var s in streams) 
+                    if (s.Category == "Music") s.GlobalVolume = value;
+                iterationLock.ExitReadLock();
             }
         }
         float ambienceVolume = 1;
@@ -461,10 +483,10 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 ambienceVolume = value;
-                lock (iterationMutex)
-                {
-                    foreach (var s in streams) if (s.Category == "Ambience") s.GlobalVolume = value;
-                }
+                iterationLock.EnterReadLock();
+                foreach (var s in streams) 
+                    if (s.Category == "Ambience") s.GlobalVolume = value;
+                iterationLock.ExitReadLock();
             }
         }
 
@@ -472,9 +494,9 @@ namespace Microsoft.Xna.Framework.Audio
         {
             //stream.GlobalVolume = stream.Category == "Music" ? musicVolume : ambienceVolume;
 
-            bool added;
-            lock (iterationMutex)
-                added = streams.Add(stream);
+            iterationLock.EnterWriteLock();
+            bool added = streams.Add(stream);
+            iterationLock.ExitWriteLock();
 
             //if (added)
             //    Trace.WriteLine("[OpenAL] Stream " + stream.RealName + " added with source " + stream.alSourceId);
@@ -483,9 +505,9 @@ namespace Microsoft.Xna.Framework.Audio
         }
         internal bool RemoveStream(OggStream stream)
         {
-            bool removed;
-            lock (iterationMutex)
-                removed = streams.Remove(stream);
+            iterationLock.EnterWriteLock();
+            bool removed = streams.Remove(stream);
+            iterationLock.ExitWriteLock();
 
             //if (removed)
             //    Trace.WriteLine("[OpenAL] Stream " + stream.RealName + " removed with source " + stream.alSourceId);
@@ -499,7 +521,7 @@ namespace Microsoft.Xna.Framework.Audio
         public bool FillBuffer(OggStream stream, int bufferId)
         {
             int readSamples;
-            lock (readMutex)
+            decodeLock.EnterWriteLock();
             {
                 readSamples = stream.Reader.ReadSamples(readSampleBuffer, 0, BufferSize);
 
@@ -508,8 +530,9 @@ namespace Microsoft.Xna.Framework.Audio
 
                 AL.BufferData(bufferId, stream.Reader.Channels == 1 ? ALFormat.Mono16 : ALFormat.Stereo16, castBuffer,
                               readSamples * sizeof(short), stream.Reader.SampleRate);
+                ALHelper.Check();
             }
-            ALHelper.Check();
+            decodeLock.ExitWriteLock();
 
             return readSamples != BufferSize;
         }
@@ -522,7 +545,9 @@ namespace Microsoft.Xna.Framework.Audio
                 if (cancelled) break;
 
                 threadLocalStreams.Clear();
-                lock (iterationMutex) threadLocalStreams.AddRange(streams);
+                iterationLock.EnterReadLock();
+                threadLocalStreams.AddRange(streams);
+                iterationLock.ExitReadLock();
 
                 if (threadLocalStreams.Count == 0) continue;
 
@@ -532,12 +557,14 @@ namespace Microsoft.Xna.Framework.Audio
                 {
                     var stream = threadLocalStreams[i];
 
-                    lock (iterationMutex)
-                        if (!streams.Contains(stream))
-                        {
-                            threadLocalStreams.RemoveAt(i);
-                            continue;
-                        }
+                    iterationLock.EnterReadLock();
+                    bool notFound = !streams.Contains(stream);
+                    iterationLock.ExitReadLock();
+                    if (notFound)
+                    {
+                        threadLocalStreams.RemoveAt(i);
+                        continue;
+                    }
 
                     int queued;
                     AL.GetSource(stream.alSourceId, ALGetSourcei.BuffersQueued, out queued);
@@ -558,16 +585,22 @@ namespace Microsoft.Xna.Framework.Audio
 
                 foreach (var stream in threadLocalStreams)
                 {
-                    lock (stream.prepareMutex)
+                    stream.PreparationLock.EnterReadLock();
                     {
-                        lock (iterationMutex)
-                            if (!streams.Contains(stream))
-                                continue;
+                        iterationLock.EnterReadLock();
+                        bool notFound = !streams.Contains(stream);
+                        iterationLock.ExitReadLock();
+                        if (notFound)
+                        {
+                            stream.PreparationLock.ExitReadLock();
+                            continue;
+                        }
 
                         if (stream.ProcessedBuffers == 0 && stream.bufferStack.Count == 0)
                         {
                             if (stream.QueuedBuffers != stream.BufferCount)
                                 ALHelper.Log("Buffers were lost for " + stream.RealName + " with source " + stream.alSourceId);
+                            stream.PreparationLock.ExitReadLock();
                             continue;
                         }
 
@@ -575,9 +608,15 @@ namespace Microsoft.Xna.Framework.Audio
                             ALHelper.Log("Stray buffers in source for " + stream.RealName + " with source " + stream.alSourceId);
 
                         if (stream.QueuedBuffers - stream.ProcessedBuffers > lowestPlayingBufferCount)
+                        {
+                            stream.PreparationLock.ExitReadLock();
                             continue;
+                        }
                         if (stream.Precaching && lowestPlayingBufferCount <= stream.BufferCount * 2 / 3)
+                        {
+                            stream.PreparationLock.ExitReadLock();
                             continue;
+                        }
 
                         int buffer;
                         if (stream.ProcessedBuffers > 0)
@@ -591,8 +630,11 @@ namespace Microsoft.Xna.Framework.Audio
                             if (stream.IsLooped)
                                 stream.Reader.DecodedTime = TimeSpan.Zero;
                             else
-                                lock (iterationMutex)
-                                    streams.Remove(stream);
+                            {
+                                iterationLock.EnterWriteLock();
+                                streams.Remove(stream);
+                                iterationLock.ExitWriteLock();
+                            }
                         }
 
                         AL.SourceQueueBuffer(stream.alSourceId, buffer);
@@ -607,16 +649,29 @@ namespace Microsoft.Xna.Framework.Audio
                         }
 
                         if (finished && !stream.IsLooped)
+                        {
+                            stream.PreparationLock.ExitReadLock();
                             continue;
+                        }
                     }
+                    stream.PreparationLock.ExitReadLock();
 
-                    lock (stream.stopMutex)
+                    stream.StoppingLock.EnterReadLock();
                     {
-                        if (stream.Precaching) continue;
+                        if (stream.Precaching)
+                        {
+                            stream.StoppingLock.ExitReadLock();
+                            continue;
+                        }
 
-                        lock (iterationMutex)
-                            if (!streams.Contains(stream))
-                                continue;
+                        iterationLock.EnterReadLock();
+                        bool notFound = !streams.Contains(stream);
+                        iterationLock.ExitReadLock();
+                        if (notFound)
+                        {
+                            stream.StoppingLock.ExitReadLock();
+                            continue;
+                        }
 
                         var state = AL.GetSourceState(stream.alSourceId);
                         ALHelper.Check();
@@ -627,6 +682,7 @@ namespace Microsoft.Xna.Framework.Audio
                             ALHelper.Check();
                         }
                     }
+                    stream.StoppingLock.ExitReadLock();
                 }
             }
         }
