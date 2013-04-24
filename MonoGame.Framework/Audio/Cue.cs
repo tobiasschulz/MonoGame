@@ -91,6 +91,15 @@ namespace Microsoft.Xna.Framework.Audio
 				return true;
 			}
 		}
+        
+        public bool IsStopping
+        {
+            get
+            {
+                // FIXME: What is this, exactly?
+                return IsStopped;
+            }
+        }
 		
 		public string Name
 		{
