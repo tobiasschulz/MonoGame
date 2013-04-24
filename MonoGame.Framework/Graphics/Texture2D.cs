@@ -59,10 +59,7 @@ using MonoTouch.Foundation;
 #endif
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-using GLPixelFormat = MonoMac.OpenGL.PixelFormat;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 using GLPixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 #elif GLES
@@ -80,7 +77,7 @@ using ErrorCode = OpenTK.Graphics.ES20.All;
 using PssTexture2D = Sce.PlayStation.Core.Graphics.Texture2D;
 #endif
 
-#if WINDOWS || LINUX || MONOMAC
+#if SDL2
 using System.Drawing.Imaging;
 #endif
 using Microsoft.Xna.Framework.Content;

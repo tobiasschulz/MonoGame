@@ -15,7 +15,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Linux\Debug</OutputPath>
-    <DefineConstants>DEBUG;LINUX;OPENGL</DefineConstants>
+    <DefineConstants>DEBUG;LINUX;SDL2;OPENGL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -37,11 +37,8 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
-    <Reference Include="Tao.Sdl, Version=1.2.13.0, Culture=neutral, PublicKeyToken=9c7a200e36c0094e">
+    <Reference Include="Tao.Sdl">
       <HintPath>..\ThirdParty\GamepadConfig\Tao.Sdl.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenTK">
-      <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -134,7 +131,6 @@
     <Compile Include="Storage\StorageDevice.cs" />
     <Compile Include="TextInputEventArgs.cs" />
     <Compile Include="Audio\AudioChannels.cs" />
-    <Compile Include="Linux\Audio\Sound.cs" />
     <Compile Include="Media\MediaPlayer.cs" />
     <Compile Include="Media\MediaState.cs" />
     <Compile Include="Media\MediaSourceType.cs" />
@@ -160,8 +156,6 @@
     <Compile Include="Content\ContentReaders\SpriteFontReader.cs" />
     <Compile Include="Content\ContentReaders\SongReader.cs" />
     <Compile Include="Content\ContentReaders\SoundEffectReader.cs" />
-    <Compile Include="Linux\Media\Video.cs" />
-    <Compile Include="Linux\Media\VideoPlayer.cs" />
     <Compile Include="Graphics\CompilerOptions.cs" />
     <Compile Include="Content\ContentReaders\ListReader.cs" />
     <Compile Include="Content\ContentReaders\CharReader.cs" />
@@ -226,7 +220,6 @@
     <Compile Include="Graphics\States\TextureFilter.cs" />
     <Compile Include="Input\ButtonDefinition.cs" />
     <Compile Include="Input\ThumbStickDefinition.cs" />
-    <Compile Include="Linux\GamerServices\SignedInGamer.cs" />
     <Compile Include="GamerServices\Gamer.cs" />
     <Compile Include="GamerServices\SignedInGamerCollection.cs" />
     <Compile Include="GamerServices\GamerProfile.cs" />
@@ -242,7 +235,6 @@
     <Compile Include="Net\AvailableNetworkSessionCollection.cs" />
     <Compile Include="Net\LocalNetworkGamer.cs" />
     <Compile Include="GamerServices\GamerCollection.cs" />
-    <Compile Include="Linux\GamerServices\Guide.cs" />
     <Compile Include="GamerServices\MessageBoxIcon.cs" />
     <Compile Include="Graphics\SamplerStateCollection.cs" />
     <Compile Include="Content\ContentSerializerAttribute.cs" />
@@ -294,10 +286,6 @@
     <Compile Include="Net\MonoGamerPeer.cs" />
     <Compile Include="Net\CommandGamerStateChange.cs" />
     <Compile Include="Net\CommandGamerLeft.cs" />
-    <Compile Include="Linux\Input\KeyboardUtil.cs" />
-    <Compile Include="Linux\Audio\AudioLoader.cs" />
-    <Compile Include="Linux\GamerServices\MonoGameGamerServicesHelper.cs" />
-    <Compile Include="Linux\Storage\StorageDeviceHelper.cs" />
     <Compile Include="Content\ContentManager.cs" />
     <Compile Include="Content\LzxDecoder.cs" />
     <Compile Include="Input\GamePadDeadZone.cs" />
@@ -305,19 +293,7 @@
     <Compile Include="Graphics\Vertices\VertexElementColor.cs" />
     <Compile Include="Audio\XactClip.cs" />
     <Compile Include="Audio\XactSound.cs" />
-    <Compile Include="Desktop\Input\Axis.cs" />
-    <Compile Include="Desktop\Input\Capabilities.cs" />
-    <Compile Include="Desktop\Input\DPad.cs" />
-    <Compile Include="Desktop\Input\GamePad.cs" />
-    <Compile Include="Desktop\Input\Input.cs" />
-    <Compile Include="Desktop\Input\Joystick.cs" />
-    <Compile Include="Input\Mouse.cs" />
-    <Compile Include="Desktop\Input\PadConfig.cs" />
-    <Compile Include="Desktop\Input\Settings.cs" />
-    <Compile Include="Desktop\Input\Stick.cs" />
     <Compile Include="LaunchParameters.cs" />
-    <Compile Include="Desktop\OpenTKGamePlatform.cs" />
-    <Compile Include="Desktop\OpenTKGameWindow.cs" />
     <Compile Include="Audio\AudioCategory.cs" />
     <Compile Include="Content\ContentReaders\AlphaTestEffectReader.cs" />
     <Compile Include="Content\ContentReaders\BasicEffectReader.cs" />
@@ -336,10 +312,6 @@
     <Compile Include="Content\ContentReaders\VertexBufferReader.cs" />
     <Compile Include="Content\ContentReaders\VertexDeclarationReader.cs" />
     <Compile Include="Content\ContentReaders\VideoReader.cs" />
-    <Compile Include="Desktop\Audio\OALSoundBuffer.cs" />
-    <Compile Include="Desktop\Audio\OpenALSoundController.cs" />
-    <Compile Include="Desktop\Audio\SoundEffect.cs" />
-    <Compile Include="Desktop\Audio\SoundEffectInstance.cs" />
     <Compile Include="Graphics\Effect\AlphaTestEffect.cs" />
     <Compile Include="Graphics\Effect\BasicEffect.cs" />
     <Compile Include="Graphics\Effect\DualTextureEffect.cs" />
@@ -404,7 +376,6 @@
     <Compile Include="Content\ContentReaders\EffectMaterialReader.cs" />
     <Compile Include="Content\ContentReaders\ExternalReferenceReader.cs" />
     <Compile Include="Graphics\Effect\EffectMaterial.cs" />
-    <Compile Include="Linux\Media\Song.cs" />
     <Compile Include="Graphics\Shader\ShaderProgramCache.cs" />
     <Compile Include="Utilities\Hash.cs" />
     <Compile Include="Content\ResourceContentManager.cs" />
@@ -416,6 +387,32 @@
     <Compile Include="GamerServices\LeaderboardReader.cs" />
     <Compile Include="GamerServices\LeaderboardWriter.cs" />
     <Compile Include="GamerServices\PropertyDictionary.cs" />
+    <Compile Include="SDL2\Audio\OALSoundBuffer.cs" />
+    <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
+    <Compile Include="SDL2\Audio\SoundEffect.cs" />
+    <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
+    <Compile Include="SDL2\Input\Axis.cs" />
+    <Compile Include="SDL2\Input\Capabilities.cs" />
+    <Compile Include="SDL2\Input\DPad.cs" />
+    <Compile Include="SDL2\Input\GamePad.cs" />
+    <Compile Include="SDL2\Input\Input.cs" />
+    <Compile Include="SDL2\Input\Joystick.cs" />
+    <Compile Include="SDL2\Input\PadConfig.cs" />
+    <Compile Include="SDL2\Input\Settings.cs" />
+    <Compile Include="SDL2\Input\Stick.cs" />
+    <Compile Include="SDL2\SDL2_GamePlatform.cs" />
+    <Compile Include="SDL2\SDL2_GameWindow.cs" />
+    <Compile Include="SDL2\Audio\AudioLoader.cs" />
+    <Compile Include="SDL2\Audio\Sound.cs" />
+    <Compile Include="SDL2\Input\SDL2_Mouse.cs" />
+    <Compile Include="SDL2\Input\SDL2_KeyboardUtil.cs" />
+    <Compile Include="SDL2\Media\Video.cs" />
+    <Compile Include="SDL2\Media\VideoPlayer.cs" />
+    <Compile Include="SDL2\Media\Song.cs" />
+    <Compile Include="SDL2\GamerServices\SignedInGamer.cs" />
+    <Compile Include="SDL2\GamerServices\Guide.cs" />
+    <Compile Include="SDL2\GamerServices\MonoGameGamerServicesHelper.cs" />
+    <Compile Include="Storage\StorageDeviceHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.Linux.csproj">
@@ -425,6 +422,10 @@
     <ProjectReference Include="..\ThirdParty\TheoraPlay#\TheoraPlay#.csproj">
       <Project>{47CF0C2E-3710-4188-BB11-30D248B2B5FB}</Project>
       <Name>TheoraPlay#</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\SDL2#\SDL2#.csproj">
+      <Project>{85480198-8711-4355-830E-72FD794AD3F6}</Project>
+      <Name>SDL2#</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -442,7 +443,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Linux\Graphics\" />
+    <Folder Include="SDL2\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

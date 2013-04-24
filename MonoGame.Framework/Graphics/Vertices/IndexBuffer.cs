@@ -5,9 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif GLES
 using OpenTK.Graphics.ES20;

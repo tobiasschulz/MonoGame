@@ -42,10 +42,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-#if MONOMAC
-using MonoMac.AppKit;
-using MonoMac.Foundation;
-#elif IOS
+#if IOS
 using MonoTouch.UIKit;
 #elif ANDROID
 using Android.Views;
@@ -57,12 +54,11 @@ namespace Microsoft.Xna.Framework.Graphics
     {
         private static ReadOnlyCollection<GraphicsAdapter> adapters;
         
-        
-#if MONOMAC
-		private NSScreen _screen;
-        internal GraphicsAdapter(NSScreen screen)
+#if SDL2
+        private IntPtr _screen;
+        internal GraphicsAdapter(IntPtr sdlWindow)
         {
-            _screen = screen;
+            _screen = sdlWindow;
         }
 #elif IOS
 		private UIScreen _screen;
@@ -76,10 +72,6 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             _view = screen;
         }
-#else
-        internal GraphicsAdapter()
-        {
-        }
 #endif
         
         public void Dispose()
@@ -90,15 +82,15 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-#if MONOMAC
-                //Dummy values until MonoMac implements Quartz Display Services
-                int refreshRate = 60;
-                SurfaceFormat format = SurfaceFormat.Color;
-                
-                return new DisplayMode((int)_screen.Frame.Width,
-                                       (int)_screen.Frame.Height,
-                                       refreshRate,
-                                       format);
+#if SDL2
+                int x = 0, y = 0;
+                SDL2.SDL.SDL_GetWindowSize(_screen, ref x, ref y);
+                return new DisplayMode(
+                    x,
+                    y,
+                    60, // FIXME: Assumption!
+                    SurfaceFormat.Color
+                );
 #elif IOS
                 return new DisplayMode((int)(_screen.Bounds.Width * _screen.Scale),
                        (int)(_screen.Bounds.Height * _screen.Scale),
@@ -106,9 +98,6 @@ namespace Microsoft.Xna.Framework.Graphics
                        SurfaceFormat.Color);
 #elif ANDROID
                 return new DisplayMode(_view.Width, _view.Height, 60, SurfaceFormat.Color);
-#elif (WINDOWS && OPENGL) || LINUX
-
-                return new DisplayMode(OpenTK.DisplayDevice.Default.Width, OpenTK.DisplayDevice.Default.Height, (int)OpenTK.DisplayDevice.Default.RefreshRate, SurfaceFormat.Color);
 #else
                 return new DisplayMode(800, 600, 60, SurfaceFormat.Color);
 #endif
@@ -123,21 +112,18 @@ namespace Microsoft.Xna.Framework.Graphics
         public static ReadOnlyCollection<GraphicsAdapter> Adapters {
             get {
                 if (adapters == null) {
-#if MONOMAC
-                    GraphicsAdapter[] tmpAdapters = new GraphicsAdapter[NSScreen.Screens.Length];
-                    for (int i=0; i<NSScreen.Screens.Length; i++) {
-                        tmpAdapters[i] = new GraphicsAdapter(NSScreen.Screens[i]);
-                    }
-                    
-                    adapters = new ReadOnlyCollection<GraphicsAdapter>(tmpAdapters);
+#if SDL2
+                    adapters = new ReadOnlyCollection<GraphicsAdapter>(
+                        new GraphicsAdapter[]
+                        {
+                            new GraphicsAdapter(Game.Instance.Window.Handle)
+                        }
+                    );
 #elif IOS
 					adapters = new ReadOnlyCollection<GraphicsAdapter>(
 						new GraphicsAdapter[] {new GraphicsAdapter(UIScreen.MainScreen)});
 #elif ANDROID
                     adapters = new ReadOnlyCollection<GraphicsAdapter>(new GraphicsAdapter[] { new GraphicsAdapter(Game.Instance.Window) });
-#else
-                    adapters = new ReadOnlyCollection<GraphicsAdapter>(
-						new GraphicsAdapter[] {new GraphicsAdapter()});
 #endif
                 }
                 return adapters;
@@ -254,32 +240,22 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (supportedDisplayModes == null)
                 {
                     List<DisplayMode> modes = new List<DisplayMode>(new DisplayMode[] { CurrentDisplayMode, });
-#if (WINDOWS && OPENGL) || LINUX
-                    IList<OpenTK.DisplayDevice> displays = OpenTK.DisplayDevice.AvailableDisplays;
-                    if (displays.Count > 0)
+#if SDL2
+                    SDL2.SDL.SDL_DisplayMode filler;
+                    int numModes = SDL2.SDL.SDL_GetNumDisplayModes(0);
+                    for (int i = 0; i < numModes; i++)
                     {
-                        modes.Clear();
-                        foreach (OpenTK.DisplayDevice display in displays)
+                        SDL2.SDL.SDL_GetDisplayMode(0, i, ref filler);
+                        if (filler.refresh_rate > 60) // FIXME: With apologies to PAL
                         {
-                            foreach (OpenTK.DisplayResolution resolution in display.AvailableResolutions)
-                            {                                
-                                SurfaceFormat format = SurfaceFormat.Color;
-                                switch (resolution.BitsPerPixel)
-                                {
-                                    case 32: format = SurfaceFormat.Color; break;
-                                    case 16: format = SurfaceFormat.Bgr565; break;
-                                    case 8: format = SurfaceFormat.Bgr565; break;
-                                    default:
-                                        break;
-                                }
-                                // Just report the 32 bit surfaces for now
-                                // Need to decide what to do about other surface formats
-                                if (format == SurfaceFormat.Color)
-                                {
-                                    modes.Add(new DisplayMode(resolution.Width, resolution.Height, (int)resolution.RefreshRate, format));
-                                }
-                            }
-
+                            modes.Add(
+                                new DisplayMode(
+                                    filler.w,
+                                    filler.h,
+                                    filler.refresh_rate,
+                                    SurfaceFormat.Color // FIXME: Assumption!
+                                )
+                            );
                         }
                     }
 #endif

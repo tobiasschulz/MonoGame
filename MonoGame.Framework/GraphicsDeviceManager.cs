@@ -42,9 +42,7 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif GLES
+#if GLES
 using OpenTK.Graphics.ES20;
 #elif OPENGL
 using OpenTK.Graphics.OpenGL;
@@ -86,7 +84,7 @@ namespace Microsoft.Xna.Framework
 
             _supportedOrientations = DisplayOrientation.Default;
 
-#if WINDOWS || MONOMAC || LINUX
+#if SDL2
             _preferredBackBufferHeight = DefaultBackBufferHeight;
             _preferredBackBufferWidth = DefaultBackBufferWidth;
 #else
@@ -264,15 +262,8 @@ namespace Microsoft.Xna.Framework
             _graphicsDevice.ApplyRenderTargets(null);
 
             _game.ResizeWindow(false);
-
-#elif WINDOWS || LINUX
-            _game.ResizeWindow(false);
-#elif MONOMAC
-            _graphicsDevice.PresentationParameters.IsFullScreen = _wantFullScreen;
-
-            // TODO: Implement multisampling (aka anti-alising) for all platforms!
-
-			_game.applyChanges(this);
+#elif SDL2
+            // FIXME: What the fuck is this entire method?!
 #else
 
 #if ANDROID
@@ -338,22 +329,19 @@ namespace Microsoft.Xna.Framework
             _graphicsDevice.Initialize();
 #else
 
-#if MONOMAC
-            _graphicsDevice.PresentationParameters.IsFullScreen = _wantFullScreen;
-#elif LINUX
+#if SDL2
+            // It's bad practice to start fullscreen.
             _graphicsDevice.PresentationParameters.IsFullScreen = false;
 #else
             // Set "full screen"  as default
             _graphicsDevice.PresentationParameters.IsFullScreen = true;
-#endif // MONOMAC
+#endif // SDL2
 
-            // TODO: Implement multisampling (aka anti-alising) for all platforms!
+            // TODO: Implement multisampling (aka anti-aliasing) for all platforms!
 
             _graphicsDevice.Initialize();
 
-#if !MONOMAC
             ApplyChanges();
-#endif
 
 #endif // WINDOWS || WINRT
 
@@ -490,7 +478,7 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-#if LINUX
+#if SDL2
                 return _game.Platform.VSyncEnabled;
 #else
                 return _synchronizedWithVerticalRetrace;
@@ -498,7 +486,7 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
-#if LINUX
+#if SDL2
                 // TODO: I'm pretty sure this shouldn't occur until ApplyChanges().
                 _game.Platform.VSyncEnabled = value;
 #else

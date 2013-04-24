@@ -51,10 +51,9 @@ using OpenTK.Graphics.ES11;
 #else
 using OpenTK.Graphics.ES20;
 #endif
-#elif WINDOWS || LINUX
+#elif SDL2
+using SDL2;
 using OpenTK.Graphics;
-using OpenTK.Platform;
-using OpenTK;
 using OpenTK.Graphics.OpenGL;
 #endif
 
@@ -69,9 +68,9 @@ namespace Microsoft.Xna.Framework
         static Mutex actionsMutex = new Mutex();
 #elif IOS
         public static EAGLContext BackgroundContext;
-#elif WINDOWS || LINUX
-        public static IGraphicsContext BackgroundContext;
-        public static IWindowInfo WindowInfo;
+#elif SDL2
+        public static IntPtr BackgroundContext = IntPtr.Zero;
+        public static IntPtr WindowInfo;
 #endif
         static Threading()
         {
@@ -129,26 +128,25 @@ namespace Microsoft.Xna.Framework
                 GL.Flush();
                 GraphicsExtensions.CheckGLError();
             }
-#elif WINDOWS || LINUX
-            lock (BackgroundContext)
+#elif SDL2
+            // FIXME: A lock is probably advisable...
+            
+            // lock (BackgroundContext)
             {
                 // Make the context current on this thread
-                BackgroundContext.MakeCurrent(WindowInfo);
+                SDL.SDL_GL_MakeCurrent(WindowInfo, BackgroundContext);
                 // Execute the action
                 action();
                 // Must flush the GL calls so the texture is ready for the main context to use
                 GL.Flush();
                 GraphicsExtensions.CheckGLError();
                 // Must make the context not current on this thread or the next thread will get error 170 from the MakeCurrent call
-                BackgroundContext.MakeCurrent(null);
+                SDL.SDL_GL_MakeCurrent(WindowInfo, IntPtr.Zero);
             }
 #else
             ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
-#if MONOMAC
-            MonoMac.AppKit.NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
-#else
+            
             Add(() =>
-#endif
             {
 #if ANDROID
                 //if (!Game.Instance.Window.GraphicsContext.IsCurrent)

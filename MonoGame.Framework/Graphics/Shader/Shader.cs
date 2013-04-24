@@ -3,9 +3,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif GLES
 using System.Text;

@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif PSM
 using Sce.PlayStation.Core.Graphics;
@@ -53,11 +51,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (GL.IsProgram(pair.Value.program))
                 {
-#if MONOMAC
-                    GL.DeleteProgram(pair.Value.program, null);
-#else
                     GL.DeleteProgram(pair.Value.program);
-#endif
                     GraphicsExtensions.CheckGLError();
                 }
             }

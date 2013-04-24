@@ -1,8 +1,6 @@
 ﻿using System;
 
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif (WINDOWS && !DIRECTX) || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif PSM
 using Sce.PlayStation.Core.Graphics;

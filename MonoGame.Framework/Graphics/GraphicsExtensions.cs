@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif GLES
 using OpenTK.Graphics.ES20;
@@ -166,7 +164,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 case VertexElementFormat.NormalizedShort4:
                     return VertexAttribPointerType.Short;
                 
-#if MONOMAC || WINDOWS || LINUX
+#if SDL2
                case VertexElementFormat.HalfVector2:
                     return VertexAttribPointerType.HalfFloat;
 
@@ -236,7 +234,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 case VertexElementFormat.NormalizedShort4:
                     return ColorPointerType.UnsignedShort;
 				
-#if MONOMAC
+#if SDL2
                 case VertexElementFormat.HalfVector2:
                     return ColorPointerType.HalfFloat;
 
@@ -282,7 +280,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 case VertexElementFormat.NormalizedShort4:
                     return NormalPointerType.Short;
 				
-#if MONOMAC
+#if SDL2
                 case VertexElementFormat.HalfVector2:
                     return NormalPointerType.HalfFloat;
 
@@ -328,7 +326,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 case VertexElementFormat.NormalizedShort4:
                     return TexCoordPointerType.Short;
 				
-#if MONOMAC
+#if SDL2
                 case VertexElementFormat.HalfVector2:
                     return TexCoordPointerType.HalfFloat;
 
@@ -351,7 +349,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				return BlendEquationMode.MaxExt;
 			case BlendFunction.Min:
 				return BlendEquationMode.MinExt;
-#elif MONOMAC
+#elif SDL2
 			case BlendFunction.Max:
 				return BlendEquationMode.Max;
 			case BlendFunction.Min:
@@ -381,7 +379,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			case Blend.InverseSourceAlpha:
 				return BlendingFactorSrc.OneMinusSrcAlpha;
 			case Blend.InverseSourceColor:
-#if MONOMAC || WINDOWS || LINUX
+#if SDL2
 				return (BlendingFactorSrc)All.OneMinusSrcColor;
 #else
 				return BlendingFactorSrc.OneMinusSrcColor;
@@ -393,7 +391,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			case Blend.SourceAlphaSaturation:
 				return BlendingFactorSrc.SrcAlphaSaturate;
 			case Blend.SourceColor:
-#if MONOMAC || WINDOWS || LINUX
+#if SDL2
 				return (BlendingFactorSrc)All.SrcColor;
 #else
 				return BlendingFactorSrc.SrcColor;
@@ -420,11 +418,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			case Blend.InverseSourceAlpha:
 				return BlendingFactorDest.OneMinusSrcAlpha;
 			case Blend.InverseSourceColor:
-#if MONOMAC || WINDOWS
-				return (BlendingFactorDest)All.OneMinusSrcColor;
-#else
 				return BlendingFactorDest.OneMinusSrcColor;
-#endif
 			case Blend.One:
 				return BlendingFactorDest.One;
 			case Blend.SourceAlpha:
@@ -432,11 +426,7 @@ namespace Microsoft.Xna.Framework.Graphics
 //			case Blend.SourceAlphaSaturation:
 //				return BlendingFactorDest.SrcAlphaSaturate;
 			case Blend.SourceColor:
-#if MONOMAC || WINDOWS
-				return (BlendingFactorDest)All.SrcColor;
-#else
 				return BlendingFactorDest.SrcColor;
-#endif
 			case Blend.Zero:
 				return BlendingFactorDest.Zero;
 			default:

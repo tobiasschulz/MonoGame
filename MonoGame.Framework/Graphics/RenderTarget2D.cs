@@ -44,9 +44,7 @@ using Sce.PlayStation.Core.Graphics;
 #elif DIRECTX
 using SharpDX.Direct3D11;
 #elif OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif GLES
 using OpenTK.Graphics.ES20;
