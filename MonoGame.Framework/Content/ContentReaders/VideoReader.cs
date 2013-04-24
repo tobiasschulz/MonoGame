@@ -53,7 +53,7 @@ namespace Microsoft.Xna.Framework.Content
 #elif IOS
         static string[] supportedExtensions = new string[] { ".mp4", ".mov", ".avi", ".m4v", ".3gp" };
 #else
-        static string[] supportedExtensions = new string[] { ".ogv", ".ogg", ".avi", ".m4v" };
+        static string[] supportedExtensions = new string[] { ".ogv", ".ogg" };
 #endif
 
         internal static string Normalize(string fileName)
