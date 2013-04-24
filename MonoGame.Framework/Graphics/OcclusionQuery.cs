@@ -3,11 +3,7 @@ using System.Runtime.InteropServices;
 
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
 using OpenTK.Graphics.OpenGL;
-#endif
 #endif
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -67,11 +63,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public bool IsComplete {
 			get {
 				int[] resultReady = {0};
-#if MONOMAC               
-				GetQueryObjectiv(glQueryId,
-				                 (int)GetQueryObjectParam.QueryResultAvailable,
-				                 resultReady);
-#elif OPENGL
+#if OPENGL
                 GL.GetQueryObject(glQueryId, GetQueryObjectParam.QueryResultAvailable, resultReady);
                 GraphicsExtensions.CheckGLError();
 #elif DIRECTX                
@@ -82,11 +74,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int PixelCount {
 			get {
 				int[] result = {0};
-#if MONOMAC
-				GetQueryObjectiv(glQueryId,
-				                 (int)GetQueryObjectParam.QueryResult,
-				                 result);
-#elif OPENGL
+#if OPENGL
                 GL.GetQueryObject(glQueryId, GetQueryObjectParam.QueryResultAvailable, result);
                 GraphicsExtensions.CheckGLError();
 #elif DIRECTX             
@@ -94,15 +82,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 return result[0];
 			}
         }
-
-#if MONOMAC
-		//MonoMac doesn't export this. Grr.
-		const string OpenGLLibrary = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
-
-		[System.Security.SuppressUnmanagedCodeSecurity()]
-		[DllImport(OpenGLLibrary, EntryPoint = "glGetQueryObjectiv", ExactSpelling = true)]
-		extern static unsafe void GetQueryObjectiv(UInt32 id, int pname, [OutAttribute] Int32[] @params);
-#endif
     }
 }
 
