@@ -4,12 +4,8 @@ using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
 
-#if IOS || WINDOWS || LINUX
 using OpenTK.Audio.OpenAL;
 using OpenTK;
-#elif MONOMAC
-using MonoMac.OpenAL;
-#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {
@@ -66,7 +62,7 @@ namespace Microsoft.Xna.Framework.Audio
         /// <returns>True if the sound controller was setup, and false if not.</returns>
         private bool OpenSoundController()
         {
-#if MONOMAC || IOS
+#if IOS
 			alcMacOSXMixerOutputRate(PREFERRED_MIX_RATE);
 #endif
             _device = Alc.OpenDevice(string.Empty);
@@ -282,7 +278,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         }
 
-#if MONOMAC || IOS
+#if IOS
 		public const string OpenALLibrary = "/System/Library/Frameworks/OpenAL.framework/OpenAL";
 
 		[DllImport(OpenALLibrary, EntryPoint = "alcMacOSXMixerOutputRate")]
