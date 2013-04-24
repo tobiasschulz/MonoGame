@@ -27,7 +27,7 @@
 #endregion
 
 #region VideoPlayer Graphics Define
-#if LINUX || MONOMAC || (WINDOWS && OPENGL)
+#if SDL2
 #define VIDEOPLAYER_OPENGL
 #endif
 #endregion

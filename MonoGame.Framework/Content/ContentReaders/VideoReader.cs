@@ -50,10 +50,10 @@ namespace Microsoft.Xna.Framework.Content
     {
 #if ANDROID
         static string[] supportedExtensions = new string[] { ".3gp", ".mkv", ".mp4", ".ts", ".webm" };
-#elif IOS || MONOMAC
+#elif IOS
         static string[] supportedExtensions = new string[] { ".mp4", ".mov", ".avi", ".m4v", ".3gp" };
 #else
-        static string[] supportedExtensions = new string[] { ".mp4", ".mov", ".avi", ".m4v" };
+        static string[] supportedExtensions = new string[] { ".ogv", ".ogg", ".avi", ".m4v" };
 #endif
 
         internal static string Normalize(string fileName)
