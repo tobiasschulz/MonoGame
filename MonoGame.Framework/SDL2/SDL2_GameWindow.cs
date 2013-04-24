@@ -88,6 +88,8 @@ namespace Microsoft.Xna.Framework
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
         
+        private IntPtr INTERNAL_GLContext;
+        
         private string INTERNAL_deviceName;
         
         #endregion
@@ -273,6 +275,11 @@ namespace Microsoft.Xna.Framework
             );
             
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
+            
+            // Initialize OpenGL
+            INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
+            OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
+            OpenTK.Graphics.OpenGL.GL.LoadAll();
             
             // FIXME: This is idiotic.
             Threading.WindowInfo = INTERNAL_sdlWindow;
