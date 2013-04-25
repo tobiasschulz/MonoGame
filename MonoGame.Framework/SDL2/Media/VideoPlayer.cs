@@ -407,7 +407,7 @@ namespace Microsoft.Xna.Framework.Media
         // Thread containing our video player.
         private Thread playerThread;
         
-        // Store this to optimize things on our end. API BREAKS HERE!!!
+        // Store this to optimize things on our end.
         private GraphicsDevice graphicsDevice;
         private Texture2D videoTexture;
         #endregion
@@ -724,6 +724,9 @@ namespace Microsoft.Xna.Framework.Media
                     (int) currentVideo.height
                 );
 #endif
+                
+                // Tell the Video about... well, the video.
+                Video.FramesPerSecond = (float) currentVideo.fps;
             }
             
             // Initialize the thread!
@@ -927,6 +930,9 @@ namespace Microsoft.Xna.Framework.Media
                                 // Assign next frame, free old one.
                                 currentVideo = TheoraPlay.getVideoFrame(videoStream);
                                 TheoraPlay.THEORAPLAY_freeVideo(hold);
+                                
+                                // Tell the Video where we're at.
+                                Video.Duration = PlayPosition;
                             }
                         }
                     }

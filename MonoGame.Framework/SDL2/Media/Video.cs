@@ -47,80 +47,89 @@ namespace Microsoft.Xna.Framework.Media
 {
     public sealed class Video : IDisposable
     {
-     private string _fileName;
-     private Color _backColor = Color.Black;
-     
-     internal Video(string FileName)
-     {
-         _fileName = Normalize(FileName);
-     }
-             
-     public Color BackgroundColor
-     {
-         set
-         {
-             _backColor = value;
-         }
-         get
-         {
-             return _backColor;
-         }
-     }
-     
-     public string FileName
-     {
-         get 
-         {
-             return _fileName;
-         }
-     }
-     
-     public float FramesPerSecond
-     {
-         get 
-         {
-             // FIXME: Grab this from TheoraPlay.
-             return 30.0f;
-         }
-     }
-     
-     public TimeSpan Duration
-     {
-         get 
-         {
-             // FIXME: TheoraPlay can totally give this to us.
-             return TimeSpan.Zero;
-         }
-     }
-     
-     internal static string Normalize(string FileName)
-     {
-         if (File.Exists(FileName))
+		private string _fileName;
+		private Color _backColor = Color.Black;
+		
+		internal Video(string FileName)
+		{
+			_fileName = Normalize(FileName);
+		}
+				
+		public Color BackgroundColor
+		{
+			set
+			{
+				_backColor = value;
+			}
+			get
+			{
+				return _backColor;
+			}
+		}
+		
+		public string FileName
+		{
+			get 
+			{
+				return _fileName;
+			}
+		}
+        
+        // FIXME: Until we Play(), this might be wrong!
+        private float INTERNAL_fps = 30.0f;
+        public float FramesPerSecond
+        {
+            get
             {
-             return FileName;
-         }
+                return INTERNAL_fps;
+            }
+            internal set
+            {
+                INTERNAL_fps = value;
+            }
+        }
+        
+        private TimeSpan INTERNAL_duration = TimeSpan.Zero;
+        public TimeSpan Duration
+        {
+            get
+            {
+                return INTERNAL_duration;
+            }
+            internal set
+            {
+                INTERNAL_duration = value;
+            }
+        }
+		
+		internal static string Normalize(string FileName)
+		{
+			if (File.Exists(FileName))
+            {
+				return FileName;
+			}
             
-         // Check the file extension
-         if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
-         {
-             return null;
-         }
-         
-         // Concat the file name with valid extensions
-         if (File.Exists(FileName + ".ogv"))
+			// Check the file extension
+			if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
+			{
+				return null;
+			}
+			
+			// Concat the file name with valid extensions
+			if (File.Exists(FileName + ".ogv"))
             {
-             return FileName + ".ogv";
+				return FileName + ".ogv";
             }
-         if (File.Exists(FileName + ".ogg"))
+			if (File.Exists(FileName + ".ogg"))
             {
-             return FileName + ".ogg";
+				return FileName + ".ogg";
             }
-         
-         return null;
-     }
-     
-     public void Dispose()
-     {
-     }
+			
+			return null;
+		}
+		
+		public void Dispose()
+		{
+		}
     }
 }
