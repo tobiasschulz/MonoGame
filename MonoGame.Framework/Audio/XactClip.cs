@@ -92,8 +92,29 @@ namespace Microsoft.Xna.Framework.Audio
                     evnt.wave.IsLooped = true;
                     
 					break;
+                 case 4:
+                    
+                    // FIXME: Same crap as above, but without the terrible hack? Whaaat -flibit
+                    
+                    evnt = new EventPlayWave();
+                     
+                     
+                    clipReader.ReadUInt32 (); //unkn
+                    trackIndex = clipReader.ReadUInt16 ();
+                    waveBankIndex = clipReader.ReadByte ();
+                     
+                    //unkn
+                    clipReader.ReadByte ();
+                    clipReader.ReadUInt16 ();
+                    clipReader.ReadUInt16 ();
+                     
+                    evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
+                     
+                    events[i] = evnt;
+                        
+                    break;
 				default:
-					throw new NotImplementedException();
+					throw new NotImplementedException("eventInfo & 0x1F = " + eventId);
 				}
 				
 				events[i].clip = this;
