@@ -97,7 +97,7 @@ namespace Microsoft.Xna.Framework.Audio
             get
             {
                 // FIXME: What is this, exactly?
-                return IsStopped;
+                return false;
             }
         }
 		

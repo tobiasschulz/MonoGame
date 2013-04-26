@@ -38,8 +38,15 @@
 // */
 #endregion License 
 
+#region VideoPlayer Graphics Define
+#if SDL2
+#define VIDEOPLAYER_OPENGL
+#endif
+#endregion
+
 using System;
 using System.IO;
+using System.Threading;
 
 using Microsoft.Xna.Framework.Graphics;
 
@@ -47,36 +54,39 @@ namespace Microsoft.Xna.Framework.Media
 {
     public sealed class Video : IDisposable
     {
+        #region Private Variables: Video Implementation
 		private string _fileName;
 		private Color _backColor = Color.Black;
-		
-		internal Video(string FileName)
-		{
-			_fileName = Normalize(FileName);
-		}
-				
-		public Color BackgroundColor
-		{
-			set
-			{
-				_backColor = value;
-			}
-			get
-			{
-				return _backColor;
-			}
-		}
-		
-		public string FileName
-		{
-			get 
-			{
-				return _fileName;
-			}
-		}
+		#endregion
         
-        // FIXME: Until we Play(), this might be wrong!
-        private float INTERNAL_fps = 30.0f;
+        #region Internal Variables: TheoraPlay
+        internal IntPtr theoraDecoder;
+        internal IntPtr videoStream;
+        internal IntPtr audioStream;
+        #endregion
+     
+        #region Public Properties
+        public int Width
+        {
+            get;
+            private set;
+        }
+        
+        public int Height
+        {
+            get;
+            private set;
+        }
+         
+        public string FileName
+        {
+            get 
+            {
+                return _fileName;
+            }
+        }
+        
+        private float INTERNAL_fps = 0.0f;
         public float FramesPerSecond
         {
             get
@@ -89,19 +99,77 @@ namespace Microsoft.Xna.Framework.Media
             }
         }
         
-        private TimeSpan INTERNAL_duration = TimeSpan.Zero;
+        // FIXME: This is hacked, look this up in VideoPlayer.
         public TimeSpan Duration
         {
-            get
-            {
-                return INTERNAL_duration;
-            }
-            internal set
-            {
-                INTERNAL_duration = value;
-            }
+            get;
+            internal set;
         }
+        #endregion
+        
+        #region Internal Video Constructor
+		internal Video(string FileName)
+		{
+            // Check out the file...
+			_fileName = Normalize(FileName);
+            if (_fileName == null)
+            {
+                throw new Exception("File " + FileName + " does not exist!");
+            }
+            
+            // Set everything to NULL. Yes, this actually matters later.
+            theoraDecoder = IntPtr.Zero;
+            videoStream = IntPtr.Zero;
+            audioStream = IntPtr.Zero;
+            
+            // Initialize the decoder.
+            theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
+                _fileName,
+                150, // Arbitrarily 5 seconds in a 30fps movie.
+#if VIDEOPLAYER_OPENGL
+                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
+#else
+                // Use the TheoraPlay software converter.
+                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_RGBA
+#endif
+            );
+            
+            // Wait until the decoder is ready.
+            while (TheoraPlay.THEORAPLAY_isInitialized(theoraDecoder) == 0)
+            {
+                Thread.Sleep(10);
+            }
+            
+            // Initialize the audio stream pointer and get our first packet.
+            if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
+            {
+                while (audioStream == IntPtr.Zero)
+                {
+                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
+                    Thread.Sleep(10);
+                }
+            }
+            
+            // Initialize the video stream pointer and get our first frame.
+            if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
+            {
+                while (videoStream == IntPtr.Zero)
+                {
+                    videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
+                    Thread.Sleep(10);
+                }
+                
+                TheoraPlay.THEORAPLAY_VideoFrame frame = TheoraPlay.getVideoFrame(videoStream);
+                
+                // We get the FramesPerSecond from the first frame.
+                FramesPerSecond = (float) frame.fps;
+                Width = (int) frame.width;
+                Height = (int) frame.height;
+            }
+		}
+        #endregion
 		
+        #region File name normalizer
 		internal static string Normalize(string FileName)
 		{
 			if (File.Exists(FileName))
@@ -127,9 +195,32 @@ namespace Microsoft.Xna.Framework.Media
 			
 			return null;
 		}
+        #endregion
 		
+        #region Disposal Method
 		public void Dispose()
 		{
+            // Stop and unassign the decoder.
+            if (theoraDecoder != IntPtr.Zero)
+            {
+                TheoraPlay.THEORAPLAY_stopDecode(theoraDecoder);
+                theoraDecoder = IntPtr.Zero;
+            }
+            
+            // Free and unassign the video stream.
+            if (videoStream != IntPtr.Zero)
+            {
+                TheoraPlay.THEORAPLAY_freeVideo(videoStream);
+                videoStream = IntPtr.Zero;
+            }
+            
+            // Free and unassign the audio stream.
+            if (audioStream != IntPtr.Zero)
+            {
+                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
+                audioStream = IntPtr.Zero;
+            }
 		}
+        #endregion
     }
 }
