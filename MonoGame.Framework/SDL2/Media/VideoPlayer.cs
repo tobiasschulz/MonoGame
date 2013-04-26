@@ -659,25 +659,34 @@ namespace Microsoft.Xna.Framework.Media
             // Update the player state now, for the thread we're about to make.
             State = MediaState.Playing;
             
+            // Start the video if it hasn't been yet.
+            video.Initialize();
+            
             // Grab the first bit of audio. We're trying to start the decoding ASAP.
-            currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
-            audioDecoderThread.Start();
+            if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
+            {
+                currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
+                audioDecoderThread.Start();
+            }
             
             // Grab the first bit of video, set up the texture.
-            currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
-            videoTexture = new Texture2D(
-                Game.Instance.GraphicsDevice,
-                (int) currentVideo.width,
-                (int) currentVideo.height,
-                false,
-                SurfaceFormat.Color
-            );
+            if (TheoraPlay.THEORAPLAY_hasVideoStream(Video.theoraDecoder) != 0)
+            {
+                currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                videoTexture = new Texture2D(
+                    Game.Instance.GraphicsDevice,
+                    (int) currentVideo.width,
+                    (int) currentVideo.height,
+                    false,
+                    SurfaceFormat.Color
+                );
 #if VIDEOPLAYER_OPENGL
-            GL_setupTargets(
-                (int) currentVideo.width,
-                (int) currentVideo.height
-            );
+                GL_setupTargets(
+                    (int) currentVideo.width,
+                    (int) currentVideo.height
+                );
 #endif
+            }
             
             // Initialize the thread!
             System.Console.Write("Starting Theora player...");
@@ -932,7 +941,7 @@ namespace Microsoft.Xna.Framework.Media
             AL.DeleteBuffers(AL.SourceUnqueueBuffers(audioSourceIndex, 2));
             
             // We're not playing any video anymore.
-            Video = null;
+            Video.Dispose();
         }
         #endregion
     }

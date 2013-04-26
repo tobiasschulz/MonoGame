@@ -57,6 +57,7 @@ namespace Microsoft.Xna.Framework.Media
         #region Private Variables: Video Implementation
 		private string _fileName;
 		private Color _backColor = Color.Black;
+        private bool disposed;
 		#endregion
         
         #region Internal Variables: TheoraPlay
@@ -122,6 +123,48 @@ namespace Microsoft.Xna.Framework.Media
             videoStream = IntPtr.Zero;
             audioStream = IntPtr.Zero;
             
+            // Initialize the decoder nice and early...
+            disposed = true;
+            Initialize();
+		}
+        #endregion
+		
+        #region File name normalizer
+		internal static string Normalize(string FileName)
+		{
+			if (File.Exists(FileName))
+            {
+				return FileName;
+			}
+            
+			// Check the file extension
+			if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
+			{
+				return null;
+			}
+			
+			// Concat the file name with valid extensions
+			if (File.Exists(FileName + ".ogv"))
+            {
+				return FileName + ".ogv";
+            }
+			if (File.Exists(FileName + ".ogg"))
+            {
+				return FileName + ".ogg";
+            }
+			
+			return null;
+		}
+        #endregion
+        
+        #region Internal TheoraPlay Initialization
+		internal void Initialize()
+        {
+            if (!disposed)
+            {
+                Dispose(); // We need to start from the beginning, don't we? :P
+            }
+            
             // Initialize the decoder.
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 _fileName,
@@ -166,37 +209,9 @@ namespace Microsoft.Xna.Framework.Media
                 Width = (int) frame.width;
                 Height = (int) frame.height;
             }
-		}
+        }
         #endregion
-		
-        #region File name normalizer
-		internal static string Normalize(string FileName)
-		{
-			if (File.Exists(FileName))
-            {
-				return FileName;
-			}
-            
-			// Check the file extension
-			if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
-			{
-				return null;
-			}
-			
-			// Concat the file name with valid extensions
-			if (File.Exists(FileName + ".ogv"))
-            {
-				return FileName + ".ogv";
-            }
-			if (File.Exists(FileName + ".ogg"))
-            {
-				return FileName + ".ogg";
-            }
-			
-			return null;
-		}
-        #endregion
-		
+        
         #region Disposal Method
 		public void Dispose()
 		{
@@ -220,6 +235,8 @@ namespace Microsoft.Xna.Framework.Media
                 TheoraPlay.THEORAPLAY_freeAudio(audioStream);
                 audioStream = IntPtr.Zero;
             }
+            
+            disposed = true;
 		}
         #endregion
     }
