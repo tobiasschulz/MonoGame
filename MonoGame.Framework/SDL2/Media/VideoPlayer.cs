@@ -618,7 +618,7 @@ namespace Microsoft.Xna.Framework.Media
             // Just copy it to an array, since it's RGBA anyway.
             try
             {
-                byte[] theoraPixels = getPixels(
+                byte[] theoraPixels = TheoraPlay.getPixels(
                     currentVideo.pixels,
                     (int) currentVideo.width * (int) currentVideo.height * 4
                 );
@@ -633,7 +633,7 @@ namespace Microsoft.Xna.Framework.Media
                     e.Message
                 );
                 frameLocked = false;
-                return null;
+                return videoTexture; // Hope this still has something in it...
             }
 #endif
    
