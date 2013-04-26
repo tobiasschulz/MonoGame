@@ -503,7 +503,7 @@ namespace Microsoft.Xna.Framework.Media
                     TheoraPlay.THEORAPLAY_isInitialized(Video.theoraDecoder) == 0 ||
                     Video.videoStream == IntPtr.Zero  )
             {
-                return null;
+                return videoTexture; // Screw it, give them the old one.
             }
             
             // Assign this locally, or else the thread will ruin your face.
