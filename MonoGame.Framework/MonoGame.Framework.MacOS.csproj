@@ -49,7 +49,7 @@
     <OutputPath>bin\MacOS\Distribution</OutputPath>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <DefineConstants>MONOMAC;OPENGL</DefineConstants>
+    <DefineConstants>MONOMAC;SDL2;OPENGL</DefineConstants>
     <EnableCodeSigning>False</EnableCodeSigning>
     <CreatePackage>False</CreatePackage>
     <EnablePackageSigning>False</EnablePackageSigning>
