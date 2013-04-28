@@ -105,6 +105,7 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
+                // Note: This can only be used BEFORE window creation!
                 if (value)
                 {
                     INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
@@ -189,8 +190,10 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
+                // Note: This can only be used BEFORE window creation!
                 if (value)
                 {
+                    // FIXME: EXT_swap_control_tear?
                     SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
                 }
                 else
@@ -255,13 +258,14 @@ namespace Microsoft.Xna.Framework
                 SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS |
                 SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
             );
+            AllowUserResizing = false;
             
-            IsVSync = true;
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_RED_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_BLUE_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_ALPHA_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DEPTH_SIZE, 16);
+            IsVSync = true;
             
             INTERNAL_sdlWindowTitle = "MonoGame Window";
             
@@ -314,6 +318,16 @@ namespace Microsoft.Xna.Framework
             
             // Window bounds
             SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
+            
+            // Bordered
+            if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) == SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS)
+            {
+                SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
+            }
+            else
+            {
+                SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
+            }
             
             // Fullscreen
             if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN) == SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN)
