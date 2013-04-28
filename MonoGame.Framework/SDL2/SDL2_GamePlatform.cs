@@ -160,7 +160,8 @@ namespace Microsoft.Xna.Framework
 
         public override bool BeforeUpdate(GameTime gameTime)
         {
-            IsActive = INTERNAL_window.IsGrabbing;
+            // FIXME: Check for SDL2 window focus...
+            IsActive = true;
             
             // Update our OpenAL sound buffer pools
             soundControllerInstance.Update();
