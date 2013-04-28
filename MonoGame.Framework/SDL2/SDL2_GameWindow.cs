@@ -229,11 +229,18 @@ namespace Microsoft.Xna.Framework
         public void INTERNAL_Update()
         {
             // TODO: SDL_Event loop!
-            
-            if (Game != null)
-            {
-                Game.Tick();
+            SDL.SDL_Event evt;
+            for (
+                SDL.SDL_PollEvent(out evt);
+                evt.type != SDL.SDL_EventType.SDL_QUIT;
+                SDL.SDL_PollEvent(out evt)
+            ) {
+                if (Game != null)
+                {
+                    Game.Tick();
+                }
             }
+            Game.Exit();
         }
         
         public void INTERNAL_SwapBuffers()
