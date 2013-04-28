@@ -5,23 +5,23 @@ using SDL2;
 
 namespace Microsoft.Xna.Framework.Input
 {
-	internal static class KeyboardUtil
+	internal static class SDL2_KeyboardUtil
 	{
-		static Dictionary<SDL.SDL_Keycode, Keys> _map;
+		private static Dictionary<SDL.SDL_Keycode, Keys> INTERNAL_map;
 		
-		static KeyboardUtil ()
+		static SDL2_KeyboardUtil()
 		{
-			_map = new Dictionary<SDL.SDL_Keycode, Keys> ();
+			INTERNAL_map = new Dictionary<SDL.SDL_Keycode, Keys>();
             
 			var values = Enum.GetValues(typeof(SDL.SDL_Keycode));
 			
 			foreach (SDL.SDL_Keycode sdlKey in values)
             {
-				_map [sdlKey] = _ToXna(sdlKey);
+				INTERNAL_map[sdlKey] = INTERNAL_ToXNA(sdlKey);
             }
 		}
 		
-		static Keys _ToXna (SDL.SDL_Keycode key)
+		static Keys INTERNAL_ToXNA(SDL.SDL_Keycode key)
 		{
 			switch (key)
 			{
@@ -384,9 +384,9 @@ namespace Microsoft.Xna.Framework.Input
 			}	
 		}
 			
-		public static Keys ToXna(SDL.SDL_Keycode key)
+		public static Keys ToXNA(SDL.SDL_Keycode key)
 		{
-			return _map[key];
+			return INTERNAL_map[key];
 		}
 	}
 }

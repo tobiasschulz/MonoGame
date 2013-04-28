@@ -68,6 +68,9 @@ non-infringement.
 
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
+
+using Microsoft.Xna.Framework.Input;
 
 using SDL2;
 
@@ -91,6 +94,12 @@ namespace Microsoft.Xna.Framework
         private IntPtr INTERNAL_GLContext;
         
         private string INTERNAL_deviceName;
+        
+        #endregion
+        
+        #region Private Active XNA Key List
+        
+        private List<Keys> keys;
         
         #endregion
         
@@ -228,8 +237,37 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_Update()
         {
-            // TODO: SDL_Event loop!
+            bool keepGoing = true;
             SDL.SDL_Event evt;
+            
+            while (keepGoing)
+            {
+                while (SDL.SDL_PollEvent(out evt) == 1)
+                {
+                    // TODO: All events...
+                    
+                    // Keyboard
+                    if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
+                    {
+                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
+                        if (!keys.Contains(key))
+                        {
+                            keys.Add(key);
+                        }
+                    }
+                    else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
+                    {
+                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
+                        if (keys.Contains(key))
+                        {
+                            keys.Remove(key);
+                        }
+                    }
+                }
+                Keyboard.SetKeys(keys);
+                Game.Tick();
+            }
+            
             for (
                 SDL.SDL_PollEvent(out evt);
                 evt.type != SDL.SDL_EventType.SDL_QUIT;
@@ -259,6 +297,9 @@ namespace Microsoft.Xna.Framework
         
         public SDL2_GameWindow()
         {
+            // Initialize Active Key List
+            keys = new List<Keys>();
+            
             INTERNAL_sdlWindowFlags_Next = (
                 SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL |
                 SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
