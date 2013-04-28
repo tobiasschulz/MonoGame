@@ -42,8 +42,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Tao.Sdl;
 using System.Xml.Serialization;
+
+using SDL2;
 
 namespace Microsoft.Xna.Framework.Input
 {
@@ -289,14 +290,14 @@ namespace Microsoft.Xna.Framework.Input
             }
             
 #if DEBUG
-			Console.WriteLine("Number of joysticks: " + Sdl.SDL_NumJoysticks());
+			Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
 #endif
 			// Limit to the first 4 sticks to avoid crashes
-			int numSticks = Math.Min(4, Sdl.SDL_NumJoysticks());
+			int numSticks = Math.Min(4, SDL.SDL_NumJoysticks());
 			for (int x = 0; x < numSticks; x++)
 			{
-				PadConfig pc = new PadConfig(Sdl.SDL_JoystickName(x), x);
-				devices[x] = Sdl.SDL_JoystickOpen(pc.Index);
+                devices[x] = SDL.SDL_JoystickOpen(x);
+				PadConfig pc = new PadConfig(SDL.SDL_JoystickName(devices[x]), x);
     
                 // Start
                 pc.Button_Start.ID = joystickConfig.BUTTON_START.INPUT_ID;
@@ -415,13 +416,13 @@ namespace Microsoft.Xna.Framework.Input
 				//pc.BigButton.Type = InputType.Button;
 
 #if DEBUG
-				int numbuttons = Sdl.SDL_JoystickNumButtons(devices[x]);
+				int numbuttons = SDL.SDL_JoystickNumButtons(devices[x]);
 				Console.WriteLine("Number of buttons for joystick: " + x + " - " + numbuttons);
 
-				int numaxes = Sdl.SDL_JoystickNumAxes(devices[x]);
+				int numaxes = SDL.SDL_JoystickNumAxes(devices[x]);
 				Console.WriteLine("Number of axes for joystick: " + x + " - " + numaxes);
 
-				int numhats = Sdl.SDL_JoystickNumHats(devices[x]);
+				int numhats = SDL.SDL_JoystickNumHats(devices[x]);
 				Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);
 #endif
 
@@ -466,7 +467,7 @@ namespace Microsoft.Xna.Framework.Input
         		PadConfig pc = settings[i];
         		if (pc != null)
                 {
-        			devices[i] = Sdl.SDL_JoystickOpen (pc.Index);
+        			devices[i] = SDL.SDL_JoystickOpen (pc.Index);
 			    }
 		    }
 
@@ -654,7 +655,7 @@ namespace Microsoft.Xna.Framework.Input
         {
             PrepSettings();
             if (sdl)
-				Sdl.SDL_JoystickUpdate();
+				SDL.SDL_JoystickUpdate();
             return ReadState(playerIndex, deadZoneMode);
         }
         //
