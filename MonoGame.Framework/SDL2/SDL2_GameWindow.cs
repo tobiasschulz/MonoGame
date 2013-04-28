@@ -263,20 +263,16 @@ namespace Microsoft.Xna.Framework
                             keys.Remove(key);
                         }
                     }
+                    
+                    // Quit
+                    else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
+                    {
+                        keepGoing = false;
+                        break;
+                    }
                 }
                 Keyboard.SetKeys(keys);
                 Game.Tick();
-            }
-            
-            for (
-                SDL.SDL_PollEvent(out evt);
-                evt.type != SDL.SDL_EventType.SDL_QUIT;
-                SDL.SDL_PollEvent(out evt)
-            ) {
-                if (Game != null)
-                {
-                    Game.Tick();
-                }
             }
             Game.Exit();
         }
