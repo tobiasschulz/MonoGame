@@ -263,7 +263,8 @@ namespace Microsoft.Xna.Framework
 
             _game.ResizeWindow(false);
 #elif SDL2
-            // FIXME: What the fuck is this entire method?!
+            SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
+            platform.ResetWindow(_graphicsDevice.PresentationParameters.IsFullScreen);
 #else
 
 #if ANDROID
@@ -358,6 +359,18 @@ namespace Microsoft.Xna.Framework
         public void ToggleFullScreen()
         {
             IsFullScreen = !IsFullScreen;
+#if SDL2
+            // FIXME: Shouldn't it be this way on every platform?
+            SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
+            if (IsFullScreen)
+            {
+                platform.EnterFullScreen();
+            }
+            else
+            {
+                platform.ExitFullScreen();
+            }
+#endif // SDL2
         }
 
 #if WINDOWS_STOREAPP
