@@ -103,6 +103,12 @@ namespace Microsoft.Xna.Framework
         
         #endregion
         
+        #region Internal Loop Sentinel
+        
+        private bool INTERNAL_runApplication;
+        
+        #endregion
+        
 		#region Public Properties
         
 		[DefaultValue(false)]
@@ -237,10 +243,9 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_Update()
         {
-            bool keepGoing = true;
             SDL.SDL_Event evt;
             
-            while (keepGoing)
+            while (INTERNAL_runApplication)
             {
                 while (SDL.SDL_PollEvent(out evt) == 1)
                 {
@@ -267,7 +272,7 @@ namespace Microsoft.Xna.Framework
                     // Quit
                     else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
                     {
-                        keepGoing = false;
+                        INTERNAL_runApplication = false;
                         break;
                     }
                 }
@@ -284,6 +289,10 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_Destroy()
         {
+            INTERNAL_runApplication = false;
+            
+            SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
+            
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
         }
         
@@ -293,6 +302,8 @@ namespace Microsoft.Xna.Framework
         
         public SDL2_GameWindow()
         {
+            INTERNAL_runApplication = true;
+            
             // Initialize Active Key List
             keys = new List<Keys>();
             
