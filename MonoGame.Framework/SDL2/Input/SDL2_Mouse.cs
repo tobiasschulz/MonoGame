@@ -85,11 +85,11 @@ namespace Microsoft.Xna.Framework.Input
             State.X = x;
             State.Y = y;
             
-            State.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON(1));
-			State.RightButton = (ButtonState) (flags & SDL.SDL_BUTTON(2) >> 1);
-			State.MiddleButton = (ButtonState) (flags & SDL.SDL_BUTTON(3) >> 2);
+            State.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
+            State.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
+            State.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
             
-			State.ScrollWheelValue = INTERNAL_MouseWheeel;
+            State.ScrollWheelValue = INTERNAL_MouseWheeel;
 
             return State;
         }
