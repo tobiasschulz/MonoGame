@@ -317,6 +317,9 @@ namespace Microsoft.Xna.Framework
         {
             INTERNAL_runApplication = false;
             
+            GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
+            GL.DeleteTexture(INTERNAL_glColorAttachment);
+            
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
