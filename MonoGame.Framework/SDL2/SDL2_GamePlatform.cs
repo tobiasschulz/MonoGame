@@ -136,7 +136,7 @@ namespace Microsoft.Xna.Framework
 
         public override void RunLoop()
         {
-            INTERNAL_window.INTERNAL_Update();
+            INTERNAL_window.INTERNAL_RunLoop();
         }
 
         public override void StartRunLoop()

@@ -253,7 +253,7 @@ namespace Microsoft.Xna.Framework
         
         #region INTERNAL: GamePlatform Interaction, Methods
         
-        public void INTERNAL_Update()
+        public void INTERNAL_RunLoop()
         {
             // Now that we're in the game loop, this should be safe.
             Game.GraphicsDevice.glFramebuffer = INTERNAL_glFramebuffer;
@@ -320,7 +320,16 @@ namespace Microsoft.Xna.Framework
                 Keyboard.SetKeys(keys);
                 Game.Tick();
             }
+            
+            // We out.
             Game.Exit();
+            
+            GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
+            GL.DeleteTexture(INTERNAL_glColorAttachment);
+            
+            SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
+            
+            SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
         }
         
         public void INTERNAL_SwapBuffers()
@@ -342,13 +351,6 @@ namespace Microsoft.Xna.Framework
         public void INTERNAL_Destroy()
         {
             INTERNAL_runApplication = false;
-            
-            GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
-            GL.DeleteTexture(INTERNAL_glColorAttachment);
-            
-            SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
-            
-            SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
         }
         
         #endregion
