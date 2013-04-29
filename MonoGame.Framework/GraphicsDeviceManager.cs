@@ -265,6 +265,8 @@ namespace Microsoft.Xna.Framework
 #elif SDL2
             SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
             platform.ResetWindow(_graphicsDevice.PresentationParameters.IsFullScreen);
+            // FIXME: HACK! Do this again. Wait, why do we need to do this?!
+            platform.ResetWindow(_graphicsDevice.PresentationParameters.IsFullScreen);
 #else
 
 #if ANDROID

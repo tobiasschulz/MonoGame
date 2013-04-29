@@ -70,6 +70,7 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using SDL2;
@@ -396,6 +397,14 @@ namespace Microsoft.Xna.Framework
             
             // Current flags have just been updated.
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
+            
+            // Now, update the viewport
+            Game.GraphicsDevice.Viewport = new Viewport(
+                0,
+                0,
+                clientWidth,
+                clientHeight
+            );
         }
         
         #endregion
