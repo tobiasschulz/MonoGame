@@ -128,7 +128,8 @@ namespace Microsoft.Xna.Framework
                 GL.Flush();
                 GraphicsExtensions.CheckGLError();
             }
-#elif SDL2
+// FIXME: This should _really_ be SDL2, but MONOMAC has brain problems -flibit 
+#elif WINDOWS || LINUX
             // FIXME: A lock is probably advisable...
             
             // lock (BackgroundContext)
@@ -145,8 +146,12 @@ namespace Microsoft.Xna.Framework
             }
 #else
             ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
-            
+     
+#if MONOMAC
+			MonoMac.AppKit.NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
+#else
             Add(() =>
+#endif
             {
 #if ANDROID
                 //if (!Game.Instance.Window.GraphicsContext.IsCurrent)
