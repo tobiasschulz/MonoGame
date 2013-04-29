@@ -192,8 +192,8 @@ namespace Microsoft.Xna.Framework
         {
             var winWidth = window.ClientRectangle.Width;
             var winHeight = window.ClientRectangle.Height;
-            var winRect = new Rectangle(window.ClientRectangle.X, window.ClientRectangle.Y, winWidth, winHeight);
-            
+            var winRect = new Rectangle(0, 0, winWidth, winHeight);
+
             // If window size is zero, leave bounds unchanged
             // OpenTK appears to set the window client size to 1x1 when minimizing
             if (winWidth <= 1 || winHeight <= 1)
@@ -206,12 +206,10 @@ namespace Microsoft.Xna.Framework
             Game.GraphicsDevice.PresentationParameters.BackBufferWidth = winWidth;
             Game.GraphicsDevice.PresentationParameters.BackBufferHeight = winHeight;
 
-            ChangeClientBounds(winRect);
-   
-            UpdateWindowState();
+            Game.GraphicsDevice.Viewport = new Viewport(0, 0, winWidth, winHeight);
 
-            Game.GraphicsDevice.Viewport = new Viewport(window.ClientRectangle.X, window.ClientRectangle.Y, winWidth, winHeight);
-            
+            clientBounds = winRect;
+
             OnClientSizeChanged();
         }
 
@@ -251,7 +249,16 @@ namespace Microsoft.Xna.Framework
                 if (_isBorderless)
                     desired = WindowBorder.Hidden;
                 else
+#if LINUX
+                    // OpenTK on Linux currently does not allow the window to be resized if the border is fixed.
+                    // We get the resize event for the intended size, then immediately get a resize event for the original size.
+                    // This was preventing GraphicsDeviceManager.PreferredBackBufferWidth and PreferredBackBufferHeight from
+                    // having any effect.
+                    // http://www.opentk.com/node/3132
+                    desired = WindowBorder.Resizable;
+#else
                     desired = _isResizable ? WindowBorder.Resizable : WindowBorder.Fixed;
+#endif
                 if (desired != window.WindowBorder && window.WindowState != WindowState.Fullscreen)
                     window.WindowBorder = desired;
             }
@@ -323,6 +330,9 @@ namespace Microsoft.Xna.Framework
             window.Resize += OnResize;
             window.Keyboard.KeyDown += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyDown);
             window.Keyboard.KeyUp += new EventHandler<OpenTK.Input.KeyboardKeyEventArgs>(Keyboard_KeyUp);
+#if LINUX
+            window.WindowBorder = WindowBorder.Resizable;
+#endif
 #if WINDOWS
             window.MouseEnter += OnMouseEnter;
             window.MouseLeave += OnMouseLeave;
@@ -330,10 +340,8 @@ namespace Microsoft.Xna.Framework
 
             window.KeyPress += OnKeyPress;
             
-            // FIXME: Window icon. Do we really need libgdiplus?
-            
             // Set the window icon.
-            // window.Icon = Icon.ExtractAssociatedIcon(Assembly.GetEntryAssembly().Location);
+            window.Icon = Icon.ExtractAssociatedIcon(Assembly.GetEntryAssembly().Location);
 
             updateClientBounds = false;
             clientBounds = new Rectangle(window.ClientRectangle.X, window.ClientRectangle.Y,
@@ -389,21 +397,10 @@ namespace Microsoft.Xna.Framework
 
         internal void ChangeClientBounds(Rectangle clientBounds)
         {
-            // FIXME: This entire function is probably a hack. -flibit
-            //if (!updateClientBounds)
+            if (this.clientBounds != clientBounds)
             {
-                // Unlock the window...
-                AllowUserResizing = true;
-                
-                // Set the variables...
                 updateClientBounds = true;
-                this.clientBounds = clientBounds;
-                
-                // Actually change the window size...
-                window.ClientSize = new Size(clientBounds.Width, clientBounds.Height);
-                
-                // ... and lock again. We out.
-                AllowUserResizing = false;
+                targetBounds = clientBounds;
             }
         }
 
