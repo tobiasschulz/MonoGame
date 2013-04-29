@@ -74,6 +74,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using SDL2;
+using OpenTK.Graphics.OpenGL;
 
 namespace Microsoft.Xna.Framework
 {
@@ -98,15 +99,24 @@ namespace Microsoft.Xna.Framework
         
         #endregion
         
-        #region Private Active XNA Key List
+        #region Internal OpenGL Framebuffer
         
-        private List<Keys> keys;
+        private int INTERNAL_glFramebuffer;
+        private int INTERNAL_glColorAttachment;
+        private int INTERNAL_glFramebufferWidth;
+        private int INTERNAL_glFramebufferHeight;
         
         #endregion
         
         #region Internal Loop Sentinel
         
         private bool INTERNAL_runApplication;
+        
+        #endregion
+        
+        #region Private Active XNA Key List
+        
+        private List<Keys> keys;
         
         #endregion
         
@@ -137,6 +147,7 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
+                // FIXME: May not be happy since the FBO may be of different size.
                 int x = 0, y = 0, w = 0, h = 0;
                 SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
                 SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, ref w, ref h);
@@ -244,6 +255,9 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_Update()
         {
+            // Now that we're in the game loop, this should be safe.
+            Game.GraphicsDevice.glFramebuffer = INTERNAL_glFramebuffer;
+            
             SDL.SDL_Event evt;
             
             while (INTERNAL_runApplication)
@@ -285,7 +299,18 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_SwapBuffers()
         {
+            Rectangle windowRect = ClientBounds;
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, INTERNAL_glFramebuffer);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+            GL.BlitFramebuffer(
+                0, 0, INTERNAL_glFramebufferWidth, INTERNAL_glFramebufferHeight,
+                0, 0, windowRect.Width, windowRect.Height,
+                ClearBufferMask.ColorBufferBit,
+                BlitFramebufferFilter.Linear
+            );
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
         }
         
         public void INTERNAL_Destroy()
@@ -336,6 +361,9 @@ namespace Microsoft.Xna.Framework
             
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
             
+            // We never want to show the OS mouse cursor!
+            SDL.SDL_ShowCursor(0);
+            
             // Initialize OpenGL
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
@@ -343,6 +371,33 @@ namespace Microsoft.Xna.Framework
             
             // FIXME: This is idiotic.
             Threading.WindowInfo = INTERNAL_sdlWindow;
+            
+            // Create an FBO, use this as our "backbuffer".
+            GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
+            GL.GenTextures(1, out INTERNAL_glColorAttachment);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
+            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glColorAttachment);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Rgba,
+                800,
+                600,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedInt,
+                IntPtr.Zero
+            );
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                INTERNAL_glColorAttachment,
+                0
+            );
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+            INTERNAL_glFramebufferWidth = 800;
+            INTERNAL_glFramebufferHeight = 600;
         }
         
         #endregion
@@ -351,16 +406,14 @@ namespace Microsoft.Xna.Framework
         
 		public override void BeginScreenDeviceChange(bool willBeFullScreen)
         {
-            // FIXME: Will we want to use FULLSCREEN_DESKTOP and render to FBO?
-            
             // Fullscreen windowflag
             if (willBeFullScreen)
             {
-                INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
+                INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
             }
             else
             {
-                INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
+                INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
             }
         }
 
@@ -376,6 +429,7 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
             
             // Bordered
+            // FIXME: May not be needed due to SetWindowFullscreen?
             if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) == SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS)
             {
                 SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
@@ -385,15 +439,8 @@ namespace Microsoft.Xna.Framework
                 SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
             }
             
-            // Fullscreen
-            if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN) == SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN)
-            {
-                SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
-            }
-            else
-            {
-                SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
-            }
+            // Fullscreen (and general Window flags)
+            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
             
             // Current flags have just been updated.
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
@@ -405,6 +452,22 @@ namespace Microsoft.Xna.Framework
                 clientWidth,
                 clientHeight
             );
+            
+            // Update our color attachment to the new resolution
+            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glColorAttachment);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Rgba,
+                clientWidth,
+                clientHeight,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedInt,
+                IntPtr.Zero
+            );
+            INTERNAL_glFramebufferWidth = clientWidth;
+            INTERNAL_glFramebufferHeight = clientHeight;
         }
         
         #endregion
