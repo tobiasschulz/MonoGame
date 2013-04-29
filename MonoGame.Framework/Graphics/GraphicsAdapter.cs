@@ -246,17 +246,14 @@ namespace Microsoft.Xna.Framework.Graphics
                     for (int i = 0; i < numModes; i++)
                     {
                         SDL2.SDL.SDL_GetDisplayMode(0, i, ref filler);
-                        if (filler.refresh_rate > 60) // FIXME: With apologies to PAL
-                        {
-                            modes.Add(
-                                new DisplayMode(
-                                    filler.w,
-                                    filler.h,
-                                    filler.refresh_rate,
-                                    SurfaceFormat.Color // FIXME: Assumption!
-                                )
-                            );
-                        }
+                        modes.Add(
+                            new DisplayMode(
+                                filler.w,
+                                filler.h,
+                                filler.refresh_rate,
+                                SurfaceFormat.Color // FIXME: Assumption!
+                            )
+                        );
                     }
 #endif
                     supportedDisplayModes = new DisplayModeCollection(modes);
