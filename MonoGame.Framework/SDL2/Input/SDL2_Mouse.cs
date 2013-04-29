@@ -63,7 +63,7 @@ namespace Microsoft.Xna.Framework.Input
         }
         
         // FIXME: SDL2_GameWindow needs to work with this!
-        internal static int INTERNAL_MouseWheeel
+        internal static int INTERNAL_MouseWheel
         {
             get;
             set;
@@ -89,7 +89,7 @@ namespace Microsoft.Xna.Framework.Input
             State.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
             State.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
             
-            State.ScrollWheelValue = INTERNAL_MouseWheeel;
+            State.ScrollWheelValue = INTERNAL_MouseWheel;
 
             return State;
         }

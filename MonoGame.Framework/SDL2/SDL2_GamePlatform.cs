@@ -82,11 +82,9 @@ namespace Microsoft.Xna.Framework
 {
     class SDL2_GamePlatform : GamePlatform
     {
-        #region Internal SDL2 window variables
+        #region Internal SDL2 Window
         
         private SDL2_GameWindow INTERNAL_window;
-        
-        private bool INTERNAL_isFullscreen = false;
         
         #endregion
         
@@ -176,7 +174,6 @@ namespace Microsoft.Xna.Framework
 
         public override void EnterFullScreen()
         {
-            INTERNAL_isFullscreen = true;
             Rectangle windowRect = INTERNAL_window.ClientBounds;
             BeginScreenDeviceChange(true);
             EndScreenDeviceChange("SDL2", windowRect.Width, windowRect.Height);
@@ -184,7 +181,6 @@ namespace Microsoft.Xna.Framework
 
         public override void ExitFullScreen()
         {
-            INTERNAL_isFullscreen = false;
             Rectangle windowRect = INTERNAL_window.ClientBounds;
             BeginScreenDeviceChange(false);
             EndScreenDeviceChange("SDL2", windowRect.Width, windowRect.Height);
@@ -192,9 +188,6 @@ namespace Microsoft.Xna.Framework
 
         internal void ResetWindow(bool fullScreen)
         {
-            // Fullscreen
-            INTERNAL_isFullscreen = fullScreen;
-            
             // Window size
             GraphicsDeviceManager graphicsDeviceManager = (GraphicsDeviceManager)
                 Game.Services.GetService(typeof(IGraphicsDeviceManager));
@@ -213,6 +206,7 @@ namespace Microsoft.Xna.Framework
                 PresentationParameters parms = device.PresentationParameters;
                 parms.BackBufferWidth = width;
                 parms.BackBufferHeight = height;
+                parms.IsFullScreen = fullScreen;
             }
         }
 

@@ -284,6 +284,12 @@ namespace Microsoft.Xna.Framework
                         }
                     }
                     
+                    // Mouse Wheel
+                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
+                    {
+                        Mouse.INTERNAL_MouseWheel += evt.wheel.y;
+                    }
+                    
                     // Quit
                     else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
                     {
