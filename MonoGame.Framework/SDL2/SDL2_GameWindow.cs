@@ -330,6 +330,9 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
+
+            // This _should_ be the last SDL call we make...
+            SDL.SDL_Quit();
         }
         
         public void INTERNAL_SwapBuffers()
@@ -359,6 +362,9 @@ namespace Microsoft.Xna.Framework
         
         public SDL2_GameWindow()
         {
+            // This _should_ be the first SDL call we make...
+            SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
+
             INTERNAL_runApplication = true;
             
             // Initialize Active Key List
