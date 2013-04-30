@@ -130,8 +130,7 @@ namespace Microsoft.Xna.Framework
             }
 // FIXME: This should _really_ be SDL2, but MONOMAC has brain problems -flibit 
 #elif WINDOWS || LINUX
-            // FIXME: A lock is probably advisable...
-            
+            // FIXME: A lock is probably advisable...            
             // lock (BackgroundContext)
             {
                 // Make the context current on this thread
@@ -146,9 +145,8 @@ namespace Microsoft.Xna.Framework
             }
 #else
             ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
-     
 #if MONOMAC
-			MonoMac.AppKit.NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
+            MonoMac.AppKit.NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
 #else
             Add(() =>
 #endif
