@@ -941,7 +941,11 @@ namespace Microsoft.Xna.Framework
                 // does not provide such a method.)
                 _removeJournal.Sort(RemoveJournalSortComparison);
                 for (int i = 0; i < _removeJournal.Count; ++i)
-                    _items.RemoveAt(_removeJournal[i]);
+                {
+                    var toRemove = _removeJournal[i];
+                    if (toRemove < _items.Count)
+                        _items.RemoveAt(toRemove);
+                }
                 _removeJournal.Clear();
             }
 
