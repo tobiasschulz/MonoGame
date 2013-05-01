@@ -261,6 +261,7 @@ namespace Microsoft.Xna.Framework
             
             while (INTERNAL_runApplication)
             {
+                Threading.Run();
                 while (SDL.SDL_PollEvent(out evt) == 1)
                 {
                     // TODO: All events...
@@ -326,7 +327,6 @@ namespace Microsoft.Xna.Framework
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext);
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
@@ -405,15 +405,6 @@ namespace Microsoft.Xna.Framework
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
             OpenTK.Graphics.OpenGL.GL.LoadAll();
-
-            // Create a background context
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-            Threading.WindowInfo = INTERNAL_sdlWindow;
-            Threading.BackgroundContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
-
-            // Make the foreground context current.
-            SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
-
             
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);

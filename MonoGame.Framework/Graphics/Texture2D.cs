@@ -676,21 +676,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
             //todo: partial classes would be cleaner
-#if IOS || MONOMAC
-            
-
-
 #if IOS
 			using (var uiImage = UIImage.LoadFromData(NSData.FromStream(stream)))
-#elif MONOMAC
-			using (var nsImage = NSImage.FromStream (stream))
-#endif
 			{
-#if IOS
 				var cgImage = uiImage.CGImage;
-#elif MONOMAC
-				var cgImage = nsImage.AsCGImage (RectangleF.Empty, null, null);
-#endif
 				
 				var width = cgImage.Width;
 				var height = cgImage.Height;
@@ -785,7 +774,11 @@ namespace Microsoft.Xna.Framework.Graphics
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
             {
                 // Fix up the Image to match the expected format
-                image.RGBToBGR();
+                // Ignore this OSX though, we actually prefer the original endianness.
+                if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+                {
+                    image.RGBToBGR();
+                }
 
                 var data = new byte[image.Width * image.Height * 4];
 

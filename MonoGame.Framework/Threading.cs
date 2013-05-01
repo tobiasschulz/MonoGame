@@ -51,10 +51,6 @@ using OpenTK.Graphics.ES11;
 #else
 using OpenTK.Graphics.ES20;
 #endif
-#elif SDL2
-using SDL2;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
 #endif
 
 namespace Microsoft.Xna.Framework
@@ -63,14 +59,11 @@ namespace Microsoft.Xna.Framework
     {
         static int mainThreadId;
         static int currentThreadId;
-#if ANDROID
+#if ANDROID || SDL2
         static List<Action> actions = new List<Action>();
         static Mutex actionsMutex = new Mutex();
 #elif IOS
         public static EAGLContext BackgroundContext;
-#elif SDL2
-        public static IntPtr BackgroundContext = IntPtr.Zero;
-        public static IntPtr WindowInfo;
 #endif
         static Threading()
         {
@@ -128,28 +121,9 @@ namespace Microsoft.Xna.Framework
                 GL.Flush();
                 GraphicsExtensions.CheckGLError();
             }
-// FIXME: This should _really_ be SDL2, but MONOMAC has brain problems -flibit 
-#elif WINDOWS || LINUX
-            // FIXME: A lock is probably advisable...            
-            // lock (BackgroundContext)
-            {
-                // Make the context current on this thread
-                SDL.SDL_GL_MakeCurrent(WindowInfo, BackgroundContext);
-                // Execute the action
-                action();
-                // Must flush the GL calls so the texture is ready for the main context to use
-                GL.Flush();
-                GraphicsExtensions.CheckGLError();
-                // Must make the context not current on this thread or the next thread will get error 170 from the MakeCurrent call
-                SDL.SDL_GL_MakeCurrent(WindowInfo, IntPtr.Zero);
-            }
 #else
             ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
-#if MONOMAC
-            MonoMac.AppKit.NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
-#else
             Add(() =>
-#endif
             {
 #if ANDROID
                 //if (!Game.Instance.Window.GraphicsContext.IsCurrent)
@@ -163,7 +137,7 @@ namespace Microsoft.Xna.Framework
 #endif
         }
 
-#if ANDROID
+#if ANDROID || SDL2
         static void Add(Action action)
         {
             lock (actions)
