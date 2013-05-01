@@ -466,27 +466,32 @@ namespace Microsoft.Xna.Framework.Storage
 			get {
 #if WINRT
                 return ApplicationData.Current.LocalFolder.Path; 
-#elif LINUX
-                string osConfigDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-                if (String.IsNullOrEmpty(osConfigDir))
+#else
+                if (Environment.OSVersion.Platform == PlatformID.MacOSX)
                 {
-                    osConfigDir = Environment.GetEnvironmentVariable("HOME");
+                    string osConfigDir = Environment.GetEnvironmentVariable("HOME");
                     if (String.IsNullOrEmpty(osConfigDir))
                     {
                         return "."; // Oh well.
                     }
-                    osConfigDir += "/.local/share";
+                    osConfigDir += "/Library/Application Support";
+                    return osConfigDir;
                 }
-                return osConfigDir;
-#elif MONOMAC
-                string osConfigDir = Environment.GetEnvironmentVariable("HOME");
-                if (String.IsNullOrEmpty(osConfigDir))
+                else if (Environment.OSVersion.Platform == PlatformID.Unix)
                 {
-                    return "."; // Oh well.
+                    // Assuming a non-OSX Unix platform will follow the XDG. Which it should.
+                    string osConfigDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                    if (String.IsNullOrEmpty(osConfigDir))
+                    {
+                        osConfigDir = Environment.GetEnvironmentVariable("HOME");
+                        if (String.IsNullOrEmpty(osConfigDir))
+                        {
+                            return "."; // Oh well.
+                        }
+                        osConfigDir += "/.local/share";
+                    }
+                    return osConfigDir;
                 }
-                osConfigDir += "/Library/Application Support";
-                return osConfigDir;
-#else
                 return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #endif
             }

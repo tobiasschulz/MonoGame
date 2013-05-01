@@ -113,42 +113,47 @@ namespace Microsoft.Xna.Framework.Input
             
             // Get the intended config file path.
             string osConfigFile = "";
-#if MONOMAC
-            osConfigFile += Environment.GetEnvironmentVariable("HOME");
-            if (osConfigFile.Length == 0)
-            {
-                osConfigFile += "MonoGameJoystick.cfg"; // Oh well.
-            }
-            else
-            {
-                osConfigFile += "/Library/Application Support/MonoGame/MonoGameJoystick.cfg";
-            }
-#elif LINUX
-            osConfigFile += Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
-            if (osConfigFile.Length == 0)
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX)
             {
                 osConfigFile += Environment.GetEnvironmentVariable("HOME");
                 if (osConfigFile.Length == 0)
                 {
-                    System.Console.WriteLine("Couldn't find XDG_CONFIG_HOME or HOME.");
-                    System.Console.WriteLine("Fall back to '.'");
                     osConfigFile += "MonoGameJoystick.cfg"; // Oh well.
                 }
                 else
                 {
-                    System.Console.WriteLine("Couldn't find XDG_CONFIG_HOME.");
-                    System.Console.WriteLine("Fall back to hardcoded ~/.config/MonoGame/.");
-                    osConfigFile += "/.config/MonoGame/MonoGameJoystick.cfg";
+                    osConfigFile += "/Library/Application Support/MonoGame/MonoGameJoystick.cfg";
+                }
+            }
+            else if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                // Assuming a non-OSX Unix platform will follow the XDG. Which it should.
+                osConfigFile += Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+                if (osConfigFile.Length == 0)
+                {
+                    osConfigFile += Environment.GetEnvironmentVariable("HOME");
+                    if (osConfigFile.Length == 0)
+                    {
+                        System.Console.WriteLine("Couldn't find XDG_CONFIG_HOME or HOME.");
+                        System.Console.WriteLine("Fall back to '.'");
+                        osConfigFile += "MonoGameJoystick.cfg"; // Oh well.
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("Couldn't find XDG_CONFIG_HOME.");
+                        System.Console.WriteLine("Fall back to hardcoded ~/.config/MonoGame/.");
+                        osConfigFile += "/.config/MonoGame/MonoGameJoystick.cfg";
+                    }
+                }
+                else
+                {
+                    osConfigFile += "/MonoGame/MonoGameJoystick.cfg";
                 }
             }
             else
             {
-                osConfigFile += "/MonoGame/MonoGameJoystick.cfg";
+                osConfigFile = "MonoGameJoystick.cfg"; // Oh well.
             }
-#else
-#warning Apologies, but I need you to implement a joystick config directory for your platform!
-            osConfigFile = "MonoGameJoystick.cfg"; // Oh well.
-#endif
             
             // Check to see if we've already got a config...
             if (File.Exists(osConfigFile))
