@@ -10,3 +10,6 @@
 [submodule "ThirdParty/Kickstart"]
 	path = ThirdParty/Kickstart
 	url = https://github.com/OutOfOrder/MonoKickstart.git
+[submodule "ThirdParty/SDL2#"]
+	path = "ThirdParty/SDL2#"
+	url = https://github.com/flibitijibibo/SDL2-CS.git
