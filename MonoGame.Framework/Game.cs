@@ -146,7 +146,7 @@ namespace Microsoft.Xna.Framework
             Platform.ViewStateChanged += Platform_ApplicationViewChanged;
 #endif
 
-#if MONOMAC || WINDOWS || LINUX
+#if SDL2
             // Set the window title.
             // TODO: Get the title from the WindowsPhoneManifest.xml for WP7 projects.
             string windowTitle = string.Empty;
@@ -515,7 +515,8 @@ namespace Microsoft.Xna.Framework
                 _suppressDraw = false;
             else
             {
-                lock (Threading.BackgroundContext)
+				// FIXME: A lock is probably smart... -flibit
+                //lock (Threading.BackgroundContext)
                 {
                     DoDraw(_gameTime);
                 }
@@ -701,9 +702,7 @@ namespace Microsoft.Xna.Framework
 
         internal void ResizeWindow(bool changed)
         {
-#if LINUX || (WINDOWS && OPENGL)
-            ((OpenTKGamePlatform)Platform).ResetWindowBounds(changed);
-#elif WINDOWS && DIRECTX
+#if WINDOWS && DIRECTX
             ((MonoGame.Framework.WinFormsGamePlatform)Platform).ResetWindowBounds(changed);
 #endif
         }

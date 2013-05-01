@@ -164,7 +164,7 @@ namespace Microsoft.Xna.Framework.Media
             {
                 Dispose(); // We need to start from the beginning, don't we? :P
             }
-            
+            /*
             // Initialize the decoder.
             theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
                 _fileName,
@@ -208,13 +208,13 @@ namespace Microsoft.Xna.Framework.Media
                 FramesPerSecond = (float) frame.fps;
                 Width = (int) frame.width;
                 Height = (int) frame.height;
-            }
+            }*/
         }
         #endregion
         
         #region Disposal Method
 		public void Dispose()
-		{
+		{/*
             // Stop and unassign the decoder.
             if (theoraDecoder != IntPtr.Zero)
             {
@@ -235,7 +235,7 @@ namespace Microsoft.Xna.Framework.Media
                 TheoraPlay.THEORAPLAY_freeAudio(audioStream);
                 audioStream = IntPtr.Zero;
             }
-            
+            */
             disposed = true;
 		}
         #endregion

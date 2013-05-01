@@ -1,290 +1,539 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 
+#if IOS || WINDOWS || LINUX
+using System.Windows.Forms;
+using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
-using OpenTK;
+#elif MONOMAC
+using MonoMac.OpenAL;
+#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {
-	internal sealed class OpenALSoundController : IDisposable
-	{
-        private static OpenALSoundController _instance = null;
-        private IntPtr _device;
-        private ContextHandle _context;
-		//int outputSource;
-		//int[] buffers;
-        private AlcError _lastOpenALError;
-        private int[] allSourcesArray;
-        private const int MAX_NUMBER_OF_SOURCES = 32;
-        private const double PREFERRED_MIX_RATE = 44100;
-        private List<int> availableSourcesCollection;
-        private List<OALSoundBuffer> inUseSourcesCollection;
-        private List<OALSoundBuffer> playingSourcesCollection;
-        private List<OALSoundBuffer> purgeMe;
-        private bool _bSoundAvailable = false;
+    internal sealed class OpenALSoundController : IDisposable
+    {
+        const int PreallocatedBuffers = 256;
+        const int PreallocatedSources = 64;
+        const int ExpandSize = 32;
+        const float BufferTimeout = 10; // in seconds
 
-        /// <summary>
-        /// Sets up the hardware resources used by the controller.
-        /// </summary>
-		private OpenALSoundController ()
-		{
-            if (!OpenSoundController())
-            {
-                return;
-            }
-            // We have hardware here and it is ready
-            _bSoundAvailable = true;
-
-
-			allSourcesArray = new int[MAX_NUMBER_OF_SOURCES];
-			AL.GenSources (allSourcesArray);
-
-			availableSourcesCollection = new List<int> ();
-			inUseSourcesCollection = new List<OALSoundBuffer> ();
-			playingSourcesCollection = new List<OALSoundBuffer> ();
-            purgeMe = new List<OALSoundBuffer> ();
-
-
-			for (int x=0; x < MAX_NUMBER_OF_SOURCES; x++) {
-				availableSourcesCollection.Add (allSourcesArray [x]);
-			}
-		}
-
-        /// <summary>
-        /// Open the sound device, sets up an audio context, and makes the new context
-        /// the current context. Note that this method will stop the playback of
-        /// music that was running prior to the game start. If any error occurs, then
-        /// the state of the controller is reset.
-        /// </summary>
-        /// <returns>True if the sound controller was setup, and false if not.</returns>
-        private bool OpenSoundController()
+        class BufferAllocation
         {
-#if IOS
-			alcMacOSXMixerOutputRate(PREFERRED_MIX_RATE);
-#endif
-            _device = Alc.OpenDevice(string.Empty);
-            if (CheckALError("Could not open AL device"))
-            {
-                return(false);
-            }
-            if (_device != IntPtr.Zero)
-            {
-                int[] attribute = new int[0];
-                _context = Alc.CreateContext(_device, attribute);
-                if (CheckALError("Could not open AL context"))
-                {
-                    CleanUpOpenAL();
-                    return(false);
-                }
+            public int BufferId;
+            public int SourceCount;
+            public float SinceUnused;
+        }
 
-                if (_context != ContextHandle.Zero)
+        static OpenALSoundController instance = new OpenALSoundController();
+        public static OpenALSoundController Instance
+        {
+            get { return instance; }
+        }
+
+        readonly AudioContext context;
+
+        readonly ConcurrentStack<int> freeSources;
+        readonly ConcurrentStack<int> freeBuffers;
+        readonly Dictionary<SoundEffect, BufferAllocation> allocatedBuffers;
+
+        readonly HashSet<int> filteredSources;
+        readonly List<SoundEffectInstance> activeSoundEffects;
+
+        static readonly ReaderWriterLockSlim ActiveLock = new ReaderWriterLockSlim();
+        static readonly ReaderWriterLockSlim FilteringLock = new ReaderWriterLockSlim();
+        static readonly ReaderWriterLockSlim AllocationsLock = new ReaderWriterLockSlim();
+
+        readonly int filterId;
+
+        int totalSources, totalBuffers;
+        float lowpassGainHf = 1;
+
+        static void Log(string message)
+        {
+            try
+            {
+                Console.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
+                using (var stream = File.Open("Debug Log.txt", FileMode.Append))
                 {
-                    Alc.MakeContextCurrent(_context);
-                    if (CheckALError("Could not make AL context current"))
+                    using (var writer = new StreamWriter(stream))
                     {
-                        CleanUpOpenAL();
-                        return(false);
-                    }
-                    return (true);
-                }
-            }
-            return (false);
-        }
-
-		public static OpenALSoundController GetInstance {
-			get {
-				if (_instance == null)
-					_instance = new OpenALSoundController ();
-				return _instance;
-			}
-
-		}
-
-        /// <summary>
-        /// Checks the error state of the OpenAL driver. If a value that is not AlcError.NoError
-        /// is returned, then the operation message and the error code is output to the console.
-        /// </summary>
-        /// <param name="operation">the operation message</param>
-        /// <returns>true if an error occurs, and false if not.</returns>
-		public bool CheckALError (string operation)
-		{
-			_lastOpenALError = Alc.GetError (_device);
-
-			if (_lastOpenALError == AlcError.NoError) {
-				return(false);
-			}
-
-			string errorFmt = "OpenAL Error: {0}";
-			Console.WriteLine (String.Format ("{0} - {1}",
-							operation,
-							//string.Format (errorFmt, Alc.GetString (_device, _lastOpenALError))));
-							string.Format (errorFmt, _lastOpenALError)));
-            return (true);
-		}
-
-        /// <summary>
-        /// Destroys the AL context and closes the device, when they exist.
-        /// </summary>
-		private void CleanUpOpenAL ()
-		{
-			Alc.MakeContextCurrent (ContextHandle.Zero);
-			if (_context != ContextHandle.Zero) {
-				Alc.DestroyContext (_context);
-				_context = ContextHandle.Zero;
-			}
-			if (_device != IntPtr.Zero) {
-				Alc.CloseDevice (_device);
-				_device = IntPtr.Zero;
-			}
-            _bSoundAvailable = false;
-		}
-
-		public void Dispose ()
-		{
-			CleanUpOpenAL ();
-		}
-
-        /// <summary>
-        /// Reserves the given sound buffer. If there are no available sources then false is
-        /// returned, otherwise true will be returned and the sound buffer can be played. If
-        /// the controller was not able to setup the hardware, then false will be returned.
-        /// </summary>
-        /// <param name="soundBuffer">The sound buffer you want to play</param>
-        /// <returns>True if the buffer can be played, and false if not.</returns>
-		public bool ReserveSource (OALSoundBuffer soundBuffer)
-		{
-            if (!_bSoundAvailable)
-            {
-                return (false);
-            }
-			int sourceNumber;
-			if (availableSourcesCollection.Count == 0) {
-
-				soundBuffer.SourceId = 0;
-				return false;
-			}
-			
-
-			sourceNumber = availableSourcesCollection.First ();
-			soundBuffer.SourceId = sourceNumber;
-			inUseSourcesCollection.Add (soundBuffer);
-
-			availableSourcesCollection.Remove (sourceNumber);
-
-			//sourceId = sourceNumber;
-			return true;
-		}
-
-		public void RecycleSource (OALSoundBuffer soundBuffer)
-		{
-            if (!_bSoundAvailable)
-            {
-                return;
-            }
-			inUseSourcesCollection.Remove (soundBuffer);
-			availableSourcesCollection.Add (soundBuffer.SourceId);
-			soundBuffer.RecycleSoundBuffer();
-		}
-
-		public void PlaySound (OALSoundBuffer soundBuffer)
-        {
-            if (!_bSoundAvailable)
-            {
-                return;
-            }
-            lock (playingSourcesCollection)
-            {
-                playingSourcesCollection.Add (soundBuffer);
-            }
-			AL.SourcePlay (soundBuffer.SourceId);
-		}
-
-		public void StopSound (OALSoundBuffer soundBuffer)
-        {
-            if (!_bSoundAvailable)
-            {
-                return;
-            }
-            AL.SourceStop(soundBuffer.SourceId);
-
-            AL.Source (soundBuffer.SourceId, ALSourcei.Buffer, 0);
-            lock (playingSourcesCollection) {
-                playingSourcesCollection.Remove (soundBuffer);
-            }
-            RecycleSource (soundBuffer);
-		}
-
-		public void PauseSound (OALSoundBuffer soundBuffer)
-		{
-			AL.SourcePause (soundBuffer.SourceId);
-		}
-
-        public void ResumeSound(OALSoundBuffer soundBuffer)
-        {
-            AL.SourcePlay(soundBuffer.SourceId);
-        }
-
-		public bool IsState (OALSoundBuffer soundBuffer, int state)
-		{
-			int sourceState;
-
-			AL.GetSource (soundBuffer.SourceId, ALGetSourcei.SourceState, out sourceState);
-
-			if (state == sourceState) {
-				return true;
-			}
-
-			return false;
-		}
-
-		public double SourceCurrentPosition (int sourceId)
-		{
-			int pos;
-			AL.GetSource (sourceId, ALGetSourcei.SampleOffset, out pos);
-			return pos;
-		}
-
-        /// <summary>
-        /// Called repeatedly, this method cleans up the state of the management lists. This method
-        /// will also lock on the playingSourcesCollection. Sources that are stopped will be recycled
-        /// using the RecycleSource method.
-        /// </summary>
-		public void Update ()
-        {
-            if (!_bSoundAvailable)
-            {
-                return;
-            }
-            purgeMe.Clear();
-
-            ALSourceState state;
-            lock (playingSourcesCollection) {
-                for (int i=playingSourcesCollection.Count-1; i >= 0; i--) {
-                    var soundBuffer = playingSourcesCollection [i];
-                    state = AL.GetSourceState (soundBuffer.SourceId);
-                    if (state == ALSourceState.Stopped) {
-                        purgeMe.Add (soundBuffer);
-                        playingSourcesCollection.RemoveAt (i);
+                        writer.WriteLine("({0}) [{1}] {2}",
+                            DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
                     }
                 }
             }
-            foreach (var soundBuffer in purgeMe) {
-                AL.Source (soundBuffer.SourceId, ALSourcei.Buffer, 0);
-                RecycleSource (soundBuffer);
+            catch (Exception ex)
+            {
+                // NOT THAT BIG A DEAL GUYS
             }
-
         }
 
-#if IOS
-		public const string OpenALLibrary = "/System/Library/Frameworks/OpenAL.framework/OpenAL";
+        private OpenALSoundController()
+        {
+			// This is great on Windows, OSX/Linux not so much. -flibit
+			/*
+            if (File.Exists("openal32.dll"))
+                try
+                {
+                    File.SetAttributes("openal32.dll", FileAttributes.Normal);
+                    File.Delete("openal32.dll");
+                }
+                catch (Exception ex)
+                {
+                    // no big deal, we either already have the right openal32.dll file, or we're about to create it
+                    Log("Exception while deleting openal32.dll, ignored : " + ex);
+                }
 
-		[DllImport(OpenALLibrary, EntryPoint = "alcMacOSXMixerOutputRate")]
-		static extern void alcMacOSXMixerOutputRate (double rate); // caution
-#endif
+            if (!File.Exists("openal32.dll"))
+            {
+                try
+                {
+                    AlcSoft32.CrashTest();
+                    File.Copy("soft_oal_32.dll", "openal32.dll");
+                    Log("32-bit OpenAL-Soft will be used");
+                }
+                catch (AccessViolationException)
+                {
+                    MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                    "(see debug log for more details)", "OpenAL Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    throw;
+                }
+                catch (BadImageFormatException)
+                {
+                    try
+                    {
+                        AlcSoft64.CrashTest();
+                        File.Copy("soft_oal_64.dll", "openal32.dll");
+                        Log("64-bit OpenAL-Soft will be used");
+                    }
+                    catch (AccessViolationException)
+                    {
+                        MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                        "(see debug log for more details)", "OpenAL Error",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                        "(see debug log for more details)", "OpenAL Error",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
+                    }
+                }
+            }
+            */
 
-	}
+            try
+            {
+                context = new AudioContext();
+            }
+            catch (Exception ex)
+            {
+				/*
+                if (ex is DllNotFoundException || (
+                        (ex is TypeInitializationException) &&
+                        (ex as TypeInitializationException).InnerException is DllNotFoundException))
+                {
+                    Log("Last error in enumerator is " + AudioDeviceEnumerator.LastError);
+                }
+
+                MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
+                                "(see debug log for more details)", "OpenAL Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+				*/
+				throw;
+            }
+
+            // log how many sources we have access to
+            var attributesSize = new int[1];
+            var device = Alc.GetContextsDevice(Alc.GetCurrentContext());
+            Alc.GetInteger(device, AlcGetInteger.AttributesSize, 1, attributesSize);
+            var attributes = new int[attributesSize[0]];
+            Alc.GetInteger(device, AlcGetInteger.AllAttributes, attributesSize[0], attributes);
+            for (int i = 0; i < attributes.Length; i++)
+                if (attributes[i] == (int) AlcContextAttributes.MonoSources)
+                {
+                    Log("Available mono sources : " + attributes[i + 1]);
+                    break;
+                }
+
+            filterId = ALHelper.Efx.GenFilter();
+            ALHelper.Efx.Filter(filterId, EfxFilteri.FilterType, (int)EfxFilterType.Lowpass);
+            ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGain, 1);
+            ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
+            ALHelper.Check();
+
+            AL.DistanceModel(ALDistanceModel.InverseDistanceClamped);
+            ALHelper.Check();
+
+            freeBuffers = new ConcurrentStack<int>();
+            ExpandBuffers(PreallocatedBuffers);
+
+            allocatedBuffers = new Dictionary<SoundEffect, BufferAllocation>();
+            staleAllocations = new List<KeyValuePair<SoundEffect, BufferAllocation>>();
+
+            filteredSources = new HashSet<int>();
+            activeSoundEffects = new List<SoundEffectInstance>();
+            freeSources = new ConcurrentStack<int>();
+            ExpandSources(PreallocatedSources);
+        }
+
+        public int RegisterSfxInstance(SoundEffectInstance instance, bool forceNoFilter = false)
+        {
+            ActiveLock.EnterWriteLock();
+            activeSoundEffects.Add(instance);
+            ActiveLock.ExitWriteLock();
+
+            var doFilter = !forceNoFilter &&
+                           !instance.SoundEffect.Name.Contains("Ui") && !instance.SoundEffect.Name.Contains("Warp") &&
+                           !instance.SoundEffect.Name.Contains("Zoom") && !instance.SoundEffect.Name.Contains("Trixel");
+            return TakeSourceFor(instance.SoundEffect, doFilter);
+        }
+
+        readonly List<KeyValuePair<SoundEffect, BufferAllocation>> staleAllocations;
+        public void Update(GameTime gameTime)
+        {
+            ActiveLock.EnterUpgradeableReadLock();
+            for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
+            {
+                var sfx = activeSoundEffects[i];
+                if (sfx.RefreshState() || sfx.IsDisposed)
+                {
+                    ActiveLock.EnterWriteLock();
+                    if (!sfx.IsDisposed) sfx.Dispose();
+                    activeSoundEffects.RemoveAt(i);
+                    ActiveLock.ExitWriteLock();
+                }
+            }
+            ActiveLock.ExitUpgradeableReadLock();
+
+            var elapsedSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            AllocationsLock.EnterUpgradeableReadLock();
+            foreach (var kvp in allocatedBuffers)
+                if (kvp.Value.SourceCount == 0)
+                {
+                    kvp.Value.SinceUnused += elapsedSeconds;
+                    if (kvp.Value.SinceUnused >= BufferTimeout)
+                        staleAllocations.Add(kvp);
+                }
+
+            foreach (var kvp in staleAllocations)
+            {
+                //Trace.WriteLine("[OpenAL] Deleting buffer for " + kvp.Key.Name);
+                AllocationsLock.EnterWriteLock();
+                allocatedBuffers.Remove(kvp.Key);
+                AllocationsLock.ExitWriteLock();
+                freeBuffers.Push(kvp.Value.BufferId);
+            }
+            AllocationsLock.ExitUpgradeableReadLock();
+
+            TidySources();
+            TidyBuffers();
+
+            staleAllocations.Clear();
+        }
+
+//        public void RegisterSoundEffect(SoundEffect soundEffect)
+//        {
+//            if (allocatedBuffers.ContainsKey(soundEffect)) return;
+//
+//            if (freeBuffers.Count == 0) ExpandBuffers();
+//            Trace.WriteLine("[OpenAL] Pre-allocating buffer for " + soundEffect.Name);
+//            BufferAllocation allocation;
+//            allocatedBuffers.Add(soundEffect, allocation = new BufferAllocation { BufferId = freeBuffers.Pop(), SinceUnused = -1 });
+//            //lock (bufferDataMutex)
+//            AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
+//            ALHelper.Check();
+//        }
+
+        public void DestroySoundEffect(SoundEffect soundEffect)
+        {
+            BufferAllocation allocation;
+            AllocationsLock.EnterUpgradeableReadLock();
+            if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
+            {
+                AllocationsLock.ExitUpgradeableReadLock();
+                return;
+            }
+
+            bool foundActive = false;
+            ActiveLock.EnterUpgradeableReadLock();
+            for (int i = activeSoundEffects.Count - 1; i >= 0; i--)
+            {
+                var sfx = activeSoundEffects[i];
+                if (sfx.SoundEffect == soundEffect)
+                {
+                    ActiveLock.EnterWriteLock();
+                    if (!sfx.IsDisposed)
+                    {
+                        foundActive = true;
+                        sfx.Stop();
+                        sfx.Dispose();
+                    }
+                    activeSoundEffects.RemoveAt(i);
+                    ActiveLock.ExitWriteLock();
+                }
+            }
+            ActiveLock.ExitUpgradeableReadLock();
+
+            if (foundActive)
+                Trace.WriteLine("[OpenAL] Delete active sources & buffer for " + soundEffect.Name);
+
+            Debug.Assert(allocation.SourceCount == 0);
+
+            AllocationsLock.EnterWriteLock();
+            allocatedBuffers.Remove(soundEffect);
+            AllocationsLock.ExitWriteLock();
+
+            freeBuffers.Push(allocation.BufferId);
+            AllocationsLock.ExitUpgradeableReadLock();
+        }
+
+        int TakeSourceFor(SoundEffect soundEffect, bool filter = false)
+        {
+            int sourceId;
+            while (!freeSources.TryPop(out sourceId))
+                ExpandSources();
+
+            if (filter && ALHelper.Efx.IsInitialized)
+            {
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
+                ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+                FilteringLock.EnterWriteLock();
+                filteredSources.Add(sourceId);
+                FilteringLock.ExitWriteLock();
+            }
+
+            BufferAllocation allocation;
+            AllocationsLock.EnterUpgradeableReadLock();
+            if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
+            {
+                //Trace.WriteLine("[OpenAL] Allocating buffer for " + soundEffect.Name);
+                allocation = new BufferAllocation();
+                while (!freeBuffers.TryPop(out allocation.BufferId))
+                    ExpandBuffers();
+                AllocationsLock.EnterWriteLock();
+                allocatedBuffers.Add(soundEffect, allocation);
+                AllocationsLock.ExitWriteLock();
+                AL.BufferData(allocation.BufferId, soundEffect.Format, soundEffect._data, soundEffect.Size, soundEffect.Rate);
+                ALHelper.Check();
+            }
+            allocation.SourceCount++;
+
+            AL.BindBufferToSource(sourceId, allocation.BufferId);
+            ALHelper.Check();
+            AllocationsLock.ExitUpgradeableReadLock();
+
+            return sourceId;
+        }
+
+        public void ReturnSourceFor(SoundEffect soundEffect, int sourceId)
+        {
+            BufferAllocation allocation;
+            AllocationsLock.EnterReadLock();
+            if (!allocatedBuffers.TryGetValue(soundEffect, out allocation))
+                throw new InvalidOperationException(soundEffect.Name + " not found");
+
+            allocation.SourceCount--;
+            if (allocation.SourceCount == 0) allocation.SinceUnused = 0;
+            Debug.Assert(allocation.SourceCount >= 0);
+            AllocationsLock.ExitReadLock();
+
+            ReturnSource(sourceId);
+        }
+
+        public int[] TakeBuffers(int count)
+        {
+            var buffersIds = new int[count];
+            int popped = 0;
+            while ((popped += freeBuffers.TryPopRange(buffersIds, popped, count - popped)) < count)
+                ExpandBuffers();
+
+            return buffersIds;
+        }
+
+        public int TakeSource()
+        {
+            int sourceId;
+            while (!freeSources.TryPop(out sourceId))
+                ExpandSources();
+
+            if (ALHelper.Efx.IsInitialized)
+            {
+                FilteringLock.EnterWriteLock();
+                filteredSources.Add(sourceId);
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
+                ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+                FilteringLock.ExitWriteLock();
+            }
+
+            return sourceId;
+        }
+
+        public void SetSourceFiltered(int sourceId, bool filtered)
+        {
+            if (!ALHelper.Efx.IsInitialized) return;
+
+            FilteringLock.EnterWriteLock();
+            if (!filtered && filteredSources.Remove(sourceId))
+            {
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
+                ALHelper.Efx.BindFilterToSource(sourceId, 0);
+            }
+            else if (filtered && !filteredSources.Contains(sourceId))
+            {
+                filteredSources.Add(sourceId);
+                ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(lowpassGainHf, 0, 1));
+                ALHelper.Efx.BindFilterToSource(sourceId, filterId);
+            }
+            FilteringLock.ExitWriteLock();
+        }
+
+        public void ReturnBuffers(int[] bufferIds)
+        {
+            freeBuffers.PushRange(bufferIds);
+
+            //AL.DeleteBuffers(bufferIds);
+            //freeBuffers.PushRange(AL.GenBuffers(bufferIds.Length));
+
+            //Console.WriteLine("Returned " + bufferIds.Length + " buffers, now " + freeBuffers.Count);
+        }
+
+        public void ReturnSource(int sourceId)
+        {
+            ResetSource(sourceId);
+            
+            //AL.DeleteSource(sourceId);
+            //freeSources.Push(AL.GenSource());
+        }
+
+        void ResetSource(int sourceId)
+        {
+            AL.Source(sourceId, ALSourceb.Looping, false);
+            ALHelper.Check();
+            AL.Source(sourceId, ALSource3f.Position, 0, 0.0f, 0.1f);
+            ALHelper.Check();
+            AL.Source(sourceId, ALSourcef.Pitch, 1);
+            ALHelper.Check();
+            AL.Source(sourceId, ALSourcef.Gain, 1);
+            ALHelper.Check();
+            AL.SourceStop(sourceId);
+            ALHelper.Check();
+            AL.Source(sourceId, ALSourcei.Buffer, 0);
+            ALHelper.Check();
+
+            if (ALHelper.Efx.IsInitialized)
+            {
+                FilteringLock.EnterWriteLock();
+                if (filteredSources.Remove(sourceId))
+                    ALHelper.Efx.BindFilterToSource(sourceId, 0);
+                FilteringLock.ExitWriteLock();
+            }
+
+            ALHelper.Check();
+
+            freeSources.Push(sourceId);
+        }
+
+        void ExpandBuffers(int expandSize = ExpandSize)
+        {
+            totalBuffers += expandSize;
+            Trace.WriteLine("[OpenAL] Expanding buffers to " + totalBuffers);
+
+            var newBuffers = AL.GenBuffers(expandSize);
+            ALHelper.Check();
+
+            if (ALHelper.XRam.IsInitialized)
+            {
+                ALHelper.XRam.SetBufferMode(newBuffers.Length, ref newBuffers[0], XRamExtension.XRamStorage.Hardware);
+                ALHelper.Check();
+            }
+            Array.Reverse(newBuffers);
+            freeBuffers.PushRange(newBuffers);
+        }
+
+        void ExpandSources(int expandSize = ExpandSize)
+        {
+            totalSources += expandSize;
+            Trace.WriteLine("[OpenAL] Expanding sources to " + totalSources);
+
+            var newSources = AL.GenSources(expandSize);
+            ALHelper.Check();
+
+            Array.Reverse(newSources);
+            freeSources.PushRange(newSources);
+        }
+
+        public float LowPassHFGain
+        {
+            set
+            {
+                if (ALHelper.Efx.IsInitialized)
+                {
+                    FilteringLock.EnterReadLock();
+                    foreach (var s in filteredSources)
+                    {
+                        ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, MathHelper.Clamp(value, 0, 1));
+                        ALHelper.Efx.BindFilterToSource(s, filterId);
+                        ALHelper.Check();
+                    }
+                    FilteringLock.ExitReadLock();
+
+                    lowpassGainHf = value;
+                }
+            }
+        }
+
+        void TidySources()
+        {
+            bool tidiedUp = false;
+            int sourceId;
+            if (freeSources.Count > 2 * PreallocatedSources && freeSources.TryPop(out sourceId))
+            {
+                AL.DeleteSource(sourceId);
+                ALHelper.Check();
+                totalSources--;
+                tidiedUp = true;
+            }
+            if (tidiedUp)
+                Trace.WriteLine("[OpenAL] Tidied sources down to " + totalSources);
+        }
+        void TidyBuffers()
+        {
+            bool tidiedUp = false;
+            int bufferId;
+            if (freeBuffers.Count > 2 * PreallocatedBuffers && freeBuffers.TryPop(out bufferId))
+            {
+                AL.DeleteBuffer(bufferId);
+                ALHelper.Check();
+                totalBuffers--;
+                tidiedUp = true;
+            }
+            if (tidiedUp)
+                Trace.WriteLine("[OpenAL] Tidied buffers down to " + totalBuffers);
+        }
+
+        public void Dispose()
+        {
+            if (ALHelper.Efx.IsInitialized)
+                ALHelper.Efx.DeleteFilter(filterId);
+
+            int id;
+            while (freeSources.TryPop(out id)) AL.DeleteSource(id);
+            while (freeBuffers.TryPop(out id)) AL.DeleteBuffer(id);
+
+            context.Dispose();
+            instance = null;
+        }
+    }
 }
 

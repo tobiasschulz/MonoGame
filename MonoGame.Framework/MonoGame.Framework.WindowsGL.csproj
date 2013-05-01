@@ -17,8 +17,6 @@
     <UpgradeBackupLocation />
     <NoStdLib>False</NoStdLib>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugType>full</DebugType>
@@ -28,7 +26,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>TRACE;WINDOWS;OPENGL;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;SDL2;OPENGL</DefineConstants>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -37,7 +35,7 @@
     <OutputPath>bin\WindowsGL\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DefineConstants>TRACE;WINDOWS;OPENGL</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;SDL2;OPENGL</DefineConstants>
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -51,7 +49,7 @@
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <BaseAddress>4194304</BaseAddress>
-    <DefineConstants>TRACE;WINDOWS;OPENGL</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;SDL2;OPENGL</DefineConstants>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -63,7 +61,7 @@
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <BaseAddress>4194304</BaseAddress>
-    <DefineConstants>TRACE;WINDOWS;OPENGL</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;SDL2;OPENGL</DefineConstants>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -83,17 +81,6 @@
     <DefineConstants>TRACE;WINDOWS;OPENGL</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\..\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.XInput, Version=2.4.2.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.XInput.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web.Services" />
@@ -103,20 +90,16 @@
     <Reference Include="Tao.Sdl">
       <HintPath>..\ThirdParty\GamepadConfig\Tao.Sdl.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XInput">
+      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.XInput.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WindowsHelperAccessibilityKeys.cs" />
-    <Compile Include="Desktop\Audio\OggStream.cs" />
     <Compile Include="Content\ContentReaders\Texture3DReader.cs" />
-    <Compile Include="Desktop\Input\Axis.cs" />
-    <Compile Include="Desktop\Input\Capabilities.cs" />
-    <Compile Include="Desktop\Input\DPad.cs" />
-    <Compile Include="Desktop\Input\SdlGamePad.cs" />
-    <Compile Include="Desktop\Input\Input.cs" />
-    <Compile Include="Desktop\Input\Joystick.cs" />
-    <Compile Include="Desktop\Input\PadConfig.cs" />
-    <Compile Include="Desktop\Input\Settings.cs" />
-    <Compile Include="Desktop\Input\Stick.cs" />
     <Compile Include="Graphics\IRenderTarget.cs" />
     <Compile Include="Graphics\RenderTargetCube.cs" />
     <Compile Include="Graphics\GraphicsCapabilities.cs" />
@@ -143,10 +126,7 @@
     <Compile Include="Content\ContentReaders\VertexBufferReader.cs" />
     <Compile Include="Content\ContentReaders\VertexDeclarationReader.cs" />
     <Compile Include="Content\ResourceContentManager.cs" />
-    <Compile Include="Desktop\Audio\SoundEffect.cs" />
-    <Compile Include="Desktop\Audio\SoundEffectInstance.cs" />
     <Compile Include="Graphics\Shader\ConstantBufferCollection.cs" />
-    <Compile Include="Input\Mouse.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GamePlatform.cs" />
     <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
@@ -310,7 +290,6 @@
     <Compile Include="Media\MediaState.cs" />
     <Compile Include="Media\Playlist.cs" />
     <Compile Include="Media\PlaylistCollection.cs" />
-    <Compile Include="Media\Song.cs" />
     <Compile Include="Media\SongCollection.cs" />
     <Compile Include="Net\AvailableNetworkSession.cs" />
     <Compile Include="Net\AvailableNetworkSessionCollection.cs" />
@@ -344,17 +323,6 @@
     <Compile Include="Storage\StorageDeviceHelper.cs" />
     <Compile Include="TextInputEventArgs.cs" />
     <Compile Include="Utilities\Hash.cs" />
-    <Compile Include="Windows\Audio\AudioLoader.cs" />
-    <Compile Include="Windows\Audio\Sound.cs" />
-    <Compile Include="Windows\Content\ContentReaders\SoundEffectReader.cs" />
-    <Compile Include="Windows\GamerServices\Guide.cs" />
-    <Compile Include="Windows\GamerServices\MonoGameGamerServicesHelper.cs" />
-    <Compile Include="Windows\GamerServices\SignedInGamer.cs" />
-    <Compile Include="Windows\Input\GamePad.cs" />
-    <Compile Include="Windows\Input\KeyboardUtil.cs" />
-    <Compile Include="Windows\Media\Video.cs" />
-    <Compile Include="Desktop\OpenTKGamePlatform.cs" />
-    <Compile Include="Desktop\OpenTKGameWindow.cs" />
     <Compile Include="BatteryChargeStatus.cs" />
     <Compile Include="BoundingBox.cs" />
     <Compile Include="BoundingFrustum.cs" />
@@ -465,8 +433,6 @@
     <Compile Include="Graphics\Vertices\VertexElementColor.cs" />
     <Compile Include="Audio\XactClip.cs" />
     <Compile Include="Audio\XactSound.cs" />
-    <Compile Include="Desktop\Audio\OALSoundBuffer.cs" />
-    <Compile Include="Desktop\Audio\OpenALSoundController.cs" />
     <Compile Include="Content\ContentReaders\EffectMaterialReader.cs" />
     <Compile Include="Graphics\Effect\EffectMaterial.cs" />
     <Compile Include="Graphics\OcclusionQuery.cs" />
@@ -475,6 +441,31 @@
     <Compile Include="Media\MediaSource.cs" />
     <Compile Include="FrameworkDispatcher.cs" />
     <Compile Include="Audio\MSADPCMToPCM.cs" />
+    <Compile Include="SDL2\SDL2_GamePlatform.cs" />
+    <Compile Include="SDL2\SDL2_GameWindow.cs" />
+    <Compile Include="SDL2\Audio\AudioLoader.cs" />
+    <Compile Include="SDL2\Audio\OALSoundBuffer.cs" />
+    <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
+    <Compile Include="SDL2\Audio\Sound.cs" />
+    <Compile Include="SDL2\Audio\SoundEffect.cs" />
+    <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
+    <Compile Include="SDL2\GamerServices\Guide.cs" />
+    <Compile Include="SDL2\GamerServices\MonoGameGamerServicesHelper.cs" />
+    <Compile Include="SDL2\GamerServices\SignedInGamer.cs" />
+    <Compile Include="SDL2\Input\Axis.cs" />
+    <Compile Include="SDL2\Input\Capabilities.cs" />
+    <Compile Include="SDL2\Input\DPad.cs" />
+    <Compile Include="SDL2\Input\GamePad.cs" />
+    <Compile Include="SDL2\Input\Input.cs" />
+    <Compile Include="SDL2\Input\Joystick.cs" />
+    <Compile Include="SDL2\Input\PadConfig.cs" />
+    <Compile Include="SDL2\Input\SDL2_KeyboardUtil.cs" />
+    <Compile Include="SDL2\Input\SDL2_Mouse.cs" />
+    <Compile Include="SDL2\Input\Settings.cs" />
+    <Compile Include="SDL2\Input\Stick.cs" />
+    <Compile Include="SDL2\Media\Song.cs" />
+    <Compile Include="SDL2\Audio\OggStream.cs" />
+    <Compile Include="SDL2\Media\Video.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -484,12 +475,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\NVorbis\NVorbis\NVorbis.csproj">
-      <Project>{A372E591-DFEF-49C4-9C82-98C4361EFCCD}</Project>
-      <Name>NVorbis</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Graphics\Effect\Resources\AlphaTestEffect.ogl.mgfxo" />
     <EmbeddedResource Include="Graphics\Effect\Resources\BasicEffect.ogl.mgfxo" />
@@ -503,5 +488,18 @@
       <Link>SDL.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ThirdParty\SDL2#\SDL2#.csproj">
+      <Project>{85480198-8711-4355-830E-72FD794AD3F6}</Project>
+      <Name>SDL2#</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ThirdParty\NVorbis\NVorbis\NVorbis.csproj">
+      <Project>{A372E591-DFEF-49C4-9C82-98C4361EFCCD}</Project>
+      <Name>NVorbis</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SDL2\" />
   </ItemGroup>
 </Project>
