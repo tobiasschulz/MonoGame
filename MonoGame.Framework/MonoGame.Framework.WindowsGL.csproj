@@ -457,6 +457,7 @@
     <Compile Include="SDL2\Media\Song.cs" />
     <Compile Include="SDL2\Audio\OggStream.cs" />
     <Compile Include="SDL2\Media\Video.cs" />
+    <Compile Include="SDL2\Input\SdlGamePad.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
