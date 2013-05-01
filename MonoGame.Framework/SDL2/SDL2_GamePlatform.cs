@@ -129,8 +129,9 @@ namespace Microsoft.Xna.Framework
 			soundControllerInstance = OpenALSoundController.Instance;
             
             // Initialize SDL2_mixer for Song playback
-            SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
-            SDL_mixer.Mix_OpenAudio(44100, SDL.AUDIO_S16SYS, 2, 1024);
+			// Not for Fez! -flibit
+            //SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
+            //SDL_mixer.Mix_OpenAudio(44100, SDL.AUDIO_S16SYS, 2, 1024);
         }
 
 
@@ -153,7 +154,8 @@ namespace Microsoft.Xna.Framework
             INTERNAL_window.INTERNAL_Destroy();
             
             // Close SDL2_mixer
-            SDL_mixer.Mix_CloseAudio();
+			// Not for Fez! -flibit
+            //SDL_mixer.Mix_CloseAudio();
 			
 			soundControllerInstance.Dispose();
         }
