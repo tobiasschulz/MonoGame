@@ -1,7 +1,7 @@
-#region License
+﻿#region License
 /*
 Microsoft Public License (Ms-PL)
-MonoGame - Copyright � 2009 The MonoGame Team
+MonoGame - Copyright © 2009 The MonoGame Team
 
 All rights reserved.
 
@@ -42,9 +42,7 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif GLES
+#if GLES
 using OpenTK.Graphics.ES20;
 #elif OPENGL
 using OpenTK.Graphics.OpenGL;
@@ -86,7 +84,7 @@ namespace Microsoft.Xna.Framework
 
             _supportedOrientations = DisplayOrientation.Default;
 
-#if WINDOWS || MONOMAC || LINUX
+#if SDL2
             _preferredBackBufferHeight = DefaultBackBufferHeight;
             _preferredBackBufferWidth = DefaultBackBufferWidth;
 #else
@@ -159,7 +157,6 @@ namespace Microsoft.Xna.Framework
         public void OnDeviceReset(EventArgs e)
         {
             Raise(DeviceReset, e);
-            GraphicsDevice.OnDeviceReset();
         }
 
         // FIXME: Why does the GraphicsDeviceManager not know enough about the
@@ -265,15 +262,11 @@ namespace Microsoft.Xna.Framework
             _graphicsDevice.ApplyRenderTargets(null);
 
             _game.ResizeWindow(false);
-
-#elif WINDOWS || LINUX
-            _game.ResizeWindow(false);
-#elif MONOMAC
-            _graphicsDevice.PresentationParameters.IsFullScreen = _wantFullScreen;
-
-            // TODO: Implement multisampling (aka anti-alising) for all platforms!
-
-			_game.applyChanges(this);
+#elif SDL2
+            SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
+            platform.ResetWindow(_wantFullScreen);
+            // FIXME: HACK! Do this again. Wait, why do we need to do this?!
+            platform.ResetWindow(_wantFullScreen);
 #else
 
 #if ANDROID
@@ -339,22 +332,19 @@ namespace Microsoft.Xna.Framework
             _graphicsDevice.Initialize();
 #else
 
-#if MONOMAC
-            _graphicsDevice.PresentationParameters.IsFullScreen = _wantFullScreen;
-#elif LINUX
+#if SDL2
+            // It's bad practice to start fullscreen.
             _graphicsDevice.PresentationParameters.IsFullScreen = false;
 #else
             // Set "full screen"  as default
             _graphicsDevice.PresentationParameters.IsFullScreen = true;
-#endif // MONOMAC
+#endif // SDL2
 
-            // TODO: Implement multisampling (aka anti-alising) for all platforms!
+            // TODO: Implement multisampling (aka anti-aliasing) for all platforms!
 
             _graphicsDevice.Initialize();
 
-#if !MONOMAC
             ApplyChanges();
-#endif
 
 #endif // WINDOWS || WINRT
 
@@ -371,6 +361,18 @@ namespace Microsoft.Xna.Framework
         public void ToggleFullScreen()
         {
             IsFullScreen = !IsFullScreen;
+#if SDL2
+            // FIXME: Shouldn't it be this way on every platform?
+            SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
+            if (IsFullScreen)
+            {
+                platform.EnterFullScreen();
+            }
+            else
+            {
+                platform.ExitFullScreen();
+            }
+#endif // SDL2
         }
 
 #if WINDOWS_STOREAPP
@@ -421,7 +423,10 @@ namespace Microsoft.Xna.Framework
         internal void ForceSetFullScreen()
         {
             if (IsFullScreen)
+			{
+				Game.Activity.Window.ClearFlags(Android.Views.WindowManagerFlags.ForceNotFullscreen);
                 Game.Activity.Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
+			}
             else
                 Game.Activity.Window.SetFlags(WindowManagerFlags.ForceNotFullscreen, WindowManagerFlags.ForceNotFullscreen);
         }
@@ -491,7 +496,7 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-#if LINUX
+#if SDL2
                 return _game.Platform.VSyncEnabled;
 #else
                 return _synchronizedWithVerticalRetrace;
@@ -499,7 +504,7 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
-#if LINUX
+#if SDL2
                 // TODO: I'm pretty sure this shouldn't occur until ApplyChanges().
                 _game.Platform.VSyncEnabled = value;
 #else
