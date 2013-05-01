@@ -1297,7 +1297,7 @@ namespace Microsoft.Xna.Framework.Graphics
                                                     {
                         if (this.glRenderTargetFrameBuffer > 0)
                         {
-                            GL.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
+                            GraphicsExtensions.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
                             GraphicsExtensions.CheckGLError();
                         }
                     });
@@ -1452,7 +1452,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // on resize, this is necessary so it gets re-generated
             if (this.glRenderTargetFrameBuffer > 0)
             {
-                GL.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
+                GraphicsExtensions.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
                 GraphicsExtensions.CheckGLError();
 
                 glRenderTargetFrameBuffer = 0;

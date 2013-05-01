@@ -21,7 +21,7 @@ namespace Microsoft.Xna.Framework.Audio
     {
         const int PreallocatedBuffers = 256;
         const int PreallocatedSources = 64;
-        const int ExpandSize = 16;
+        const int ExpandSize = 32;
         const float BufferTimeout = 10; // in seconds
 
         class BufferAllocation
@@ -399,6 +399,8 @@ namespace Microsoft.Xna.Framework.Audio
 
             //AL.DeleteBuffers(bufferIds);
             //freeBuffers.PushRange(AL.GenBuffers(bufferIds.Length));
+
+            //Console.WriteLine("Returned " + bufferIds.Length + " buffers, now " + freeBuffers.Count);
         }
 
         public void ReturnSource(int sourceId)
@@ -450,6 +452,7 @@ namespace Microsoft.Xna.Framework.Audio
                 ALHelper.XRam.SetBufferMode(newBuffers.Length, ref newBuffers[0], XRamExtension.XRamStorage.Hardware);
                 ALHelper.Check();
             }
+            Array.Reverse(newBuffers);
             freeBuffers.PushRange(newBuffers);
         }
 
@@ -461,6 +464,7 @@ namespace Microsoft.Xna.Framework.Audio
             var newSources = AL.GenSources(expandSize);
             ALHelper.Check();
 
+            Array.Reverse(newSources);
             freeSources.PushRange(newSources);
         }
 

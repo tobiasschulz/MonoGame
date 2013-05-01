@@ -523,6 +523,12 @@ namespace Microsoft.Xna.Framework.Audio
             int readSamples;
             decodeLock.EnterWriteLock();
             {
+                if (stream.IsDisposed)
+                {
+                    decodeLock.ExitWriteLock();
+                    return true;
+                }
+
                 readSamples = stream.Reader.ReadSamples(readSampleBuffer, 0, BufferSize);
 
                 for (int i = 0; i < readSamples; i++)
@@ -598,15 +604,17 @@ namespace Microsoft.Xna.Framework.Audio
 
                         if (stream.ProcessedBuffers == 0 && stream.bufferStack.Count == 0)
                         {
+#if DEBUG
                             if (stream.QueuedBuffers != stream.BufferCount)
                                 ALHelper.Log("Buffers were lost for " + stream.RealName + " with source " + stream.alSourceId);
+#endif
                             stream.PreparationLock.ExitReadLock();
                             continue;
                         }
-
+#if DEBUG
                         if (stream.QueuedBuffers + stream.bufferStack.Count != stream.BufferCount)
                             ALHelper.Log("Stray buffers in source for " + stream.RealName + " with source " + stream.alSourceId);
-
+#endif
                         if (stream.QueuedBuffers - stream.ProcessedBuffers > lowestPlayingBufferCount)
                         {
                             stream.PreparationLock.ExitReadLock();
