@@ -87,15 +87,6 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
-    <Reference Include="Tao.Sdl">
-      <HintPath>..\ThirdParty\GamepadConfig\Tao.Sdl.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.XInput">
-      <HintPath>..\ThirdParty\Libs\SharpDX\Windows\SharpDX.XInput.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WindowsHelperAccessibilityKeys.cs" />
