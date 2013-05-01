@@ -62,9 +62,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
-    <Reference Include="GamepadBridge">
-      <HintPath>..\ThirdParty\GamepadConfig\GamepadBridge.dll</HintPath>
-    </Reference>
     <Reference Include="MonoMac">
       <HintPath>..\ThirdParty\Libs\MonoMac.dll</HintPath>
     </Reference>
