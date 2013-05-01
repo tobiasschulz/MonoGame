@@ -685,12 +685,12 @@ namespace Microsoft.Xna.Framework.Input
         //   rightMotor:
         //     The speed of the right motor, between 0.0 and 1.0. This motor is a high-frequency
         //     motor.
-        public static bool SetVibration(PlayerIndex playerIndex, float leftMotor, float rightMotor)
+        public static void SetVibration(PlayerIndex playerIndex, Single leftMotor, Single rightMotor)
         {
             if (    haptics[(int) playerIndex] == IntPtr.Zero ||
                     SDL.SDL_HapticRumbleSupported(haptics[(int) playerIndex]) == 0  )
             {
-                return false;
+                return;
             }
             
             if (leftMotor == 0.0f && rightMotor == 0.0f)
@@ -706,7 +706,6 @@ namespace Microsoft.Xna.Framework.Input
                     uint.MaxValue // Oh my...
                 );
             }
-            return true;
         }
     }
 }

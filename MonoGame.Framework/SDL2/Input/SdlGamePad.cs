@@ -58,6 +58,11 @@ namespace Microsoft.Xna.Framework.Input
 		static bool running;		
         static bool sdl;
 
+		public static Int32 GetPadCount()
+		{
+			return SDL.SDL_NumJoysticks();
+		}
+
         static Settings settings;
         static Settings Settings
         {
@@ -241,7 +246,7 @@ namespace Microsoft.Xna.Framework.Input
                 if (!Directory.Exists(osConfigDir))
                 {
                     // Okay, jeez, we're really starting fresh.
-                    Directory.CreateDirectory(osConfigDir);
+                    //Directory.CreateDirectory(osConfigDir);
                 }
                 
                 // So, create the file.
@@ -449,7 +454,7 @@ namespace Microsoft.Xna.Framework.Input
             return devices[(int)index];
         }
 
-        static PadConfig GetConfig(PlayerIndex index)
+        public static PadConfig GetConfig(PlayerIndex index)
         {
             return Settings[(int)index];
         }
