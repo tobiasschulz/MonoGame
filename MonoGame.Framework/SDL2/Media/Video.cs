@@ -59,12 +59,6 @@ namespace Microsoft.Xna.Framework.Media
 		private Color _backColor = Color.Black;
         private bool disposed;
 		#endregion
-        
-        #region Internal Variables: TheoraPlay
-        internal IntPtr theoraDecoder;
-        internal IntPtr videoStream;
-        internal IntPtr audioStream;
-        #endregion
      
         #region Public Properties
         public int Width
@@ -117,15 +111,6 @@ namespace Microsoft.Xna.Framework.Media
             {
                 throw new Exception("File " + FileName + " does not exist!");
             }
-            
-            // Set everything to NULL. Yes, this actually matters later.
-            theoraDecoder = IntPtr.Zero;
-            videoStream = IntPtr.Zero;
-            audioStream = IntPtr.Zero;
-            
-            // Initialize the decoder nice and early...
-            disposed = true;
-            Initialize();
 		}
         #endregion
 		
@@ -157,85 +142,9 @@ namespace Microsoft.Xna.Framework.Media
 		}
         #endregion
         
-        #region Internal TheoraPlay Initialization
-		internal void Initialize()
-        {
-            if (!disposed)
-            {
-                Dispose(); // We need to start from the beginning, don't we? :P
-            }
-            /*
-            // Initialize the decoder.
-            theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
-                _fileName,
-                150, // Arbitrarily 5 seconds in a 30fps movie.
-#if VIDEOPLAYER_OPENGL
-                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
-#else
-                // Use the TheoraPlay software converter.
-                TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_RGBA
-#endif
-            );
-            
-            // Wait until the decoder is ready.
-            while (TheoraPlay.THEORAPLAY_isInitialized(theoraDecoder) == 0)
-            {
-                Thread.Sleep(10);
-            }
-            
-            // Initialize the audio stream pointer and get our first packet.
-            if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
-            {
-                while (audioStream == IntPtr.Zero)
-                {
-                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
-                    Thread.Sleep(10);
-                }
-            }
-            
-            // Initialize the video stream pointer and get our first frame.
-            if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
-            {
-                while (videoStream == IntPtr.Zero)
-                {
-                    videoStream = TheoraPlay.THEORAPLAY_getVideo(theoraDecoder);
-                    Thread.Sleep(10);
-                }
-                
-                TheoraPlay.THEORAPLAY_VideoFrame frame = TheoraPlay.getVideoFrame(videoStream);
-                
-                // We get the FramesPerSecond from the first frame.
-                FramesPerSecond = (float) frame.fps;
-                Width = (int) frame.width;
-                Height = (int) frame.height;
-            }*/
-        }
-        #endregion
-        
         #region Disposal Method
 		public void Dispose()
-		{/*
-            // Stop and unassign the decoder.
-            if (theoraDecoder != IntPtr.Zero)
-            {
-                TheoraPlay.THEORAPLAY_stopDecode(theoraDecoder);
-                theoraDecoder = IntPtr.Zero;
-            }
-            
-            // Free and unassign the video stream.
-            if (videoStream != IntPtr.Zero)
-            {
-                TheoraPlay.THEORAPLAY_freeVideo(videoStream);
-                videoStream = IntPtr.Zero;
-            }
-            
-            // Free and unassign the audio stream.
-            if (audioStream != IntPtr.Zero)
-            {
-                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
-                audioStream = IntPtr.Zero;
-            }
-            */
+		{
             disposed = true;
 		}
         #endregion
