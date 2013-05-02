@@ -326,7 +326,7 @@ namespace Microsoft.Xna.Framework
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext);
+            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
@@ -409,7 +409,10 @@ namespace Microsoft.Xna.Framework
             // Create a background context
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
             Threading.WindowInfo = INTERNAL_sdlWindow;
-            Threading.BackgroundContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
+            Threading.BackgroundContext = new ContextHandle()
+            {
+                context = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow)
+            };
 
             // Make the foreground context current.
             SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);

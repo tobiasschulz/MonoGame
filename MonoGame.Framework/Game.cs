@@ -515,8 +515,7 @@ namespace Microsoft.Xna.Framework
                 _suppressDraw = false;
             else
             {
-				// FIXME: A lock is probably smart... -flibit
-                //lock (Threading.BackgroundContext)
+                lock (Threading.BackgroundContext)
                 {
                     DoDraw(_gameTime);
                 }

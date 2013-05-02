@@ -59,6 +59,11 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Microsoft.Xna.Framework
 {
+	internal class ContextHandle
+	{
+		public IntPtr context;
+	}
+
     internal class Threading
     {
         static int mainThreadId;
@@ -69,7 +74,7 @@ namespace Microsoft.Xna.Framework
 #elif IOS
         public static EAGLContext BackgroundContext;
 #elif SDL2
-        public static IntPtr BackgroundContext = IntPtr.Zero;
+        public static ContextHandle BackgroundContext = null;
         public static IntPtr WindowInfo;
 #endif
         static Threading()
@@ -130,11 +135,10 @@ namespace Microsoft.Xna.Framework
             }
 // FIXME: This should _really_ be SDL2, but MONOMAC has brain problems -flibit 
 #elif WINDOWS || LINUX
-            // FIXME: A lock is probably advisable...            
-            // lock (BackgroundContext)
+            lock (BackgroundContext)
             {
                 // Make the context current on this thread
-                SDL.SDL_GL_MakeCurrent(WindowInfo, BackgroundContext);
+                SDL.SDL_GL_MakeCurrent(WindowInfo, BackgroundContext.context);
                 // Execute the action
                 action();
                 // Must flush the GL calls so the texture is ready for the main context to use
