@@ -57,7 +57,8 @@ namespace Microsoft.Xna.Framework
         static TitleContainer() 
         {
 #if SDL2
-            if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+            // FIXME: Why the hell does this not work in this specific spot?!
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX || Directory.Exists("/Users/"))
             {
                 // Apparently the starting directory _is_ the ResourcePath. -flibit
                 Location = Environment.CurrentDirectory;
