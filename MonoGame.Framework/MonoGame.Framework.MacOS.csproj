@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
     <OutputPath>bin\MacOS\Debug</OutputPath>
-    <DefineConstants>DEBUG;MONOMAC;SDL2;OPENGL</DefineConstants>
+    <DefineConstants>DEBUG;MONOMAC;OPENGL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <DefineConstants>MONOMAC;SDL2;OPENGL</DefineConstants>
+    <DefineConstants>MONOMAC;OPENGL</DefineConstants>
     <EnableCodeSigning>False</EnableCodeSigning>
     <CreatePackage>False</CreatePackage>
     <EnablePackageSigning>False</EnablePackageSigning>
@@ -49,7 +49,7 @@
     <OutputPath>bin\MacOS\Distribution</OutputPath>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <DefineConstants>MONOMAC;SDL2;OPENGL</DefineConstants>
+    <DefineConstants>MONOMAC;OPENGL</DefineConstants>
     <EnableCodeSigning>False</EnableCodeSigning>
     <CreatePackage>False</CreatePackage>
     <EnablePackageSigning>False</EnablePackageSigning>
@@ -62,6 +62,12 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="Tao.Sdl">
+      <HintPath>..\ThirdParty\GamepadConfig\Tao.Sdl.dll</HintPath>
+    </Reference>
+    <Reference Include="GamepadBridge">
+      <HintPath>..\ThirdParty\GamepadConfig\GamepadBridge.dll</HintPath>
+    </Reference>
     <Reference Include="MonoMac">
       <HintPath>..\ThirdParty\Libs\MonoMac.dll</HintPath>
     </Reference>
@@ -71,7 +77,6 @@
   <ItemGroup>
     <Compile Include="Content\ContentReaders\Texture3DReader.cs" />
     <Compile Include="Graphics\IRenderTarget.cs" />
-    <Compile Include="Graphics\ImageEx.cs" />
     <Compile Include="Graphics\RenderTargetCube.cs" />
     <Compile Include="Graphics\ResourceCreatedEventArgs.cs" />
     <Compile Include="Graphics\ResourceDestroyedEventArgs.cs" />
@@ -155,6 +160,7 @@
     <Compile Include="Audio\AudioChannels.cs" />
     <Compile Include="Media\MediaPlayer.cs" />
     <Compile Include="Media\MediaQueue.cs" />
+    <Compile Include="Media\Song.cs" />
     <Compile Include="Media\MediaState.cs" />
     <Compile Include="Media\MediaSourceType.cs" />
     <Compile Include="Content\ContentReader.cs" />
@@ -179,6 +185,7 @@
     <Compile Include="Content\ContentReaders\SpriteFontReader.cs" />
     <Compile Include="Content\ContentReaders\SongReader.cs" />
     <Compile Include="Content\ContentReaders\SoundEffectReader.cs" />
+    <Compile Include="MacOS\Media\Video.cs" />
     <Compile Include="Graphics\CompilerOptions.cs" />
     <Compile Include="Content\ContentReaders\ListReader.cs" />
     <Compile Include="Content\ContentReaders\CharReader.cs" />
@@ -230,6 +237,7 @@
     <Compile Include="Graphics\Vertices\VertexPositionColor.cs" />
     <Compile Include="Graphics\Vertices\VertexPositionNormalTexture.cs" />
     <Compile Include="Graphics\Vertices\VertexPositionTexture.cs" />
+    <Compile Include="MacOS\GameWindow.cs" />
     <Compile Include="PreparingDeviceSettingsEventArgs.cs" />
     <Compile Include="GraphicsDeviceInformation.cs" />
     <Compile Include="Graphics\DeviceType.cs" />
@@ -239,10 +247,22 @@
     <Compile Include="Graphics\Effect\IEffectLights.cs" />
     <Compile Include="Graphics\Effect\IEffectMatrices.cs" />
     <Compile Include="Graphics\DirectionalLight.cs" />
+    <Compile Include="Input\Mouse.cs" />
+    <Compile Include="MacOS\KeyUtil.cs" />
     <Compile Include="Graphics\States\TextureAddressMode.cs" />
     <Compile Include="Graphics\States\TextureFilter.cs" />
+    <Compile Include="Desktop\Input\Axis.cs" />
+    <Compile Include="Desktop\Input\Capabilities.cs" />
+    <Compile Include="Desktop\Input\DPad.cs" />
+    <Compile Include="Desktop\Input\GamePad.cs" />
+    <Compile Include="Desktop\Input\Input.cs" />
+    <Compile Include="Desktop\Input\Joystick.cs" />
+    <Compile Include="Desktop\Input\PadConfig.cs" />
+    <Compile Include="Desktop\Input\Settings.cs" />
+    <Compile Include="Desktop\Input\Stick.cs" />
     <Compile Include="Input\ButtonDefinition.cs" />
     <Compile Include="Input\ThumbStickDefinition.cs" />
+    <Compile Include="MacOS\GamerServices\SignedInGamer.cs" />
     <Compile Include="GamerServices\Gamer.cs" />
     <Compile Include="GamerServices\SignedInGamerCollection.cs" />
     <Compile Include="GamerServices\GamerProfile.cs" />
@@ -258,6 +278,7 @@
     <Compile Include="Net\AvailableNetworkSessionCollection.cs" />
     <Compile Include="Net\LocalNetworkGamer.cs" />
     <Compile Include="GamerServices\GamerCollection.cs" />
+    <Compile Include="MacOS\GamerServices\Guide.cs" />
     <Compile Include="GamerServices\MessageBoxIcon.cs" />
     <Compile Include="Graphics\PackedVector\Bgr565.cs" />
     <Compile Include="Graphics\PackedVector\Bgra4444.cs" />
@@ -322,12 +343,18 @@
     <Compile Include="Net\CommandGamerStateChange.cs" />
     <Compile Include="Net\CommandGamerLeft.cs" />
     <Compile Include="TitleContainer.cs" />
+    <Compile Include="MacOS\GamerServices\MonoGameGamerServicesHelper.cs" />
+    <Compile Include="MacOS\GamerServices\SigninController.cs" />
+    <Compile Include="MacOS\GamerServices\MonoGameLocalGamerProfile.cs" />
     <Compile Include="Audio\NoAudioHardwareException.cs" />
     <Compile Include="Content\ContentReaders\PointReader.cs" />
     <Compile Include="Content\ContentReaders\Vector2Reader.cs" />
+    <Compile Include="MacOS\Storage\StorageDeviceHelper.cs" />
     <Compile Include="Graphics\Effect\EffectHelpers.cs" />
     <Compile Include="Content\LzxDecoder.cs" />
     <Compile Include="Content\ContentManager.cs" />
+    <Compile Include="MacOS\Media\VideoPlayer.cs" />
+    <Compile Include="MacOS\MacGameNSWindow.cs" />
     <Compile Include="Content\ContentReaders\CurveReader.cs" />
     <Compile Include="Input\GamePadDeadZone.cs" />
     <Compile Include="Graphics\Vertices\VertexElementColor.cs" />
@@ -340,11 +367,12 @@
     <Compile Include="Audio\XactClip.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GamePlatform.cs" />
+    <Compile Include="MacOS\MacGamePlatform.cs" />
     <Compile Include="Graphics\Effect\SpriteEffect.cs" />
     <Compile Include="Content\ContentReaders\EffectReader.cs" />
     <Compile Include="Graphics\Effect\EffectAnnotation.cs" />
     <Compile Include="Graphics\Effect\EffectAnnotationCollection.cs" />
-    <Compile Include="Graphics\Shader\ConstantBufferCollection.cs" />
+	<Compile Include="Graphics\Shader\ConstantBufferCollection.cs" />
     <Compile Include="Graphics\Shader\ConstantBuffer.cs" />
     <Compile Include="Graphics\Shader\Shader.cs" />
     <Compile Include="Graphics\Shader\ShaderStage.cs" />
@@ -360,10 +388,14 @@
     <Compile Include="Content\ContentReaders\Texture2DReader.cs" />
     <Compile Include="Graphics\SpriteBatch.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
+    <Compile Include="MacOS\Audio\OpenALSupport.cs" />
+    <Compile Include="MacOS\Audio\SoundEffect.cs" />
+    <Compile Include="Desktop\Audio\SoundEffectInstance.cs" />
     <Compile Include="PrimaryThreadLoader.cs" />
     <Compile Include="Graphics\Effect\EffectPass.cs" />
     <Compile Include="Graphics\GraphicsExtensions.cs" />
     <Compile Include="LaunchParameters.cs" />
+    <Compile Include="MacOS\MacGamePlatform+Synchronous.cs" />
     <Compile Include="Graphics\Vertices\VertexDeclaration.cs" />
     <Compile Include="Graphics\Vertices\VertexDeclarationCache.cs" />
     <Compile Include="Content\ContentReaders\IndexBufferReader.cs" />
@@ -400,6 +432,8 @@
     <Compile Include="Media\Playlist.cs" />
     <Compile Include="Media\PlaylistCollection.cs" />
     <Compile Include="Media\SongCollection.cs" />
+    <Compile Include="Desktop\Audio\OALSoundBuffer.cs" />
+    <Compile Include="Desktop\Audio\OpenALSoundController.cs" />
     <Compile Include="Content\ContentReaders\EffectMaterialReader.cs" />
     <Compile Include="Graphics\Effect\EffectMaterial.cs" />
     <Compile Include="Content\ContentReaders\ExternalReferenceReader.cs" />
@@ -418,40 +452,20 @@
     <Compile Include="GamerServices\LeaderboardReader.cs" />
     <Compile Include="GamerServices\LeaderboardWriter.cs" />
     <Compile Include="GamerServices\PropertyDictionary.cs" />
-    <Compile Include="SDL2\SDL2_GamePlatform.cs" />
-    <Compile Include="SDL2\SDL2_GameWindow.cs" />
-    <Compile Include="SDL2\Audio\AudioLoader.cs" />
-    <Compile Include="SDL2\Audio\OALSoundBuffer.cs" />
-    <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
-    <Compile Include="SDL2\Audio\Sound.cs" />
-    <Compile Include="SDL2\Audio\SoundEffect.cs" />
-    <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
-    <Compile Include="SDL2\GamerServices\Guide.cs" />
-    <Compile Include="SDL2\GamerServices\MonoGameGamerServicesHelper.cs" />
-    <Compile Include="SDL2\GamerServices\SignedInGamer.cs" />
-    <Compile Include="SDL2\Input\Axis.cs" />
-    <Compile Include="SDL2\Input\Capabilities.cs" />
-    <Compile Include="SDL2\Input\DPad.cs" />
-    <Compile Include="SDL2\Input\SDL2_GamePad.cs" />
-    <Compile Include="SDL2\Input\Input.cs" />
-    <Compile Include="SDL2\Input\PadConfig.cs" />
-    <Compile Include="SDL2\Input\SDL2_KeyboardUtil.cs" />
-    <Compile Include="SDL2\Input\SDL2_Mouse.cs" />
-    <Compile Include="SDL2\Input\Settings.cs" />
-    <Compile Include="SDL2\Input\Stick.cs" />
-    <Compile Include="SDL2\Media\Song.cs" />
-    <Compile Include="SDL2\Media\Video.cs" />
-    <Compile Include="SDL2\Media\VideoPlayer.cs" />
-    <Compile Include="GameWindow.cs" />
-    <Compile Include="Storage\StorageDeviceHelper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="MacOS\" />
     <Folder Include="Graphics\" />
     <Folder Include="Graphics\Vertices\" />
     <Folder Include="Content\ContentReaders\" />
     <Folder Include="GamerServices\" />
+    <Folder Include="MacOS\Audio\" />
     <Folder Include="Media\" />
-    <Folder Include="SDL2\" />
+    <Folder Include="MacOS\Media\" />
+    <Folder Include="MacOS\Input\" />
+    <Folder Include="MacOS\GamerServices\" />
+    <Folder Include="MacOS\Storage\" />
+    <Folder Include="Desktop\Audio\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Graphics\Effect\Resources\AlphaTestEffect.ogl.mgfxo" />
@@ -465,14 +479,6 @@
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.MacOS.csproj">
       <Project>{AE483C29-042E-4226-BA52-D247CE7676DA}</Project>
       <Name>Lidgren.Network.MacOS</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\TheoraPlay#\TheoraPlay#.csproj">
-      <Project>{47CF0C2E-3710-4188-BB11-30D248B2B5FB}</Project>
-      <Name>TheoraPlay#</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\SDL2#\SDL2#.csproj">
-      <Project>{85480198-8711-4355-830E-72FD794AD3F6}</Project>
-      <Name>SDL2#</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
