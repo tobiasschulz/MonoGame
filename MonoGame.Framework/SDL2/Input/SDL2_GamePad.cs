@@ -101,6 +101,25 @@ namespace Microsoft.Xna.Framework.Input
         // Where we will load our config file into.
         private static MonoGameJoystickConfig INTERNAL_joystickConfig;
         
+        // Explicitly initialize the SDL Joystick/GameController subsystems
+        private static bool Init()
+        {
+            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER) == 0;
+        }
+        
+        // Call this when you're done, if you don't want to depend on SDL_Quit();
+        internal static void Cleanup()
+        {
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 1)
+            {
+                SDL.SDL_QuitSubSystem(SDL.SDL_INIT_GAMECONTROLLER);
+            }
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 1)
+            {
+                SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
+            }
+        }
+        
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
@@ -115,8 +134,7 @@ namespace Microsoft.Xna.Framework.Input
         // Prepare the MonoGameJoystick configuration system
 		private static void INTERNAL_AutoConfig()
 		{
-			Joystick.Init();
-			if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 0)
+			if (!Init())
             {
                 return;
             }
@@ -588,16 +606,23 @@ namespace Microsoft.Xna.Framework.Input
 			return b;
 		}
 		
-        static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
+        // This is where we actually read in the controller input!
+        private static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
         {
             if (    INTERNAL_devices[(int) index] == IntPtr.Zero ||
                     INTERNAL_settings[(int) index] == null  )
             {
                 return GamePadState.InitializedState;
             }
+            
             // SDL_GameController
             
             // TODO: SDL_GameController ReadState
+            
+            if (SDL.SDL_IsGameController((int) index) == SDL.SDL_bool.SDL_TRUE)
+            {
+                
+            }
             
             // SDL_Joystick
             
@@ -785,6 +810,10 @@ namespace Microsoft.Xna.Framework.Input
             if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 1)
             {
 				SDL.SDL_JoystickUpdate();
+            }
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 1)
+            {
+                SDL.SDL_GameControllerUpdate();
             }
             return ReadState(playerIndex, deadZoneMode);
         }
