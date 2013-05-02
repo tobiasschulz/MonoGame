@@ -432,7 +432,7 @@
     <Compile Include="SDL2\Input\Axis.cs" />
     <Compile Include="SDL2\Input\Capabilities.cs" />
     <Compile Include="SDL2\Input\DPad.cs" />
-    <Compile Include="SDL2\Input\GamePad.cs" />
+    <Compile Include="SDL2\Input\SDL2_GamePad.cs" />
     <Compile Include="SDL2\Input\Input.cs" />
     <Compile Include="SDL2\Input\Joystick.cs" />
     <Compile Include="SDL2\Input\PadConfig.cs" />
