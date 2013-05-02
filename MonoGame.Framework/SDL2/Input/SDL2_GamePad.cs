@@ -925,6 +925,8 @@ namespace Microsoft.Xna.Framework.Input
             return ReadState(playerIndex, deadZoneMode);
         }
         
+		// BEGIN FEZ STUFF
+
         //
         // Summary:
         //     Sets the vibration motor speeds on an Xbox 360 Controller. Reference page
@@ -941,11 +943,11 @@ namespace Microsoft.Xna.Framework.Input
         //   rightMotor:
         //     The speed of the right motor, between 0.0 and 1.0. This motor is a high-frequency
         //     motor.
-        public static bool SetVibration(PlayerIndex playerIndex, float leftMotor, float rightMotor)
+        public static void SetVibration(PlayerIndex playerIndex, float leftMotor, float rightMotor)
         {
             if (INTERNAL_HapticSupported(playerIndex))
             {
-                return false;
+                //return false;
             }
             
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
@@ -961,7 +963,9 @@ namespace Microsoft.Xna.Framework.Input
                     uint.MaxValue // Oh my...
                 );
             }
-            return true;
+            //return true;
         }
+
+		// END FEZ STUFF
     }
 }
