@@ -101,7 +101,7 @@ namespace Microsoft.Xna.Framework.Input
 
         public static bool Init()
         {
-            // only initialise the Joystick part of SDL
+            // Initialize the SDL_Joystick subsystem
             return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK) == 0;
         }
 
@@ -117,12 +117,13 @@ namespace Microsoft.Xna.Framework.Input
             return list;
 
         }
-
-
-
+        
         internal static void Cleanup()
         {
-            throw new NotImplementedException();
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 1)
+            {
+                SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
+            }
         }
     }
 
