@@ -609,19 +609,16 @@ namespace Microsoft.Xna.Framework.Input
         // This is where we actually read in the controller input!
         private static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
         {
-            if (    INTERNAL_devices[(int) index] == IntPtr.Zero ||
-                    INTERNAL_settings[(int) index] == null  )
+            if (INTERNAL_devices[(int) index] == IntPtr.Zero)
             {
                 return GamePadState.InitializedState;
             }
             
             // SDL_GameController
             
-            // TODO: SDL_GameController ReadState
-            
             if (SDL.SDL_IsGameController((int) index) == SDL.SDL_bool.SDL_TRUE)
             {
-                
+                // TODO: SDL_GameController ReadState
             }
             
             // SDL_Joystick
@@ -629,6 +626,10 @@ namespace Microsoft.Xna.Framework.Input
             const float DeadZoneSize = 0.27f;
             IntPtr device = INTERNAL_devices[(int) index];
             PadConfig config = INTERNAL_settings[(int) index];
+            if (config == null)
+            {
+                return GamePadState.InitializedState;
+            }
             
             // We will interpret the joystick values into this.
             Buttons buttonState = (Buttons) 0;
