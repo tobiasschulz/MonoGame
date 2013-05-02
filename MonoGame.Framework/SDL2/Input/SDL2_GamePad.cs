@@ -609,22 +609,130 @@ namespace Microsoft.Xna.Framework.Input
         // This is where we actually read in the controller input!
         private static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
         {
-            if (INTERNAL_devices[(int) index] == IntPtr.Zero)
+            IntPtr device = INTERNAL_devices[(int) index];
+            if (device == IntPtr.Zero)
             {
                 return GamePadState.InitializedState;
             }
+            
+            // Do not attempt to understand this number at all costs!
+            const float DeadZoneSize = 0.27f;
             
             // SDL_GameController
             
             if (SDL.SDL_IsGameController((int) index) == SDL.SDL_bool.SDL_TRUE)
             {
-                // TODO: SDL_GameController ReadState
+                // Sticks
+                GamePadThumbSticks gc_sticks = new GamePadThumbSticks(
+                    new Vector2(
+                        SDL.SDL_GameControllerGetAxis(
+                            device,
+                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX
+                        ),
+                        SDL.SDL_GameControllerGetAxis(
+                            device,
+                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY
+                        )
+                    ),
+                    new Vector2(
+                        SDL.SDL_GameControllerGetAxis(
+                            device,
+                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX
+                        ),
+                        SDL.SDL_GameControllerGetAxis(
+                            device,
+                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY
+                        )
+                    )
+                );
+                gc_sticks.ApplyDeadZone(deadZone, DeadZoneSize);
+                
+                // Triggers
+                GamePadTriggers gc_triggers = new GamePadTriggers(
+                    SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT),
+                    SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+                );
+                
+                // Buttons
+                GamePadButtons gc_buttons;
+                Buttons gc_buttonState = (Buttons) 0;
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A) != 0)
+                {
+                    gc_buttonState |= Buttons.A;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_B) != 0)
+                {
+                    gc_buttonState |= Buttons.B;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_X) != 0)
+                {
+                    gc_buttonState |= Buttons.X;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_Y) != 0)
+                {
+                    gc_buttonState |= Buttons.Y;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK) != 0)
+                {
+                    gc_buttonState |= Buttons.Back;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE) != 0)
+                {
+                    gc_buttonState |= Buttons.BigButton;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START) != 0)
+                {
+                    gc_buttonState |= Buttons.Start;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSTICK) != 0)
+                {
+                    gc_buttonState |= Buttons.LeftStick;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSTICK) != 0)
+                {
+                    gc_buttonState |= Buttons.RightStick;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSHOULDER) != 0)
+                {
+                    gc_buttonState |= Buttons.LeftShoulder;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) != 0)
+                {
+                    gc_buttonState |= Buttons.RightShoulder;
+                }
+                gc_buttons = new GamePadButtons(gc_buttonState);
+                
+                // DPad
+                GamePadDPad gc_dpad;
+                Buttons gc_dpadState = (Buttons) 0;
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP) != 0)
+                {
+                    gc_dpadState |= Buttons.DPadUp;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN) != 0)
+                {
+                    gc_dpadState |= Buttons.DPadDown;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT) != 0)
+                {
+                    gc_dpadState |= Buttons.DPadLeft;
+                }
+                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT) != 0)
+                {
+                    gc_dpadState |= Buttons.DPadRight;
+                }
+                gc_dpad = new GamePadDPad(gc_dpadState);
+                
+                return new GamePadState(
+                    gc_sticks,
+                    gc_triggers,
+                    gc_buttons,
+                    gc_dpad
+                );
             }
             
             // SDL_Joystick
             
-            const float DeadZoneSize = 0.27f;
-            IntPtr device = INTERNAL_devices[(int) index];
             PadConfig config = INTERNAL_settings[(int) index];
             if (config == null)
             {
@@ -635,13 +743,19 @@ namespace Microsoft.Xna.Framework.Input
             Buttons buttonState = (Buttons) 0;
             
             // Sticks
-            Vector2 leftStick = config.LeftStick.ReadAxisPair(device);
-            Vector2 rightStick = config.RightStick.ReadAxisPair(device);
             GamePadThumbSticks sticks = new GamePadThumbSticks(
-                new Vector2(leftStick.X, leftStick.Y),
-                new Vector2(rightStick.X, rightStick.Y)
+                config.LeftStick.ReadAxisPair(device),
+                config.RightStick.ReadAxisPair(device)
             );
             sticks.ApplyDeadZone(deadZone, DeadZoneSize);
+            buttonState |= READ_StickToButtons(
+                sticks.Left,
+                Buttons.LeftThumbstickLeft,
+                Buttons.LeftThumbstickRight,
+                Buttons.LeftThumbstickUp,
+                Buttons.LeftThumbstickDown,
+                DeadZoneSize
+            );
 			buttonState |= READ_StickToButtons(
                 sticks.Right,
                 Buttons.RightThumbstickLeft,
@@ -653,14 +767,6 @@ namespace Microsoft.Xna.Framework.Input
             
             // Buttons
             buttonState = READ_ReadButtons(device, config, DeadZoneSize);
-            buttonState |= READ_StickToButtons(
-                sticks.Left,
-                Buttons.LeftThumbstickLeft,
-                Buttons.LeftThumbstickRight,
-                Buttons.LeftThumbstickUp,
-                Buttons.LeftThumbstickDown,
-                DeadZoneSize
-            );
             
             // Triggers
             GamePadTriggers triggers = new GamePadTriggers(
