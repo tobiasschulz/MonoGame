@@ -121,8 +121,18 @@ namespace Microsoft.Xna.Framework.Storage
 #if WINDOWS_STOREAPP
             var saved = "";
 #else
-			var root = StorageDevice.StorageRoot;
-			var saved = Path.Combine(root,"SavedGames");
+            string saved;
+            if (    Environment.OSVersion.Platform == PlatformID.MacOSX ||
+                    Environment.OSVersion.Platform == PlatformID.Unix   )
+            {
+                // Unix systems are expected to have a dedicated userdata folder.
+                saved = StorageDevice.StorageRoot;
+            }
+            else
+            {
+                string root = StorageDevice.StorageRoot;
+                saved = Path.Combine(root,"SavedGames");
+            }
 #endif
             _storagePath = Path.Combine(saved, name);
 			
