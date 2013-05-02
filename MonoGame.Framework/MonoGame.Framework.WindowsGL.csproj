@@ -475,8 +475,8 @@
     <EmbeddedResource Include="Graphics\Effect\Resources\SkinnedEffect.ogl.mgfxo" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\ThirdParty\GamepadConfig\SDL.dll">
-      <Link>SDL.dll</Link>
+    <Content Include="..\ThirdParty\SDL2.dll">
+      <Link>SDL2.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
