@@ -46,8 +46,6 @@ using System.Threading.Tasks;
 #elif IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-#elif MONOMAC
-using MonoMac.Foundation;
 #elif PSM
 using Sce.PlayStation.Core;
 #endif
@@ -58,11 +56,21 @@ namespace Microsoft.Xna.Framework
     {
         static TitleContainer() 
         {
-#if WINDOWS || LINUX
+#if SDL2
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+            {
+                // Apparently the starting directory _is_ the ResourcePath. -flibit
+                Location = Environment.CurrentDirectory;
+            }
+            else
+            {
+                Location = AppDomain.CurrentDomain.BaseDirectory;
+            }
+#elif WINDOWS
             Location = AppDomain.CurrentDomain.BaseDirectory;
 #elif WINRT
             Location = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
-#elif IOS || MONOMAC
+#elif IOS
 			Location = NSBundle.MainBundle.ResourcePath;
 #elif PSM
 			Location = "/Application";
