@@ -11,18 +11,12 @@ using System.Resources;
 [assembly: AssemblyDescription("MonoGame for OUYA")]
 #elif ANDROID
 [assembly: AssemblyDescription("MonoGame for Android")]
+#elif SDL2
+[assembly: AssemblyDescription("MonoGame for SDL2 Desktop")]
 #elif WINDOWS
-#if DIRECTX
 [assembly: AssemblyDescription("MonoGame for Windows Desktop (DirectX)")]
-#else
-[assembly: AssemblyDescription("MonoGame for Windows Desktop (OpenGL)")]
-#endif
 #elif PSM
 [assembly: AssemblyDescription("MonoGame for PlayStation Mobile")]
-#elif LINUX
-[assembly: AssemblyDescription("MonoGame for Linux")]
-#elif MAC
-[assembly: AssemblyDescription("MonoGame for Mac OS X")]
 #elif IOS
 [assembly: AssemblyDescription("MonoGame for iOS")]
 #elif WINDOWS_STOREAPP

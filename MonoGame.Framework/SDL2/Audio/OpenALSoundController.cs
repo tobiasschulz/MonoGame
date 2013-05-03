@@ -7,13 +7,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-#if IOS || WINDOWS || LINUX
 using System.Windows.Forms;
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
-#elif MONOMAC
-using MonoMac.OpenAL;
-#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {

@@ -478,13 +478,13 @@ namespace Microsoft.Xna.Framework.Input
 				// pc.BigButton.Type = InputType.Button;
 
 #if DEBUG
-				int numbuttons = SDL.SDL_JoystickNumButtons(devices[x]);
+				int numbuttons = SDL.SDL_JoystickNumButtons(INTERNAL_devices[x]);
 				Console.WriteLine("Number of buttons for joystick: " + x + " - " + numbuttons);
 
-				int numaxes = SDL.SDL_JoystickNumAxes(devices[x]);
+				int numaxes = SDL.SDL_JoystickNumAxes(INTERNAL_devices[x]);
 				Console.WriteLine("Number of axes for joystick: " + x + " - " + numaxes);
 
-				int numhats = SDL.SDL_JoystickNumHats(devices[x]);
+				int numhats = SDL.SDL_JoystickNumHats(INTERNAL_devices[x]);
 				Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);
 #endif
                 

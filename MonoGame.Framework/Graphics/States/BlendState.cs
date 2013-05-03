@@ -42,9 +42,7 @@ using System;
 using System.Diagnostics;
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #elif GLES
 using OpenTK.Graphics.ES20;

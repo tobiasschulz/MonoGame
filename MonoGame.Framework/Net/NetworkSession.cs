@@ -1051,7 +1051,7 @@ namespace Microsoft.Xna.Framework.Net
 
 		public TimeSpan SimulatedLatency {
 			get {
-#if DEBUG
+#if DEBUG_NETWORK
                 if (networkPeer != null)
                 {
                     return networkPeer.SimulatedLatency;
@@ -1061,7 +1061,7 @@ namespace Microsoft.Xna.Framework.Net
 			}
 			set {
                 defaultSimulatedLatency = value;
-#if DEBUG
+#if DEBUG_NETWORK
                 if (networkPeer != null)
                 {
                     networkPeer.SimulatedLatency = value;

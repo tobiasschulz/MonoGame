@@ -47,21 +47,14 @@ using Sce.PlayStation.Core.Graphics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-#if MONOMAC
-using MonoMac.AppKit;
-using MonoMac.CoreGraphics;
-using MonoMac.Foundation;
-#elif IOS
+#if IOS
 using MonoTouch.UIKit;
 using MonoTouch.CoreGraphics;
 using MonoTouch.Foundation;
 #endif
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-using GLPixelFormat = MonoMac.OpenGL.PixelFormat;
-#elif WINDOWS || LINUX
+#if SDL2
 using System.Drawing.Imaging;
 using OpenTK.Graphics.OpenGL;
 using GLPixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
@@ -620,21 +613,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
             //todo: partial classes would be cleaner
-#if IOS || MONOMAC
-            
-
-
 #if IOS
 			using (var uiImage = UIImage.LoadFromData(NSData.FromStream(stream)))
-#elif MONOMAC
-			using (var nsImage = NSImage.FromStream (stream))
-#endif
 			{
-#if IOS
 				var cgImage = uiImage.CGImage;
-#elif MONOMAC
-				var cgImage = nsImage.AsCGImage (RectangleF.Empty, null, null);
-#endif
 				
 				var width = cgImage.Width;
 				var height = cgImage.Height;
@@ -729,8 +711,11 @@ namespace Microsoft.Xna.Framework.Graphics
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
             {
                 // Fix up the Image to match the expected format
-                image.RGBToBGR();
-
+				if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+				{
+                	image.RGBToBGR();
+				}
+				
                 var data = new byte[image.Width * image.Height * 4];
 
                 BitmapData bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height),

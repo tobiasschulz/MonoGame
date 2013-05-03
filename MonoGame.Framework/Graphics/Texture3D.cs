@@ -2,9 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 #endif
 #elif DIRECTX

@@ -2,10 +2,7 @@ using System;
 using System.Diagnostics;
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-using GLStencilFunction = MonoMac.OpenGL.StencilFunction;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 using GLStencilFunction = OpenTK.Graphics.OpenGL.StencilFunction;
 #elif GLES

@@ -41,11 +41,7 @@ purpose and non-infringement.
 using System;
 using System.IO;
 
-#if MONOMAC
-using MonoMac.OpenAL;
-#else
 using OpenTK.Audio.OpenAL;
-#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {

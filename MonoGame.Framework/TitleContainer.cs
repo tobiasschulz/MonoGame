@@ -46,8 +46,6 @@ using System.Threading.Tasks;
 #elif IOS
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-#elif MACOS
-using MonoMac.Foundation;
 #elif PSM
 using Sce.PlayStation.Core;
 #endif
@@ -58,19 +56,33 @@ namespace Microsoft.Xna.Framework
     {
         static TitleContainer() 
         {
-#if WINDOWS || LINUX
+#if SDL2
+            // FIXME: Why the hell does this not work in this specific spot?!
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX || Directory.Exists("/Users/"))
+            {
+                // Apparently the starting directory _is_ the ResourcePath. -flibit
+                Location = Environment.CurrentDirectory;
+            }
+            else
+            {
+                Location = AppDomain.CurrentDomain.BaseDirectory;
+            }
+#elif WINDOWS
             Location = AppDomain.CurrentDomain.BaseDirectory;
 #elif WINRT
             Location = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
-#elif IOS || MACOS
+#elif IOS
 			Location = NSBundle.MainBundle.ResourcePath;
-            SupportRetina = UIScreen.MainScreen.Scale == 2.0f;
 #elif PSM
 			Location = "/Application";
 #else
             Location = string.Empty;
-#endif                    
-        }
+#endif
+
+#if IOS
+			SupportRetina = UIScreen.MainScreen.Scale == 2.0f;
+#endif
+		}
 
         static internal string Location { get; private set; }
 #if IOS
