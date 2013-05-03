@@ -459,11 +459,11 @@ namespace Microsoft.Xna.Framework
             );
             GL.FramebufferTexture2D(
                 FramebufferTarget.Framebuffer,
-				FramebufferAttachment.DepthStencilAttachment,
-				TextureTarget.Texture2D,
-				INTERNAL_glDepthStencilAttachment,
-				0
-			);
+                FramebufferAttachment.DepthStencilAttachment,
+                TextureTarget.Texture2D,
+                INTERNAL_glDepthStencilAttachment,
+                0
+            );
             GL.BindTexture(TextureTarget.Texture2D, 0);
             INTERNAL_glFramebufferWidth = 800;
             INTERNAL_glFramebufferHeight = 600;
