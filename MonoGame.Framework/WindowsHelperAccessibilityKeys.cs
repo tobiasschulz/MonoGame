@@ -2,7 +2,6 @@
 
 namespace Microsoft.Xna.Framework
 {
-#if WINDOWS
     /// <summary>
     /// Helper for Windows to temporarily disable the popup caused by the 
     /// Accessibility features.
@@ -11,7 +10,6 @@ namespace Microsoft.Xna.Framework
     /// </summary>
     public class WindowsHelperAccessibilityKeys
     {
-#if !SDL2
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo", SetLastError = false)]
         private static extern bool SystemParametersInfo(uint action, uint param,
             ref SKEY vparam, uint init);
@@ -19,19 +17,6 @@ namespace Microsoft.Xna.Framework
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo", SetLastError = false)]
         private static extern bool SystemParametersInfo(uint action, uint param,
             ref FILTERKEY vparam, uint init);
-#else
-#warning Sorry, Windows users. Gotta stop dat user32 DllImportException!
-		private static bool SystemParametersInfo(uint action, uint param,
-            ref SKEY vparam, uint init)
-		{
-			return true; // About the biggest lie code can fathom
-		}
-		private static bool SystemParametersInfo(uint action, uint param,
-            ref FILTERKEY vparam, uint init)
-		{
-			return true; // F'real.
-		}
-#endif
 		
         private const uint SPI_GETFILTERKEYS = 0x0032;
         private const uint SPI_SETFILTERKEYS = 0x0033;
@@ -81,6 +66,12 @@ namespace Microsoft.Xna.Framework
         /// </summary>
         public static void AllowAccessibilityShortcutKeys(bool bAllowKeys)
         {
+			if (	System.Environment.OSVersion.Platform == System.PlatformID.MacOSX ||
+			    	System.Environment.OSVersion.Platform == System.PlatformID.Unix	)
+			{
+				return; // Not Windows? Bail.
+			}
+
             if (!StartupAccessibilitySet)
             {
                 StartupStickyKeys.cbSize = SKEYSize;
@@ -132,5 +123,4 @@ namespace Microsoft.Xna.Framework
         }
 
     }
-#endif
 }
