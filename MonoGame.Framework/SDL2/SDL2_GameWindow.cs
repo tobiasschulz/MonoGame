@@ -326,6 +326,7 @@ namespace Microsoft.Xna.Framework
             
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
+            GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
             
             SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
