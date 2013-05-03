@@ -932,12 +932,28 @@ namespace Microsoft.Xna.Framework.Input
 
 		public static int GetPadCount()
 		{
-			return SDL.SDL_NumJoysticks();
+			return INTERNAL_devices.Count(x => x != IntPtr.Zero);
 		}
 
 		public static PadConfig GetConfig(PlayerIndex index)
 		{
 			return INTERNAL_settings[(int) index];
+		}
+
+		public static int? GetPressedButtonId()
+		{
+			for (int i = 0; i < INTERNAL_devices.Length; i++)
+			{
+				IntPtr device = INTERNAL_devices[(int) PlayerIndex.One + i];
+				for (int j = 0; j < SDL.SDL_JoystickNumButtons(device); j++)
+				{
+					if (SDL.SDL_JoystickGetButton(device, j) > 0)
+					{
+						return j;
+					}
+				}
+			}
+			return null;
 		}
 
 		// END FEZ SPECIFIC STUFF
