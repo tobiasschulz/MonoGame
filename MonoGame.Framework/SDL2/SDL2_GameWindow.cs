@@ -103,6 +103,7 @@ namespace Microsoft.Xna.Framework
         
         private int INTERNAL_glFramebuffer;
         private int INTERNAL_glColorAttachment;
+        private int INTERNAL_glDepthStencilAttachment;
         private int INTERNAL_glFramebufferWidth;
         private int INTERNAL_glFramebufferHeight;
         
@@ -422,6 +423,7 @@ namespace Microsoft.Xna.Framework
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
             GL.GenTextures(1, out INTERNAL_glColorAttachment);
+            GL.GenTextures(1, out INTERNAL_glDepthStencilAttachment);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
             GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glColorAttachment);
             GL.TexImage2D(
@@ -435,6 +437,18 @@ namespace Microsoft.Xna.Framework
                 PixelType.UnsignedInt,
                 IntPtr.Zero
             );
+            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Depth24Stencil8,
+                800,
+                600,
+                0,
+                PixelFormat.DepthStencil,
+                PixelType.UnsignedInt248,
+                IntPtr.Zero
+            );
             GL.FramebufferTexture2D(
                 FramebufferTarget.Framebuffer,
                 FramebufferAttachment.ColorAttachment0,
@@ -442,6 +456,13 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_glColorAttachment,
                 0
             );
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+				FramebufferAttachment.DepthStencilAttachment,
+				TextureTarget.Texture2D,
+				INTERNAL_glDepthStencilAttachment,
+				0
+			);
             GL.BindTexture(TextureTarget.Texture2D, 0);
             INTERNAL_glFramebufferWidth = 800;
             INTERNAL_glFramebufferHeight = 600;
@@ -515,6 +536,18 @@ namespace Microsoft.Xna.Framework
                 PixelType.UnsignedInt,
                 IntPtr.Zero
             );
+            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Depth24Stencil8,
+                clientWidth,
+                clientHeight,
+                0,
+                PixelFormat.DepthStencil,
+                PixelType.UnsignedInt248,
+                IntPtr.Zero
+			);
             INTERNAL_glFramebufferWidth = clientWidth;
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
