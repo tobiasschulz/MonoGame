@@ -90,6 +90,7 @@ namespace Microsoft.Xna.Framework
         
         private IntPtr INTERNAL_sdlWindow;
         private string INTERNAL_sdlWindowTitle;
+        
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
         
@@ -103,6 +104,7 @@ namespace Microsoft.Xna.Framework
         
         private int INTERNAL_glFramebuffer;
         private int INTERNAL_glColorAttachment;
+        private int INTERNAL_glDepthStencilAttachment;
         private int INTERNAL_glFramebufferWidth;
         private int INTERNAL_glFramebufferHeight;
         
@@ -326,6 +328,7 @@ namespace Microsoft.Xna.Framework
             
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
+            GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
             
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
@@ -382,8 +385,9 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_BLUE_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_ALPHA_SIZE, 8);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DEPTH_SIZE, 16);
-            IsVSync = true;
+            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
+            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
+            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             
             INTERNAL_sdlWindowTitle = "MonoGame Window";
             
@@ -406,9 +410,13 @@ namespace Microsoft.Xna.Framework
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
             OpenTK.Graphics.OpenGL.GL.LoadAll();
             
+            // We default to VSync being on.
+            IsVSync = true;
+            
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
             GL.GenTextures(1, out INTERNAL_glColorAttachment);
+            GL.GenTextures(1, out INTERNAL_glDepthStencilAttachment);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
             GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glColorAttachment);
             GL.TexImage2D(
@@ -422,11 +430,30 @@ namespace Microsoft.Xna.Framework
                 PixelType.UnsignedInt,
                 IntPtr.Zero
             );
+            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Depth24Stencil8,
+                800,
+                600,
+                0,
+                PixelFormat.DepthStencil,
+                PixelType.UnsignedInt248,
+                IntPtr.Zero
+            );
             GL.FramebufferTexture2D(
                 FramebufferTarget.Framebuffer,
                 FramebufferAttachment.ColorAttachment0,
                 TextureTarget.Texture2D,
                 INTERNAL_glColorAttachment,
+                0
+            );
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.DepthStencilAttachment,
+                TextureTarget.Texture2D,
+                INTERNAL_glDepthStencilAttachment,
                 0
             );
             GL.BindTexture(TextureTarget.Texture2D, 0);
@@ -502,10 +529,25 @@ namespace Microsoft.Xna.Framework
                 PixelType.UnsignedInt,
                 IntPtr.Zero
             );
+            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Depth24Stencil8,
+                clientWidth,
+                clientHeight,
+                0,
+                PixelFormat.DepthStencil,
+                PixelType.UnsignedInt248,
+                IntPtr.Zero
+            );
             INTERNAL_glFramebufferWidth = clientWidth;
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
+            
+            // Be sure the mouse is still hidden!
+            SDL.SDL_ShowCursor(0);
         }
         
         #endregion
