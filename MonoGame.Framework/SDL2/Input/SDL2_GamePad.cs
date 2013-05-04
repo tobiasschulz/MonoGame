@@ -732,6 +732,9 @@ namespace Microsoft.Xna.Framework.Input
             }
             
             // SDL_Joystick
+
+            // Actually, don't. Fall back to SdlGamePad if we're not a GameController.
+            return GamePadState.InitializedState;
             
             PadConfig config = INTERNAL_settings[(int) index];
             if (config == null)
