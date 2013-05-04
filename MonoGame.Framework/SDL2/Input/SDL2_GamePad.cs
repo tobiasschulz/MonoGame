@@ -123,12 +123,8 @@ namespace Microsoft.Xna.Framework.Input
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
-            if (    INTERNAL_haptics[(int) playerIndex] == IntPtr.Zero ||
-                    SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int) playerIndex]) == 0  )
-            {
-                return false;
-            }
-            return true;
+            return !(   INTERNAL_haptics[(int) playerIndex] == IntPtr.Zero ||
+                        SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int) playerIndex]) == 0  );
         }
   
         // Prepare the MonoGameJoystick configuration system
@@ -356,6 +352,14 @@ namespace Microsoft.Xna.Framework.Input
                         ", will use SDL_GameController support."
                     );
                     continue;
+                }
+                else
+                {
+                    System.Console.WriteLine(
+                        "Controller " + x + ", " +
+                        SDL.SDL_JoystickName(INTERNAL_devices[x]) +
+                        ", will use generic MonoGameJoystick support."
+                    );
                 }
                 
                 // Where the joystick configurations will be adapted to
@@ -625,32 +629,32 @@ namespace Microsoft.Xna.Framework.Input
                 // Sticks
                 GamePadThumbSticks gc_sticks = new GamePadThumbSticks(
                     new Vector2(
-                        SDL.SDL_GameControllerGetAxis(
+                        (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX
-                        ),
-                        SDL.SDL_GameControllerGetAxis(
+                        ) / 32768.0f,
+                        (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY
-                        )
+                        ) / 32768.0f
                     ),
                     new Vector2(
-                        SDL.SDL_GameControllerGetAxis(
+                        (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX
-                        ),
-                        SDL.SDL_GameControllerGetAxis(
+                        ) / 32768.0f,
+                        (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY
-                        )
+                        ) / 32768.0f
                     )
                 );
                 gc_sticks.ApplyDeadZone(deadZone, DeadZoneSize);
                 
                 // Triggers
                 GamePadTriggers gc_triggers = new GamePadTriggers(
-                    SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT),
-                    SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+                    (float) SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32768.0f,
+                    (float) SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32768.0f
                 );
                 
                 // Buttons
