@@ -121,10 +121,6 @@ namespace Microsoft.Xna.Framework.Input
         {
             return !(   INTERNAL_haptics[(int)playerIndex] == IntPtr.Zero ||
                         SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int)playerIndex]) == 0  );
-            {
-                return false;
-            }
-            return true;
         }
   
         // Prepare the MonoGameJoystick configuration system
