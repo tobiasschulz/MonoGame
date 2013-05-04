@@ -711,7 +711,7 @@ namespace Microsoft.Xna.Framework.Graphics
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
             {
                 // Fix up the Image to match the expected format
-				if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+				if (Environment.OSVersion.Platform != PlatformID.MacOSX || Directory.Exists("/Users/"))
 				{
                 	image.RGBToBGR();
 				}

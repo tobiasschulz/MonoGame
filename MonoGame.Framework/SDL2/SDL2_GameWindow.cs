@@ -386,7 +386,7 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_ALPHA_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-            IsVSync = true;
+            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             
             INTERNAL_sdlWindowTitle = "MonoGame Window";
             
@@ -408,6 +408,9 @@ namespace Microsoft.Xna.Framework
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
             OpenTK.Graphics.OpenGL.GL.LoadAll();
+			
+			// We start with VSync on by default.
+            IsVSync = true;
 
             // Create a background context
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
@@ -553,6 +556,9 @@ namespace Microsoft.Xna.Framework
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
+			
+			// Ensure the cursor stays hidden!
+			SDL.SDL_ShowCursor(0);
         }
         
         #endregion
