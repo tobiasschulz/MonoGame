@@ -119,8 +119,8 @@ namespace Microsoft.Xna.Framework.Input
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
-            if (    INTERNAL_haptics[(int) playerIndex] == IntPtr.Zero ||
-                    SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int) playerIndex]) == 0  )
+            return !(   INTERNAL_haptics[(int)playerIndex] == IntPtr.Zero ||
+                        SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int)playerIndex]) == 0  );
             {
                 return false;
             }
