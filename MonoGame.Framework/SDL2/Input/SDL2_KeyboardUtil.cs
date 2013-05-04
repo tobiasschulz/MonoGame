@@ -378,6 +378,9 @@ namespace Microsoft.Xna.Framework.Input
 			
 				case SDL.SDL_Keycode.SDLK_z:				
 					return Keys.Z;
+
+				case SDL.SDL_Keycode.SDLK_QUESTION:
+					return Keys.OemQuestion; // Is this even right?
 				
 				default:
 					return Keys.None;	                    
