@@ -317,6 +317,10 @@ namespace Microsoft.Xna.Framework
                         break;
                     }
                 }
+                if (keys.Contains(Keys.LeftAlt) && keys.Contains(Keys.F4))
+                {
+                    INTERNAL_runApplication = false;
+                }
                 Keyboard.SetKeys(keys);
                 Game.Tick();
             }
