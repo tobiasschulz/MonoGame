@@ -48,6 +48,42 @@ using SDL2;
 
 namespace Microsoft.Xna.Framework.Input
 {
+    // FIXME: Uhhh, these structs really shouldn't be public.
+
+    [Serializable]
+    public struct MonoGameJoystickValue
+    {
+        public InputType INPUT_TYPE;
+        public int INPUT_ID;
+        public bool INPUT_INVERT;
+    }
+
+    [Serializable]
+    public struct MonoGameJoystickConfig
+    {
+        // public MonoGameJoystickValue BUTTON_GUIDE;
+        public MonoGameJoystickValue BUTTON_START;
+        public MonoGameJoystickValue BUTTON_BACK;
+        public MonoGameJoystickValue BUTTON_A;
+        public MonoGameJoystickValue BUTTON_B;
+        public MonoGameJoystickValue BUTTON_X;
+        public MonoGameJoystickValue BUTTON_Y;
+        public MonoGameJoystickValue SHOULDER_LB;
+        public MonoGameJoystickValue SHOULDER_RB;
+        public MonoGameJoystickValue TRIGGER_RT;
+        public MonoGameJoystickValue TRIGGER_LT;
+        public MonoGameJoystickValue BUTTON_LSTICK;
+        public MonoGameJoystickValue BUTTON_RSTICK;
+        public MonoGameJoystickValue DPAD_UP;
+        public MonoGameJoystickValue DPAD_DOWN;
+        public MonoGameJoystickValue DPAD_LEFT;
+        public MonoGameJoystickValue DPAD_RIGHT;
+        public MonoGameJoystickValue AXIS_LX;
+        public MonoGameJoystickValue AXIS_LY;
+        public MonoGameJoystickValue AXIS_RX;
+        public MonoGameJoystickValue AXIS_RY;
+    }
+
     //
     // Summary:
     //     Allows retrieval of user interaction with an Xbox 360 Controller and setting
@@ -55,6 +91,8 @@ namespace Microsoft.Xna.Framework.Input
     //     code samples.
     public static class SdlGamePad
     {
+        // NOTE: SdlGamePad uses SDL_Joystick, GamePad uses SDL_GameController -flibit
+
         // The SDL device lists
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
@@ -64,12 +102,6 @@ namespace Microsoft.Xna.Framework.Input
         
         // Where we will load our config file into.
         private static MonoGameJoystickConfig INTERNAL_joystickConfig;
-        
-        // Explicitly initialize the SDL Joystick/GameController subsystems
-        private static bool Init()
-        {
-            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER) == 0;
-        }
         
         // Call this when you're done, if you don't want to depend on SDL_Quit();
         internal static void Cleanup()
@@ -98,9 +130,9 @@ namespace Microsoft.Xna.Framework.Input
         // Prepare the MonoGameJoystick configuration system
 		private static void INTERNAL_AutoConfig()
 		{
-			if (!Init())
+			if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 0)
             {
-                return;
+                SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK);
             }
             
             // Get the intended config file path.
@@ -294,15 +326,14 @@ namespace Microsoft.Xna.Framework.Input
             
 			for (int x = 0; x < numSticks; x++)
 			{
-                // Initialize either a GameController or a Joystick.
+                // Initialize Joysticks only!
                 if (SDL.SDL_IsGameController(x) == SDL.SDL_bool.SDL_TRUE)
                 {
-                    INTERNAL_devices[x] = SDL.SDL_GameControllerOpen(x);
+                    continue;
                 }
-                else
-                {
-                    INTERNAL_devices[x] = SDL.SDL_JoystickOpen(x);
-                }
+
+                // K, we're a joystick. Let us begin!
+                INTERNAL_devices[x] = SDL.SDL_JoystickOpen(x);
                 
                 // Initialize the haptics for each joystick.
                 INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
@@ -311,16 +342,11 @@ namespace Microsoft.Xna.Framework.Input
                     SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
                 }
     
-                // Check for an SDL_GameController configuration first!
-                if (SDL.SDL_IsGameController(x) == SDL.SDL_bool.SDL_TRUE)
-                {
-                    System.Console.WriteLine(
-                        "Controller " + x + ", " +
-                        SDL.SDL_GameControllerName(INTERNAL_devices[x]) +
-                        ", will use SDL_GameController support."
-                    );
-                    continue;
-                }
+                System.Console.WriteLine(
+                    "Controller " + x + ", " +
+                    SDL.SDL_JoystickName(INTERNAL_devices[x]) +
+                    ", will use generic MonoGameJoystick support."
+                );
                 
                 // Where the joystick configurations will be adapted to
                 PadConfig pc = new PadConfig(SDL.SDL_JoystickName(INTERNAL_devices[x]), x);
@@ -582,121 +608,6 @@ namespace Microsoft.Xna.Framework.Input
             // Do not attempt to understand this number at all costs!
             const float DeadZoneSize = 0.27f;
             
-            // SDL_GameController
-            
-            if (SDL.SDL_IsGameController((int) index) == SDL.SDL_bool.SDL_TRUE)
-            {
-                // Sticks
-                GamePadThumbSticks gc_sticks = new GamePadThumbSticks(
-                    new Vector2(
-                        SDL.SDL_GameControllerGetAxis(
-                            device,
-                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX
-                        ),
-                        SDL.SDL_GameControllerGetAxis(
-                            device,
-                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY
-                        )
-                    ),
-                    new Vector2(
-                        SDL.SDL_GameControllerGetAxis(
-                            device,
-                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX
-                        ),
-                        SDL.SDL_GameControllerGetAxis(
-                            device,
-                            SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY
-                        )
-                    )
-                );
-                gc_sticks.ApplyDeadZone(deadZone, DeadZoneSize);
-                
-                // Triggers
-                GamePadTriggers gc_triggers = new GamePadTriggers(
-                    SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT),
-                    SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
-                );
-                
-                // Buttons
-                GamePadButtons gc_buttons;
-                Buttons gc_buttonState = (Buttons) 0;
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A) != 0)
-                {
-                    gc_buttonState |= Buttons.A;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_B) != 0)
-                {
-                    gc_buttonState |= Buttons.B;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_X) != 0)
-                {
-                    gc_buttonState |= Buttons.X;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_Y) != 0)
-                {
-                    gc_buttonState |= Buttons.Y;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK) != 0)
-                {
-                    gc_buttonState |= Buttons.Back;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE) != 0)
-                {
-                    gc_buttonState |= Buttons.BigButton;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START) != 0)
-                {
-                    gc_buttonState |= Buttons.Start;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSTICK) != 0)
-                {
-                    gc_buttonState |= Buttons.LeftStick;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSTICK) != 0)
-                {
-                    gc_buttonState |= Buttons.RightStick;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_LEFTSHOULDER) != 0)
-                {
-                    gc_buttonState |= Buttons.LeftShoulder;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) != 0)
-                {
-                    gc_buttonState |= Buttons.RightShoulder;
-                }
-                gc_buttons = new GamePadButtons(gc_buttonState);
-                
-                // DPad
-                GamePadDPad gc_dpad;
-                Buttons gc_dpadState = (Buttons) 0;
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP) != 0)
-                {
-                    gc_dpadState |= Buttons.DPadUp;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN) != 0)
-                {
-                    gc_dpadState |= Buttons.DPadDown;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT) != 0)
-                {
-                    gc_dpadState |= Buttons.DPadLeft;
-                }
-                if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT) != 0)
-                {
-                    gc_dpadState |= Buttons.DPadRight;
-                }
-                gc_dpad = new GamePadDPad(gc_dpadState);
-                
-                return new GamePadState(
-                    gc_sticks,
-                    gc_triggers,
-                    gc_buttons,
-                    gc_dpad
-                );
-            }
-            
-            // SDL_Joystick
-            
             PadConfig config = INTERNAL_settings[(int) index];
             if (config == null)
             {
@@ -767,43 +678,6 @@ namespace Microsoft.Xna.Framework.Input
         //     Index of the controller to query.
         public static GamePadCapabilities GetCapabilities(PlayerIndex playerIndex)
         {
-            // SDL_GameController Capabilities
-            
-            if (SDL.SDL_IsGameController((int) playerIndex) == SDL.SDL_bool.SDL_TRUE)
-            {
-                // An SDL_GameController will _always_ be feature-complete.
-                return new GamePadCapabilities()
-                {
-                    IsConnected = INTERNAL_devices[(int) playerIndex] != IntPtr.Zero,
-                    HasAButton = true,
-                    HasBButton = true,
-                    HasXButton = true,
-                    HasYButton = true,
-                    HasBackButton = true,
-                    HasStartButton = true,
-                    HasDPadDownButton = true,
-                    HasDPadLeftButton = true,
-                    HasDPadRightButton = true,
-                    HasDPadUpButton = true,
-                    HasLeftShoulderButton = true,
-                    HasRightShoulderButton = true,
-                    HasLeftStickButton = true,
-                    HasRightStickButton = true,
-                    HasLeftTrigger = true,
-                    HasRightTrigger = true,
-                    HasLeftXThumbStick = true,
-                    HasLeftYThumbStick = true,
-                    HasRightXThumbStick = true,
-                    HasRightYThumbStick = true,
-                    HasBigButton = true,
-                    HasLeftVibrationMotor = INTERNAL_HapticSupported(playerIndex),
-                    HasRightVibrationMotor = INTERNAL_HapticSupported(playerIndex),
-                    HasVoiceSupport = false
-                };
-            }
-            
-            // SDL_Joystick Capabilities
-            
             IntPtr d = INTERNAL_devices[(int) playerIndex];
             PadConfig c = INTERNAL_settings[(int) playerIndex];
 
