@@ -781,7 +781,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 // Fix up the Image to match the expected format
                 // Ignore this OSX though, we actually prefer the original endianness.
-                if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+                if (Environment.OSVersion.Platform != PlatformID.MacOSX || Directory.Exists("/Users/"))
                 {
                     image.RGBToBGR();
                 }

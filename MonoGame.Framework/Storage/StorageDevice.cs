@@ -467,7 +467,7 @@ namespace Microsoft.Xna.Framework.Storage
 #if WINRT
                 return ApplicationData.Current.LocalFolder.Path; 
 #else
-                if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+                if (Environment.OSVersion.Platform == PlatformID.MacOSX || Directory.Exists("/Users/"))
                 {
                     string osConfigDir = Environment.GetEnvironmentVariable("HOME");
                     if (String.IsNullOrEmpty(osConfigDir))
