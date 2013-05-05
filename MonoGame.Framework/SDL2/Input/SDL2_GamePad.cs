@@ -354,9 +354,9 @@ namespace Microsoft.Xna.Framework.Input
         //     motor.
         public static void SetVibration(PlayerIndex playerIndex, float leftMotor, float rightMotor)
         {
-            if (INTERNAL_HapticSupported(playerIndex))
+            if (!INTERNAL_HapticSupported(playerIndex))
             {
-                //return false;
+                return;
             }
             
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
