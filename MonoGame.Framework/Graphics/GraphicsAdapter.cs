@@ -60,6 +60,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             _screen = sdlWindow;
         }
+        internal GraphicsAdapter() { }
 #elif IOS
 		private UIScreen _screen;
         internal GraphicsAdapter(UIScreen screen)
@@ -113,12 +114,25 @@ namespace Microsoft.Xna.Framework.Graphics
             get {
                 if (adapters == null) {
 #if SDL2
-                    adapters = new ReadOnlyCollection<GraphicsAdapter>(
-                        new GraphicsAdapter[]
-                        {
-                            new GraphicsAdapter(Game.Instance.Window.Handle)
-                        }
-                    );
+                    if (    Game.Instance == null ||
+                            Game.Instance.Window.Handle == IntPtr.Zero   )
+                    {
+                        adapters = new ReadOnlyCollection<GraphicsAdapter>(
+                            new GraphicsAdapter[]
+                            {
+                                new GraphicsAdapter() // Oh well...
+                            }
+                        );
+                    }
+                    else
+                    {
+	                adapters = new ReadOnlyCollection<GraphicsAdapter>(
+	                    new GraphicsAdapter[]
+	                    {
+	                        new GraphicsAdapter(Game.Instance.Window.Handle)
+	                    }
+	                );
+                    }
 #elif IOS
 					adapters = new ReadOnlyCollection<GraphicsAdapter>(
 						new GraphicsAdapter[] {new GraphicsAdapter(UIScreen.MainScreen)});
