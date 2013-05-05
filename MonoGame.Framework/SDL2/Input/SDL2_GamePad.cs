@@ -947,7 +947,7 @@ namespace Microsoft.Xna.Framework.Input
         //     motor.
         public static bool SetVibration(PlayerIndex playerIndex, float leftMotor, float rightMotor)
         {
-            if (INTERNAL_HapticSupported(playerIndex))
+            if (!INTERNAL_HapticSupported(playerIndex))
             {
                 return false;
             }
