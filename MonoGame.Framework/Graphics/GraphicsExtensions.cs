@@ -749,9 +749,20 @@ namespace Microsoft.Xna.Framework.Graphics
         public static void LogToFile(LogSeverity severity, string message)
         {
             const string TimeFormat = "HH:mm:ss.fff";
+			string filePath;
+			if (	Environment.OSVersion.Platform == PlatformID.MacOSX ||
+			    	Environment.OSVersion.Platform == PlatformID.Unix	)
+			{
+				filePath = Storage.StorageDevice.StorageRoot;
+			}
+			else
+			{
+				filePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			}
+			Path.Combine(filePath, "FEZ", "Debug Log.txt");
             try 
             {
-                using (var stream = File.Open(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FEZ\\Debug Log.txt", FileMode.Append))
+                using (var stream = File.Open(filePath, FileMode.Append))
                 {
                     using (var writer = new StreamWriter(stream))
                     {

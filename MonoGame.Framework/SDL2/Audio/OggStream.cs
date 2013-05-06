@@ -38,16 +38,27 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
         }
 
-        public static void Log(string message)
+        public static void Log(string message, string module = "OpenAL")
         {
             try
             {
-                Console.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
-                using (var stream = File.Open("Debug Log.txt", FileMode.Append))
+                Console.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), module, message);
+				string filePath;
+				if (	Environment.OSVersion.Platform == PlatformID.MacOSX ||
+				    	Environment.OSVersion.Platform == PlatformID.Unix	)
+				{
+					filePath = Storage.StorageDevice.StorageRoot;
+				}
+				else
+				{
+					filePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+				}
+				Path.Combine(filePath, "FEZ", "Debug Log.txt");
+                using (var stream = File.Open(filePath, FileMode.Append))
                 {
                     using (var writer = new StreamWriter(stream))
                     {
-                        writer.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), "OpenAL", message);
+                        writer.WriteLine("({0}) [{1}] {2}", DateTime.Now.ToString("HH:mm:ss.fff"), module, message);
                     }
                 }
             }
