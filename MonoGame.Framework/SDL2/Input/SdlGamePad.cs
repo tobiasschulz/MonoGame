@@ -154,14 +154,10 @@ namespace Microsoft.Xna.Framework.Input
                     osConfigFile += Environment.GetEnvironmentVariable("HOME");
                     if (osConfigFile.Length == 0)
                     {
-                        System.Console.WriteLine("Couldn't find XDG_CONFIG_HOME or HOME.");
-                        System.Console.WriteLine("Fall back to '.'");
                         osConfigFile += "MonoGameJoystick.cfg"; // Oh well.
                     }
                     else
                     {
-                        System.Console.WriteLine("Couldn't find XDG_CONFIG_HOME.");
-                        System.Console.WriteLine("Fall back to hardcoded ~/.config/MonoGame/.");
                         osConfigFile += "/.config/MonoGame/MonoGameJoystick.cfg";
                     }
                 }
