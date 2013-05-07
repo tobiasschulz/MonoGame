@@ -350,7 +350,7 @@ namespace Microsoft.Xna.Framework
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
             
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext);
+            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
