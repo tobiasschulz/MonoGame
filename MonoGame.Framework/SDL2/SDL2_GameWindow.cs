@@ -424,7 +424,6 @@ namespace Microsoft.Xna.Framework
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
             
             // We never want to show the OS mouse cursor!
-            SDL.SDL_ShowCursor(1);
             SDL.SDL_ShowCursor(0);
             
             // Initialize OpenGL
