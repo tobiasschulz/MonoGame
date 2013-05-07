@@ -286,23 +286,40 @@ namespace Microsoft.Xna.Framework
                         }
                     }
 
-                    // Active window
+                    // Various Window Events...
                     else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
                     {
+                        // Window Focus
                         if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
                         {
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
+                            SDL.SDL_ShowCursor(1);
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
-                            SDL.SDL_SetWindowFullscreen (INTERNAL_sdlWindow, 0);
+                            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
+                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_SetCursor(IntPtr.Zero);
                         }
+
+                        // Window Resize
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED ||
                                  evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
                         {
                             Mouse.INTERNAL_WindowWidth = evt.window.data1;
                             Mouse.INTERNAL_WindowHeight = evt.window.data2;
+                        }
+
+                        // Mouse Focus
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
+                        {
+                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_SetCursor(IntPtr.Zero);
+                        }
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
+                        {
+                            SDL.SDL_ShowCursor(1);
                         }
                     }
                     
@@ -407,7 +424,6 @@ namespace Microsoft.Xna.Framework
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
             
             // We never want to show the OS mouse cursor!
-            SDL.SDL_ShowCursor(1);
             SDL.SDL_ShowCursor(0);
             
             // Initialize OpenGL
@@ -552,8 +568,8 @@ namespace Microsoft.Xna.Framework
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
             
             // Be sure the mouse is still hidden!
-            SDL.SDL_ShowCursor(1);
             SDL.SDL_ShowCursor(0);
+            SDL.SDL_SetCursor(IntPtr.Zero);
         }
         
         #endregion
