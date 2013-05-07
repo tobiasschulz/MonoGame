@@ -90,6 +90,7 @@ namespace Microsoft.Xna.Framework
         
         private IntPtr INTERNAL_sdlWindow;
         private string INTERNAL_sdlWindowTitle;
+        
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
         
@@ -284,23 +285,40 @@ namespace Microsoft.Xna.Framework
                         }
                     }
 
-                    // Active window
+                    // Various Window Events...
                     else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
                     {
+                        // Window Focus
                         if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
                         {
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
+                            SDL.SDL_ShowCursor(1);
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
-                            SDL.SDL_SetWindowFullscreen (INTERNAL_sdlWindow, 0);
+                            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
+                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_SetCursor(IntPtr.Zero);
                         }
+
+                        // Window Resize
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED ||
                                  evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
                         {
                             Mouse.INTERNAL_WindowWidth = evt.window.data1;
                             Mouse.INTERNAL_WindowHeight = evt.window.data2;
+                        }
+
+                        // Mouse Focus
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
+                        {
+                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_SetCursor(IntPtr.Zero);
+                        }
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
+                        {
+                            SDL.SDL_ShowCursor(1);
                         }
                     }
                     
@@ -332,7 +350,7 @@ namespace Microsoft.Xna.Framework
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
             
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
+            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext);
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
@@ -412,8 +430,8 @@ namespace Microsoft.Xna.Framework
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
             OpenTK.Graphics.OpenGL.GL.LoadAll();
-			
-			// We start with VSync on by default.
+            
+            // We default to VSync being on.
             IsVSync = true;
 
             // Create a background context
@@ -426,7 +444,6 @@ namespace Microsoft.Xna.Framework
 
             // Make the foreground context current.
             SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
-
             
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
@@ -555,14 +572,15 @@ namespace Microsoft.Xna.Framework
                 PixelFormat.DepthStencil,
                 PixelType.UnsignedInt248,
                 IntPtr.Zero
-			);
+            );
             INTERNAL_glFramebufferWidth = clientWidth;
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
-			
-			// Ensure the cursor stays hidden!
-			SDL.SDL_ShowCursor(0);
+            
+            // Be sure the mouse is still hidden!
+            SDL.SDL_ShowCursor(0);
+            SDL.SDL_SetCursor(IntPtr.Zero);
         }
         
         #endregion
