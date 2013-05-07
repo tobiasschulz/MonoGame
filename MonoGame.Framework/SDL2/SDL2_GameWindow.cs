@@ -424,6 +424,7 @@ namespace Microsoft.Xna.Framework
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
             
             // We never want to show the OS mouse cursor!
+            SDL.SDL_ShowCursor(1);
             SDL.SDL_ShowCursor(0);
             
             // Initialize OpenGL
@@ -577,7 +578,7 @@ namespace Microsoft.Xna.Framework
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
-            
+
             // Be sure the mouse is still hidden!
             SDL.SDL_ShowCursor(0);
             SDL.SDL_SetCursor(IntPtr.Zero);
