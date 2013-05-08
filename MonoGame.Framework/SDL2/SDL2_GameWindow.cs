@@ -293,12 +293,12 @@ namespace Microsoft.Xna.Framework
                         {
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
-                            SDL.SDL_ShowCursor(1);
+                            SDL.SDL_ShowCursor(0);
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
-                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_ShowCursor(1);
                             SDL.SDL_SetCursor(IntPtr.Zero);
                         }
 
