@@ -118,6 +118,10 @@ namespace Microsoft.Xna.Framework.Input
             {
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
             }
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 1)
+            {
+                SDL.SDL_QuitSubSystem(SDL.SDL_INIT_HAPTIC);
+            }
         }
         
         // Convenience method to check for Rumble support
@@ -630,6 +634,9 @@ namespace Microsoft.Xna.Framework.Input
             
             if (SDL.SDL_IsGameController((int) index) == SDL.SDL_bool.SDL_TRUE)
             {
+                // The "master" button state is built from this.
+                Buttons gc_buttonState = (Buttons) 0;
+                
                 // Sticks
                 GamePadThumbSticks gc_sticks = new GamePadThumbSticks(
                     new Vector2(
@@ -654,16 +661,40 @@ namespace Microsoft.Xna.Framework.Input
                     )
                 );
                 gc_sticks.ApplyDeadZone(deadZone, DeadZoneSize);
+                gc_buttonState |= READ_StickToButtons(
+                    gc_sticks.Left,
+                    Buttons.LeftThumbstickLeft,
+                    Buttons.LeftThumbstickRight,
+                    Buttons.LeftThumbstickUp,
+                    Buttons.LeftThumbstickDown,
+                    DeadZoneSize
+                );
+                gc_buttonState |= READ_StickToButtons(
+                    gc_sticks.Right,
+                    Buttons.RightThumbstickLeft,
+                    Buttons.RightThumbstickRight,
+                    Buttons.RightThumbstickUp,
+                    Buttons.RightThumbstickDown,
+                    DeadZoneSize
+                );
                 
                 // Triggers
                 GamePadTriggers gc_triggers = new GamePadTriggers(
                     (float) SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32768.0f,
                     (float) SDL.SDL_GameControllerGetAxis(device, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32768.0f
                 );
+                gc_buttonState |= READ_TriggerToButton(
+                    gc_triggers.Left,
+                    Buttons.LeftTrigger,
+                    DeadZoneSize
+                );
+                gc_buttonState |= READ_TriggerToButton(
+                    gc_triggers.Right,
+                    Buttons.RightTrigger,
+                    DeadZoneSize
+                );
                 
                 // Buttons
-                GamePadButtons gc_buttons;
-                Buttons gc_buttonState = (Buttons) 0;
                 if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_A) != 0)
                 {
                     gc_buttonState |= Buttons.A;
@@ -708,28 +739,29 @@ namespace Microsoft.Xna.Framework.Input
                 {
                     gc_buttonState |= Buttons.RightShoulder;
                 }
-                gc_buttons = new GamePadButtons(gc_buttonState);
                 
                 // DPad
                 GamePadDPad gc_dpad;
-                Buttons gc_dpadState = (Buttons) 0;
                 if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_UP) != 0)
                 {
-                    gc_dpadState |= Buttons.DPadUp;
+                    gc_buttonState |= Buttons.DPadUp;
                 }
                 if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN) != 0)
                 {
-                    gc_dpadState |= Buttons.DPadDown;
+                    gc_buttonState |= Buttons.DPadDown;
                 }
                 if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT) != 0)
                 {
-                    gc_dpadState |= Buttons.DPadLeft;
+                    gc_buttonState |= Buttons.DPadLeft;
                 }
                 if (SDL.SDL_GameControllerGetButton(device, SDL.SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT) != 0)
                 {
-                    gc_dpadState |= Buttons.DPadRight;
+                    gc_buttonState |= Buttons.DPadRight;
                 }
-                gc_dpad = new GamePadDPad(gc_dpadState);
+                gc_dpad = new GamePadDPad(gc_buttonState);
+                
+                // Compile the master buttonstate
+                GamePadButtons gc_buttons = new GamePadButtons(gc_buttonState);
                 
                 return new GamePadState(
                     gc_sticks,
