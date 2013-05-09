@@ -322,18 +322,27 @@ namespace Microsoft.Xna.Framework.Input
             
 			for (int x = 0; x < numSticks; x++)
 			{
+                // We use this when dealing with Haptic initialization.
+                IntPtr thisJoystick;
+                
                 // Initialize either a GameController or a Joystick.
                 if (SDL.SDL_IsGameController(x) == SDL.SDL_bool.SDL_TRUE)
                 {
                     INTERNAL_devices[x] = SDL.SDL_GameControllerOpen(x);
+                    thisJoystick = SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x]);
                 }
                 else
                 {
                     INTERNAL_devices[x] = SDL.SDL_JoystickOpen(x);
+                    thisJoystick = INTERNAL_devices[x];
                 }
                 
                 // Initialize the haptics for each joystick.
-                INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
+                // FIXME: SDL_HAPTIC IS BROKEN! UERHGBFDVUWDMVDUWN
+                if (false) // SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
+                {
+                    INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(thisJoystick);
+                }
                 if (INTERNAL_HapticSupported((PlayerIndex) x))
                 {
                     SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
@@ -632,7 +641,7 @@ namespace Microsoft.Xna.Framework.Input
                         (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY
-                        ) / 32768.0f
+                        ) / -32768.0f
                     ),
                     new Vector2(
                         (float) SDL.SDL_GameControllerGetAxis(
@@ -642,7 +651,7 @@ namespace Microsoft.Xna.Framework.Input
                         (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY
-                        ) / 32768.0f
+                        ) / -32768.0f
                     )
                 );
                 gc_sticks.ApplyDeadZone(deadZone, DeadZoneSize);
@@ -957,7 +966,7 @@ namespace Microsoft.Xna.Framework.Input
                 // FIXME: Left and right motors as separate rumble?
                 SDL.SDL_HapticRumblePlay(
                     INTERNAL_haptics[(int) playerIndex],
-                    (leftMotor + rightMotor) / 2.0f,
+                    (leftMotor >= rightMotor) ? leftMotor : rightMotor,
                     uint.MaxValue // Oh my...
                 );
             }
