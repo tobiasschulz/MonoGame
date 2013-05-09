@@ -117,9 +117,18 @@ namespace Microsoft.Xna.Framework.Input
                 {
                     INTERNAL_devices[x] = SDL.SDL_GameControllerOpen(x);
 
-                    if (SDL.SDL_JoystickIsHaptic(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x])) == 1)
+                    // FIXME: This platform check should not be necessary!
+                    if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
                     {
-                        INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x]));
+                        if (SDL.SDL_JoystickIsHaptic(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x])) == 1)
+                        {
+                            INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x]));
+                        }
+                    }
+                    else
+                    {
+                        // For some reason GameControllerGetJoystick isn't quite the same on XInput? I don't even
+                        INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
                     }
                     if (INTERNAL_HapticSupported((PlayerIndex)x))
                     {
