@@ -114,6 +114,10 @@ namespace Microsoft.Xna.Framework.Input
             {
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
             }
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 1)
+            {
+                SDL.SDL_QuitSubSystem(SDL.SDL_INIT_HAPTIC);
+            }
         }
         
         // Convenience method to check for Rumble support
@@ -328,7 +332,11 @@ namespace Microsoft.Xna.Framework.Input
                 INTERNAL_devices[x] = SDL.SDL_JoystickOpen(x);
                 
                 // Initialize the haptics for each joystick.
-                INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
+                if (SDL.SDL_JoystickIsHaptic(INTERNAL_devices[x]) == 1)
+                {
+                    INTERNAL_haptics[x] = SDL.SDL_HapticOpen(GamePad.INTERNAL_hapticCount);
+                    GamePad.INTERNAL_hapticCount++;
+                }
                 if (INTERNAL_HapticSupported((PlayerIndex) x))
                 {
                     SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
@@ -785,10 +793,19 @@ namespace Microsoft.Xna.Framework.Input
             else
             {
                 // FIXME: Left and right motors as separate rumble?
+                float strength;
+                if (leftMotor >= rightMotor)
+                {
+                    strength = leftMotor;
+                }
+                else
+                {
+                    strength = rightMotor;
+                }
                 SDL.SDL_HapticRumblePlay(
                     INTERNAL_haptics[(int) playerIndex],
-                    (leftMotor + rightMotor) / 2.0f,
-                    uint.MaxValue // Oh my...
+                    strength,
+                    uint.MaxValue // Oh dear...
                 );
             }
             return true;

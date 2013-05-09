@@ -63,11 +63,15 @@ namespace Microsoft.Xna.Framework.Input
         // The SDL device lists
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
+
+        // Track the haptic devices.
+        // FIXME: Haptic tracking may need work.
+        internal static int INTERNAL_hapticCount = 0;
         
         // Explicitly initialize the SDL Joystick/GameController subsystems
         private static bool Init()
         {
-            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER) == 0;
+            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER | SDL.SDL_INIT_HAPTIC) == 0;
         }
         
         // Call this when you're done, if you don't want to depend on SDL_Quit();
@@ -80,6 +84,10 @@ namespace Microsoft.Xna.Framework.Input
             if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 1)
             {
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_JOYSTICK);
+            }
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 1)
+            {
+                SDL.SDL_QuitSubSystem(SDL.SDL_INIT_HAPTIC);
             }
         }
         
@@ -106,16 +114,21 @@ namespace Microsoft.Xna.Framework.Input
 
             for (int x = 0; x < numSticks; x++)
             {
-                // Initialize either a GameController or a Joystick.
+                // Initialize either a GameController or a Joystick (in SdlGamePad).
                 if (SDL.SDL_IsGameController(x) == SDL.SDL_bool.SDL_TRUE)
                 {
                     INTERNAL_devices[x] = SDL.SDL_GameControllerOpen(x);
-                    // Initialize the haptics for each joystick.
-                    INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
+
+                    if (SDL.SDL_JoystickIsHaptic(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x])) == 1)
+                    {
+                        INTERNAL_haptics[x] = SDL.SDL_HapticOpen(INTERNAL_hapticCount);
+                        INTERNAL_hapticCount++;
+                    }
                     if (INTERNAL_HapticSupported((PlayerIndex)x))
                     {
                         SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
                     }
+
                     System.Console.WriteLine(
                         "Controller " + x + ", " +
                         SDL.SDL_GameControllerName(INTERNAL_devices[x]) +
@@ -150,7 +163,7 @@ namespace Microsoft.Xna.Framework.Input
                         (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY
-                        ) / 32768.0f
+                        ) / -32768.0f
                     ),
                     new Vector2(
                         (float) SDL.SDL_GameControllerGetAxis(
@@ -160,7 +173,7 @@ namespace Microsoft.Xna.Framework.Input
                         (float) SDL.SDL_GameControllerGetAxis(
                             device,
                             SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY
-                        ) / 32768.0f
+                        ) / -32768.0f
                     )
                 );
                 gc_sticks.ApplyDeadZone(deadZone, DeadZoneSize);
@@ -358,21 +371,28 @@ namespace Microsoft.Xna.Framework.Input
             {
                 return;
             }
-            
+
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
                 SDL.SDL_HapticRumbleStop(INTERNAL_haptics[(int) playerIndex]);
             }
             else
             {
-                // FIXME: Left and right motors as separate rumble?
+                float strength;
+                if (leftMotor >= rightMotor)
+                {
+                    strength = leftMotor;
+                }
+                else
+                {
+                    strength = rightMotor;
+                }
                 SDL.SDL_HapticRumblePlay(
-                    INTERNAL_haptics[(int) playerIndex],
-                    (leftMotor + rightMotor) / 2.0f,
-                    uint.MaxValue // Oh my...
+                    INTERNAL_haptics[(int)playerIndex],
+                    strength,
+                    uint.MaxValue // Oh dear...
                 );
             }
-            //return true;
         }
     }
 }
