@@ -63,16 +63,6 @@ namespace Microsoft.Xna.Framework.Input
         // The SDL device lists
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
-
-        // Track the haptic devices.
-        // FIXME: Haptic tracking may need work.
-        internal static int INTERNAL_hapticCount = 0;
-        
-        // Explicitly initialize the SDL Joystick/GameController subsystems
-        private static bool Init()
-        {
-            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER | SDL.SDL_INIT_HAPTIC) == 0;
-        }
         
         // Call this when you're done, if you don't want to depend on SDL_Quit();
         internal static void Cleanup()
@@ -101,10 +91,18 @@ namespace Microsoft.Xna.Framework.Input
         // Prepare the MonoGameJoystick configuration system
         private static void INTERNAL_AutoConfig()
         {
-            if (!Init())
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 0)
             {
-                return;
+                SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK);
             }
+			if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 0)
+            {
+                SDL.SDL_InitSubSystem(SDL.SDL_INIT_GAMECONTROLLER);
+            }
+			if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 0)
+			{
+				SDL.SDL_InitSubSystem(SDL.SDL_INIT_HAPTIC);
+			}
 
 #if DEBUG
 			Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
@@ -121,8 +119,7 @@ namespace Microsoft.Xna.Framework.Input
 
                     if (SDL.SDL_JoystickIsHaptic(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x])) == 1)
                     {
-                        INTERNAL_haptics[x] = SDL.SDL_HapticOpen(INTERNAL_hapticCount);
-                        INTERNAL_hapticCount++;
+                        INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[x]));
                     }
                     if (INTERNAL_HapticSupported((PlayerIndex)x))
                     {

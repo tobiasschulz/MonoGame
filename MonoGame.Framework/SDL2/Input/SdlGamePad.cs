@@ -134,6 +134,14 @@ namespace Microsoft.Xna.Framework.Input
             {
                 SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK);
             }
+			if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 0)
+            {
+                SDL.SDL_InitSubSystem(SDL.SDL_INIT_GAMECONTROLLER);
+            }
+			if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 0)
+			{
+				SDL.SDL_InitSubSystem(SDL.SDL_INIT_HAPTIC);
+			}
             
             // Get the intended config file path.
             string osConfigFile = "";
@@ -334,8 +342,7 @@ namespace Microsoft.Xna.Framework.Input
                 // Initialize the haptics for each joystick.
                 if (SDL.SDL_JoystickIsHaptic(INTERNAL_devices[x]) == 1)
                 {
-                    INTERNAL_haptics[x] = SDL.SDL_HapticOpen(GamePad.INTERNAL_hapticCount);
-                    GamePad.INTERNAL_hapticCount++;
+                    INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(INTERNAL_devices[x]);
                 }
                 if (INTERNAL_HapticSupported((PlayerIndex) x))
                 {
