@@ -104,7 +104,7 @@ namespace Microsoft.Xna.Framework.Input
         // Explicitly initialize the SDL Joystick/GameController subsystems
         private static bool Init()
         {
-            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER) == 0;
+            return SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK | SDL.SDL_INIT_GAMECONTROLLER | SDL.SDL_INIT_HAPTIC) == 0;
         }
         
         // Call this when you're done, if you don't want to depend on SDL_Quit();
@@ -338,8 +338,7 @@ namespace Microsoft.Xna.Framework.Input
                 }
                 
                 // Initialize the haptics for each joystick.
-                // FIXME: SDL_HAPTIC IS BROKEN! UERHGBFDVUWDMVDUWN
-                if (false) // SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
+                if (SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
                 {
                     INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(thisJoystick);
                 }
