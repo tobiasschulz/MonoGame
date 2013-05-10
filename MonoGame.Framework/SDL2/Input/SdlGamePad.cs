@@ -123,8 +123,10 @@ namespace Microsoft.Xna.Framework.Input
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
-            return !(   INTERNAL_haptics[(int)playerIndex] == IntPtr.Zero ||
-                        SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int)playerIndex]) == 0  );
+			IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
+            return (   haptic != IntPtr.Zero &&
+			        	(	SDL.SDL_HapticEffectSupported(haptic, ref GamePad.INTERNAL_effect) == 1 ||
+			 				SDL.SDL_HapticRumbleSupported(haptic) == 1  )	);
         }
   
         // Prepare the MonoGameJoystick configuration system
@@ -344,9 +346,16 @@ namespace Microsoft.Xna.Framework.Input
                 {
                     INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(INTERNAL_devices[x]);
                 }
-                if (INTERNAL_HapticSupported((PlayerIndex) x))
+                if (INTERNAL_haptics[x] != IntPtr.Zero)
                 {
-                    SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+					if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[x], ref GamePad.INTERNAL_effect) == 1)
+					{
+						SDL.SDL_HapticNewEffect(INTERNAL_haptics[x], ref GamePad.INTERNAL_effect);
+					}
+					else if (SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[x]) == 1)
+					{
+                    	SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+					}
                 }
     
                 System.Console.WriteLine(
@@ -792,14 +801,30 @@ namespace Microsoft.Xna.Framework.Input
             {
                 return false;
             }
-            
+			
+			SDL.SDL_HapticStopAll(INTERNAL_haptics[(int) playerIndex]);
+			
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
-                SDL.SDL_HapticRumbleStop(INTERNAL_haptics[(int) playerIndex]);
+                return true;
             }
-            else
+            else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref GamePad.INTERNAL_effect) == 1)
+			{
+				GamePad.INTERNAL_effect.rumble.large_magnitude = (ushort) (32768.0f * leftMotor);
+				GamePad.INTERNAL_effect.rumble.small_magnitude = (ushort) (32768.0f * rightMotor);
+				SDL.SDL_HapticUpdateEffect(
+					INTERNAL_haptics[(int) playerIndex],
+					0,
+					ref GamePad.INTERNAL_effect
+				);
+				SDL.SDL_HapticRunEffect(
+					INTERNAL_haptics[(int) playerIndex],
+					0,
+					1
+				);
+			}
+			else
             {
-                // FIXME: Left and right motors as separate rumble?
                 float strength;
                 if (leftMotor >= rightMotor)
                 {
@@ -810,7 +835,7 @@ namespace Microsoft.Xna.Framework.Input
                     strength = rightMotor;
                 }
                 SDL.SDL_HapticRumblePlay(
-                    INTERNAL_haptics[(int) playerIndex],
+                    INTERNAL_haptics[(int)playerIndex],
                     strength,
                     uint.MaxValue // Oh dear...
                 );

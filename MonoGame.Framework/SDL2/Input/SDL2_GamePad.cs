@@ -63,6 +63,22 @@ namespace Microsoft.Xna.Framework.Input
         // The SDL device lists
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
+		
+		// We use this to apply XInput-like rumble effects.
+		internal static SDL.SDL_HapticEffect INTERNAL_effect = new SDL.SDL_HapticEffect
+		{
+			type = SDL.SDL_HAPTIC_RUMBLE,
+			rumble = new SDL.SDL_HapticRumble
+			{
+				type = SDL.SDL_HAPTIC_RUMBLE,
+				length = SDL.SDL_HAPTIC_INFINITY,
+				delay = 0,
+				button = 0,
+				interval = 0,
+				large_magnitude = ushort.MaxValue,
+				small_magnitude = ushort.MaxValue
+			}
+		};
         
         // Call this when you're done, if you don't want to depend on SDL_Quit();
         internal static void Cleanup()
@@ -84,8 +100,10 @@ namespace Microsoft.Xna.Framework.Input
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
-            return !(   INTERNAL_haptics[(int)playerIndex] == IntPtr.Zero ||
-                        SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int)playerIndex]) == 0  );
+			IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
+            return (   haptic != IntPtr.Zero &&
+			        	(	SDL.SDL_HapticEffectSupported(haptic, ref INTERNAL_effect) == 1 ||
+			 				SDL.SDL_HapticRumbleSupported(haptic) == 1  )	);
         }
 
         // Prepare the MonoGameJoystick configuration system
@@ -130,9 +148,16 @@ namespace Microsoft.Xna.Framework.Input
                         // For some reason GameControllerGetJoystick isn't quite the same on XInput? I don't even
                         INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
                     }
-                    if (INTERNAL_HapticSupported((PlayerIndex)x))
+                    if (INTERNAL_haptics[x] != IntPtr.Zero)
                     {
-                        SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+						if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[x], ref INTERNAL_effect) == 1)
+						{
+							SDL.SDL_HapticNewEffect(INTERNAL_haptics[x], ref INTERNAL_effect);
+						}
+						else if (SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[x]) == 1)
+						{
+                        	SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+						}
                     }
 
                     System.Console.WriteLine(
@@ -443,12 +468,29 @@ namespace Microsoft.Xna.Framework.Input
             {
                 return;
             }
-
+			
+			SDL.SDL_HapticStopAll(INTERNAL_haptics[(int) playerIndex]);
+			
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
-                SDL.SDL_HapticRumbleStop(INTERNAL_haptics[(int) playerIndex]);
+                return;
             }
-            else
+            else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref INTERNAL_effect) == 1)
+			{
+				INTERNAL_effect.rumble.large_magnitude = (ushort) (32768.0f * leftMotor);
+				INTERNAL_effect.rumble.small_magnitude = (ushort) (32768.0f * rightMotor);
+				SDL.SDL_HapticUpdateEffect(
+					INTERNAL_haptics[(int) playerIndex],
+					0,
+					ref INTERNAL_effect
+				);
+				SDL.SDL_HapticRunEffect(
+					INTERNAL_haptics[(int) playerIndex],
+					0,
+					1
+				);
+			}
+			else
             {
                 float strength;
                 if (leftMotor >= rightMotor)
