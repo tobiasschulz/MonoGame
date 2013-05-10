@@ -469,16 +469,15 @@ namespace Microsoft.Xna.Framework.Input
                 return;
             }
 			
-			SDL.SDL_HapticStopAll(INTERNAL_haptics[(int) playerIndex]);
-			
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
+                SDL.SDL_HapticStopAll(INTERNAL_haptics[(int)playerIndex]);
                 return;
             }
             else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref INTERNAL_effect) == 1)
 			{
-				INTERNAL_effect.rumble.large_magnitude = (ushort) (32768.0f * leftMotor);
-				INTERNAL_effect.rumble.small_magnitude = (ushort) (32768.0f * rightMotor);
+				INTERNAL_effect.rumble.large_magnitude = (ushort) (65535.0f * leftMotor);
+				INTERNAL_effect.rumble.small_magnitude = (ushort) (65535.0f * rightMotor);
 				SDL.SDL_HapticUpdateEffect(
 					INTERNAL_haptics[(int) playerIndex],
 					0,

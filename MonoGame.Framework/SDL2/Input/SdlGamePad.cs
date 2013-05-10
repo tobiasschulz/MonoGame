@@ -802,16 +802,15 @@ namespace Microsoft.Xna.Framework.Input
                 return false;
             }
 			
-			SDL.SDL_HapticStopAll(INTERNAL_haptics[(int) playerIndex]);
-			
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
+                SDL.SDL_HapticStopAll(INTERNAL_haptics[(int)playerIndex]);
                 return true;
             }
             else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref GamePad.INTERNAL_effect) == 1)
 			{
-				GamePad.INTERNAL_effect.rumble.large_magnitude = (ushort) (32768.0f * leftMotor);
-				GamePad.INTERNAL_effect.rumble.small_magnitude = (ushort) (32768.0f * rightMotor);
+				GamePad.INTERNAL_effect.rumble.large_magnitude = (ushort) (65535.0f * leftMotor);
+				GamePad.INTERNAL_effect.rumble.small_magnitude = (ushort) (65535.0f * rightMotor);
 				SDL.SDL_HapticUpdateEffect(
 					INTERNAL_haptics[(int) playerIndex],
 					0,
