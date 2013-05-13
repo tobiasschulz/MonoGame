@@ -433,7 +433,7 @@ namespace Microsoft.Xna.Framework.Graphics
                                                    _extensions.Contains("GL_EXT_texture_compression_s3tc");
 
             // Intel card driver detection
-            if (vendorString.Contains("Intel") && versionString.Contains("Build"))
+            /*if (vendorString.Contains("Intel") && versionString.Contains("Build"))
             {
                 var buildNumber = versionString.Substring(versionString.IndexOf("Build") + 6).Trim();
                 int minorBuildVersion;
@@ -447,7 +447,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
                     throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
                 }
-            }
+            }*/
 
 #if ANDROID || PSM
             GraphicsExtensions.UseDxtCompression = false;
