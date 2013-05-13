@@ -603,6 +603,12 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_sdlWindow,
                 INTERNAL_sdlWindowTitle
             );
+            
+            if (System.IO.File.Exists(title + ".bmp"))
+            {
+                IntPtr icon = SDL.SDL_LoadBMP(title + ".bmp");
+                SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+            }
         }
   
         #endregion
