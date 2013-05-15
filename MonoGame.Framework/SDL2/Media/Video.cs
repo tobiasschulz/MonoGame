@@ -100,7 +100,7 @@ namespace Microsoft.Xna.Framework.Media
             }
         }
         
-        // FIXME: This is hacked, look this up in VideoPlayer.
+        // FIXME: This is hacked, look up "This is a part of the Duration hack!"
         public TimeSpan Duration
         {
             get;
@@ -126,6 +126,9 @@ namespace Microsoft.Xna.Framework.Media
             // Initialize the decoder nice and early...
             disposed = true;
             Initialize();
+            
+            // FIXME: This is a part of the Duration hack!
+            Duration = TimeSpan.MaxValue;
 		}
         #endregion
 		
@@ -235,6 +238,9 @@ namespace Microsoft.Xna.Framework.Media
                 TheoraPlay.THEORAPLAY_freeAudio(audioStream);
                 audioStream = IntPtr.Zero;
             }
+            
+            // FIXME: This is a part of the Duration hack!
+            Duration = TimeSpan.Zero;
             
             disposed = true;
 		}

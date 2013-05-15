@@ -470,6 +470,13 @@ namespace Microsoft.Xna.Framework.Media
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             frameLocked = false;
             
+            // Initialize this here to prevent null GetTexture returns.
+            videoTexture = new Texture2D(
+                Game.Instance.GraphicsDevice,
+                1280,
+                720
+            );
+            
 #if VIDEOPLAYER_OPENGL
             // Initialize the OpenGL bits.
             GL_initialize();
@@ -488,6 +495,9 @@ namespace Microsoft.Xna.Framework.Media
             // Destroy the OpenGL bits.
             GL_dispose();
 #endif
+            
+            // Dispose the Texture.
+            videoTexture.Dispose();
             
             // Okay, we out.
             IsDisposed = true;
@@ -650,10 +660,19 @@ namespace Microsoft.Xna.Framework.Media
             // We need to assign this regardless of what happens next.
             Video = video;
             
+            // FIXME: This is a part of the Duration hack!
+            Video.Duration = TimeSpan.MaxValue;
+            
             // Check the player state before attempting anything.
             if (State != MediaState.Stopped)
             {
                 return;
+            }
+            
+            // In rare cases, the thread might still be going. Wait until it's done.
+            if (playerThread.IsAlive)
+            {
+                Stop();
             }
             
             // Update the player state now, for the thread we're about to make.
@@ -673,6 +692,7 @@ namespace Microsoft.Xna.Framework.Media
             if (TheoraPlay.THEORAPLAY_hasVideoStream(Video.theoraDecoder) != 0)
             {
                 currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                Texture2D overlap = videoTexture;
                 videoTexture = new Texture2D(
                     Game.Instance.GraphicsDevice,
                     (int) currentVideo.width,
@@ -680,6 +700,7 @@ namespace Microsoft.Xna.Framework.Media
                     false,
                     SurfaceFormat.Color
                 );
+                overlap.Dispose();
 #if VIDEOPLAYER_OPENGL
                 GL_setupTargets(
                     (int) currentVideo.width,
@@ -708,10 +729,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Update the player state.
             State = MediaState.Stopped;
-            
-            // FIXME: HUGE HACK. Set the Video Duration to Zero.
-            // That way checks like playpos < Duration check out.
-            Video.Duration = TimeSpan.Zero;
             
             // Wait for the player to end if it's still going.
             if (!playerThread.IsAlive)
@@ -893,9 +910,6 @@ namespace Microsoft.Xna.Framework.Media
                                 // Assign next frame, free old one.
                                 currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
                                 TheoraPlay.THEORAPLAY_freeVideo(hold);
-                                
-                                // FIXME: HUGE HACK. Nobody will suspect a thing!
-                                Video.Duration = TimeSpan.MaxValue;
                             }
                         }
                     }
