@@ -239,9 +239,6 @@ namespace Microsoft.Xna.Framework.Media
                 audioStream = IntPtr.Zero;
             }
             
-            // FIXME: This is a part of the Duration hack!
-            Duration = TimeSpan.Zero;
-            
             disposed = true;
 		}
         #endregion

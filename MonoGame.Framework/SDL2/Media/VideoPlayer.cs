@@ -926,6 +926,9 @@ namespace Microsoft.Xna.Framework.Media
                     // If we're done decoding, we hit the end.
                     if (TheoraPlay.THEORAPLAY_isDecoding(Video.theoraDecoder) == 0)
                     {
+                        // FIXME: This is a part of the Duration hack!
+                        Video.Duration = new TimeSpan(0, 0, 0, 0, (int) currentVideo.playms);
+                        
                         // Stop and reset the timer.
                         // If we're looping, the loop will start it again.
                         timer.Stop();
