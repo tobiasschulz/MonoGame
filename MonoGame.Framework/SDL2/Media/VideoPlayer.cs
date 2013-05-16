@@ -414,7 +414,9 @@ namespace Microsoft.Xna.Framework.Media
         #region Private Member Data: TheoraPlay
         // Grabbed from the Video streams.
         private TheoraPlay.THEORAPLAY_VideoFrame currentVideo;
+        private TheoraPlay.THEORAPLAY_VideoFrame nextVideo;
         private TheoraPlay.THEORAPLAY_AudioPacket currentAudio;
+        private IntPtr previousFrame;
         
         // Audio's done separately from the player thread.
         private Thread audioDecoderThread;
@@ -692,6 +694,10 @@ namespace Microsoft.Xna.Framework.Media
             if (TheoraPlay.THEORAPLAY_hasVideoStream(Video.theoraDecoder) != 0)
             {
                 currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                previousFrame = Video.videoStream;
+                Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
+                nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                
                 Texture2D overlap = videoTexture;
                 videoTexture = new Texture2D(
                     Game.Instance.GraphicsDevice,
@@ -895,21 +901,24 @@ namespace Microsoft.Xna.Framework.Media
                     if (TheoraPlay.THEORAPLAY_hasVideoStream(Video.theoraDecoder) != 0)
                     {
                         // Only step when it's time to do so.
-                        if (currentVideo.playms <= timer.ElapsedMilliseconds)
+                        if (nextVideo.playms <= timer.ElapsedMilliseconds)
                         {
-                            // Get next frame ready...
-                            IntPtr hold = Video.videoStream;
+                            // Wait until GetTexture() is done.
+                            
+                            // FIXME: Maybe use an actual thread synchronization technique.
+                            while (frameLocked);
+                            
+                            // Assign the new currentVideo, free the old one.
+                            currentVideo = nextVideo;
+                            
+                            // Get the next frame ready, free the old one.
+                            TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
+                            previousFrame = Video.videoStream;
                             Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
                             if (Video.videoStream != IntPtr.Zero)
                             {
-                                // Wait until GetTexture() is done.
-                                
-                                // FIXME: Maybe use an actual thread synchronization technique.
-                                while (frameLocked);
-                                
-                                // Assign next frame, free old one.
-                                currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
-                                TheoraPlay.THEORAPLAY_freeVideo(hold);
+                                // Assign next frame, if it exists.
+                                nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
                             }
                         }
                     }
