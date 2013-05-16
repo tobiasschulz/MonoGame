@@ -512,8 +512,7 @@ namespace Microsoft.Xna.Framework.Media
             // Be sure we can even get something from TheoraPlay...
             if (    State == MediaState.Stopped ||
                     Video.theoraDecoder == IntPtr.Zero ||
-                    TheoraPlay.THEORAPLAY_isInitialized(Video.theoraDecoder) == 0 ||
-                    Video.videoStream == IntPtr.Zero  )
+                    TheoraPlay.THEORAPLAY_isInitialized(Video.theoraDecoder) == 0   )
             {
                 return videoTexture; // Screw it, give them the old one.
             }
@@ -695,7 +694,11 @@ namespace Microsoft.Xna.Framework.Media
             {
                 currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
                 previousFrame = Video.videoStream;
-                Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
+                do
+                {
+                    // The decoder miiight not be ready yet.
+                    Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
+                } while (Video.videoStream == IntPtr.Zero);
                 nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
                 
                 Texture2D overlap = videoTexture;
@@ -912,13 +915,16 @@ namespace Microsoft.Xna.Framework.Media
                             currentVideo = nextVideo;
                             
                             // Get the next frame ready, free the old one.
-                            TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
+                            IntPtr oldestFrame = previousFrame;
                             previousFrame = Video.videoStream;
                             Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
                             if (Video.videoStream != IntPtr.Zero)
                             {
                                 // Assign next frame, if it exists.
                                 nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                                
+                                // Then free the _really_ old frame.
+                                TheoraPlay.THEORAPLAY_freeVideo(oldestFrame);
                             }
                         }
                     }
@@ -965,6 +971,9 @@ namespace Microsoft.Xna.Framework.Media
             }
             AL.SourceRewind(audioSourceIndex);
             AL.DeleteBuffers(AL.SourceUnqueueBuffers(audioSourceIndex, 2));
+            
+            // We're desperately trying to keep this until the very end.
+            TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
             
             // We're not playing any video anymore.
             Video.Dispose();
