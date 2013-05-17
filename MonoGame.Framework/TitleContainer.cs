@@ -57,15 +57,7 @@ namespace Microsoft.Xna.Framework
         static TitleContainer() 
         {
 #if SDL2
-            if (Environment.OSVersion.Platform == PlatformID.MacOSX || Directory.Exists("/Users/"))
-            {
-                // Apparently the starting directory _is_ the ResourcePath. -flibit
-                Location = Environment.CurrentDirectory;
-            }
-            else
-            {
-                Location = AppDomain.CurrentDomain.BaseDirectory;
-            }
+            Location = AppDomain.CurrentDomain.BaseDirectory;
 #elif WINDOWS
             Location = AppDomain.CurrentDomain.BaseDirectory;
 #elif WINRT
