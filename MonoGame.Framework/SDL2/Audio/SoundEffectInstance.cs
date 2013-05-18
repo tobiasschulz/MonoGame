@@ -89,7 +89,7 @@ namespace Microsoft.Xna.Framework.Audio
             Dispose();
         }
   
-        /* Creates a standalong SoundEffectInstance from given wavedata. */
+        /* Creates a standalone SoundEffectInstance from given wavedata. */
         internal SoundEffectInstance(byte[] buffer, int sampleRate, int channels)
         {
             InitializeSound();
