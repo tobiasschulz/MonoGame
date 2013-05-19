@@ -414,7 +414,7 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             
-            INTERNAL_sdlWindowTitle = "MonoGame Window";
+            INTERNAL_sdlWindowTitle = "MonoGame-SDL2 Window";
             
             INTERNAL_sdlWindow = SDL.SDL_CreateWindow(
                 INTERNAL_sdlWindowTitle,
