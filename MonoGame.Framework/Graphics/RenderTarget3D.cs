@@ -135,7 +135,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 	            var desc = new RenderTargetViewDescription
 	            {
-	                Format = SharpDXHelper.ToFormat(format),
+	                Format = SharpDXHelper.ToFormat(_format),
 	                Dimension = RenderTargetViewDimension.Texture3D,
 	                Texture3D =
 	                    {

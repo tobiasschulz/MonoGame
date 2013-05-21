@@ -55,12 +55,12 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public abstract class Texture : GraphicsResource
 	{
-		protected SurfaceFormat format;
-		protected int levelCount;
+		internal SurfaceFormat _format;
+		internal int _levelCount;
 
 #if DIRECTX
 
-        protected SharpDX.Direct3D11.Resource _texture;
+        internal SharpDX.Direct3D11.Resource _texture;
 
         private SharpDX.Direct3D11.ShaderResourceView _resourceView;
 
@@ -73,12 +73,12 @@ namespace Microsoft.Xna.Framework.Graphics
 		
 		public SurfaceFormat Format
 		{
-			get { return format; }
+			get { return _format; }
 		}
 		
 		public int LevelCount
 		{
-			get { return levelCount; }
+			get { return _levelCount; }
 		}
 
 #if DIRECTX
@@ -114,7 +114,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             int pitch;
 
-            switch (format)
+            switch (_format)
             {
                 case SurfaceFormat.Dxt1:
                 case SurfaceFormat.RgbPvrtc2Bpp:
