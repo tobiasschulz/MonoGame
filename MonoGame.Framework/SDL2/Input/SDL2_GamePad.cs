@@ -63,22 +63,22 @@ namespace Microsoft.Xna.Framework.Input
         // The SDL device lists
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
-		
-		// We use this to apply XInput-like rumble effects.
-		internal static SDL.SDL_HapticEffect INTERNAL_effect = new SDL.SDL_HapticEffect
-		{
-			type = SDL.SDL_HAPTIC_RUMBLE,
-			rumble = new SDL.SDL_HapticRumble
-			{
-				type = SDL.SDL_HAPTIC_RUMBLE,
-				length = SDL.SDL_HAPTIC_INFINITY,
-				delay = 0,
-				button = 0,
-				interval = 0,
-				large_magnitude = ushort.MaxValue,
-				small_magnitude = ushort.MaxValue
-			}
-		};
+
+        // We use this to apply XInput-like rumble effects.
+        internal static SDL.SDL_HapticEffect INTERNAL_effect = new SDL.SDL_HapticEffect
+        {
+            type = SDL.SDL_HAPTIC_RUMBLE,
+            rumble = new SDL.SDL_HapticRumble
+            {
+                type = SDL.SDL_HAPTIC_RUMBLE,
+                length = SDL.SDL_HAPTIC_INFINITY,
+                delay = 0,
+                button = 0,
+                interval = 0,
+                large_magnitude = ushort.MaxValue,
+                small_magnitude = ushort.MaxValue
+            }
+        };
         
         // Call this when you're done, if you don't want to depend on SDL_Quit();
         internal static void Cleanup()
@@ -100,10 +100,10 @@ namespace Microsoft.Xna.Framework.Input
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
-			IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
-            return (   haptic != IntPtr.Zero &&
-			        	(	SDL.SDL_HapticEffectSupported(haptic, ref INTERNAL_effect) == 1 ||
-			 				SDL.SDL_HapticRumbleSupported(haptic) == 1  )	);
+            IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
+            return (    haptic != IntPtr.Zero &&
+                        (    SDL.SDL_HapticEffectSupported(haptic, ref INTERNAL_effect) == 1 ||
+                             SDL.SDL_HapticRumbleSupported(haptic) == 1 )      );
         }
 
         // Prepare the MonoGameJoystick configuration system
@@ -113,17 +113,17 @@ namespace Microsoft.Xna.Framework.Input
             {
                 SDL.SDL_InitSubSystem(SDL.SDL_INIT_JOYSTICK);
             }
-			if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 0)
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 0)
             {
                 SDL.SDL_InitSubSystem(SDL.SDL_INIT_GAMECONTROLLER);
             }
-			if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 0)
-			{
-				SDL.SDL_InitSubSystem(SDL.SDL_INIT_HAPTIC);
-			}
+            if (SDL.SDL_WasInit(SDL.SDL_INIT_HAPTIC) == 0)
+            {
+                SDL.SDL_InitSubSystem(SDL.SDL_INIT_HAPTIC);
+            }
 
 #if DEBUG
-			Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
+            Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
 #endif
             // Limit to the first 4 sticks to avoid crashes.
             int numSticks = Math.Min(4, SDL.SDL_NumJoysticks());
@@ -150,14 +150,14 @@ namespace Microsoft.Xna.Framework.Input
                     }
                     if (INTERNAL_haptics[x] != IntPtr.Zero)
                     {
-						if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[x], ref INTERNAL_effect) == 1)
-						{
-							SDL.SDL_HapticNewEffect(INTERNAL_haptics[x], ref INTERNAL_effect);
-						}
-						else if (SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[x]) == 1)
-						{
-                        	SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
-						}
+                        if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[x], ref INTERNAL_effect) == 1)
+                        {
+                            SDL.SDL_HapticNewEffect(INTERNAL_haptics[x], ref INTERNAL_effect);
+                        }
+                        else if (SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[x]) == 1)
+                        {
+                            SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+                        }
                     }
 
                     System.Console.WriteLine(
@@ -171,45 +171,45 @@ namespace Microsoft.Xna.Framework.Input
             // We made it!
             enabled = true;
         }
-		
+        
         // ReadState can convert stick values to button values
-		private static Buttons READ_StickToButtons(Vector2 stick, Buttons left, Buttons right, Buttons up , Buttons down, float DeadZoneSize)
-		{
-			Buttons b = (Buttons) 0;
+        private static Buttons READ_StickToButtons(Vector2 stick, Buttons left, Buttons right, Buttons up , Buttons down, float DeadZoneSize)
+        {
+            Buttons b = (Buttons) 0;
 
-			if (stick.X > DeadZoneSize)
+            if (stick.X > DeadZoneSize)
             {
-				b |= right;
+                b |= right;
             }
-			if (stick.X < -DeadZoneSize)
+            if (stick.X < -DeadZoneSize)
             {
-				b |= left;
+                b |= left;
             }
-			if (stick.Y > DeadZoneSize)
+            if (stick.Y > DeadZoneSize)
             {
-				b |= up;
+                b |= up;
             }
-			if (stick.Y < -DeadZoneSize)
+            if (stick.Y < -DeadZoneSize)
             {
-				b |= down;
+                b |= down;
             }
-			
-			return b;
-		}
-		
+            
+            return b;
+        }
+        
         // ReadState can convert trigger values to button values
-		private static Buttons READ_TriggerToButton(float trigger, Buttons button, float DeadZoneSize)
-		{
-			Buttons b = (Buttons)0;
+        private static Buttons READ_TriggerToButton(float trigger, Buttons button, float DeadZoneSize)
+        {
+            Buttons b = (Buttons)0;
             
-			if (trigger > DeadZoneSize)
+            if (trigger > DeadZoneSize)
             {
-				b |= button;
+                b |= button;
             }
             
-			return b;
-		}
-		
+            return b;
+        }
+        
         // This is where we actually read in the controller input!
         private static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
         {
@@ -221,7 +221,7 @@ namespace Microsoft.Xna.Framework.Input
             
             // Do not attempt to understand this number at all costs!
             const float DeadZoneSize = 0.27f;
-			
+            
                 // The "master" button state is built from this.
                 Buttons gc_buttonState = (Buttons) 0;
                 
@@ -468,28 +468,28 @@ namespace Microsoft.Xna.Framework.Input
             {
                 return;
             }
-			
+
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
                 SDL.SDL_HapticStopAll(INTERNAL_haptics[(int)playerIndex]);
                 return;
             }
             else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref INTERNAL_effect) == 1)
-			{
-				INTERNAL_effect.rumble.large_magnitude = (ushort) (65535.0f * leftMotor);
-				INTERNAL_effect.rumble.small_magnitude = (ushort) (65535.0f * rightMotor);
-				SDL.SDL_HapticUpdateEffect(
-					INTERNAL_haptics[(int) playerIndex],
-					0,
-					ref INTERNAL_effect
-				);
-				SDL.SDL_HapticRunEffect(
-					INTERNAL_haptics[(int) playerIndex],
-					0,
-					1
-				);
-			}
-			else
+            {
+                INTERNAL_effect.rumble.large_magnitude = (ushort) (65535.0f * leftMotor);
+                INTERNAL_effect.rumble.small_magnitude = (ushort) (65535.0f * rightMotor);
+                SDL.SDL_HapticUpdateEffect(
+                    INTERNAL_haptics[(int) playerIndex],
+                    0,
+                    ref INTERNAL_effect
+                );
+                SDL.SDL_HapticRunEffect(
+                    INTERNAL_haptics[(int) playerIndex],
+                    0,
+                    1
+                );
+            }
+            else
             {
                 float strength;
                 if (leftMotor >= rightMotor)
