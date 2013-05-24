@@ -475,7 +475,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				break;
 #if !IOS && !ANDROID
 			case SurfaceFormat.Dxt1:
-				glInternalFormat = PixelInternalFormat.CompressedRgbS3tcDxt1Ext;
+				glInternalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
 				glFormat = (PixelFormat)All.CompressedTextureFormats;
 				break;
             case SurfaceFormat.Dxt1a:
