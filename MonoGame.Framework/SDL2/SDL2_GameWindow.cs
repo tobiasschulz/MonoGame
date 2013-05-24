@@ -78,7 +78,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Microsoft.Xna.Framework
 {
-	public class SDL2_GameWindow : GameWindow
+    public class SDL2_GameWindow : GameWindow
     {
         #region The Game
         
@@ -108,6 +108,8 @@ namespace Microsoft.Xna.Framework
         private int INTERNAL_glFramebufferWidth;
         private int INTERNAL_glFramebufferHeight;
         
+        private DepthFormat INTERNAL_depthFormat;
+        
         #endregion
         
         #region Internal Loop Sentinel
@@ -122,10 +124,10 @@ namespace Microsoft.Xna.Framework
         
         #endregion
         
-		#region Public Properties
+        #region Public Properties
         
-		[DefaultValue(false)]
-		public override bool AllowUserResizing
+        [DefaultValue(false)]
+        public override bool AllowUserResizing
         {
             get
             {
@@ -145,7 +147,7 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-		public override Rectangle ClientBounds
+        public override Rectangle ClientBounds
         {
             get
             {
@@ -157,7 +159,7 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-		public override DisplayOrientation CurrentOrientation
+        public override DisplayOrientation CurrentOrientation
         {
             get
             {
@@ -166,7 +168,7 @@ namespace Microsoft.Xna.Framework
             }
         }
   
-		public override IntPtr Handle
+        public override IntPtr Handle
         {
             get
             {
@@ -201,7 +203,7 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-		#endregion Properties
+        #endregion Properties
         
         #region INTERNAL: GamePlatform Interaction, Properties
         
@@ -470,12 +472,12 @@ namespace Microsoft.Xna.Framework
             GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
-                PixelInternalFormat.Depth24Stencil8,
+                PixelInternalFormat.DepthComponent16,
                 800,
                 600,
                 0,
-                PixelFormat.DepthStencil,
-                PixelType.UnsignedInt248,
+                PixelFormat.DepthComponent,
+                PixelType.UnsignedByte,
                 IntPtr.Zero
             );
             GL.FramebufferTexture2D(
@@ -487,7 +489,7 @@ namespace Microsoft.Xna.Framework
             );
             GL.FramebufferTexture2D(
                 FramebufferTarget.Framebuffer,
-                FramebufferAttachment.DepthStencilAttachment,
+                FramebufferAttachment.DepthAttachment,
                 TextureTarget.Texture2D,
                 INTERNAL_glDepthStencilAttachment,
                 0
@@ -497,13 +499,15 @@ namespace Microsoft.Xna.Framework
             INTERNAL_glFramebufferHeight = 600;
             Mouse.INTERNAL_BackbufferWidth = 800;
             Mouse.INTERNAL_BackbufferHeight = 600;
+
+            INTERNAL_depthFormat = DepthFormat.Depth16;
         }
         
         #endregion
         
         #region ScreenDeviceChange
         
-		public override void BeginScreenDeviceChange(bool willBeFullScreen)
+        public override void BeginScreenDeviceChange(bool willBeFullScreen)
         {
             // Fullscreen windowflag
             if (willBeFullScreen)
@@ -516,10 +520,24 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-		public override void EndScreenDeviceChange(
-			string screenDeviceName,
+        public override void EndScreenDeviceChange(
+            string screenDeviceName,
             int clientWidth,
             int clientHeight
+        ) {
+            EndScreenDeviceChange(
+                screenDeviceName,
+                clientWidth,
+                clientHeight,
+                INTERNAL_depthFormat
+            );
+        }
+
+        public void EndScreenDeviceChange(
+            string screenDeviceName,
+            int clientWidth,
+            int clientHeight,
+            DepthFormat backbufferFormat
         ) {
             // Set screen device name, not that we use it...
             INTERNAL_deviceName = screenDeviceName;
@@ -565,18 +583,84 @@ namespace Microsoft.Xna.Framework
                 PixelType.UnsignedInt,
                 IntPtr.Zero
             );
+            
+            // Update the depth attachment based on the desired DepthFormat.
+            PixelFormat depthPixelFormat;
+            PixelInternalFormat depthPixelInternalFormat;
+            PixelType depthPixelType;
+            FramebufferAttachment depthAttachmentType;
+            if (backbufferFormat == DepthFormat.Depth16)
+            {
+                depthPixelFormat = PixelFormat.DepthComponent;
+                depthPixelInternalFormat = PixelInternalFormat.DepthComponent16;
+                depthPixelType = PixelType.UnsignedByte;
+                depthAttachmentType = FramebufferAttachment.DepthAttachment;
+            }
+            else if (backbufferFormat == DepthFormat.Depth24)
+            {
+                depthPixelFormat = PixelFormat.DepthComponent;
+                depthPixelInternalFormat = PixelInternalFormat.DepthComponent24;
+                depthPixelType = PixelType.UnsignedByte;
+                depthAttachmentType = FramebufferAttachment.DepthAttachment;
+            }
+            else
+            {
+                depthPixelFormat = PixelFormat.DepthStencil;
+                depthPixelInternalFormat = PixelInternalFormat.Depth24Stencil8;
+                depthPixelType = PixelType.UnsignedInt248;
+                depthAttachmentType = FramebufferAttachment.DepthStencilAttachment;
+            }
+            
             GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
             GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
-                PixelInternalFormat.Depth24Stencil8,
+                depthPixelInternalFormat,
                 clientWidth,
                 clientHeight,
                 0,
-                PixelFormat.DepthStencil,
-                PixelType.UnsignedInt248,
+                depthPixelFormat,
+                depthPixelType,
                 IntPtr.Zero
             );
+            
+            if (backbufferFormat != INTERNAL_depthFormat)
+            {
+                FramebufferAttachment attach;
+                if (INTERNAL_depthFormat == DepthFormat.Depth24Stencil8)
+                {
+                    attach = FramebufferAttachment.DepthStencilAttachment;
+                }
+                else
+                {
+                    attach = FramebufferAttachment.DepthAttachment;
+                }
+                
+                int oldFramebuffer;
+                GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
+                
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
+                
+                GL.FramebufferTexture2D(
+                    FramebufferTarget.Framebuffer,
+                    attach,
+                    TextureTarget.Texture2D,
+                    0,
+                    0
+                );
+                GL.FramebufferTexture2D(
+                    FramebufferTarget.Framebuffer,
+                    depthAttachmentType,
+                    TextureTarget.Texture2D,
+                    INTERNAL_glDepthStencilAttachment,
+                    0
+                );
+                
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
+                
+                INTERNAL_depthFormat = backbufferFormat;
+            }
+            
             INTERNAL_glFramebufferWidth = clientWidth;
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
@@ -591,12 +675,12 @@ namespace Microsoft.Xna.Framework
         
         #region Sets
 
-		protected internal override void SetSupportedOrientations(DisplayOrientation orientations)
+        protected internal override void SetSupportedOrientations(DisplayOrientation orientations)
         {
             // No-op. SDL2 has no orientation.
         }
         
-		protected override void SetTitle(string title)
+        protected override void SetTitle(string title)
         {
             INTERNAL_sdlWindowTitle = title;
             SDL.SDL_SetWindowTitle(
