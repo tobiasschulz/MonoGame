@@ -194,10 +194,11 @@ namespace Microsoft.Xna.Framework
             
             int width = graphicsDeviceManager.PreferredBackBufferWidth;
             int height = graphicsDeviceManager.PreferredBackBufferHeight;
+            DepthFormat format = graphicsDeviceManager.PreferredDepthStencilFormat;
             
             // Apply changes
             BeginScreenDeviceChange(fullScreen);
-            EndScreenDeviceChange("SDL2", width, height);
+            EndScreenDeviceChange("SDL2", width, height, format);
             
             // Now we set our Presentation Parameters
             GraphicsDevice device = (GraphicsDevice) graphicsDeviceManager.GraphicsDevice;
@@ -208,6 +209,11 @@ namespace Microsoft.Xna.Framework
                 parms.BackBufferHeight = height;
                 parms.IsFullScreen = fullScreen;
             }
+        }
+        
+        public void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight, DepthFormat backbufferFormat)
+        {
+            INTERNAL_window.EndScreenDeviceChange(screenDeviceName, clientWidth, clientHeight, backbufferFormat);
         }
 
         public override void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight)
