@@ -753,13 +753,13 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (	Environment.OSVersion.Platform == PlatformID.MacOSX ||
 			    	Environment.OSVersion.Platform == PlatformID.Unix	)
 			{
-				filePath = Storage.StorageDevice.StorageRoot;
+				filePath = Storage.StorageDevice.StorageRoot + "/FEZ/Debug Log.txt";
 			}
 			else
 			{
 				filePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+				filePath += "\\FEZ\\Debug Log.txt";
 			}
-			Path.Combine(filePath, "FEZ", "Debug Log.txt");
             try 
             {
                 using (var stream = File.Open(filePath, FileMode.Append))

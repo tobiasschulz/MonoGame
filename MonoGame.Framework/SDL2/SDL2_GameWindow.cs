@@ -221,11 +221,11 @@ namespace Microsoft.Xna.Framework
                 {
                     if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
                     {
-                        System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
+                        GraphicsExtensions.LogToFile("Using EXT_swap_control_tear VSync!");
                     }
                     else
                     {
-                        System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
+                        GraphicsExtensions.LogToFile("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
                         SDL.SDL_ClearError();
                         SDL.SDL_GL_SetSwapInterval(1);
                     }
@@ -438,7 +438,8 @@ namespace Microsoft.Xna.Framework
             OpenTK.Graphics.OpenGL.GL.LoadAll();
             
             // We default to VSync being on.
-            IsVSync = true;
+            // ... but FEZ already knows this.
+            // IsVSync = true;
 
             // Create a background context
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
