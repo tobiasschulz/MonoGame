@@ -334,20 +334,11 @@ namespace Microsoft.Xna.Framework
 #if SDL2
             // It's bad practice to start fullscreen.
             presentationParameters.IsFullScreen = false;
-            
-            // FIXME: See line 349.
-            _graphicsDevice = new GraphicsDevice(GraphicsProfile, presentationParameters);
 #else
             // Set "full screen"  as default
             presentationParameters.IsFullScreen = true;
 #endif // SDL2
-
-            ApplyChanges();
-
-#endif // WINDOWS || WINRT
    
-// FIXME: I dunno what those morons did, but it doesn't work for us.
-#if !SDL2
             // TODO: Implement multisampling (aka anti-aliasing) for all platforms!
             if (PreparingDeviceSettings != null)
             {
@@ -360,9 +351,13 @@ namespace Microsoft.Xna.Framework
                 presentationParameters = pe.GraphicsDeviceInformation.PresentationParameters;
                 GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
             }
-#endif // SDL2
-
+   
+            // Needs be before ApplyChanges()
             _graphicsDevice = new GraphicsDevice(GraphicsProfile, presentationParameters);
+            
+            ApplyChanges();
+
+#endif // WINDOWS || WINRT
 
             // Set the new display size on the touch panel.
             //
