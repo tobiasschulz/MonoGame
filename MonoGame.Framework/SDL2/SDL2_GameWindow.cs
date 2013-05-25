@@ -66,6 +66,22 @@ non-infringement.
 */
 #endregion License
 
+// #define THREADED_GL
+/* Ah, so I see you've run into some issues with threaded GL...
+ * 
+ * We use Threading.cs to handle rendering coming from multiple threads, but if
+ * you're too wreckless with how many threads are calling the GL, this will
+ * hang.
+ *
+ * With THREADED_GL we instead allow you to run threaded rendering using
+ * multiple GL contexts. This is more flexible, but much more dangerous.
+ *
+ * Also note that this affects Threading.cs! Check THREADED_GL there too.
+ *
+ * Basically, if you have to enable this, you should feel very bad.
+ * -flibit
+ */
+
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -265,7 +281,9 @@ namespace Microsoft.Xna.Framework
             
             while (INTERNAL_runApplication)
             {
+#if !THREADED_GL
                 Threading.Run();
+#endif
                 while (SDL.SDL_PollEvent(out evt) == 1)
                 {
                     // TODO: All events...
@@ -353,6 +371,10 @@ namespace Microsoft.Xna.Framework
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
             
+#if THREADED_GL
+            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
+#endif
+            
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
@@ -435,6 +457,19 @@ namespace Microsoft.Xna.Framework
             
             // We default to VSync being on.
             IsVSync = true;
+            
+#if THREADED_GL
+            // Create a background context
+            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+            Threading.WindowInfo = INTERNAL_sdlWindow;
+            Threading.BackgroundContext = new GL_ContextHandle()
+            {
+                context = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow)
+            };
+            
+            // Make the foreground context current.
+            SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
+#endif
             
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
