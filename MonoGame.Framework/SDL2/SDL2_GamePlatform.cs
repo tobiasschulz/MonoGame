@@ -244,6 +244,11 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_window.INTERNAL_SwapBuffers();
             }
         }
+        
+        protected override void OnIsMouseVisibleChanged()
+        {
+            INTERNAL_window.IsMouseVisible = IsMouseVisible;
+        }
 		
         protected override void Dispose(bool disposing)
         {

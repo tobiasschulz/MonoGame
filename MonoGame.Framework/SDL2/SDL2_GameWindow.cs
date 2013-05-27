@@ -114,6 +114,8 @@ namespace Microsoft.Xna.Framework
         
         private string INTERNAL_deviceName;
         
+        private bool INTERNAL_mouseVisible;
+        
         #endregion
         
         #region Internal OpenGL Framebuffer
@@ -268,6 +270,20 @@ namespace Microsoft.Xna.Framework
             }
         }
         
+        public bool IsMouseVisible
+        {
+            get
+            {
+                return (SDL.SDL_ShowCursor(SDL.SDL_QUERY) == 1);
+            }
+            set
+            {
+                INTERNAL_mouseVisible = value;
+                SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
+                SDL.SDL_SetCursor(IntPtr.Zero);
+            }
+        }
+        
         #endregion
         
         #region INTERNAL: GamePlatform Interaction, Methods
@@ -314,7 +330,7 @@ namespace Microsoft.Xna.Framework
                         {
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
-                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
@@ -334,7 +350,7 @@ namespace Microsoft.Xna.Framework
                         // Mouse Focus
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
                         {
-                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
                             SDL.SDL_SetCursor(IntPtr.Zero);
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
@@ -447,8 +463,8 @@ namespace Microsoft.Xna.Framework
             
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
             
-            // We never want to show the OS mouse cursor!
-            SDL.SDL_ShowCursor(0);
+            // We hide the mouse cursor by default.
+            IsMouseVisible = false;
             
             // Initialize OpenGL
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
@@ -686,8 +702,8 @@ namespace Microsoft.Xna.Framework
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
             
-            // Be sure the mouse is still hidden!
-            SDL.SDL_ShowCursor(0);
+            // Be sure the mouse is still in the same state!
+            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
             SDL.SDL_SetCursor(IntPtr.Zero);
         }
         
