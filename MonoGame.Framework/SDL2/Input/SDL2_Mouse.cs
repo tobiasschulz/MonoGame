@@ -50,7 +50,7 @@ namespace Microsoft.Xna.Framework.Input
     {
         #region Internal Properties and Variables
         
-		internal static MouseState State;
+        internal static MouseState State;
         
         internal static IntPtr INTERNAL_sdlWindowHandle;
 
@@ -85,7 +85,7 @@ namespace Microsoft.Xna.Framework.Input
         public static MouseState GetState()
         {
             int x, y;
-			uint flags = SDL.SDL_GetMouseState(out x, out y);
+            uint flags = SDL.SDL_GetMouseState(out x, out y);
   
             x = (int)((double)x * INTERNAL_BackbufferWidth / INTERNAL_WindowWidth);
             y = (int)((double)y * INTERNAL_BackbufferHeight / INTERNAL_WindowHeight);

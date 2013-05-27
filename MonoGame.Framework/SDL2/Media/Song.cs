@@ -57,10 +57,10 @@ namespace Microsoft.Xna.Framework.Media
 
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
 
-        internal Song(string fileName, int durationMS) : this(fileName)
-        {
-            _Duration = TimeSpan.FromMilliseconds(durationMS);
-        }
+		internal Song(string fileName, int durationMS) : this(fileName)
+		{
+			_Duration = TimeSpan.FromMilliseconds(durationMS);
+		}
 		internal Song(string fileName)
 		{			
 			_name = fileName;
@@ -78,15 +78,15 @@ namespace Microsoft.Xna.Framework.Media
 		/// </summary>
 		internal void SetEventHandler(FinishedPlayingHandler handler)
 		{
-            // No-op
+			// No-op
 		}
 		
 		public string FilePath
 		{
 			get
-            {
-                return _name;
-            }
+			{
+				return _name;
+			}
 		}
 		
 		public void Dispose()
@@ -100,9 +100,9 @@ namespace Microsoft.Xna.Framework.Media
 			if (disposing)
 			{
 				if (_audioData != IntPtr.Zero)
-                {
+				{
 					SDL_mixer.Mix_FreeMusic(_audioData);
-                }
+				}
 			}
 		}
 
@@ -144,10 +144,10 @@ namespace Microsoft.Xna.Framework.Media
 		internal void Play()
 		{			
 			if (_audioData == IntPtr.Zero)
-            {
+			{
 				return;
-            }
-            
+			}
+
 			SDL_mixer.Mix_HookMusicFinished(OnFinishedPlaying);
 			SDL_mixer.Mix_PlayMusic(_audioData, 0);
 			_playCount++;
@@ -173,30 +173,30 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			// SDL volume goes from 0 to 128 instead of 0 to 1
 			get
-            {
-                return _volume / 128f;
-            }
+			{
+				return _volume / 128f;
+			}
 			set
-            {
+			{
 				_volume = (int) (value * 128);
 				SDL_mixer.Mix_VolumeMusic(_volume);
 			}			
 		}
 		
-        public TimeSpan Duration
+		public TimeSpan Duration
 		{
 			get
-            {
+			{
 				return _Duration;
 			}
 		}
-        private TimeSpan _Duration = TimeSpan.Zero;
+		private TimeSpan _Duration = TimeSpan.Zero;
 		
 		// TODO: Implement
 		public TimeSpan Position
 		{
 			get
-            {
+			{
 				return new TimeSpan(0);
 			}
 		}
@@ -204,49 +204,49 @@ namespace Microsoft.Xna.Framework.Media
 		public bool IsProtected
 		{
 			get
-            {
-                return false;
-            }
+			{
+				return false;
+			}
 		}
 
 		public bool IsRated
 		{
 			get
-            {
-                return false;
-            }
+			{
+				return false;
+			}
 		}
 
 		public string Name
 		{
 			get
-            {
-                return Path.GetFileNameWithoutExtension(_name);
-            }
+			{
+				return Path.GetFileNameWithoutExtension(_name);
+			}
 		}
 
 		public int PlayCount
 		{
 			get
-            {
-                return _playCount;
-            }
+			{
+				return _playCount;
+			}
 		}
 
 		public int Rating
 		{
 			get
-            {
-                return 0;
-            }
+			{
+				return 0;
+			}
 		}
 
 		public int TrackNumber
 		{
 			get
-            {
-                return 0;
-            }
+			{
+				return 0;
+			}
 		}
 	}
 }

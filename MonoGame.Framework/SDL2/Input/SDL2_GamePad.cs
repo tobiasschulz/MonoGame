@@ -132,9 +132,9 @@ namespace Microsoft.Xna.Framework.Input
         }
   
         // Prepare the MonoGameJoystick configuration system
-		private static void INTERNAL_AutoConfig()
-		{
-			if (!Init())
+        private static void INTERNAL_AutoConfig()
+        {
+            if (!Init())
             {
                 return;
             }
@@ -319,13 +319,13 @@ namespace Microsoft.Xna.Framework.Input
             }
             
 #if DEBUG
-			Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
+            Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
 #endif
-			// Limit to the first 4 sticks to avoid crashes.
-			int numSticks = Math.Min(4, SDL.SDL_NumJoysticks());
+            // Limit to the first 4 sticks to avoid crashes.
+            int numSticks = Math.Min(4, SDL.SDL_NumJoysticks());
             
-			for (int x = 0; x < numSticks; x++)
-			{
+            for (int x = 0; x < numSticks; x++)
+            {
                 // We use this when dealing with Haptic initialization.
                 IntPtr thisJoystick;
                 
@@ -500,25 +500,25 @@ namespace Microsoft.Xna.Framework.Input
                 pc.RightStick.Y.Positive.Type = INTERNAL_joystickConfig.AXIS_RY.INPUT_TYPE;
                 pc.RightStick.Y.Positive.Negative = INTERNAL_joystickConfig.AXIS_RY.INPUT_INVERT;
 
-				// Suggestion: Xbox Guide button <=> BigButton
-				// pc.BigButton.ID = 8;
-				// pc.BigButton.Type = InputType.Button;
+                // Suggestion: Xbox Guide button <=> BigButton
+                // pc.BigButton.ID = 8;
+                // pc.BigButton.Type = InputType.Button;
 
 #if DEBUG
-				int numbuttons = SDL.SDL_JoystickNumButtons(INTERNAL_devices[x]);
-				Console.WriteLine("Number of buttons for joystick: " + x + " - " + numbuttons);
+                int numbuttons = SDL.SDL_JoystickNumButtons(INTERNAL_devices[x]);
+                Console.WriteLine("Number of buttons for joystick: " + x + " - " + numbuttons);
 
-				int numaxes = SDL.SDL_JoystickNumAxes(INTERNAL_devices[x]);
-				Console.WriteLine("Number of axes for joystick: " + x + " - " + numaxes);
+                int numaxes = SDL.SDL_JoystickNumAxes(INTERNAL_devices[x]);
+                Console.WriteLine("Number of axes for joystick: " + x + " - " + numaxes);
 
-				int numhats = SDL.SDL_JoystickNumHats(INTERNAL_devices[x]);
-				Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);
+                int numhats = SDL.SDL_JoystickNumHats(INTERNAL_devices[x]);
+                Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);
 #endif
                 
                 // Assign our results, finally.
-				INTERNAL_settings[x] = pc;
-			}
-		}
+                INTERNAL_settings[x] = pc;
+            }
+        }
   
         // Button reader for ReadState
         private static Buttons READ_ReadButtons(IntPtr device, PadConfig c, float deadZoneSize)
@@ -594,45 +594,45 @@ namespace Microsoft.Xna.Framework.Input
 
             return b;
         }
-		
-        // ReadState can convert stick values to button values
-		private static Buttons READ_StickToButtons(Vector2 stick, Buttons left, Buttons right, Buttons up , Buttons down, float DeadZoneSize)
-		{
-			Buttons b = (Buttons) 0;
 
-			if (stick.X > DeadZoneSize)
+        // ReadState can convert stick values to button values
+        private static Buttons READ_StickToButtons(Vector2 stick, Buttons left, Buttons right, Buttons up , Buttons down, float DeadZoneSize)
+        {
+            Buttons b = (Buttons) 0;
+
+            if (stick.X > DeadZoneSize)
             {
-				b |= right;
+                b |= right;
             }
-			if (stick.X < -DeadZoneSize)
+            if (stick.X < -DeadZoneSize)
             {
-				b |= left;
+                b |= left;
             }
-			if (stick.Y > DeadZoneSize)
+            if (stick.Y > DeadZoneSize)
             {
-				b |= up;
+                b |= up;
             }
-			if (stick.Y < -DeadZoneSize)
+            if (stick.Y < -DeadZoneSize)
             {
-				b |= down;
+                b |= down;
             }
-			
-			return b;
-		}
-		
+            
+            return b;
+        }
+
         // ReadState can convert trigger values to button values
-		private static Buttons READ_TriggerToButton(float trigger, Buttons button, float DeadZoneSize)
-		{
-			Buttons b = (Buttons)0;
+        private static Buttons READ_TriggerToButton(float trigger, Buttons button, float DeadZoneSize)
+        {
+            Buttons b = (Buttons)0;
             
-			if (trigger > DeadZoneSize)
+            if (trigger > DeadZoneSize)
             {
-				b |= button;
+                b |= button;
             }
             
-			return b;
-		}
-		
+            return b;
+        }
+
         // This is where we actually read in the controller input!
         private static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
         {
@@ -811,7 +811,7 @@ namespace Microsoft.Xna.Framework.Input
                 Buttons.LeftThumbstickDown,
                 DeadZoneSize
             );
-			buttonState |= READ_StickToButtons(
+            buttonState |= READ_StickToButtons(
                 sticks.Right,
                 Buttons.RightThumbstickLeft,
                 Buttons.RightThumbstickRight,
@@ -828,12 +828,12 @@ namespace Microsoft.Xna.Framework.Input
                 config.LeftTrigger.ReadFloat(device),
                 config.RightTrigger.ReadFloat(device)
             );
-			buttonState |= READ_TriggerToButton(
+            buttonState |= READ_TriggerToButton(
                 triggers.Left,
                 Buttons.LeftTrigger,
                 DeadZoneSize
             );
-			buttonState |= READ_TriggerToButton(
+            buttonState |= READ_TriggerToButton(
                 triggers.Right,
                 Buttons.RightTrigger,
                 DeadZoneSize
@@ -971,7 +971,7 @@ namespace Microsoft.Xna.Framework.Input
             }
             if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 1)
             {
-				SDL.SDL_JoystickUpdate();
+                SDL.SDL_JoystickUpdate();
             }
             if (SDL.SDL_WasInit(SDL.SDL_INIT_GAMECONTROLLER) == 1)
             {

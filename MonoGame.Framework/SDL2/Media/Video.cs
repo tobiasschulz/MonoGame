@@ -55,10 +55,10 @@ namespace Microsoft.Xna.Framework.Media
     public sealed class Video : IDisposable
     {
         #region Private Variables: Video Implementation
-		private string _fileName;
-		private Color _backColor = Color.Black;
+        private string _fileName;
+        private Color _backColor = Color.Black;
         private bool disposed;
-		#endregion
+        #endregion
         
         #region Internal Variables: TheoraPlay
         internal IntPtr theoraDecoder;
@@ -109,10 +109,10 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region Internal Video Constructor
-		internal Video(string FileName)
-		{
+        internal Video(string FileName)
+        {
             // Check out the file...
-			_fileName = Normalize(FileName);
+            _fileName = Normalize(FileName);
             if (_fileName == null)
             {
                 throw new Exception("File " + FileName + " does not exist!");
@@ -129,39 +129,39 @@ namespace Microsoft.Xna.Framework.Media
             
             // FIXME: This is a part of the Duration hack!
             Duration = TimeSpan.MaxValue;
-		}
+        }
         #endregion
-		
+        
         #region File name normalizer
-		internal static string Normalize(string FileName)
-		{
-			if (File.Exists(FileName))
+        internal static string Normalize(string FileName)
+        {
+            if (File.Exists(FileName))
             {
-				return FileName;
-			}
+                return FileName;
+            }
             
-			// Check the file extension
-			if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
-			{
-				return null;
-			}
-			
-			// Concat the file name with valid extensions
-			if (File.Exists(FileName + ".ogv"))
+            // Check the file extension
+            if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
             {
-				return FileName + ".ogv";
+                return null;
             }
-			if (File.Exists(FileName + ".ogg"))
+            
+            // Concat the file name with valid extensions
+            if (File.Exists(FileName + ".ogv"))
             {
-				return FileName + ".ogg";
+                return FileName + ".ogv";
             }
-			
-			return null;
-		}
+            if (File.Exists(FileName + ".ogg"))
+            {
+                return FileName + ".ogg";
+            }
+            
+            return null;
+        }
         #endregion
         
         #region Internal TheoraPlay Initialization
-		internal void Initialize()
+        internal void Initialize()
         {
             if (!disposed)
             {
@@ -216,8 +216,8 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region Disposal Method
-		public void Dispose()
-		{
+        public void Dispose()
+        {
             // Stop and unassign the decoder.
             if (theoraDecoder != IntPtr.Zero)
             {
@@ -240,7 +240,7 @@ namespace Microsoft.Xna.Framework.Media
             }
             
             disposed = true;
-		}
+        }
         #endregion
     }
 }

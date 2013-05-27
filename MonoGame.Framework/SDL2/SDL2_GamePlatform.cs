@@ -118,15 +118,15 @@ namespace Microsoft.Xna.Framework
         
         #endregion
         
-		public SDL2_GamePlatform(Game game) : base(game)
+        public SDL2_GamePlatform(Game game) : base(game)
         {
             // Set and initialize the SDL2 window
             INTERNAL_window = new SDL2_GameWindow();
             INTERNAL_window.Game = game;
             this.Window = INTERNAL_window;
-			
-			// Get our OpenALSoundController to handle the SoundBuffer pools
-			soundControllerInstance = OpenALSoundController.GetInstance;
+
+            // Get our OpenALSoundController to handle the SoundBuffer pools
+            soundControllerInstance = OpenALSoundController.GetInstance;
             
             // Initialize SDL2_mixer for Song playback
             SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
@@ -151,6 +151,9 @@ namespace Microsoft.Xna.Framework
             
             // Destroy our window
             INTERNAL_window.INTERNAL_Destroy();
+            
+            // Destroy the OpenAL controller
+            soundControllerInstance.Dispose();
             
             // Close SDL2_mixer
             SDL_mixer.Mix_CloseAudio();
@@ -249,7 +252,7 @@ namespace Microsoft.Xna.Framework
         {
             INTERNAL_window.IsMouseVisible = IsMouseVisible;
         }
-		
+
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)
@@ -260,7 +263,7 @@ namespace Microsoft.Xna.Framework
                 }
             }
 
-			base.Dispose(disposing);
+            base.Dispose(disposing);
         }
     }
 }
