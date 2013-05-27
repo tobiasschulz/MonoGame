@@ -152,9 +152,6 @@ namespace Microsoft.Xna.Framework
             // Destroy our window
             INTERNAL_window.INTERNAL_Destroy();
             
-            // Destroy the OpenAL controller
-            soundControllerInstance.Dispose();
-            
             // Close SDL2_mixer
             SDL_mixer.Mix_CloseAudio();
         }
@@ -260,6 +257,11 @@ namespace Microsoft.Xna.Framework
                 if (INTERNAL_window != null)
                 {
                     INTERNAL_window = null;
+                }
+                
+                if (soundControllerInstance != null)
+                {
+                    soundControllerInstance.Dispose();
                 }
             }
 
