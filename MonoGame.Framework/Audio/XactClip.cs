@@ -11,8 +11,8 @@ namespace Microsoft.Xna.Framework.Audio
 			public XactClip clip;
 			
 			public abstract void Play();
-            public abstract void PlayPositional(AudioListener listener, AudioEmitter emitter);
-            public abstract void UpdatePosition(AudioListener listener, AudioEmitter emitter);
+			public abstract void PlayPositional(AudioListener listener, AudioEmitter emitter);
+			public abstract void UpdatePosition(AudioListener listener, AudioEmitter emitter);
 			public abstract void Stop();
 			public abstract void Pause();
 			public abstract bool Playing { get; }
@@ -26,15 +26,15 @@ namespace Microsoft.Xna.Framework.Audio
 				if (wave.State == SoundState.Playing) wave.Stop ();
 				wave.Play ();
 			}
-            public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
-                wave.Volume =  clip.Volume;
-                if (wave.State == SoundState.Playing) wave.Stop();
-                wave.Apply3D(listener, emitter);
-                wave.Play();
-            }
-            public override void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
-                wave.Apply3D(listener, emitter);
-            }
+			public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
+				wave.Volume =  clip.Volume;
+				if (wave.State == SoundState.Playing) wave.Stop();
+				wave.Apply3D(listener, emitter);
+				wave.Play();
+			}
+			public override void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
+				wave.Apply3D(listener, emitter);
+			}
 			public override void Stop() {
 				wave.Stop ();
 			}
@@ -87,32 +87,32 @@ namespace Microsoft.Xna.Framework.Audio
 					evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
 					
 					events[i] = evnt;
-                    
-                    // FIXME: TERRIBLE HACK!!! Oh hey look flibit is making assumptions about clips!
-                    evnt.wave.IsLooped = true;
-                    
+
+					// FIXME: TERRIBLE HACK!!! Oh hey look flibit is making assumptions about clips!
+					evnt.wave.IsLooped = true;
+
 					break;
-                 case 4:
-                    
-                    // FIXME: Same crap as above, but without the terrible hack? Whaaat -flibit
-                    
-                    evnt = new EventPlayWave();
-                     
-                     
-                    clipReader.ReadUInt32 (); //unkn
-                    trackIndex = clipReader.ReadUInt16 ();
-                    waveBankIndex = clipReader.ReadByte ();
-                     
-                    //unkn
-                    clipReader.ReadByte ();
-                    clipReader.ReadUInt16 ();
-                    clipReader.ReadUInt16 ();
-                     
-                    evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
-                     
-                    events[i] = evnt;
-                        
-                    break;
+				 case 4:
+
+					// FIXME: Same crap as above, but without the terrible hack? Whaaat -flibit
+
+					evnt = new EventPlayWave();
+
+
+					clipReader.ReadUInt32 (); //unkn
+					trackIndex = clipReader.ReadUInt16 ();
+					waveBankIndex = clipReader.ReadByte ();
+
+					//unkn
+					clipReader.ReadByte ();
+					clipReader.ReadUInt16 ();
+					clipReader.ReadUInt16 ();
+
+					evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
+
+					events[i] = evnt;
+
+					break;
 				default:
 					throw new NotImplementedException("eventInfo & 0x1F = " + eventId);
 				}
@@ -152,17 +152,17 @@ namespace Microsoft.Xna.Framework.Audio
 				events[0].Volume = value;
 			}
 		}
-        
-        // Needed for positional audio
-        internal void PlayPositional(AudioListener listener, AudioEmitter emitter) {
-            // TODO: run events
-            events[0].PlayPositional(listener, emitter);
-        }
-        
-        internal void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
-            // TODO: run events
-            events[0].UpdatePosition(listener, emitter);
-        }
+
+		// Needed for positional audio
+		internal void PlayPositional(AudioListener listener, AudioEmitter emitter) {
+			// TODO: run events
+			events[0].PlayPositional(listener, emitter);
+		}
+
+		internal void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
+			// TODO: run events
+			events[0].UpdatePosition(listener, emitter);
+		}
 		
 	}
 }

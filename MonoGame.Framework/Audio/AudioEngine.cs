@@ -51,8 +51,8 @@ namespace Microsoft.Xna.Framework.Audio
 		public const int ContentVersion = 46;
 		
 		internal Dictionary<string, WaveBank> Wavebanks = new Dictionary<string, WaveBank>();
-        
-        internal List<SoundBank> SoundBanks = new List<SoundBank>();
+
+		internal List<SoundBank> SoundBanks = new List<SoundBank>();
 
 		internal AudioCategory[] categories;
 		Dictionary<string, int> categoryLookup = new Dictionary<string, int>();
@@ -234,9 +234,9 @@ namespace Microsoft.Xna.Framework.Audio
 		public void Update ()
 		{
 			foreach (SoundBank curBank in SoundBanks)
-            {
-                curBank.Update();
-            }
+			{
+				curBank.Update();
+			}
 		}
 		
 		public AudioCategory GetCategory (string name)
@@ -251,8 +251,10 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void SetGlobalVariable (string name, float value)
 		{
-            if (variableLookup.ContainsKey(name))
-			    variables [variableLookup [name]].value = value;
+			if (variableLookup.ContainsKey(name))
+			{
+				variables [variableLookup [name]].value = value;
+			}
 		}
 		
 		#region IDisposable implementation

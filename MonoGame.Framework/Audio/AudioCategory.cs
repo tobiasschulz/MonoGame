@@ -15,8 +15,8 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal bool instanceLimit;
 		internal int maxInstances;
-        
-        internal List<Cue> categoryCues;
+
+		internal List<Cue> categoryCues;
 
 		//insatnce limiting behaviour
 		internal enum MaxInstanceBehaviour {
@@ -42,8 +42,8 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			this.name = name;
 			engine = audioengine;
-            
-            categoryCues = new List<Cue>();
+
+			categoryCues = new List<Cue>();
 
 			maxInstances = reader.ReadByte ();
 			instanceLimit = maxInstances != 0xff;
@@ -83,47 +83,47 @@ namespace Microsoft.Xna.Framework.Audio
 		public void Pause ()
 		{
 			foreach(Cue curCue in categoryCues)
-            {
-                curCue.Pause();
-            }
+			{
+				curCue.Pause();
+			}
 		}
 
 		public void Resume ()
 		{
-            foreach(Cue curCue in categoryCues)
-            {
-                curCue.Resume();
-            }
+			foreach(Cue curCue in categoryCues)
+			{
+				curCue.Resume();
+			}
 		}
 
 		public void Stop ()
 		{
-            foreach(Cue curCue in categoryCues)
-            {
-                curCue.Stop(AudioStopOptions.AsAuthored);
-            }
+			foreach(Cue curCue in categoryCues)
+			{
+				curCue.Stop(AudioStopOptions.AsAuthored);
+			}
 		}
 
 		public void Stop (AudioStopOptions option)
 		{
-            foreach(Cue curCue in categoryCues)
-            {
-                curCue.Stop(option);
-            }
+			foreach(Cue curCue in categoryCues)
+			{
+				curCue.Stop(option);
+			}
 		}
 		public void SetVolume(float volume)
-        {
-            foreach(Cue curCue in categoryCues)
-            {
-                curCue.SetVariable("CategoryVolume", volume);
-            }
+		{
+			foreach(Cue curCue in categoryCues)
+			{
+				curCue.SetVariable("CategoryVolume", volume);
+			}
 		}
 
 		
 		public bool Equals(AudioCategory other)
 		{
-            // FIXME: Not actually thorough!
-            return name == other.name;
+			// FIXME: Not actually thorough!
+			return name == other.name;
 		}
 		
 	}

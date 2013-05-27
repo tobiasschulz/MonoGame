@@ -37,7 +37,7 @@ namespace Microsoft.Xna.Framework.Audio
         
         string name;
 		string filename;
-        
+
 		WaveBank[] waveBanks;
 		Dictionary<string, Cue> cues = new Dictionary<string, Cue>();
         
@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Audio
             using (FileStream soundbankstream = new FileStream (filename, FileMode.Open, FileAccess.Read))
 			{
 #else
-				using (var fileStream = Game.Activity.Assets.Open(filename))
+			using (var fileStream = Game.Activity.Assets.Open(filename))
 			{
 				MemoryStream soundbankstream = new MemoryStream();
 				fileStream.CopyTo(soundbankstream);
@@ -130,12 +130,12 @@ namespace Microsoft.Xna.Framework.Audio
 						XactSound sound = new XactSound(this, soundbankreader, soundOffset);
 						Cue cue = new Cue(audioengine, cueNames[i], sound);
                         
-                        audioengine.categories[sound.category].categoryCues.Add(cue);
+						audioengine.categories[sound.category].categoryCues.Add(cue);
 						
 						cues.Add(cue.Name, cue);
 					}
                     
-                    // FIXME: AudioCategories for ComplexCues.
+					// FIXME: AudioCategories for ComplexCues.
 					
 					soundbankstream.Seek (complexCuesOffset, SeekOrigin.Begin);
 					for (int i=0; i<numComplexCues; i++) {
@@ -215,7 +215,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			}
             
-            audioengine.SoundBanks.Add(this);
+			audioengine.SoundBanks.Add(this);
 			
 			loaded = true;
         }
@@ -240,18 +240,18 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		public void PlayCue (string name, AudioListener listener, AudioEmitter emitter)
 		{
-            var musicCue = GetCue(name);
-            musicCue.Apply3D(listener, emitter);
-            musicCue.Play();
+			var musicCue = GetCue(name);
+			musicCue.Apply3D(listener, emitter);
+			musicCue.Play();
 		}
-        
-        internal void Update()
-        {
-            foreach(KeyValuePair<string, Cue> curCue in cues)
-            {
-                curCue.Value.Update();
-            }
-        }
+
+		internal void Update()
+		{
+			foreach(KeyValuePair<string, Cue> curCue in cues)
+			{
+				curCue.Value.Update();
+			}
+		}
 
 		#region IDisposable implementation
 		public void Dispose ()
