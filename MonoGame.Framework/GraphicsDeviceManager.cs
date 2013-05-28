@@ -338,7 +338,9 @@ namespace Microsoft.Xna.Framework
             // Set "full screen"  as default
             presentationParameters.IsFullScreen = true;
 #endif // SDL2
-   
+
+#endif // WINDOWS || WINRT
+
             // TODO: Implement multisampling (aka anti-aliasing) for all platforms!
             if (PreparingDeviceSettings != null)
             {
@@ -356,8 +358,6 @@ namespace Microsoft.Xna.Framework
             _graphicsDevice = new GraphicsDevice(GraphicsProfile, presentationParameters);
 
             ApplyChanges();
-
-#endif // WINDOWS || WINRT
 
             // Set the new display size on the touch panel.
             //
