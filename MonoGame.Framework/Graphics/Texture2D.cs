@@ -797,11 +797,7 @@ namespace Microsoft.Xna.Framework.Graphics
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
             {
                 // Fix up the Image to match the expected format
-                // Ignore this OSX though, we actually prefer the original endianness.
-                if (Environment.OSVersion.Platform != PlatformID.MacOSX || Directory.Exists("/Users/"))
-                {
-                    image.RGBToBGR();
-                }
+                image.RGBToBGR();
 
                 var data = new byte[image.Width * image.Height * 4];
 
