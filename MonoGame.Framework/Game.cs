@@ -660,6 +660,22 @@ namespace Microsoft.Xna.Framework
 
         internal void applyChanges(GraphicsDeviceManager manager)
         {
+            /* FIXME: Uhh, until I added this block,
+             * we were doing nothing with manager.
+             * Is there something wrong with this???
+             * -flibit
+             */
+            manager.GraphicsDevice.PresentationParameters.BackBufferFormat =
+                manager.PreferredBackBufferFormat;
+            manager.GraphicsDevice.PresentationParameters.BackBufferWidth =
+                manager.PreferredBackBufferWidth;
+            manager.GraphicsDevice.PresentationParameters.BackBufferHeight =
+                manager.PreferredBackBufferHeight;
+            manager.GraphicsDevice.PresentationParameters.DepthStencilFormat =
+                manager.PreferredDepthStencilFormat;
+            manager.GraphicsDevice.PresentationParameters.IsFullScreen =
+                manager.IsFullScreen;
+            
 			Platform.BeginScreenDeviceChange(GraphicsDevice.PresentationParameters.IsFullScreen);
             if (GraphicsDevice.PresentationParameters.IsFullScreen)
                 Platform.EnterFullScreen();
