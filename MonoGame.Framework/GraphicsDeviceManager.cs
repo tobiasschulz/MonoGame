@@ -351,10 +351,10 @@ namespace Microsoft.Xna.Framework
                 presentationParameters = pe.GraphicsDeviceInformation.PresentationParameters;
                 GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
             }
-   
+
             // Needs be before ApplyChanges()
             _graphicsDevice = new GraphicsDevice(GraphicsProfile, presentationParameters);
-            
+
             ApplyChanges();
 
 #endif // WINDOWS || WINRT
