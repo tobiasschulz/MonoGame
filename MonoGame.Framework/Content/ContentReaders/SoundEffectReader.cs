@@ -114,6 +114,24 @@ namespace Microsoft.Xna.Framework.Content
                 Name = input.AssetName,
             };
 #else
+            if (header[0] == 2 && header[1] == 0)
+            {
+                // We've found MSADPCM data! How about that!
+                MemoryStream origDataStream = new MemoryStream(data);
+                BinaryReader reader = new BinaryReader(origDataStream);
+                byte[] newData = MSADPCMToPCM.MSADPCM_TO_PCM(
+                    reader,
+                    header[2],
+                    48 // FIXME: Screw it, it'll probably be this. -flibit
+                );
+                reader.Close();
+                origDataStream.Close();
+                data = newData;
+                
+                // No, header, we PCM now, son.
+                header[0] = 1;
+            }
+            
             byte[] soundData = null;
             // Proper use of "using" corectly disposes of BinaryWriter which in turn disposes the underlying stream
             MemoryStream mStream = new MemoryStream(20 + header.Length + 8 + data.Length);
