@@ -300,12 +300,18 @@ namespace Microsoft.Xna.Framework
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
                             SDL.SDL_ShowCursor(0);
+                            
+                            // Disable the screensaver when we're back.
+                            SDL.SDL_DisableScreenSaver();
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
                             SDL.SDL_ShowCursor(1);
                             SDL.SDL_SetCursor(IntPtr.Zero);
+                            
+                            // Give the screensaver back, we're not that important now.
+                            SDL.SDL_EnableScreenSaver();
                         }
 
                         // Window Resize
@@ -321,10 +327,14 @@ namespace Microsoft.Xna.Framework
                         {
                             SDL.SDL_ShowCursor(0);
                             SDL.SDL_SetCursor(IntPtr.Zero);
+                            
+                            SDL.SDL_DisableScreenSaver();
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
                         {
                             SDL.SDL_ShowCursor(1);
+                            
+                            SDL.SDL_EnableScreenSaver();
                         }
                     }
                     
@@ -428,6 +438,9 @@ namespace Microsoft.Xna.Framework
             );
             
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
+            
+            // Disable the screensaver.
+            SDL.SDL_DisableScreenSaver();
             
             // We never want to show the OS mouse cursor!
             SDL.SDL_ShowCursor(0);
