@@ -66,6 +66,22 @@ non-infringement.
 */
 #endregion License
 
+#define THREADED_GL
+/* Ah, so I see you've run into some issues with threaded GL...
+ * 
+ * We use Threading.cs to handle rendering coming from multiple threads, but if
+ * you're too wreckless with how many threads are calling the GL, this will
+ * hang.
+ *
+ * With THREADED_GL we instead allow you to run threaded rendering using
+ * multiple GL contexts. This is more flexible, but much more dangerous.
+ *
+ * Also note that this affects Threading.cs! Check THREADED_GL there too.
+ *
+ * Basically, if you have to enable this, you should feel very bad.
+ * -flibit
+ */
+
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -97,6 +113,8 @@ namespace Microsoft.Xna.Framework
         private IntPtr INTERNAL_GLContext;
         
         private string INTERNAL_deviceName;
+        
+        private bool INTERNAL_mouseVisible;
         
         #endregion
         
@@ -256,6 +274,20 @@ namespace Microsoft.Xna.Framework
             }
         }
         
+        public bool IsMouseVisible
+        {
+            get
+            {
+                return (SDL.SDL_ShowCursor(SDL.SDL_QUERY) == 1);
+            }
+            set
+            {
+                INTERNAL_mouseVisible = value;
+                SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
+                SDL.SDL_SetCursor(IntPtr.Zero);
+            }
+        }
+        
         #endregion
         
         #region INTERNAL: GamePlatform Interaction, Methods
@@ -269,6 +301,9 @@ namespace Microsoft.Xna.Framework
             
             while (INTERNAL_runApplication)
             {
+#if !THREADED_GL
+                Threading.Run();
+#endif
                 while (SDL.SDL_PollEvent(out evt) == 1)
                 {
                     // TODO: All events...
@@ -299,7 +334,7 @@ namespace Microsoft.Xna.Framework
                         {
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
-                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
                             
                             // Disable the screensaver when we're back.
                             SDL.SDL_DisableScreenSaver();
@@ -325,7 +360,7 @@ namespace Microsoft.Xna.Framework
                         // Mouse Focus
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
                         {
-                            SDL.SDL_ShowCursor(0);
+                            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
                             SDL.SDL_SetCursor(IntPtr.Zero);
                             
                             SDL.SDL_DisableScreenSaver();
@@ -366,7 +401,10 @@ namespace Microsoft.Xna.Framework
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
             
+#if THREADED_GL
             SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
+#endif
+            
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
             SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
@@ -442,8 +480,8 @@ namespace Microsoft.Xna.Framework
             // Disable the screensaver.
             SDL.SDL_DisableScreenSaver();
             
-            // We never want to show the OS mouse cursor!
-            SDL.SDL_ShowCursor(0);
+            // We hide the mouse cursor by default.
+            IsMouseVisible = false;
             
             // Initialize OpenGL
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
@@ -453,17 +491,19 @@ namespace Microsoft.Xna.Framework
             // We default to VSync being on.
             // ... but FEZ already knows this.
             // IsVSync = true;
-
+            
+#if THREADED_GL
             // Create a background context
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
             Threading.WindowInfo = INTERNAL_sdlWindow;
-            Threading.BackgroundContext = new ContextHandle()
+            Threading.BackgroundContext = new GL_ContextHandle()
             {
                 context = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow)
             };
-
+            
             // Make the foreground context current.
             SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
+#endif
             
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
@@ -513,7 +553,7 @@ namespace Microsoft.Xna.Framework
             INTERNAL_glFramebufferHeight = 600;
             Mouse.INTERNAL_BackbufferWidth = 800;
             Mouse.INTERNAL_BackbufferHeight = 600;
-
+            
             INTERNAL_depthFormat = DepthFormat.Depth16;
         }
         
@@ -533,7 +573,7 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
             }
         }
-
+  
         public override void EndScreenDeviceChange(
             string screenDeviceName,
             int clientWidth,
@@ -546,7 +586,7 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_depthFormat
             );
         }
-
+        
         public void EndScreenDeviceChange(
             string screenDeviceName,
             int clientWidth,
@@ -652,7 +692,7 @@ namespace Microsoft.Xna.Framework
                 
                 int oldFramebuffer;
                 GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
-                
+             
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
                 
                 GL.FramebufferTexture2D(
@@ -669,7 +709,7 @@ namespace Microsoft.Xna.Framework
                     INTERNAL_glDepthStencilAttachment,
                     0
                 );
-                
+             
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
                 
                 INTERNAL_depthFormat = backbufferFormat;
@@ -679,9 +719,9 @@ namespace Microsoft.Xna.Framework
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
-
-            // Be sure the mouse is still hidden!
-            SDL.SDL_ShowCursor(0);
+            
+            // Be sure the mouse is still in the same state!
+            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
             SDL.SDL_SetCursor(IntPtr.Zero);
         }
         

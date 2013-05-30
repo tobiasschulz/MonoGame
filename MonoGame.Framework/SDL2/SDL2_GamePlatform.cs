@@ -118,20 +118,15 @@ namespace Microsoft.Xna.Framework
         
         #endregion
         
-		public SDL2_GamePlatform(Game game) : base(game)
+        public SDL2_GamePlatform(Game game) : base(game)
         {
             // Set and initialize the SDL2 window
             INTERNAL_window = new SDL2_GameWindow();
             INTERNAL_window.Game = game;
             this.Window = INTERNAL_window;
-			
-			// Get our OpenALSoundController to handle the SoundBuffer pools
-			soundControllerInstance = OpenALSoundController.Instance;
-            
-            // Initialize SDL2_mixer for Song playback
-			// Not for Fez! -flibit
-            //SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
-            //SDL_mixer.Mix_OpenAudio(44100, SDL.AUDIO_S16SYS, 2, 1024);
+
+            // Get our OpenALSoundController to handle the SoundBuffer pools
+            soundControllerInstance = OpenALSoundController.GetInstance;
         }
 
 
@@ -152,12 +147,6 @@ namespace Microsoft.Xna.Framework
             
             // Destroy our window
             INTERNAL_window.INTERNAL_Destroy();
-            
-            // Close SDL2_mixer
-			// Not for Fez! -flibit
-            //SDL_mixer.Mix_CloseAudio();
-			
-			soundControllerInstance.Dispose();
         }
 
         public override bool BeforeUpdate(GameTime gameTime)
@@ -166,7 +155,7 @@ namespace Microsoft.Xna.Framework
             IsActive = true;
             
             // Update our OpenAL sound buffer pools
-            soundControllerInstance.Update(gameTime);
+            soundControllerInstance.Update();
 
             return true;
         }
@@ -248,7 +237,12 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_window.INTERNAL_SwapBuffers();
             }
         }
-		
+        
+        protected override void OnIsMouseVisibleChanged()
+        {
+            INTERNAL_window.IsMouseVisible = IsMouseVisible;
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)
@@ -257,9 +251,14 @@ namespace Microsoft.Xna.Framework
                 {
                     INTERNAL_window = null;
                 }
+                
+                if (soundControllerInstance != null)
+                {
+                    soundControllerInstance.Dispose();
+                }
             }
 
-			base.Dispose(disposing);
+            base.Dispose(disposing);
         }
     }
 }
