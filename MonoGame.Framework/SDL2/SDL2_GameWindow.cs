@@ -473,7 +473,7 @@ namespace Microsoft.Xna.Framework
             
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
             
-            // Disable the screenaver.
+            // Disable the screensaver.
             SDL.SDL_DisableScreenSaver();
             
             // We hide the mouse cursor by default.
