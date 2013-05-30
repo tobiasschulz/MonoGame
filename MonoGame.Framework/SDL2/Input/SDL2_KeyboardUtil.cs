@@ -389,7 +389,16 @@ namespace Microsoft.Xna.Framework.Input
 			
 		public static Keys ToXNA(SDL.SDL_Keycode key)
 		{
-			return INTERNAL_map[key];
+			Keys retVal;
+			if (INTERNAL_map.TryGetValue(key, out retVal))
+			{
+				return INTERNAL_map[key];
+			}
+			else
+			{
+				System.Console.WriteLine("KEY FAILED TO REGISTER: " + key);
+				return INTERNAL_ToXNA(key);
+			}
 		}
 	}
 }
