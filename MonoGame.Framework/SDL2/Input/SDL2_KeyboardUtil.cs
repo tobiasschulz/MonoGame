@@ -392,7 +392,7 @@ namespace Microsoft.Xna.Framework.Input
 			Keys retVal;
 			if (INTERNAL_map.TryGetValue(key, out retVal))
 			{
-				return INTERNAL_map[key];
+				return retVal;
 			}
 			else
 			{
