@@ -283,7 +283,16 @@ namespace Microsoft.Xna.Framework.Graphics
                 return height;
             }
         }
-
+  
+        // TODO: You could extend the XNA API with this...
+        internal void GenerateMipmaps()
+        {
+            var prevTexture = GraphicsExtensions.GetBoundTexture2D();
+            GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.BindTexture(TextureTarget.Texture2D, prevTexture);
+        }
+        
         public void SetData<T>(int level, Rectangle? rect, T[] data, int startIndex, int elementCount) where T : struct 
         {
             if (data == null)
