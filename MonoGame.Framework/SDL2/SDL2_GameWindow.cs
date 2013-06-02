@@ -400,6 +400,17 @@ namespace Microsoft.Xna.Framework
 #if THREADED_GL
             SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
 #endif
+
+            /* Some window managers might try to minimize the window as we're
+             * destroying it. This looks pretty stupid and could cause problems,
+             * so set this hint right before we destroy everything.
+             * -flibit
+             */
+            SDL.SDL_SetHintWithPriority(
+                SDL.SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
+                "0",
+                SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
+            );
             
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
