@@ -468,8 +468,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Initialize private members.
             timer = new Stopwatch();
-            playerThread = new Thread(new ThreadStart(this.RunVideo));
-            audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             frameLocked = false;
             
             // Initialize this here to prevent null GetTexture returns.
@@ -657,6 +655,9 @@ namespace Microsoft.Xna.Framework.Media
         public void Play(Video video)
         {
             checkDisposed();
+            
+            playerThread = new Thread(new ThreadStart(this.RunVideo));
+            audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             
             // We need to assign this regardless of what happens next.
             Video = video;
