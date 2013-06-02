@@ -456,9 +456,6 @@ namespace Microsoft.Xna.Framework.Media
         #region Public Methods: XNA VideoPlayer Implementation
         public VideoPlayer()
         {
-            // Initialize the OpenAL source and buffer list.
-            audioSourceIndex = AL.GenSource();
-            
             // Initialize public members.
             IsDisposed = false;
             IsLooped = false;
@@ -487,9 +484,6 @@ namespace Microsoft.Xna.Framework.Media
         {
             // Stop the VideoPlayer. This gets almost everything...
             Stop();
-            
-            // Get rid of the OpenAL source.
-            AL.DeleteSource(audioSourceIndex);
             
 #if VIDEOPLAYER_OPENGL
             // Destroy the OpenGL bits.
@@ -674,6 +668,7 @@ namespace Microsoft.Xna.Framework.Media
                 Stop();
             }
 
+            // Create new Thread instances in case we use this player multiple times.
             playerThread = new Thread(new ThreadStart(this.RunVideo));
             audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
             
@@ -836,6 +831,9 @@ namespace Microsoft.Xna.Framework.Media
             // The number of AL buffers to queue into the source.
             const int NUM_BUFFERS = 2;
             
+            // Generate the source.
+            audioSourceIndex = AL.GenSource();
+            
             // Generate the alternating buffers.
             int[] buffers = AL.GenBuffers(NUM_BUFFERS);
             
@@ -858,6 +856,14 @@ namespace Microsoft.Xna.Framework.Media
                     AL.SourceQueueBuffer(audioSourceIndex, buffer);
                 }
             }
+            
+            // Force stop the OpenAL source and destroy it with the buffers.
+            if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
+            {
+                AL.SourceStop(audioSourceIndex);
+            }
+            AL.DeleteSource(audioSourceIndex);
+            AL.DeleteBuffers(buffers);
         }
         #endregion
         
@@ -964,14 +970,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Stop the decoding, we don't need it anymore.
             audioDecoderThread.Join();
-            
-            // Force stop the OpenAL source.
-            if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
-            {
-                AL.SourceStop(audioSourceIndex);
-            }
-            AL.SourceRewind(audioSourceIndex);
-            AL.DeleteBuffers(AL.SourceUnqueueBuffers(audioSourceIndex, 2));
             
             // We're desperately trying to keep this until the very end.
             TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
