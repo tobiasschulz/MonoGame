@@ -122,7 +122,7 @@ namespace Microsoft.Xna.Framework.Content
                 byte[] newData = MSADPCMToPCM.MSADPCM_TO_PCM(
                     reader,
                     header[2],
-                    48 // FIXME: Screw it, it'll probably be this. -flibit
+                    (short) ((header[12] / header[2]) - 22)
                 );
                 reader.Close();
                 origDataStream.Close();
