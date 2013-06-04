@@ -114,8 +114,6 @@ namespace Microsoft.Xna.Framework
         
         private string INTERNAL_deviceName;
         
-        private bool INTERNAL_mouseVisible;
-        
         #endregion
         
         #region Internal OpenGL Framebuffer
@@ -278,8 +276,7 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
-                INTERNAL_mouseVisible = value;
-                SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
+                SDL.SDL_ShowCursor(value ? 1 : 0);
             }
         }
         
