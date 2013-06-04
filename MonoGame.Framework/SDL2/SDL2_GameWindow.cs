@@ -114,8 +114,6 @@ namespace Microsoft.Xna.Framework
         
         private string INTERNAL_deviceName;
         
-        private bool INTERNAL_mouseVisible;
-        
         #endregion
         
         #region Internal OpenGL Framebuffer
@@ -282,9 +280,7 @@ namespace Microsoft.Xna.Framework
             }
             set
             {
-                INTERNAL_mouseVisible = value;
-                SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
-                SDL.SDL_SetCursor(IntPtr.Zero);
+                SDL.SDL_ShowCursor(value ? 1 : 0);
             }
         }
         
@@ -333,8 +329,7 @@ namespace Microsoft.Xna.Framework
                         if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
                         {
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
-                            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
-                            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
+                            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Current);
                             
                             // Disable the screensaver when we're back.
                             SDL.SDL_DisableScreenSaver();
@@ -342,8 +337,6 @@ namespace Microsoft.Xna.Framework
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
-                            SDL.SDL_ShowCursor(1);
-                            SDL.SDL_SetCursor(IntPtr.Zero);
                             
                             // Give the screensaver back, we're not that important now.
                             SDL.SDL_EnableScreenSaver();
@@ -360,15 +353,10 @@ namespace Microsoft.Xna.Framework
                         // Mouse Focus
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
                         {
-                            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
-                            SDL.SDL_SetCursor(IntPtr.Zero);
-                            
                             SDL.SDL_DisableScreenSaver();
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
                         {
-                            SDL.SDL_ShowCursor(1);
-                            
                             SDL.SDL_EnableScreenSaver();
                         }
                     }
@@ -730,10 +718,6 @@ namespace Microsoft.Xna.Framework
             INTERNAL_glFramebufferHeight = clientHeight;
             Mouse.INTERNAL_BackbufferWidth = clientWidth;
             Mouse.INTERNAL_BackbufferHeight = clientHeight;
-            
-            // Be sure the mouse is still in the same state!
-            SDL.SDL_ShowCursor(INTERNAL_mouseVisible ? 1 : 0);
-            SDL.SDL_SetCursor(IntPtr.Zero);
         }
         
         #endregion
