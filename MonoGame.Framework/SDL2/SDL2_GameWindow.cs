@@ -590,16 +590,8 @@ namespace Microsoft.Xna.Framework
             // Set screen device name, not that we use it...
             INTERNAL_deviceName = screenDeviceName;
             
-            // Window bounds, try to center the window based on the new bounds.
-            int x = 0;
-            int y = 0;
-            SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
+            // Window bounds
             SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
-            SDL.SDL_SetWindowPosition(
-                INTERNAL_sdlWindow,
-                x + ((INTERNAL_glFramebufferWidth - clientWidth) / 2),
-                y + ((INTERNAL_glFramebufferHeight - clientHeight) / 2)
-            );
             
             // Bordered
             // FIXME: May not be needed due to SetWindowFullscreen?
@@ -614,6 +606,30 @@ namespace Microsoft.Xna.Framework
             
             // Fullscreen (and general Window flags)
             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
+            
+            // Window position
+            if (    (INTERNAL_sdlWindowFlags_Current & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP &&
+                    (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0 )
+            {
+                // If exiting fullscreen, just center the window on the desktop.
+                SDL.SDL_SetWindowPosition(
+                    INTERNAL_sdlWindow,
+                    SDL.SDL_WINDOWPOS_CENTERED,
+                    SDL.SDL_WINDOWPOS_CENTERED
+                );
+            }
+            else if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
+            {
+                // Try to center the window around the old window position.
+                int x = 0;
+                int y = 0;
+                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
+                SDL.SDL_SetWindowPosition(
+                    INTERNAL_sdlWindow,
+                    x + ((INTERNAL_glFramebufferWidth - clientWidth) / 2),
+                    y + ((INTERNAL_glFramebufferHeight - clientHeight) / 2)
+                );
+            }
             
             // Current flags have just been updated.
             INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
