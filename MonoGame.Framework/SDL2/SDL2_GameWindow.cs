@@ -590,8 +590,16 @@ namespace Microsoft.Xna.Framework
             // Set screen device name, not that we use it...
             INTERNAL_deviceName = screenDeviceName;
             
-            // Window bounds
+            // Window bounds, try to center the window based on the new bounds.
+            int x = 0;
+            int y = 0;
+            SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
             SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
+            SDL.SDL_SetWindowPosition(
+                INTERNAL_sdlWindow,
+                x + ((INTERNAL_glFramebufferWidth - clientWidth) / 2),
+                y + ((INTERNAL_glFramebufferHeight - clientHeight) / 2)
+            );
             
             // Bordered
             // FIXME: May not be needed due to SetWindowFullscreen?
