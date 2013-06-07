@@ -66,7 +66,7 @@ non-infringement.
 */
 #endregion License
 
-// #define THREADED_GL
+#define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
  * 
  * We use Threading.cs to handle rendering coming from multiple threads, but if
