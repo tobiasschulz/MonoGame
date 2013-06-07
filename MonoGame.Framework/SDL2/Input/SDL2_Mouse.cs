@@ -62,7 +62,6 @@ namespace Microsoft.Xna.Framework.Input
             }
         }
         
-        // FIXME: SDL2_GameWindow needs to work with this!
         internal static int INTERNAL_MouseWheel
         {
             get;

@@ -66,7 +66,7 @@ non-infringement.
 */
 #endregion License
 
-#define THREADED_GL
+// #define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
  * 
  * We use Threading.cs to handle rendering coming from multiple threads, but if
@@ -133,9 +133,17 @@ namespace Microsoft.Xna.Framework
         private bool INTERNAL_runApplication;
         
         #endregion
-        
+
+        #region Internal Text Input Helpers
+
+        private int[] INTERNAL_TextInputControlRepeat;
+        private bool[] INTERNAL_TextInputControlDown;
+        private bool INTERNAL_TextInputSuppress;
+
+        #endregion
+
         #region Private Active XNA Key List
-        
+
         private List<Keys> keys;
         
         #endregion
@@ -311,6 +319,7 @@ namespace Microsoft.Xna.Framework
                         if (!keys.Contains(key))
                         {
                             keys.Add(key);
+                            INTERNAL_TextInputIn(key);
                         }
                     }
                     else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
@@ -319,6 +328,7 @@ namespace Microsoft.Xna.Framework
                         if (keys.Contains(key))
                         {
                             keys.Remove(key);
+                            INTERNAL_TextInputOut(key);
                         }
                     }
 
@@ -366,7 +376,18 @@ namespace Microsoft.Xna.Framework
                     {
                         Mouse.INTERNAL_MouseWheel += evt.wheel.y;
                     }
-                    
+
+                    // Text Input
+                    else if (evt.type == SDL.SDL_EventType.SDL_TEXTINPUT && !INTERNAL_TextInputSuppress)
+                    {
+                        string text;
+                        unsafe { text = new string(evt.text.text); }
+                        for (int i = 0; i < text.Length; i++)
+                        {
+                            OnTextInput(evt, new TextInputEventArgs(text[i]));
+                        }
+                    }
+
                     // Quit
                     else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
                     {
@@ -374,16 +395,90 @@ namespace Microsoft.Xna.Framework
                         break;
                     }
                 }
+                // Text Input Controls Key Handling
+                INTERNAL_TextInputUpdate();
+
                 if (keys.Contains(Keys.LeftAlt) && keys.Contains(Keys.F4))
                 {
                     INTERNAL_runApplication = false;
                 }
+
                 Keyboard.SetKeys(keys);
                 Game.Tick();
             }
             
             // We out.
             Game.Exit();
+        }
+
+        public void INTERNAL_TextInputIn(Keys key)
+        {
+            if (key == Keys.Back)
+            {
+                INTERNAL_TextInputControlDown[0] = true;
+                INTERNAL_TextInputControlRepeat[0] = Environment.TickCount + 400;
+                OnTextInput(null, new TextInputEventArgs((char)8)); // Backspace
+            }
+            else if (key == Keys.Tab)
+            {
+                INTERNAL_TextInputControlDown[1] = true;
+                INTERNAL_TextInputControlRepeat[1] = Environment.TickCount + 400;
+                OnTextInput(null, new TextInputEventArgs((char)9)); // Tab
+            }
+            else if (key == Keys.Enter)
+            {
+                INTERNAL_TextInputControlDown[2] = true;
+                INTERNAL_TextInputControlRepeat[2] = Environment.TickCount + 400;
+                OnTextInput(null, new TextInputEventArgs((char)13)); // Enter
+            }
+            else if (keys.Contains(Keys.LeftControl) && key == Keys.V) // Control-V Pasting support
+            {
+                INTERNAL_TextInputControlDown[3] = true;
+                INTERNAL_TextInputControlRepeat[3] = Environment.TickCount + 400;
+                OnTextInput(null, new TextInputEventArgs((char)22)); // Control-V (Paste)
+                INTERNAL_TextInputSuppress = true;
+            }
+        }
+
+        public void INTERNAL_TextInputOut(Keys key)
+        {
+            if (key == Keys.Back)
+            {
+                INTERNAL_TextInputControlDown[0] = false;
+            }
+            else if (key == Keys.Tab)
+            {
+                INTERNAL_TextInputControlDown[1] = false;
+            }
+            else if (key == Keys.Enter)
+            {
+                INTERNAL_TextInputControlDown[2] = false;
+            }
+            else if ((!keys.Contains(Keys.LeftControl) && INTERNAL_TextInputControlDown[3]) || key == Keys.V)
+            {
+                INTERNAL_TextInputControlDown[3] = false;
+                INTERNAL_TextInputSuppress = false;
+            }
+        }
+
+        public void INTERNAL_TextInputUpdate()
+        {
+            if (INTERNAL_TextInputControlDown[0] && INTERNAL_TextInputControlRepeat[0] <= Environment.TickCount)
+            {
+                OnTextInput(null, new TextInputEventArgs((char)8));
+            }
+            if (INTERNAL_TextInputControlDown[1] && INTERNAL_TextInputControlRepeat[1] <= Environment.TickCount)
+            {
+                OnTextInput(null, new TextInputEventArgs((char)9));
+            }
+            if (INTERNAL_TextInputControlDown[2] && INTERNAL_TextInputControlRepeat[2] <= Environment.TickCount)
+            {
+                OnTextInput(null, new TextInputEventArgs((char)13));
+            }
+            if (INTERNAL_TextInputControlDown[3] && INTERNAL_TextInputControlRepeat[3] <= Environment.TickCount)
+            {
+                OnTextInput(null, new TextInputEventArgs((char)22));
+            }
         }
         
         public void INTERNAL_SwapBuffers()
@@ -557,6 +652,10 @@ namespace Microsoft.Xna.Framework
             Mouse.INTERNAL_BackbufferHeight = 600;
             
             INTERNAL_depthFormat = DepthFormat.Depth16;
+
+            // Setup Text Input Control Character Arrays (Only 4 control keys supported at this time)
+            INTERNAL_TextInputControlDown = new bool[4];
+            INTERNAL_TextInputControlRepeat = new int[4];
         }
         
         #endregion
