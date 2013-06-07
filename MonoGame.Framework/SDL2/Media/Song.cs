@@ -49,140 +49,19 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class Song : IEquatable<Song>, IDisposable
 	{
+		#region Private Member Data
+
 		private IntPtr INTERNAL_mixMusic;
 
-		private int INTERNAL_volume; // In SDL units [0, 128]
+		#endregion
+
+		#region Internal Member Data
 
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
 
-		internal Song(string fileName, int durationMS) : this(fileName)
-		{
-			Duration = TimeSpan.FromMilliseconds(durationMS);
-		}
+		#endregion
 
-		internal Song(string fileName)
-		{
-			FilePath = fileName;
-
-			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
-		}
-
-		~Song()
-		{
-			SDL_mixer.Mix_HookMusicFinished(null);
-			Dispose(true);
-		}
-
-		internal void OnFinishedPlaying()
-		{
-			MediaPlayer.OnSongFinishedPlaying(null, null);
-		}
-
-		/// <summary>
-		/// Set the event handler for "Finished Playing". Done this way to prevent multiple bindings.
-		/// </summary>
-		internal void SetEventHandler(FinishedPlayingHandler handler)
-		{
-			// No-op
-		}
-
-		public string FilePath
-		{
-			get;
-			private set;
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				if (INTERNAL_mixMusic != IntPtr.Zero)
-				{
-					SDL_mixer.Mix_FreeMusic(INTERNAL_mixMusic);
-				}
-			}
-		}
-
-		public bool Equals(Song song) 
-		{
-			return (((object) song) != null) && (Name == song.Name);
-		}
-
-		public override int GetHashCode()
-		{
-			return base.GetHashCode();
-		}
-
-		public override bool Equals(Object obj)
-		{
-			if (obj == null)
-			{
-				return false;
-			}
-			return Equals(obj as Song);  
-		}
-
-		public static bool operator ==(Song song1, Song song2)
-		{
-			if (((object) song1) == null)
-			{
-				return ((object) song2) == null;
-			}
-			return song1.Equals(song2);
-		}
-
-		public static bool operator !=(Song song1, Song song2)
-		{
-			return !(song1 == song2);
-		}
-
-		internal void Play()
-		{
-			if (INTERNAL_mixMusic == IntPtr.Zero)
-			{
-				return;
-			}
-			SDL_mixer.Mix_HookMusicFinished(OnFinishedPlaying);
-			SDL_mixer.Mix_PlayMusic(INTERNAL_mixMusic, 0);
-			PlayCount += 1;
-		}
-
-		internal void Resume()
-		{
-			SDL_mixer.Mix_ResumeMusic();
-		}
-
-		internal void Pause()
-		{			
-			SDL_mixer.Mix_PauseMusic();
-		}
-
-		internal void Stop()
-		{
-			SDL_mixer.Mix_HookMusicFinished(null);
-			SDL_mixer.Mix_HaltMusic();
-			PlayCount = 0;
-		}
-
-		internal float Volume
-		{
-			// SDL volume goes from 0 to 128 instead of 0 to 1
-			get
-			{
-				return INTERNAL_volume / 128.0f;
-			}
-			set
-			{
-				INTERNAL_volume = (int) (value * 128);
-				SDL_mixer.Mix_VolumeMusic(INTERNAL_volume);
-			}
-		}
+		#region Public Properties
 
 		// TODO: A real Vorbis stream would have this info.
 		public TimeSpan Duration
@@ -246,6 +125,154 @@ namespace Microsoft.Xna.Framework.Media
 				return 0;
 			}
 		}
+
+		#endregion
+
+		#region Internal Properties
+
+		internal string FilePath
+		{
+			get;
+			private set;
+		}
+
+		internal float Volume
+		{
+			get
+			{
+				return SDL_mixer.Mix_VolumeMusic(-1) / 128.0f;
+			}
+			set
+			{
+				SDL_mixer.Mix_VolumeMusic(((int) value) * 128);
+			}
+		}
+
+		#endregion
+
+		#region Constructors, Deconstructor, Dispose()
+
+		internal Song(string fileName, int durationMS) : this(fileName)
+		{
+			Duration = TimeSpan.FromMilliseconds(durationMS);
+		}
+
+		internal Song(string fileName)
+		{
+			FilePath = fileName;
+
+			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
+		}
+
+		~Song()
+		{
+			SDL_mixer.Mix_HookMusicFinished(null);
+			Dispose(true);
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (INTERNAL_mixMusic != IntPtr.Zero)
+				{
+					SDL_mixer.Mix_FreeMusic(INTERNAL_mixMusic);
+				}
+			}
+		}
+
+		#endregion
+
+		#region Internal Playback Methods
+
+		internal void Play()
+		{
+			if (INTERNAL_mixMusic == IntPtr.Zero)
+			{
+				return;
+			}
+			SDL_mixer.Mix_HookMusicFinished(OnFinishedPlaying);
+			SDL_mixer.Mix_PlayMusic(INTERNAL_mixMusic, 0);
+			PlayCount += 1;
+		}
+
+		internal void Resume()
+		{
+			SDL_mixer.Mix_ResumeMusic();
+		}
+
+		internal void Pause()
+		{
+			SDL_mixer.Mix_PauseMusic();
+		}
+
+		internal void Stop()
+		{
+			SDL_mixer.Mix_HookMusicFinished(null);
+			SDL_mixer.Mix_HaltMusic();
+			PlayCount = 0;
+		}
+
+		#endregion
+
+		#region Internal Event Handler Methods
+
+		/// <summary>
+		/// Set the event handler for "Finished Playing". Done this way to prevent multiple bindings.
+		/// </summary>
+		internal void SetEventHandler(FinishedPlayingHandler handler)
+		{
+			// No-op
+		}
+
+		internal void OnFinishedPlaying()
+		{
+			MediaPlayer.OnSongFinishedPlaying(null, null);
+		}
+
+		#endregion
+
+		#region Public Comparison Methods/Operators
+
+		public bool Equals(Song song) 
+		{
+			return (((object) song) != null) && (Name == song.Name);
+		}
+
+		public override bool Equals(Object obj)
+		{
+			if (obj == null)
+			{
+				return false;
+			}
+			return Equals(obj as Song);
+		}
+
+		public static bool operator ==(Song song1, Song song2)
+		{
+			if (((object) song1) == null)
+			{
+				return ((object) song2) == null;
+			}
+			return song1.Equals(song2);
+		}
+
+		public static bool operator !=(Song song1, Song song2)
+		{
+			return !(song1 == song2);
+		}
+
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
+
+		#endregion
 	}
 }
-
