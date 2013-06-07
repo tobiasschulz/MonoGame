@@ -144,7 +144,7 @@ namespace Microsoft.Xna.Framework.Media
 			}
 			set
 			{
-				SDL_mixer.Mix_VolumeMusic(((int) value) * 128);
+				SDL_mixer.Mix_VolumeMusic((int) (value * 128));
 			}
 		}
 
