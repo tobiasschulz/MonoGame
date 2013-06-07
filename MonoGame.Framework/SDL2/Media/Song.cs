@@ -49,30 +49,35 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class Song : IEquatable<Song>, IDisposable
 	{
-		private IntPtr _audioData;
-		
-		private string _name;
-		private int _playCount;
-		private int _volume; // in SDL units from 0 to 128
+		private IntPtr INTERNAL_mixMusic;
+
+		private int INTERNAL_volume; // In SDL units [0, 128]
 
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
 
 		internal Song(string fileName, int durationMS) : this(fileName)
 		{
-			_Duration = TimeSpan.FromMilliseconds(durationMS);
+			Duration = TimeSpan.FromMilliseconds(durationMS);
 		}
-		internal Song(string fileName)
-		{			
-			_name = fileName;
 
-			_audioData = SDL_mixer.Mix_LoadMUS(fileName);
+		internal Song(string fileName)
+		{
+			FilePath = fileName;
+
+			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
 		}
-		
+
+		~Song()
+		{
+			SDL_mixer.Mix_HookMusicFinished(null);
+			Dispose(true);
+		}
+
 		internal void OnFinishedPlaying ()
 		{
 			MediaPlayer.OnSongFinishedPlaying(null, null);
 		}
-		
+
 		/// <summary>
 		/// Set the event handler for "Finished Playing". Done this way to prevent multiple bindings.
 		/// </summary>
@@ -80,15 +85,13 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			// No-op
 		}
-		
+
 		public string FilePath
 		{
-			get
-			{
-				return _name;
-			}
+			get;
+			private set;
 		}
-		
+
 		public void Dispose()
 		{
 			Dispose(true);
@@ -99,100 +102,95 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (disposing)
 			{
-				if (_audioData != IntPtr.Zero)
+				if (INTERNAL_mixMusic != IntPtr.Zero)
 				{
-					SDL_mixer.Mix_FreeMusic(_audioData);
+					SDL_mixer.Mix_FreeMusic(INTERNAL_mixMusic);
 				}
 			}
 		}
 
 		public bool Equals(Song song) 
 		{
-			return ((object) song != null) && (Name == song.Name);
+			return (((object) song) != null) && (Name == song.Name);
 		}
-		
-		public override int GetHashCode ()
+
+		public override int GetHashCode()
 		{
-			return base.GetHashCode ();
+			return base.GetHashCode();
 		}
-		
+
 		public override bool Equals(Object obj)
 		{
 			if (obj == null)
 			{
 				return false;
 			}
-			
 			return Equals(obj as Song);  
 		}
-		
+
 		public static bool operator ==(Song song1, Song song2)
 		{
-			if ((object) song1 == null)
+			if (((object) song1) == null)
 			{
-				return (object) song2 == null;
+				return ((object) song2) == null;
 			}
-
 			return song1.Equals(song2);
 		}
-		
+
 		public static bool operator !=(Song song1, Song song2)
 		{
-		  return !(song1 == song2);
+			return !(song1 == song2);
 		}
-		
+
 		internal void Play()
-		{			
-			if (_audioData == IntPtr.Zero)
+		{
+			if (INTERNAL_mixMusic == IntPtr.Zero)
 			{
 				return;
 			}
-
 			SDL_mixer.Mix_HookMusicFinished(OnFinishedPlaying);
-			SDL_mixer.Mix_PlayMusic(_audioData, 0);
-			_playCount++;
+			SDL_mixer.Mix_PlayMusic(INTERNAL_mixMusic, 0);
+			PlayCount += 1;
 		}
 
 		internal void Resume()
 		{
 			SDL_mixer.Mix_ResumeMusic();
 		}
-		
+
 		internal void Pause()
 		{			
 			SDL_mixer.Mix_PauseMusic();
 		}
-		
+
 		internal void Stop()
 		{
-			SDL_mixer.Mix_HaltMusic();			
-			_playCount = 0;
+			SDL_mixer.Mix_HaltMusic();
+			PlayCount = 0;
 		}
-		
+
 		internal float Volume
 		{
 			// SDL volume goes from 0 to 128 instead of 0 to 1
 			get
 			{
-				return _volume / 128f;
+				return INTERNAL_volume / 128.0f;
 			}
 			set
 			{
-				_volume = (int) (value * 128);
-				SDL_mixer.Mix_VolumeMusic(_volume);
-			}			
-		}
-		
-		public TimeSpan Duration
-		{
-			get
-			{
-				return _Duration;
+				INTERNAL_volume = (int) (value * 128);
+				SDL_mixer.Mix_VolumeMusic(INTERNAL_volume);
 			}
 		}
-		private TimeSpan _Duration = TimeSpan.Zero;
-		
-		// TODO: Implement
+
+		// TODO: A real Vorbis stream would have this info.
+		public TimeSpan Duration
+		{
+			get;
+			private set;
+		}
+
+		// TODO: A real Vorbis stream would have this info.
 		public TimeSpan Position
 		{
 			get
@@ -221,16 +219,14 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			get
 			{
-				return Path.GetFileNameWithoutExtension(_name);
+				return Path.GetFileNameWithoutExtension(FilePath);
 			}
 		}
 
 		public int PlayCount
 		{
-			get
-			{
-				return _playCount;
-			}
+			get;
+			private set;
 		}
 
 		public int Rating
@@ -241,6 +237,7 @@ namespace Microsoft.Xna.Framework.Media
 			}
 		}
 
+		// TODO: Could be obtained with Vorbis metadata
 		public int TrackNumber
 		{
 			get
