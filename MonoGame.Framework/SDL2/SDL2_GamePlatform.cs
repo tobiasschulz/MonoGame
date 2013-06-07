@@ -126,7 +126,7 @@ namespace Microsoft.Xna.Framework
             this.Window = INTERNAL_window;
 
             // Get our OpenALSoundController to handle the SoundBuffer pools
-            soundControllerInstance = OpenALSoundController.Instance;
+            soundControllerInstance = OpenALSoundController.GetInstance;
         }
 
 
@@ -142,11 +142,11 @@ namespace Microsoft.Xna.Framework
         
         public override void Exit()
         {
+            // Stop the game loop
+            INTERNAL_window.INTERNAL_StopLoop();
+            
             // End the network subsystem
             Net.NetworkSession.Exit();
-            
-            // Destroy our window
-            INTERNAL_window.INTERNAL_Destroy();
         }
 
         public override bool BeforeUpdate(GameTime gameTime)
@@ -249,12 +249,14 @@ namespace Microsoft.Xna.Framework
             {
                 if (INTERNAL_window != null)
                 {
+                    INTERNAL_window.INTERNAL_Destroy();
                     INTERNAL_window = null;
                 }
                 
                 if (soundControllerInstance != null)
                 {
                     soundControllerInstance.Dispose();
+                    soundControllerInstance = null;
                 }
             }
 

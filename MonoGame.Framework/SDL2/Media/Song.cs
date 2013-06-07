@@ -49,46 +49,127 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class Song : IEquatable<Song>, IDisposable
 	{
-		private IntPtr _audioData;
-		
-		private string _name;
-		private int _playCount;
-		private int _volume; // in SDL units from 0 to 128
+		#region Private Member Data
+
+		private IntPtr INTERNAL_mixMusic;
+
+		#endregion
+
+		#region Internal Member Data
 
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
 
-        internal Song(string fileName, int durationMS) : this(fileName)
-        {
-            _Duration = TimeSpan.FromMilliseconds(durationMS);
-        }
-		internal Song(string fileName)
-		{			
-			_name = fileName;
+		#endregion
 
-			_audioData = SDL_mixer.Mix_LoadMUS(fileName);
-		}
-		
-		internal void OnFinishedPlaying ()
+		#region Public Properties
+
+		// TODO: A real Vorbis stream would have this info.
+		public TimeSpan Duration
 		{
-			MediaPlayer.OnSongFinishedPlaying(null, null);
+			get;
+			private set;
 		}
-		
-		/// <summary>
-		/// Set the event handler for "Finished Playing". Done this way to prevent multiple bindings.
-		/// </summary>
-		internal void SetEventHandler(FinishedPlayingHandler handler)
-		{
-            // No-op
-		}
-		
-		public string FilePath
+
+		// TODO: A real Vorbis stream would have this info.
+		public TimeSpan Position
 		{
 			get
-            {
-                return _name;
-            }
+			{
+				return new TimeSpan(0);
+			}
 		}
-		
+
+		public bool IsProtected
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public bool IsRated
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public string Name
+		{
+			get
+			{
+				return Path.GetFileNameWithoutExtension(FilePath);
+			}
+		}
+
+		public int PlayCount
+		{
+			get;
+			private set;
+		}
+
+		public int Rating
+		{
+			get
+			{
+				return 0;
+			}
+		}
+
+		// TODO: Could be obtained with Vorbis metadata
+		public int TrackNumber
+		{
+			get
+			{
+				return 0;
+			}
+		}
+
+		#endregion
+
+		#region Internal Properties
+
+		internal string FilePath
+		{
+			get;
+			private set;
+		}
+
+		internal float Volume
+		{
+			get
+			{
+				return SDL_mixer.Mix_VolumeMusic(-1) / 128.0f;
+			}
+			set
+			{
+				SDL_mixer.Mix_VolumeMusic((int) (value * 128));
+			}
+		}
+
+		#endregion
+
+		#region Constructors, Deconstructor, Dispose()
+
+		internal Song(string fileName, int durationMS) : this(fileName)
+		{
+			Duration = TimeSpan.FromMilliseconds(durationMS);
+		}
+
+		internal Song(string fileName)
+		{
+			FilePath = fileName;
+
+			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
+		}
+
+		~Song()
+		{
+			SDL_mixer.Mix_HookMusicFinished(null);
+			Dispose(true);
+		}
+
 		public void Dispose()
 		{
 			Dispose(true);
@@ -99,155 +180,99 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (disposing)
 			{
-				if (_audioData != IntPtr.Zero)
-                {
-					SDL_mixer.Mix_FreeMusic(_audioData);
-                }
+				if (INTERNAL_mixMusic != IntPtr.Zero)
+				{
+					SDL_mixer.Mix_FreeMusic(INTERNAL_mixMusic);
+				}
 			}
 		}
 
-		public bool Equals(Song song) 
-		{
-			return ((object) song != null) && (Name == song.Name);
-		}
-		
-		public override int GetHashCode ()
-		{
-			return base.GetHashCode ();
-		}
-		
-		public override bool Equals(Object obj)
-		{
-			if (obj == null)
-			{
-				return false;
-			}
-			
-			return Equals(obj as Song);  
-		}
-		
-		public static bool operator ==(Song song1, Song song2)
-		{
-			if ((object) song1 == null)
-			{
-				return (object) song2 == null;
-			}
+		#endregion
 
-			return song1.Equals(song2);
-		}
-		
-		public static bool operator !=(Song song1, Song song2)
-		{
-		  return !(song1 == song2);
-		}
-		
+		#region Internal Playback Methods
+
 		internal void Play()
-		{			
-			if (_audioData == IntPtr.Zero)
-            {
+		{
+			if (INTERNAL_mixMusic == IntPtr.Zero)
+			{
 				return;
-            }
-            
+			}
 			SDL_mixer.Mix_HookMusicFinished(OnFinishedPlaying);
-			SDL_mixer.Mix_PlayMusic(_audioData, 0);
-			_playCount++;
+			SDL_mixer.Mix_PlayMusic(INTERNAL_mixMusic, 0);
+			PlayCount += 1;
 		}
 
 		internal void Resume()
 		{
 			SDL_mixer.Mix_ResumeMusic();
 		}
-		
+
 		internal void Pause()
-		{			
+		{
 			SDL_mixer.Mix_PauseMusic();
 		}
-		
+
 		internal void Stop()
 		{
-			SDL_mixer.Mix_HaltMusic();			
-			_playCount = 0;
+			SDL_mixer.Mix_HookMusicFinished(null);
+			SDL_mixer.Mix_HaltMusic();
+			PlayCount = 0;
 		}
-		
-		internal float Volume
+
+		#endregion
+
+		#region Internal Event Handler Methods
+
+		/// <summary>
+		/// Set the event handler for "Finished Playing". Done this way to prevent multiple bindings.
+		/// </summary>
+		internal void SetEventHandler(FinishedPlayingHandler handler)
 		{
-			// SDL volume goes from 0 to 128 instead of 0 to 1
-			get
-            {
-                return _volume / 128f;
-            }
-			set
-            {
-				_volume = (int) (value * 128);
-				SDL_mixer.Mix_VolumeMusic(_volume);
-			}			
+			// No-op
 		}
-		
-        public TimeSpan Duration
+
+		internal void OnFinishedPlaying()
 		{
-			get
-            {
-				return _Duration;
+			MediaPlayer.OnSongFinishedPlaying(null, null);
+		}
+
+		#endregion
+
+		#region Public Comparison Methods/Operators
+
+		public bool Equals(Song song) 
+		{
+			return (((object) song) != null) && (Name == song.Name);
+		}
+
+		public override bool Equals(Object obj)
+		{
+			if (obj == null)
+			{
+				return false;
 			}
+			return Equals(obj as Song);
 		}
-        private TimeSpan _Duration = TimeSpan.Zero;
-		
-		// TODO: Implement
-		public TimeSpan Position
+
+		public static bool operator ==(Song song1, Song song2)
 		{
-			get
-            {
-				return new TimeSpan(0);
+			if (((object) song1) == null)
+			{
+				return ((object) song2) == null;
 			}
+			return song1.Equals(song2);
 		}
 
-		public bool IsProtected
+		public static bool operator !=(Song song1, Song song2)
 		{
-			get
-            {
-                return false;
-            }
+			return !(song1 == song2);
 		}
 
-		public bool IsRated
+		public override int GetHashCode()
 		{
-			get
-            {
-                return false;
-            }
+			return base.GetHashCode();
 		}
 
-		public string Name
-		{
-			get
-            {
-                return Path.GetFileNameWithoutExtension(_name);
-            }
-		}
-
-		public int PlayCount
-		{
-			get
-            {
-                return _playCount;
-            }
-		}
-
-		public int Rating
-		{
-			get
-            {
-                return 0;
-            }
-		}
-
-		public int TrackNumber
-		{
-			get
-            {
-                return 0;
-            }
-		}
+		#endregion
 	}
 }
-
