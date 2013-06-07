@@ -127,10 +127,6 @@ namespace Microsoft.Xna.Framework
 
             // Get our OpenALSoundController to handle the SoundBuffer pools
             soundControllerInstance = OpenALSoundController.GetInstance;
-            
-            // Initialize SDL2_mixer for Song playback
-            SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
-            SDL_mixer.Mix_OpenAudio(44100, SDL.AUDIO_S16SYS, 2, 1024);
         }
 
 
@@ -152,8 +148,8 @@ namespace Microsoft.Xna.Framework
             // End the network subsystem
             Net.NetworkSession.Exit();
             
-            // Close SDL2_mixer
-            SDL_mixer.Mix_CloseAudio();
+            // Close SDL2_mixer if needed
+            Media.Song.closeMixer();
         }
 
         public override bool BeforeUpdate(GameTime gameTime)

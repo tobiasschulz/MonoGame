@@ -49,6 +49,32 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class Song : IEquatable<Song>, IDisposable
 	{
+		#region SDL_mixer Open/Close Routines
+
+		// Has SDL_mixer already been opened?
+		static bool initialized = false;
+
+		private static void initializeMixer()
+		{
+			if (!initialized)
+			{
+				SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
+				SDL_mixer.Mix_OpenAudio(44100, SDL.AUDIO_S16SYS, 2, 1024);
+				initialized = true;
+			}
+		}
+
+		internal static void closeMixer()
+		{
+			if (initialized)
+			{
+				SDL_mixer.Mix_CloseAudio();
+				initialized = false;
+			}
+		}
+
+		#endregion
+
 		#region Private Member Data
 
 		private IntPtr INTERNAL_mixMusic;
@@ -160,7 +186,7 @@ namespace Microsoft.Xna.Framework.Media
 		internal Song(string fileName)
 		{
 			FilePath = fileName;
-
+			initializeMixer();
 			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
 		}
 
