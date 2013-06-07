@@ -52,7 +52,7 @@ namespace Microsoft.Xna.Framework.Media
 		#region SDL_mixer Open/Close Routines
 
 		// Has SDL_mixer already been opened?
-		static bool initialized = false;
+		private static bool initialized = false;
 
 		private static void initializeMixer()
 		{
