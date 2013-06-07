@@ -73,7 +73,7 @@ namespace Microsoft.Xna.Framework.Media
 			Dispose(true);
 		}
 
-		internal void OnFinishedPlaying ()
+		internal void OnFinishedPlaying()
 		{
 			MediaPlayer.OnSongFinishedPlaying(null, null);
 		}
@@ -165,6 +165,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		internal void Stop()
 		{
+			SDL_mixer.Mix_HookMusicFinished(null);
 			SDL_mixer.Mix_HaltMusic();
 			PlayCount = 0;
 		}
