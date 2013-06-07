@@ -146,11 +146,11 @@ namespace Microsoft.Xna.Framework
         
         public override void Exit()
         {
+            // Stop the game loop
+            INTERNAL_window.INTERNAL_StopLoop();
+            
             // End the network subsystem
             Net.NetworkSession.Exit();
-            
-            // Destroy our window
-            INTERNAL_window.INTERNAL_Destroy();
             
             // Close SDL2_mixer
             SDL_mixer.Mix_CloseAudio();
@@ -256,12 +256,14 @@ namespace Microsoft.Xna.Framework
             {
                 if (INTERNAL_window != null)
                 {
+                    INTERNAL_window.INTERNAL_Destroy();
                     INTERNAL_window = null;
                 }
                 
                 if (soundControllerInstance != null)
                 {
                     soundControllerInstance.Dispose();
+                    soundControllerInstance = null;
                 }
             }
 

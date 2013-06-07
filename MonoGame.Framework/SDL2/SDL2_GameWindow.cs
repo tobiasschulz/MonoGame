@@ -380,7 +380,31 @@ namespace Microsoft.Xna.Framework
             
             // We out.
             Game.Exit();
-            
+        }
+        
+        public void INTERNAL_SwapBuffers()
+        {
+            Rectangle windowRect = ClientBounds;
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, INTERNAL_glFramebuffer);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+            GL.BlitFramebuffer(
+                0, 0, INTERNAL_glFramebufferWidth, INTERNAL_glFramebufferHeight,
+                0, 0, windowRect.Width, windowRect.Height,
+                ClearBufferMask.ColorBufferBit,
+                BlitFramebufferFilter.Linear
+            );
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
+        }
+        
+        public void INTERNAL_StopLoop()
+        {
+            INTERNAL_runApplication = false;
+        }
+        
+        public void INTERNAL_Destroy()
+        {
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
@@ -406,27 +430,6 @@ namespace Microsoft.Xna.Framework
 
             // This _should_ be the last SDL call we make...
             SDL.SDL_Quit();
-        }
-        
-        public void INTERNAL_SwapBuffers()
-        {
-            Rectangle windowRect = ClientBounds;
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, INTERNAL_glFramebuffer);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-            GL.BlitFramebuffer(
-                0, 0, INTERNAL_glFramebufferWidth, INTERNAL_glFramebufferHeight,
-                0, 0, windowRect.Width, windowRect.Height,
-                ClearBufferMask.ColorBufferBit,
-                BlitFramebufferFilter.Linear
-            );
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
-        }
-        
-        public void INTERNAL_Destroy()
-        {
-            INTERNAL_runApplication = false;
         }
         
         #endregion
