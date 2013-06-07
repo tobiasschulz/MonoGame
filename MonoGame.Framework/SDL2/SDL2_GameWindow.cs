@@ -235,20 +235,24 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-                int result = -1;
+                int result = 0;
                 result = SDL.SDL_GL_GetSwapInterval();
-                if (result == 1)
-                {
-                    return true;
-                }
-                return false;
+                return (result == 1 || result == -1);
             }
             set
             {
-                // NOTE: We can get EXT_swap_control_tear by using -1 here
                 if (value)
                 {
-                    SDL.SDL_GL_SetSwapInterval(1);
+                    if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
+                    {
+                        System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
+                        SDL.SDL_ClearError();
+                        SDL.SDL_GL_SetSwapInterval(1);
+                    }
                 }
                 else
                 {
