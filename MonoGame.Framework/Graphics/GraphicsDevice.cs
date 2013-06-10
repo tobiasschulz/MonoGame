@@ -41,11 +41,14 @@ purpose and non-infringement.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Diagnostics;
+
+#if !SDL2
+using System.Windows.Forms;
+#endif
 
 #if OPENGL
 #if SDL2
@@ -407,11 +410,17 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (!_extensions.Contains("GL_EXT_framebuffer_object"))
                 {
+#if SDL2
+                    System.Console.WriteLine("\n\nAn essential rendering feature is unsupported in your current drivers.");
+                    System.Console.WriteLine("Try updating your drivers to the latest version.");
+                    System.Console.WriteLine("If you are using the latest available drivers, your video card might not be able to run FEZ.");
+#else
                     MessageBox.Show(
                         "An essential rendering feature is unsupported in your current drivers." +
                         "\nTry updating your drivers to the latest version." +
                         "\n\nIf you are using the latest available drivers, your video card might not be able to run FEZ.",
                         "FEZ - Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endif
 
                     throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
                 }

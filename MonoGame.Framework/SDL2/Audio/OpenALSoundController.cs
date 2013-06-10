@@ -7,7 +7,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+#if !SDL2
 using System.Windows.Forms;
+#endif
+
 using OpenTK.Audio;
 using OpenTK.Audio.OpenAL;
 
@@ -93,10 +96,15 @@ namespace Microsoft.Xna.Framework.Audio
 				// FIXME FEZ: Where did GetLastError come from?
 				Log(ex.ToString());
                 // Log("Last error in enumerator is " + AudioDeviceEnumerator.LastError);
-
+				
+#if SDL2
+                System.Console.WriteLine("Error initializing OpenAL audio subsystem. Game will now exit.");
+                System.Console.WriteLine("(see debug log for more details)");
+#else
                 MessageBox.Show("Error initializing audio subsystem. Game will now exit.\n" +
                                 "(see debug log for more details)", "OpenAL Error",
                                 MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endif
                 throw;
             }
 
