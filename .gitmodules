@@ -7,12 +7,12 @@
 [submodule "StarterKits"]
 	path = StarterKits
 	url = https://github.com/kungfubanana/MonoGame-StarterKits.git
-[submodule "ThirdParty/Kickstart"]
-	path = ThirdParty/Kickstart
-	url = https://github.com/OutOfOrder/MonoKickstart.git
 [submodule "ThirdParty/TheoraPlay#"]
 	path = "ThirdParty/TheoraPlay#"
 	url = https://github.com/flibitijibibo/TheoraPlay-CS.git
 [submodule "ThirdParty/SDL2#"]
 	path = "ThirdParty/SDL2#"
 	url = https://github.com/flibitijibibo/SDL2-CS.git
+[submodule "ThirdParty/MonoKickstart"]
+	path = ThirdParty/MonoKickstart
+	url = https://github.com/flibitijibibo/MonoKickstart.git
