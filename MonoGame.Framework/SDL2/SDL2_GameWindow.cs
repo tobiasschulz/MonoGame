@@ -292,6 +292,12 @@ namespace Microsoft.Xna.Framework
             }
         }
         
+        public bool IsActive
+        {
+            get;
+            set;
+        }
+        
         #endregion
         
         #region INTERNAL: GamePlatform Interaction, Methods
@@ -338,6 +344,8 @@ namespace Microsoft.Xna.Framework
                         // Window Focus
                         if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
                         {
+                            IsActive = true;
+                            
                             // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Current);
                             
@@ -346,6 +354,8 @@ namespace Microsoft.Xna.Framework
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
+                            IsActive = false;
+                            
                             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
                             
                             // Give the screensaver back, we're not that important now.
@@ -587,6 +597,9 @@ namespace Microsoft.Xna.Framework
             
             // We default to VSync being on.
             IsVSync = true;
+            
+            // Assume we will have focus.
+            IsActive = true;
             
 #if THREADED_GL
             // Create a background context
