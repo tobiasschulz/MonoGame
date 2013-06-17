@@ -711,11 +711,8 @@ namespace Microsoft.Xna.Framework.Graphics
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
             {
                 // Fix up the Image to match the expected format
-				if (Environment.OSVersion.Platform != PlatformID.MacOSX || Directory.Exists("/Users/"))
-				{
-                	image.RGBToBGR();
-				}
-				
+                image.RGBToBGR();
+
                 var data = new byte[image.Width * image.Height * 4];
 
                 BitmapData bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height),

@@ -17,7 +17,7 @@ namespace Microsoft.Xna.Framework
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo", SetLastError = false)]
         private static extern bool SystemParametersInfo(uint action, uint param,
             ref FILTERKEY vparam, uint init);
-		
+	
         private const uint SPI_GETFILTERKEYS = 0x0032;
         private const uint SPI_SETFILTERKEYS = 0x0033;
         private const uint SPI_GETTOGGLEKEYS = 0x0034;
@@ -66,11 +66,12 @@ namespace Microsoft.Xna.Framework
         /// </summary>
         public static void AllowAccessibilityShortcutKeys(bool bAllowKeys)
         {
-			if (	System.Environment.OSVersion.Platform == System.PlatformID.MacOSX ||
-			    	System.Environment.OSVersion.Platform == System.PlatformID.Unix	)
-			{
-				return; // Not Windows? Bail.
-			}
+
+            if (  System.Environment.OSVersion.Platform == System.PlatformID.MacOSX ||
+                  System.Environment.OSVersion.Platform == System.PlatformID.Unix  )
+            {
+                return; // Not Windows? Bail.
+            }
 
             if (!StartupAccessibilitySet)
             {
