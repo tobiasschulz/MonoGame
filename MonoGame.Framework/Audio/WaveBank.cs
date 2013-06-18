@@ -405,15 +405,15 @@ namespace Microsoft.Xna.Framework.Audio
                  * -flibit
                  */
                 } else if (codec == MiniFormatTag_ADPCM) {
-                    MemoryStream dataStream = new MemoryStream(audiodata);
-                    BinaryReader source = new BinaryReader(dataStream);
-                    sounds[current_entry] = new SoundEffectInstance(
-                        MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
-                        rate,
-                        chans
-                    );
-                    source.Close();
-                    dataStream.Close();
+                    using (MemoryStream dataStream = new MemoryStream(audiodata)) {
+                        using (BinaryReader source = new BinaryReader(dataStream)) {
+                            sounds[current_entry] = new SoundEffectInstance(
+                                MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
+                                rate,
+                                chans
+                            );
+                        }
+                    }
 #endif
                 } else {
                     throw new NotImplementedException();
