@@ -87,6 +87,7 @@ namespace Microsoft.Xna.Framework.Audio
 				uint eventId = eventInfo & 0x1F;
 				switch (eventId) {
 				case 1:
+				case 4:
 					EventPlayWave evnt = new EventPlayWave();
 					
 					
@@ -106,31 +107,6 @@ namespace Microsoft.Xna.Framework.Audio
 					evnt.wave.IsLooped = loopCount == 255;
 					
 					events[i] = evnt;
-
-					// FIXME: TERRIBLE HACK!!! Oh hey look flibit is making assumptions about clips!
-					evnt.wave.IsLooped = true;
-
-					break;
-				 case 4:
-
-					// FIXME: Same crap as above, but without the terrible hack? Whaaat -flibit
-
-					evnt = new EventPlayWave();
-
-
-					clipReader.ReadUInt32 (); //unkn
-					trackIndex = clipReader.ReadUInt16 ();
-					waveBankIndex = clipReader.ReadByte ();
-
-					//unkn
-					clipReader.ReadByte ();
-					clipReader.ReadUInt16 ();
-					clipReader.ReadUInt16 ();
-
-					evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
-
-					events[i] = evnt;
-
 					break;
 				default:
 					throw new NotImplementedException("eventInfo & 0x1F = " + eventId);

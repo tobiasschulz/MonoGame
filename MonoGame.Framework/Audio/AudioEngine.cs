@@ -54,7 +54,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal List<SoundBank> SoundBanks = new List<SoundBank>();
 
-		internal AudioCategory[] categories;
+		AudioCategory[] categories;
 		Dictionary<string, int> categoryLookup = new Dictionary<string, int>();
 
 		internal AudioCategory[] Categories { get { return categories; } }
