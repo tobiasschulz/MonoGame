@@ -16,7 +16,7 @@ namespace Microsoft.Xna.Framework.Audio
 		internal bool instanceLimit;
 		internal int maxInstances;
 
-		List<XactSound> sounds;
+		List<Cue> sounds;
 
 		//insatnce limiting behaviour
 		internal enum MaxInstanceBehaviour {
@@ -40,7 +40,7 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		internal AudioCategory (AudioEngine audioengine, string name, BinaryReader reader)
 		{
-			this.sounds = new List<XactSound>();
+			this.sounds = new List<Cue>();
 			this.name = name;
 			engine = audioengine;
 
@@ -77,7 +77,7 @@ namespace Microsoft.Xna.Framework.Audio
 			isPublic = (visibilityFlags & 0x2) != 0;
 		}
 
-		internal void AddSound(XactSound sound)
+		internal void AddSound(Cue sound)
 		{
 			sounds.Add(sound);
 		}
@@ -99,19 +99,19 @@ namespace Microsoft.Xna.Framework.Audio
 		public void Stop ()
 		{
 			foreach (var sound in sounds)
-				sound.Stop();
+				sound.Stop(AudioStopOptions.Immediate);
 		}
 
 		public void Stop (AudioStopOptions option)
 		{
 			foreach (var sound in sounds)
-				sound.Stop();
+				sound.Stop(option);
 		}
 
 		public void SetVolume(float volume)
 		{
 			foreach (var sound in sounds)
-				sound.Volume = volume;
+				sound.SetVariable("Volume", volume);
 		}
 
 		public bool Equals(AudioCategory other)

@@ -110,9 +110,6 @@ namespace Microsoft.Xna.Framework.Audio
 			staticVolume = volume / 256.0f;
 			Volume = 1.0f;
 
-			var audioCategory = soundBank.AudioEngine.Categories[category];
-			audioCategory.AddSound(this);
-
 			soundReader.BaseStream.Seek (oldPosition, SeekOrigin.Begin);
 		}
 		
