@@ -60,7 +60,6 @@ namespace Microsoft.Xna.Framework.Audio
 		private AudioListener listener;
 		private AudioEmitter emitter;
 		
-		bool paused = false;
 		float volume = 1.0f;
 		float categoryVolume = 1.0f;
 
@@ -69,7 +68,11 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		public bool IsPaused
 		{
-			get { return paused; }
+			get {
+				if (curSound != null)
+					return curSound.IsPaused;
+				return true;
+			}
 		}
 		
 		public bool IsPlaying
@@ -134,7 +137,6 @@ namespace Microsoft.Xna.Framework.Audio
 			if (curSound != null) {
 				curSound.Pause();
 			}
-			paused = true;
 		}
 		
 		public void Play()
@@ -142,8 +144,6 @@ namespace Microsoft.Xna.Framework.Audio
 			//TODO: Probabilities
 			curSound = sounds[variationRand.Next (sounds.Length)];
 			
-			// FIXME: Why was this here?
-			// curSound.Volume = volume * categoryVolume;
 			if (positionalAudio)
 			{
 				curSound.PlayPositional(listener, emitter);
@@ -161,7 +161,6 @@ namespace Microsoft.Xna.Framework.Audio
 			if (curSound != null) {
 				curSound.Resume ();
 			}
-			paused = false;
 		}
 		
 		public void Stop(AudioStopOptions options)
@@ -169,7 +168,6 @@ namespace Microsoft.Xna.Framework.Audio
 			if (curSound != null) {
 				curSound.Stop();
 			}
-			paused = false;
 		}
 		
 		public void SetVariable (string name, float value)

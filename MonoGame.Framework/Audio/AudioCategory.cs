@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Audio
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Xna.Framework.Audio
 		internal bool instanceLimit;
 		internal int maxInstances;
 
-		internal List<Cue> categoryCues;
+		List<XactSound> sounds;
 
 		//insatnce limiting behaviour
 		internal enum MaxInstanceBehaviour {
@@ -40,6 +40,7 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		internal AudioCategory (AudioEngine audioengine, string name, BinaryReader reader)
 		{
+			this.sounds = new List<XactSound>();
 			this.name = name;
 			engine = audioengine;
 
@@ -78,48 +79,43 @@ namespace Microsoft.Xna.Framework.Audio
 			isPublic = (visibilityFlags & 0x2) != 0;
 		}
 
+		internal void AddSound(XactSound sound)
+		{
+			sounds.Add(sound);
+		}
+
 		public string Name { get { return name; } }
 
 		public void Pause ()
 		{
-			foreach(Cue curCue in categoryCues)
-			{
-				curCue.Pause();
-			}
+			foreach (var sound in sounds)
+				sound.Pause();
 		}
 
 		public void Resume ()
 		{
-			foreach(Cue curCue in categoryCues)
-			{
-				curCue.Resume();
-			}
+			foreach (var sound in sounds)
+				sound.Resume();
 		}
 
 		public void Stop ()
 		{
-			foreach(Cue curCue in categoryCues)
-			{
-				curCue.Stop(AudioStopOptions.AsAuthored);
-			}
+			foreach (var sound in sounds)
+				sound.Stop();
 		}
 
 		public void Stop (AudioStopOptions option)
 		{
-			foreach(Cue curCue in categoryCues)
-			{
-				curCue.Stop(option);
-			}
-		}
-		public void SetVolume(float volume)
-		{
-			foreach(Cue curCue in categoryCues)
-			{
-				curCue.SetVariable("CategoryVolume", volume);
-			}
+			foreach (var sound in sounds)
+				sound.Stop();
 		}
 
-		
+		public void SetVolume(float volume)
+		{
+			foreach (var sound in sounds)
+				sound.Volume = volume;
+		}
+
 		public bool Equals(AudioCategory other)
 		{
 			// FIXME: Not actually thorough!

@@ -109,7 +109,10 @@ namespace Microsoft.Xna.Framework.Audio
 			// FIXME: This is totally arbitrary. I dunno the exact ratio here.
 			staticVolume = volume / 256.0f;
 			Volume = 1.0f;
-			
+
+			var audioCategory = soundBank.AudioEngine.Categories[category];
+			audioCategory.AddSound(this);
+
 			soundReader.BaseStream.Seek (oldPosition, SeekOrigin.Begin);
 		}
 		
@@ -180,7 +183,7 @@ namespace Microsoft.Xna.Framework.Audio
 		public void Resume() {
 			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
-					clip.Play();
+					clip.Resume();
 				}
 			} else {
 				wave.Resume ();
@@ -215,6 +218,21 @@ namespace Microsoft.Xna.Framework.Audio
 					return false;
 				} else {
 					return wave.State == SoundState.Playing;
+				}
+			}
+		}
+
+		public bool IsPaused
+		{
+			get
+			{
+				if (complexSound) {
+					foreach (XactClip clip in soundClips) {
+						if (clip.IsPaused) return true;
+					}
+					return false;
+				} else {
+					return wave.State == SoundState.Paused;
 				}
 			}
 		}

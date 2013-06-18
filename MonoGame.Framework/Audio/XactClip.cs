@@ -15,8 +15,10 @@ namespace Microsoft.Xna.Framework.Audio
 			public abstract void UpdatePosition(AudioListener listener, AudioEmitter emitter);
 			public abstract void Stop();
 			public abstract void Pause();
+			public abstract void Resume();
 			public abstract bool Playing { get; }
 			public abstract float Volume { get; set; }
+			public abstract bool IsPaused { get; }
 		}
 		
 		class EventPlayWave : ClipEvent {
@@ -41,9 +43,22 @@ namespace Microsoft.Xna.Framework.Audio
 			public override void Pause() {
 				wave.Pause ();
 			}
+			public override void Resume()
+			{
+				wave.Volume = clip.Volume;
+				if (wave.State == SoundState.Paused)
+					wave.Resume();
+			}
 			public override bool Playing {
 				get {
 					return wave.State == SoundState.Playing;
+				}
+			}
+			public override bool IsPaused
+			{
+				get
+				{
+					return wave.State == SoundState.Paused;
 				}
 			}
 			public override float Volume {
@@ -79,12 +94,16 @@ namespace Microsoft.Xna.Framework.Audio
 					uint trackIndex = clipReader.ReadUInt16 ();
 					byte waveBankIndex = clipReader.ReadByte ();
 					
-					//unkn
-					clipReader.ReadByte ();
+					
+					var loopCount = clipReader.ReadByte ();
+				    // if loopCount == 255 its an infinite loop
+					// otherwise it loops n times..
+				    // unknown
 					clipReader.ReadUInt16 ();
 					clipReader.ReadUInt16 ();
 					
 					evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
+					evnt.wave.IsLooped = loopCount == 255;
 					
 					events[i] = evnt;
 
@@ -128,6 +147,11 @@ namespace Microsoft.Xna.Framework.Audio
 			//TODO: run events
 			events[0].Play ();
 		}
+
+		public void Resume()
+		{
+			events[0].Resume();
+		}
 		
 		public void Stop() {
 			events[0].Stop ();
@@ -163,7 +187,12 @@ namespace Microsoft.Xna.Framework.Audio
 			// TODO: run events
 			events[0].UpdatePosition(listener, emitter);
 		}
-		
+
+		public bool IsPaused { 
+			get { 
+				return events[0].IsPaused; 
+			} 
+		}
 	}
 }
 
