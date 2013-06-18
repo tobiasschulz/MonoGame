@@ -61,7 +61,6 @@ namespace Microsoft.Xna.Framework.Audio
 		private AudioEmitter emitter;
 		
 		float volume = 1.0f;
-		float categoryVolume = 1.0f;
 
 		// FIXME: This should really be an array for each RPC table and type.
 		float rpcVolume = 1.0f;
@@ -170,16 +169,10 @@ namespace Microsoft.Xna.Framework.Audio
 		
 		public void SetVariable (string name, float value)
 		{
-			// FIXME: This is pretty ugly.
 			if (name == "Volume") {
 				volume = value;
 				if (curSound != null) {
-					curSound.Volume = value * categoryVolume * rpcVolume;
-				}
-			} else if (name == "CategoryVolume") {
-				categoryVolume = value;
-				if (curSound != null) {
-					curSound.Volume = volume * value * rpcVolume;
+					curSound.Volume = value * rpcVolume;
 				}
 			} else if (curSound != null && curSound.rpcVariables.ContainsKey(name)) {
 				curSound.rpcVariables[name] = value;
@@ -293,7 +286,7 @@ namespace Microsoft.Xna.Framework.Audio
 					{
 						// FIXME: Multiple volumes?
 						rpcVolume = 1.0f + (curveResult / 10000.0f);
-						curSound.Volume = volume * categoryVolume * rpcVolume;
+						curSound.Volume = volume * rpcVolume;
 					}
 					else
 					{
