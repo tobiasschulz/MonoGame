@@ -443,7 +443,6 @@ namespace Microsoft.Xna.Framework.Media
 				{
 					State = MediaState.Stopped;
 
-					// FIXME: Is it really just null, null?
 					if (ActiveSongChanged != null)
 					{
 						ActiveSongChanged.Invoke(null, null);
@@ -532,8 +531,7 @@ namespace Microsoft.Xna.Framework.Media
                 Stop();
             else            
                 Play(nextSong);                            
-            
-            // FIXME: Is it really just null, null?
+
             if (ActiveSongChanged != null)
             {
                 ActiveSongChanged.Invoke(null, null);
