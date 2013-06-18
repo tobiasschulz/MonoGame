@@ -347,11 +347,8 @@ namespace Microsoft.Xna.Framework.Graphics
         
         public GraphicsAdapter Adapter
         {
-            get
-            {
-                // FIXME: Maybe?
-                return GraphicsAdapter.DefaultAdapter;
-            }
+            get;
+            private set;
         }
 
         internal GraphicsDevice(GraphicsDeviceInformation gdi)
@@ -381,11 +378,8 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <paramref name="presentationParameters"/> is <see langword="null"/>.
         /// </exception>
         public GraphicsDevice(GraphicsAdapter adapter, GraphicsProfile graphicsProfile, PresentationParameters presentationParameters)
-            :this(graphicsProfile, presentationParameters)
         {
-        }
-        internal GraphicsDevice(GraphicsProfile graphicsProfile, PresentationParameters presentationParameters)
-        {
+            Adapter = adapter;
             if (presentationParameters == null)
                 throw new ArgumentNullException("presentationParameters");
             SetupGL();
@@ -1495,7 +1489,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-                return GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+                return Adapter.CurrentDisplayMode;
             }
         }
 
