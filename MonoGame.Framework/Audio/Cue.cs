@@ -152,8 +152,6 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				curSound.Play();
 			}
-
-			paused = false;
 		}
 		
 		public void Resume()

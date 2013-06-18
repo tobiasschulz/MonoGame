@@ -44,8 +44,6 @@ namespace Microsoft.Xna.Framework.Audio
 			this.name = name;
 			engine = audioengine;
 
-			categoryCues = new List<Cue>();
-
 			maxInstances = reader.ReadByte ();
 			instanceLimit = maxInstances != 0xff;
 
