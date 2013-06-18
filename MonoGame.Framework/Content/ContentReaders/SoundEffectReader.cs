@@ -116,7 +116,7 @@ namespace Microsoft.Xna.Framework.Content
 #else
             if (header[0] == 2 && header[1] == 0)
             {
-                // We've found MSADPCM data! Let'e decode it here.
+                // We've found MSADPCM data! Let's decode it here.
                 MemoryStream origDataStream = new MemoryStream(data);
                 BinaryReader reader = new BinaryReader(origDataStream);
                 byte[] newData = MSADPCMToPCM.MSADPCM_TO_PCM(
