@@ -114,6 +114,15 @@ namespace Microsoft.Xna.Framework.Audio
             _data = LoadAudioStream(s, 1.0f, false);
 
 		}
+        
+        internal SoundEffect(string name, byte[] data, int channels, uint frequency)
+        {
+            _name = name;
+            _data = data;
+            Size = data.Length;
+            Format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+            Rate = frequency;
+        }
 
         internal SoundEffect(Stream s)
         {
