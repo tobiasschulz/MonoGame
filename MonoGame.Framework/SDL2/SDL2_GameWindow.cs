@@ -553,7 +553,7 @@ namespace Microsoft.Xna.Framework
              * their WinMain. This was only added to prevent iOS from exploding.
              * -flibit
              */
-            SDL.SDL_MainIsReady();
+            SDL.SDL_SetMainReady();
 
             // This _should_ be the first SDL call we make...
             SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
