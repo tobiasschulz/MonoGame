@@ -351,6 +351,12 @@ namespace Microsoft.Xna.Framework.Graphics
             private set;
         }
 
+        public GraphicsAdapter Adapter
+        {
+            get;
+            private set;
+        }
+
         internal GraphicsDevice(GraphicsDeviceInformation gdi)
         {
             SetupGL();
