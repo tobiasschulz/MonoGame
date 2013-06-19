@@ -547,6 +547,14 @@ namespace Microsoft.Xna.Framework
         
         public SDL2_GameWindow()
         {
+            /* SDL2 might complain if an OS that uses SDL_main has not actually
+             * used SDL_main by the time you initialize SDL2.
+             * The only platform that is affected is Windows, but we can skip
+             * their WinMain. This was only added to prevent iOS from exploding.
+             * -flibit
+             */
+            SDL.SDL_MainIsReady();
+
             // This _should_ be the first SDL call we make...
             SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
 
