@@ -344,12 +344,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 return _currentRenderTargetCount > 0;
             }
         }
-        
-        public GraphicsAdapter Adapter
-        {
-            get;
-            private set;
-        }
 
         public GraphicsAdapter Adapter
         {
