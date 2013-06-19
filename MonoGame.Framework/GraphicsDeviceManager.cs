@@ -373,18 +373,19 @@ namespace Microsoft.Xna.Framework
         public void ToggleFullScreen()
         {
             IsFullScreen = !IsFullScreen;
-#if SDL2
-            // FIXME: Shouldn't it be this way on every platform?
-            SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
+            
+            /* FIXME: This wasn't here before.
+             * Shouldn't this toggle happen immediately?
+             * -flibit
+             */
             if (IsFullScreen)
             {
-                platform.EnterFullScreen();
+                _game.Platform.EnterFullScreen();
             }
             else
             {
-                platform.ExitFullScreen();
+                _game.Platform.ExitFullScreen();
             }
-#endif // SDL2
         }
 
 #if WINDOWS_STOREAPP
