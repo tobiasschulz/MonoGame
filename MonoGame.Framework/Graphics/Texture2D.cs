@@ -48,21 +48,14 @@ using Sce.PlayStation.Core.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 
-#if MONOMAC
-using MonoMac.AppKit;
-using MonoMac.CoreGraphics;
-using MonoMac.Foundation;
-#elif IOS
+#if IOS
 using MonoTouch.UIKit;
 using MonoTouch.CoreGraphics;
 using MonoTouch.Foundation;
 #endif
 
 #if OPENGL
-#if MONOMAC
-using MonoMac.OpenGL;
-using GLPixelFormat = MonoMac.OpenGL.PixelFormat;
-#elif WINDOWS || LINUX
+#if SDL2
 using OpenTK.Graphics.OpenGL;
 using GLPixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 #elif GLES
@@ -80,7 +73,7 @@ using ErrorCode = OpenTK.Graphics.ES20.All;
 using PssTexture2D = Sce.PlayStation.Core.Graphics.Texture2D;
 #endif
 
-#if WINDOWS || LINUX || MONOMAC
+#if SDL2
 using System.Drawing.Imaging;
 #endif
 using Microsoft.Xna.Framework.Content;
@@ -289,6 +282,18 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 return height;
             }
+        }
+
+        // TODO: You could extend the XNA API with this...
+        internal void GenerateMipmaps()
+        {
+            Threading.BlockOnUIThread(() =>
+            {
+                var prevTexture = GraphicsExtensions.GetBoundTexture2D();
+                GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.BindTexture(TextureTarget.Texture2D, prevTexture);
+            });
         }
 
         public void SetData<T>(int level, Rectangle? rect, T[] data, int startIndex, int elementCount) where T : struct 
@@ -724,22 +729,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
             //todo: partial classes would be cleaner
-#if IOS || MONOMAC
-            
-
-
 #if IOS
 			using (var uiImage = UIImage.LoadFromData(NSData.FromStream(stream)))
-#elif MONOMAC
-			using (var nsImage = NSImage.FromStream (stream))
-#endif
 			{
-#if IOS
 				var cgImage = uiImage.CGImage;
-#elif MONOMAC
-				var rectangle = RectangleF.Empty;
-				var cgImage = nsImage.AsCGImage (ref rectangle, null, null);
-#endif
 				
 				var width = cgImage.Width;
 				var height = cgImage.Height;
@@ -809,8 +802,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 return texture;
             }
 #elif WINDOWS_PHONE
-            throw new NotImplementedException();
-#elif WINDOWS_STOREAPP || DIRECTX
+            throw new NotImplementedException();
+
+#elif WINDOWS_STOREAPP || DIRECTX
+
             // For reference this implementation was ultimately found through this post:
             // http://stackoverflow.com/questions/9602102/loading-textures-with-sharpdx-in-metro 
             Texture2D toReturn = null;
@@ -826,7 +821,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				toReturn._texture = sharpDxTexture;
 			}
             return toReturn;
-#elif PSM
+
+#elif PSM
             return new Texture2D(graphicsDevice, stream);
 #else
             using (Bitmap image = (Bitmap)Bitmap.FromStream(stream))
@@ -901,7 +897,7 @@ namespace Microsoft.Xna.Framework.Graphics
             });
 
             waitEvent.Wait();
-#elif MONOMAC
+#elif SDL2
 			SaveAsImage(stream, width, height, ImageFormat.Jpeg);
 #else
             throw new NotImplementedException();
@@ -912,7 +908,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 #if WINDOWS_STOREAPP
             SaveAsImage(BitmapEncoder.PngEncoderId, stream, width, height);
-#elif MONOMAC
+#elif SDL2
 			SaveAsImage(stream, width, height, ImageFormat.Png);
 #else
             // TODO: We need to find a simple stand alone
@@ -921,7 +917,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
-#if MONOMAC
+#if SDL2
 		private void SaveAsImage(Stream stream, int width, int height, ImageFormat format)
 		{
 			if (stream == null)
@@ -1007,7 +1003,8 @@ namespace Microsoft.Xna.Framework.Graphics
             }).Wait();
         }
 #endif
-#if DIRECTX && !WINDOWS_PHONE        [CLSCompliant(false)]
+#if DIRECTX && !WINDOWS_PHONE
+        [CLSCompliant(false)]
         public static SharpDX.Direct3D11.Texture2D CreateTex2DFromBitmap(SharpDX.WIC.BitmapSource bsource, GraphicsDevice device)
         {
 
