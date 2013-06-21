@@ -175,11 +175,14 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-                // FIXME: May not be happy since the FBO may be of different size.
                 int x = 0, y = 0, w = 0, h = 0;
                 SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
-                SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, ref w, ref h);
-                return new Rectangle(x, y, w, h);
+                return new Rectangle(
+                    x,
+                    y,
+                    INTERNAL_glFramebufferWidth,
+                    INTERNAL_glFramebufferHeight
+                );
             }
         }
 
@@ -721,7 +724,6 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
             
             // Bordered
-            // FIXME: May not be needed due to SetWindowFullscreen?
             if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) == SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS)
             {
                 SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
@@ -731,7 +733,7 @@ namespace Microsoft.Xna.Framework
                 SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
             }
             
-            // Fullscreen (and general Window flags)
+            // Fullscreen (Note: this only reads the fullscreen flag)
             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
             
             // Window position

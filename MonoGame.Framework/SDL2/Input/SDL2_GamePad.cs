@@ -1009,7 +1009,7 @@ namespace Microsoft.Xna.Framework.Input
             }
             else
             {
-                // FIXME: Left and right motors as separate rumble?
+                // TODO: Left and right motors with SDL_HapticRumble (SDL 2.1?)
                 SDL.SDL_HapticRumblePlay(
                     INTERNAL_haptics[(int) playerIndex],
                     (leftMotor >= rightMotor) ? leftMotor : rightMotor,
