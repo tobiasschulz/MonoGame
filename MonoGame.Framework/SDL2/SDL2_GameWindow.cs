@@ -175,7 +175,7 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-                int x = 0, y = 0, w = 0, h = 0;
+                int x = 0, y = 0;
                 SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
                 return new Rectangle(
                     x,
