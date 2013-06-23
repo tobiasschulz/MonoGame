@@ -672,29 +672,24 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
 
 #else
-			var temp = new T[this.width*this.height];
 
-			GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+		/* FIXME: This was reverted from a change in upstream.
+		 * The latest Texture2D totally ruins everything for us.
+		 * Don't know why, and as of writing, don't care why.
+		 * -flibit
+		 */
 
-			if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
-				throw new NotImplementedException();
-			} else {
-				GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, temp);
-			}
+		GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
 
-			if (rect.HasValue) {
-				int z = 0, w = 0;
+		if (rect.HasValue) {
+			throw new NotImplementedException();
+		}
 
-				for(int y= rect.Value.Y; y < rect.Value.Y+ rect.Value.Height; y++) {
-					for(int x=rect.Value.X; x < rect.Value.X + rect.Value.Width; x++) {
-						data[z*rect.Value.Width+w] = temp[(y*width)+x];
-						w++;
-					}
-					z++;
-				}
-			} else {
-				data = temp;
-			}
+		if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
+			throw new NotImplementedException();
+		} else {
+			GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
+		}
 
 #endif
         }
