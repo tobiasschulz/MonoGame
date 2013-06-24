@@ -121,8 +121,8 @@ namespace Microsoft.Xna.Framework
         private int INTERNAL_glFramebuffer;
         private int INTERNAL_glColorAttachment;
         private int INTERNAL_glDepthStencilAttachment;
-        private int INTERNAL_glFramebufferWidth;
-        private int INTERNAL_glFramebufferHeight;
+        internal int INTERNAL_glFramebufferWidth;
+        internal int INTERNAL_glFramebufferHeight;
         
         private DepthFormat INTERNAL_depthFormat;
         
@@ -175,14 +175,10 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-                int x = 0, y = 0;
+                int x = 0, y = 0, w = 0, h = 0;
                 SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
-                return new Rectangle(
-                    x,
-                    y,
-                    INTERNAL_glFramebufferWidth,
-                    INTERNAL_glFramebufferHeight
-                );
+                SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, ref w, ref h);
+                return new Rectangle(x, y, w, h);
             }
         }
 

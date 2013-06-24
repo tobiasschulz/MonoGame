@@ -172,16 +172,22 @@ namespace Microsoft.Xna.Framework
 
         public override void EnterFullScreen()
         {
-            Rectangle windowRect = INTERNAL_window.ClientBounds;
             BeginScreenDeviceChange(true);
-            EndScreenDeviceChange("SDL2", windowRect.Width, windowRect.Height);
+            EndScreenDeviceChange(
+                "SDL2",
+                INTERNAL_window.INTERNAL_glFramebufferWidth,
+                INTERNAL_window.INTERNAL_glFramebufferHeight
+            );
         }
 
         public override void ExitFullScreen()
         {
-            Rectangle windowRect = INTERNAL_window.ClientBounds;
             BeginScreenDeviceChange(false);
-            EndScreenDeviceChange("SDL2", windowRect.Width, windowRect.Height);
+            EndScreenDeviceChange(
+                "SDL2",
+                INTERNAL_window.INTERNAL_glFramebufferWidth,
+                INTERNAL_window.INTERNAL_glFramebufferHeight
+            );
         }
 
         internal void ResetWindow(bool fullScreen)
