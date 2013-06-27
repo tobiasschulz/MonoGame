@@ -50,7 +50,7 @@ namespace Microsoft.Xna.Framework.Input
     {
         #region Internal Properties and Variables
         
-        internal static MouseState State;
+        internal static GameWindow PrimaryWindow;
         
         internal static IntPtr INTERNAL_sdlWindowHandle;
 
@@ -78,10 +78,11 @@ namespace Microsoft.Xna.Framework.Input
         #region Public interface
 
         /// <summary>
-        /// Gets mouse state information that includes position and button presses.
+        /// Gets mouse state information that includes position and button
+        /// presses for the provided window
         /// </summary>
         /// <returns>Current state of the mouse.</returns>
-        public static MouseState GetState()
+        public static MouseState GetState(GameWindow window)
         {
             int x, y;
             uint flags = SDL.SDL_GetMouseState(out x, out y);
@@ -89,16 +90,26 @@ namespace Microsoft.Xna.Framework.Input
             x = (int)((double)x * INTERNAL_BackbufferWidth / INTERNAL_WindowWidth);
             y = (int)((double)y * INTERNAL_BackbufferHeight / INTERNAL_WindowHeight);
 
-            State.X = x;
-            State.Y = y;
+            window.MouseState.X = x;
+            window.MouseState.Y = y;
             
-            State.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
-            State.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
-            State.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
+            window.MouseState.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
+            window.MouseState.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
+            window.MouseState.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
             
-            State.ScrollWheelValue = INTERNAL_MouseWheel;
+            window.MouseState.ScrollWheelValue = INTERNAL_MouseWheel;
 
-            return State;
+            return window.MouseState;
+        }
+        
+        /// <summary>
+        /// Gets mouse state information that includes position and button presses
+        /// for the primary window
+        /// </summary>
+        /// <returns>Current state of the mouse.</returns>
+        public static MouseState GetState()
+        {
+            return GetState(PrimaryWindow);
         }
 
         /// <summary>
@@ -110,8 +121,8 @@ namespace Microsoft.Xna.Framework.Input
         {
             x = (int)((double)x * INTERNAL_WindowWidth / INTERNAL_BackbufferWidth);
             y = (int)((double)y * INTERNAL_WindowHeight / INTERNAL_BackbufferHeight);
-            State.X = x;
-            State.Y = y;
+            PrimaryWindow.MouseState.X = x;
+            PrimaryWindow.MouseState.Y = y;
             
             SDL.SDL_WarpMouseInWindow(INTERNAL_sdlWindowHandle, x, y);
         }
