@@ -342,24 +342,9 @@ namespace Microsoft.Xna.Framework.Input
                 }
                 
                 // Initialize the haptics for each joystick.
-                /* This is the right way to do it...
                 if (SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
                 {
                     INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(thisJoystick);
-                }
-                */
-                // FIXME: This platform check should not be necessary!
-                if (Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix)
-                {
-                    if (SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
-                    {
-                        INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(thisJoystick);
-                    }
-                }
-                else
-                {
-                    // For some reason GameControllerGetJoystick isn't quite the same on XInput? I don't even
-                    INTERNAL_haptics[x] = SDL.SDL_HapticOpen(x);
                 }
                 if (INTERNAL_HapticSupported((PlayerIndex) x))
                 {
