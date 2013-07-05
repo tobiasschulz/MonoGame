@@ -105,7 +105,6 @@ namespace Microsoft.Xna.Framework
         #region Internal SDL2 window variables
         
         private IntPtr INTERNAL_sdlWindow;
-        private string INTERNAL_sdlWindowTitle;
         
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
@@ -121,6 +120,8 @@ namespace Microsoft.Xna.Framework
         private int INTERNAL_glFramebuffer;
         private int INTERNAL_glColorAttachment;
         private int INTERNAL_glDepthStencilAttachment;
+
+        // These are internal for the SDL2_GamePlatform.
         internal int INTERNAL_glFramebufferWidth;
         internal int INTERNAL_glFramebufferHeight;
         
@@ -578,10 +579,8 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             
-            INTERNAL_sdlWindowTitle = "MonoGame-SDL2 Window";
-            
             INTERNAL_sdlWindow = SDL.SDL_CreateWindow(
-                INTERNAL_sdlWindowTitle,
+                "MonoGame-SDL2 Window",
                 SDL.SDL_WINDOWPOS_CENTERED,
                 SDL.SDL_WINDOWPOS_CENTERED,
                 800,
@@ -875,16 +874,16 @@ namespace Microsoft.Xna.Framework
         
         protected override void SetTitle(string title)
         {
-            INTERNAL_sdlWindowTitle = title;
             SDL.SDL_SetWindowTitle(
                 INTERNAL_sdlWindow,
-                INTERNAL_sdlWindowTitle
+                title
             );
             
             if (System.IO.File.Exists(title + ".bmp"))
             {
                 IntPtr icon = SDL.SDL_LoadBMP(title + ".bmp");
                 SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+                SDL.SDL_FreeSurface(icon);
             }
         }
   
