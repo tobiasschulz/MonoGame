@@ -48,8 +48,21 @@ using SDL2;
 
 namespace Microsoft.Xna.Framework.Input
 {
-    // FIXME: Uhhh, these structs really shouldn't be public.
-    
+    #region Internal Configuration Enumerations/Structures
+
+    // FIXME: Basically everything in here is public when it shouldn't be.
+
+    public enum InputType
+    {
+        PovUp =     1,
+        PovRight =  1 << 1,
+        PovDown =   1 << 2,
+        PovLeft =   1 << 3,
+        Button =    1 << 4,
+        Axis =      1 << 5,
+        None =      -1
+    }
+
     [Serializable]
     public struct MonoGameJoystickValue
     {
@@ -83,6 +96,8 @@ namespace Microsoft.Xna.Framework.Input
         public MonoGameJoystickValue AXIS_RX;
         public MonoGameJoystickValue AXIS_RY;
     }
+
+    #endregion
     
     //
     // Summary:
@@ -91,16 +106,21 @@ namespace Microsoft.Xna.Framework.Input
     //     code samples.
     public static class GamePad
     {
+        #region Internal SDL2_GamePad Variables
+
         // The SDL device lists
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
-  
-        // The XNA Input Settings for the GamePad system
-        private static Settings INTERNAL_settings;
         
         // Where we will load our config file into.
         private static MonoGameJoystickConfig INTERNAL_joystickConfig;
-        
+
+        private static bool INTERNAL_wasInit = false;
+
+        #endregion
+
+        #region SDL Init/Quit Methods
+
         // Explicitly initialize the SDL Joystick/GameController subsystems
         private static bool Init()
         {
@@ -123,6 +143,10 @@ namespace Microsoft.Xna.Framework.Input
                 SDL.SDL_QuitSubSystem(SDL.SDL_INIT_HAPTIC);
             }
         }
+
+        #endregion
+
+        #region Haptic Support Check Helper
         
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
@@ -130,6 +154,10 @@ namespace Microsoft.Xna.Framework.Input
             return !(   INTERNAL_haptics[(int) playerIndex] == IntPtr.Zero ||
                         SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int) playerIndex]) == 0  );
         }
+
+        #endregion
+
+        #region Automatic Configuration Method
   
         // Prepare the MonoGameJoystick configuration system
         private static void INTERNAL_AutoConfig()
@@ -317,10 +345,7 @@ namespace Microsoft.Xna.Framework.Input
                 // We out.
                 fileOut.Close();
             }
-            
-#if DEBUG
-            Console.WriteLine("Number of joysticks: " + SDL.SDL_NumJoysticks());
-#endif
+
             // Limit to the first 4 sticks to avoid crashes.
             int numSticks = Math.Min(4, SDL.SDL_NumJoysticks());
             
@@ -369,210 +394,133 @@ namespace Microsoft.Xna.Framework.Input
                         ", will use generic MonoGameJoystick support."
                     );
                 }
-                
-                // Where the joystick configurations will be adapted to
-                PadConfig pc = new PadConfig(SDL.SDL_JoystickName(INTERNAL_devices[x]), x);
-                
-                // Start
-                pc.Button_Start.ID = INTERNAL_joystickConfig.BUTTON_START.INPUT_ID;
-                pc.Button_Start.Type = INTERNAL_joystickConfig.BUTTON_START.INPUT_TYPE;
-                pc.Button_Start.Negative = INTERNAL_joystickConfig.BUTTON_START.INPUT_INVERT;
-    
-                // Back
-                pc.Button_Back.ID = INTERNAL_joystickConfig.BUTTON_BACK.INPUT_ID;
-                pc.Button_Back.Type = INTERNAL_joystickConfig.BUTTON_BACK.INPUT_TYPE;
-                pc.Button_Back.Negative = INTERNAL_joystickConfig.BUTTON_BACK.INPUT_INVERT;
-    
-                // A
-                pc.Button_A.ID = INTERNAL_joystickConfig.BUTTON_A.INPUT_ID;
-                pc.Button_A.Type = INTERNAL_joystickConfig.BUTTON_A.INPUT_TYPE;
-                pc.Button_A.Negative = INTERNAL_joystickConfig.BUTTON_A.INPUT_INVERT;
-    
-                // B
-                pc.Button_B.ID = INTERNAL_joystickConfig.BUTTON_B.INPUT_ID;
-                pc.Button_B.Type = INTERNAL_joystickConfig.BUTTON_B.INPUT_TYPE;
-                pc.Button_B.Negative = INTERNAL_joystickConfig.BUTTON_B.INPUT_INVERT;
-    
-                // X
-                pc.Button_X.ID = INTERNAL_joystickConfig.BUTTON_X.INPUT_ID;
-                pc.Button_X.Type = INTERNAL_joystickConfig.BUTTON_X.INPUT_TYPE;
-                pc.Button_X.Negative = INTERNAL_joystickConfig.BUTTON_X.INPUT_INVERT;
-    
-                // Y
-                pc.Button_Y.ID = INTERNAL_joystickConfig.BUTTON_Y.INPUT_ID;
-                pc.Button_Y.Type = INTERNAL_joystickConfig.BUTTON_Y.INPUT_TYPE;
-                pc.Button_Y.Negative = INTERNAL_joystickConfig.BUTTON_Y.INPUT_INVERT;
-    
-                // LB
-                pc.Button_LB.ID = INTERNAL_joystickConfig.SHOULDER_LB.INPUT_ID;
-                pc.Button_LB.Type = INTERNAL_joystickConfig.SHOULDER_LB.INPUT_TYPE;
-                pc.Button_LB.Negative = INTERNAL_joystickConfig.SHOULDER_LB.INPUT_INVERT;
-    
-                // RB
-                pc.Button_RB.ID = INTERNAL_joystickConfig.SHOULDER_RB.INPUT_ID;
-                pc.Button_RB.Type = INTERNAL_joystickConfig.SHOULDER_RB.INPUT_TYPE;
-                pc.Button_RB.Negative = INTERNAL_joystickConfig.SHOULDER_RB.INPUT_INVERT;
-                
-                // LT
-                pc.LeftTrigger.ID = INTERNAL_joystickConfig.TRIGGER_LT.INPUT_ID;
-                pc.LeftTrigger.Type = INTERNAL_joystickConfig.TRIGGER_LT.INPUT_TYPE;
-                pc.LeftTrigger.Negative = INTERNAL_joystickConfig.TRIGGER_LT.INPUT_INVERT;
-                
-                // RT
-                pc.RightTrigger.ID = INTERNAL_joystickConfig.TRIGGER_RT.INPUT_ID;
-                pc.RightTrigger.Type = INTERNAL_joystickConfig.TRIGGER_RT.INPUT_TYPE;
-                pc.RightTrigger.Negative = INTERNAL_joystickConfig.TRIGGER_RT.INPUT_INVERT;
-    
-                // LStick
-                pc.LeftStick.Press.ID = INTERNAL_joystickConfig.BUTTON_LSTICK.INPUT_ID;
-                pc.LeftStick.Press.Type = INTERNAL_joystickConfig.BUTTON_LSTICK.INPUT_TYPE;
-                pc.LeftStick.Press.Negative = INTERNAL_joystickConfig.BUTTON_LSTICK.INPUT_INVERT;
-    
-                // RStick
-                pc.RightStick.Press.ID = INTERNAL_joystickConfig.BUTTON_RSTICK.INPUT_ID;
-                pc.RightStick.Press.Type = INTERNAL_joystickConfig.BUTTON_RSTICK.INPUT_TYPE;
-                pc.RightStick.Press.Negative = INTERNAL_joystickConfig.BUTTON_RSTICK.INPUT_INVERT;
-                
-                // DPad Up
-                pc.Dpad.Up.ID = INTERNAL_joystickConfig.DPAD_UP.INPUT_ID;
-                pc.Dpad.Up.Type = INTERNAL_joystickConfig.DPAD_UP.INPUT_TYPE;
-                pc.Dpad.Up.Negative = INTERNAL_joystickConfig.DPAD_UP.INPUT_INVERT;
-                
-                // DPad Down
-                pc.Dpad.Down.ID = INTERNAL_joystickConfig.DPAD_DOWN.INPUT_ID;
-                pc.Dpad.Down.Type = INTERNAL_joystickConfig.DPAD_DOWN.INPUT_TYPE;
-                pc.Dpad.Down.Negative = INTERNAL_joystickConfig.DPAD_DOWN.INPUT_INVERT;
-                
-                // DPad Left
-                pc.Dpad.Left.ID = INTERNAL_joystickConfig.DPAD_LEFT.INPUT_ID;
-                pc.Dpad.Left.Type = INTERNAL_joystickConfig.DPAD_LEFT.INPUT_TYPE;
-                pc.Dpad.Left.Negative = INTERNAL_joystickConfig.DPAD_LEFT.INPUT_INVERT;
-                
-                // DPad Right
-                pc.Dpad.Right.ID = INTERNAL_joystickConfig.DPAD_RIGHT.INPUT_ID;
-                pc.Dpad.Right.Type = INTERNAL_joystickConfig.DPAD_RIGHT.INPUT_TYPE;
-                pc.Dpad.Right.Negative = INTERNAL_joystickConfig.DPAD_RIGHT.INPUT_INVERT;
-    
-                // LX
-                pc.LeftStick.X.Negative.ID = INTERNAL_joystickConfig.AXIS_LX.INPUT_ID;
-                pc.LeftStick.X.Negative.Type = INTERNAL_joystickConfig.AXIS_LX.INPUT_TYPE;
-                pc.LeftStick.X.Negative.Negative = !INTERNAL_joystickConfig.AXIS_LX.INPUT_INVERT;
-                pc.LeftStick.X.Positive.ID = INTERNAL_joystickConfig.AXIS_LX.INPUT_ID;
-                pc.LeftStick.X.Positive.Type = INTERNAL_joystickConfig.AXIS_LX.INPUT_TYPE;
-                pc.LeftStick.X.Positive.Negative = INTERNAL_joystickConfig.AXIS_LX.INPUT_INVERT;
-    
-                // LY
-                pc.LeftStick.Y.Negative.ID = INTERNAL_joystickConfig.AXIS_LY.INPUT_ID;
-                pc.LeftStick.Y.Negative.Type = INTERNAL_joystickConfig.AXIS_LY.INPUT_TYPE;
-                pc.LeftStick.Y.Negative.Negative = !INTERNAL_joystickConfig.AXIS_LY.INPUT_INVERT;
-                pc.LeftStick.Y.Positive.ID = INTERNAL_joystickConfig.AXIS_LY.INPUT_ID;
-                pc.LeftStick.Y.Positive.Type = INTERNAL_joystickConfig.AXIS_LY.INPUT_TYPE;
-                pc.LeftStick.Y.Positive.Negative = INTERNAL_joystickConfig.AXIS_LY.INPUT_INVERT;
-    
-                // RX
-                pc.RightStick.X.Negative.ID = INTERNAL_joystickConfig.AXIS_RX.INPUT_ID;
-                pc.RightStick.X.Negative.Type = INTERNAL_joystickConfig.AXIS_RX.INPUT_TYPE;
-                pc.RightStick.X.Negative.Negative = !INTERNAL_joystickConfig.AXIS_RX.INPUT_INVERT;
-                pc.RightStick.X.Positive.ID = INTERNAL_joystickConfig.AXIS_RX.INPUT_ID;
-                pc.RightStick.X.Positive.Type = INTERNAL_joystickConfig.AXIS_RX.INPUT_TYPE;
-                pc.RightStick.X.Positive.Negative = INTERNAL_joystickConfig.AXIS_RX.INPUT_INVERT;
-    
-                // RY
-                pc.RightStick.Y.Negative.ID = INTERNAL_joystickConfig.AXIS_RY.INPUT_ID;
-                pc.RightStick.Y.Negative.Type = INTERNAL_joystickConfig.AXIS_RY.INPUT_TYPE;
-                pc.RightStick.Y.Negative.Negative = !INTERNAL_joystickConfig.AXIS_RY.INPUT_INVERT;
-                pc.RightStick.Y.Positive.ID = INTERNAL_joystickConfig.AXIS_RY.INPUT_ID;
-                pc.RightStick.Y.Positive.Type = INTERNAL_joystickConfig.AXIS_RY.INPUT_TYPE;
-                pc.RightStick.Y.Positive.Negative = INTERNAL_joystickConfig.AXIS_RY.INPUT_INVERT;
-
-                // Suggestion: Xbox Guide button <=> BigButton
-                // pc.BigButton.ID = 8;
-                // pc.BigButton.Type = InputType.Button;
-
-#if DEBUG
-                int numbuttons = SDL.SDL_JoystickNumButtons(INTERNAL_devices[x]);
-                Console.WriteLine("Number of buttons for joystick: " + x + " - " + numbuttons);
-
-                int numaxes = SDL.SDL_JoystickNumAxes(INTERNAL_devices[x]);
-                Console.WriteLine("Number of axes for joystick: " + x + " - " + numaxes);
-
-                int numhats = SDL.SDL_JoystickNumHats(INTERNAL_devices[x]);
-                Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);
-#endif
-                
-                // Assign our results, finally.
-                INTERNAL_settings[x] = pc;
             }
         }
+
+        #endregion
+
+        #region SDL-to-Value Helper Methods
+
+        private static bool READTYPE_ReadBool(MonoGameJoystickValue input, IntPtr device, short deadZone)
+        {
+            if (input.INPUT_TYPE == InputType.Axis)
+            {
+                short axis = SDL.SDL_JoystickGetAxis(device, input.INPUT_ID);
+                if (input.INPUT_INVERT)
+                {
+                    return (axis < -deadZone);
+                }
+                return (axis > deadZone);
+            }
+            else if (input.INPUT_TYPE == InputType.Button)
+            {
+                return ((SDL.SDL_JoystickGetButton(device, input.INPUT_ID) > 0) ^ input.INPUT_INVERT);
+            }
+            else if (   input.INPUT_TYPE == InputType.PovUp ||
+                        input.INPUT_TYPE == InputType.PovDown ||
+                        input.INPUT_TYPE == InputType.PovLeft ||
+                        input.INPUT_TYPE == InputType.PovRight  )
+            {
+                return (((SDL.SDL_JoystickGetHat(device, input.INPUT_ID) & (byte) input.INPUT_TYPE) > 0) ^ input.INPUT_INVERT);
+            }
+            return false;
+        }
+
+        private static float READTYPE_ReadFloat(MonoGameJoystickValue input, IntPtr device)
+        {
+            float inputMask = input.INPUT_INVERT ? -1.0f : 1.0f;
+            if (input.INPUT_TYPE == InputType.Axis)
+            {
+                // SDL2 clamps to 32767 on both sides.
+                float maxRange = input.INPUT_INVERT ? -32767.0f : 32767.0f;
+                return ((float) SDL.SDL_JoystickGetAxis(device, input.INPUT_ID)) / maxRange;
+            }
+            else if (input.INPUT_TYPE == InputType.Button)
+            {
+                return SDL.SDL_JoystickGetButton(device, input.INPUT_ID) * inputMask;
+            }
+            else if (   input.INPUT_TYPE == InputType.PovUp ||
+                     input.INPUT_TYPE == InputType.PovDown ||
+                     input.INPUT_TYPE == InputType.PovLeft ||
+                     input.INPUT_TYPE == InputType.PovRight  )
+            {
+                return (SDL.SDL_JoystickGetHat(device, input.INPUT_ID) & (byte) input.INPUT_TYPE) * inputMask;
+            }
+            return 0.0f;
+        }
+
+        #endregion
+
+        #region Value-To-Input Helper Methods
   
         // Button reader for ReadState
-        private static Buttons READ_ReadButtons(IntPtr device, PadConfig c, float deadZoneSize)
+        private static Buttons READ_ReadButtons(IntPtr device, float deadZoneSize)
         {
             short DeadZone = (short) (deadZoneSize * short.MaxValue);
             Buttons b = (Buttons) 0;
    
             // A B X Y
-            if (c.Button_A.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_A, device, DeadZone))
             {
                 b |= Buttons.A;
             }
-            if (c.Button_B.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_B, device, DeadZone))
             {
                 b |= Buttons.B;
             }
-            if (c.Button_X.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_X, device, DeadZone))
             {
                 b |= Buttons.X;
             }
-            if (c.Button_Y.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_Y, device, DeadZone))
             {
                 b |= Buttons.Y;
             }
    
             // Shoulder buttons
-            if (c.Button_LB.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.SHOULDER_LB, device, DeadZone))
             {
                 b |= Buttons.LeftShoulder;
             }
-            if (c.Button_RB.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.SHOULDER_RB, device, DeadZone))
             {
                 b |= Buttons.RightShoulder;
             }
    
             // Back/Start
-            if (c.Button_Back.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_BACK, device, DeadZone))
             {
                 b |= Buttons.Back;
             }
-            if (c.Button_Start.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_START, device, DeadZone))
             {
                 b |= Buttons.Start;
             }
    
             // Stick buttons
-            if (c.LeftStick.Press.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_LSTICK, device, DeadZone))
             {
                 b |= Buttons.LeftStick;
             }
-            if (c.RightStick.Press.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_RSTICK, device, DeadZone))
             {
                 b |= Buttons.RightStick;
             }
    
             // DPad
-            if (c.Dpad.Up.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.DPAD_UP, device, DeadZone))
             {
                 b |= Buttons.DPadUp;
             }
-            if (c.Dpad.Down.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.DPAD_DOWN, device, DeadZone))
             {
                 b |= Buttons.DPadDown;
             }
-            if (c.Dpad.Left.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.DPAD_LEFT, device, DeadZone))
             {
                 b |= Buttons.DPadLeft;
             }
-            if (c.Dpad.Right.ReadBool(device, DeadZone))
+            if (READTYPE_ReadBool(INTERNAL_joystickConfig.DPAD_RIGHT, device, DeadZone))
             {
                 b |= Buttons.DPadRight;
             }
@@ -608,7 +556,7 @@ namespace Microsoft.Xna.Framework.Input
         // ReadState can convert trigger values to button values
         private static Buttons READ_TriggerToButton(float trigger, Buttons button, float DeadZoneSize)
         {
-            Buttons b = (Buttons)0;
+            Buttons b = (Buttons) 0;
             
             if (trigger > DeadZoneSize)
             {
@@ -617,6 +565,10 @@ namespace Microsoft.Xna.Framework.Input
             
             return b;
         }
+
+        #endregion
+
+        #region Internal Controller Read Method
 
         // This is where we actually read in the controller input!
         private static GamePadState ReadState(PlayerIndex index, GamePadDeadZone deadZone)
@@ -773,19 +725,19 @@ namespace Microsoft.Xna.Framework.Input
             
             // SDL_Joystick
             
-            PadConfig config = INTERNAL_settings[(int) index];
-            if (config == null)
-            {
-                return GamePadState.InitializedState;
-            }
-            
             // We will interpret the joystick values into this.
             Buttons buttonState = (Buttons) 0;
             
             // Sticks
             GamePadThumbSticks sticks = new GamePadThumbSticks(
-                config.LeftStick.ReadAxisPair(device),
-                config.RightStick.ReadAxisPair(device)
+                new Vector2(
+                    READTYPE_ReadFloat(INTERNAL_joystickConfig.AXIS_LX, device),
+                    -READTYPE_ReadFloat(INTERNAL_joystickConfig.AXIS_LY, device)
+                ),
+                new Vector2(
+                    READTYPE_ReadFloat(INTERNAL_joystickConfig.AXIS_RX, device),
+                    -READTYPE_ReadFloat(INTERNAL_joystickConfig.AXIS_RY, device)
+                )
             );
             sticks.ApplyDeadZone(deadZone, DeadZoneSize);
             buttonState |= READ_StickToButtons(
@@ -806,12 +758,12 @@ namespace Microsoft.Xna.Framework.Input
             );
             
             // Buttons
-            buttonState = READ_ReadButtons(device, config, DeadZoneSize);
+            buttonState = READ_ReadButtons(device, DeadZoneSize);
             
             // Triggers
             GamePadTriggers triggers = new GamePadTriggers(
-                config.LeftTrigger.ReadFloat(device),
-                config.RightTrigger.ReadFloat(device)
+                READTYPE_ReadFloat(INTERNAL_joystickConfig.TRIGGER_LT, device),
+                READTYPE_ReadFloat(INTERNAL_joystickConfig.TRIGGER_RT, device)
             );
             buttonState |= READ_TriggerToButton(
                 triggers.Left,
@@ -833,6 +785,10 @@ namespace Microsoft.Xna.Framework.Input
             // Return the compiled GamePadState.
             return new GamePadState(sticks, triggers, buttons, dpad);
         }
+
+        #endregion
+
+        #region Public GamePad API
 
         //
         // Summary:
@@ -881,39 +837,36 @@ namespace Microsoft.Xna.Framework.Input
             // SDL_Joystick Capabilities
             
             IntPtr d = INTERNAL_devices[(int) playerIndex];
-            PadConfig c = INTERNAL_settings[(int) playerIndex];
 
-            if (    c == null ||
-                    (   String.IsNullOrEmpty(c.JoystickName) &&
-                        d == IntPtr.Zero    )   )
+            if (d == IntPtr.Zero)
             {
                 return new GamePadCapabilities();
             }
 
             return new GamePadCapabilities()
             {
-                IsConnected = (d != IntPtr.Zero),
+                IsConnected = true,
                 
-                HasAButton =                c.Button_A.Type     != InputType.None,
-                HasBButton =                c.Button_B.Type     != InputType.None,
-                HasXButton =                c.Button_X.Type     != InputType.None,
-                HasYButton =                c.Button_Y.Type     != InputType.None,
-                HasBackButton =             c.Button_Back.Type  != InputType.None,
-                HasStartButton =            c.Button_Start.Type != InputType.None,
-                HasDPadDownButton =         c.Dpad.Down.Type    != InputType.None,
-                HasDPadLeftButton =         c.Dpad.Left.Type    != InputType.None,
-                HasDPadRightButton =        c.Dpad.Right.Type   != InputType.None,
-                HasDPadUpButton =           c.Dpad.Up.Type      != InputType.None,
-                HasLeftShoulderButton =     c.Button_LB.Type    != InputType.None,
-                HasRightShoulderButton =    c.Button_RB.Type    != InputType.None,
-                HasLeftStickButton =        c.LeftStick.Press.Type  != InputType.None,
-                HasRightStickButton =       c.RightStick.Press.Type != InputType.None,
-                HasLeftTrigger =            c.LeftTrigger.Type  != InputType.None,
-                HasRightTrigger =           c.RightTrigger.Type != InputType.None,
-                HasLeftXThumbStick =        c.LeftStick.X.Type  != InputType.None,
-                HasLeftYThumbStick =        c.LeftStick.Y.Type  != InputType.None,
-                HasRightXThumbStick =       c.RightStick.X.Type != InputType.None,
-                HasRightYThumbStick =       c.RightStick.Y.Type != InputType.None,
+                HasAButton =                INTERNAL_joystickConfig.BUTTON_A.INPUT_TYPE         != InputType.None,
+                HasBButton =                INTERNAL_joystickConfig.BUTTON_B.INPUT_TYPE         != InputType.None,
+                HasXButton =                INTERNAL_joystickConfig.BUTTON_X.INPUT_TYPE         != InputType.None,
+                HasYButton =                INTERNAL_joystickConfig.BUTTON_Y.INPUT_TYPE         != InputType.None,
+                HasBackButton =             INTERNAL_joystickConfig.BUTTON_BACK.INPUT_TYPE      != InputType.None,
+                HasStartButton =            INTERNAL_joystickConfig.BUTTON_START.INPUT_TYPE     != InputType.None,
+                HasDPadDownButton =         INTERNAL_joystickConfig.DPAD_DOWN.INPUT_TYPE        != InputType.None,
+                HasDPadLeftButton =         INTERNAL_joystickConfig.DPAD_LEFT.INPUT_TYPE        != InputType.None,
+                HasDPadRightButton =        INTERNAL_joystickConfig.DPAD_RIGHT.INPUT_TYPE       != InputType.None,
+                HasDPadUpButton =           INTERNAL_joystickConfig.DPAD_UP.INPUT_TYPE          != InputType.None,
+                HasLeftShoulderButton =     INTERNAL_joystickConfig.SHOULDER_LB.INPUT_TYPE      != InputType.None,
+                HasRightShoulderButton =    INTERNAL_joystickConfig.SHOULDER_RB.INPUT_TYPE      != InputType.None,
+                HasLeftStickButton =        INTERNAL_joystickConfig.BUTTON_LSTICK.INPUT_TYPE    != InputType.None,
+                HasRightStickButton =       INTERNAL_joystickConfig.BUTTON_RSTICK.INPUT_TYPE    != InputType.None,
+                HasLeftTrigger =            INTERNAL_joystickConfig.TRIGGER_LT.INPUT_TYPE       != InputType.None,
+                HasRightTrigger =           INTERNAL_joystickConfig.TRIGGER_RT.INPUT_TYPE       != InputType.None,
+                HasLeftXThumbStick =        INTERNAL_joystickConfig.AXIS_LX.INPUT_TYPE          != InputType.None,
+                HasLeftYThumbStick =        INTERNAL_joystickConfig.AXIS_LY.INPUT_TYPE          != InputType.None,
+                HasRightXThumbStick =       INTERNAL_joystickConfig.AXIS_RX.INPUT_TYPE          != InputType.None,
+                HasRightYThumbStick =       INTERNAL_joystickConfig.AXIS_RY.INPUT_TYPE          != InputType.None,
 
                 HasLeftVibrationMotor = INTERNAL_HapticSupported(playerIndex),
                 HasRightVibrationMotor = INTERNAL_HapticSupported(playerIndex),
@@ -949,10 +902,10 @@ namespace Microsoft.Xna.Framework.Input
         //     Enumerated value that specifies what dead zone type to use.
         public static GamePadState GetState(PlayerIndex playerIndex, GamePadDeadZone deadZoneMode)
         {
-            if (INTERNAL_settings == null)
+            if (!INTERNAL_wasInit)
             {
-                INTERNAL_settings = new Settings();
                 INTERNAL_AutoConfig();
+                INTERNAL_wasInit = true;
             }
             if (SDL.SDL_WasInit(SDL.SDL_INIT_JOYSTICK) == 1)
             {
@@ -1003,5 +956,7 @@ namespace Microsoft.Xna.Framework.Input
             }
             return true;
         }
+
+        #endregion
     }
 }

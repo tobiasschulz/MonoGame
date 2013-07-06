@@ -391,13 +391,7 @@
     <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
     <Compile Include="SDL2\Audio\SoundEffect.cs" />
     <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
-    <Compile Include="SDL2\Input\Axis.cs" />
-    <Compile Include="SDL2\Input\DPad.cs" />
     <Compile Include="SDL2\Input\SDL2_GamePad.cs" />
-    <Compile Include="SDL2\Input\Input.cs" />
-    <Compile Include="SDL2\Input\PadConfig.cs" />
-    <Compile Include="SDL2\Input\Settings.cs" />
-    <Compile Include="SDL2\Input\Stick.cs" />
     <Compile Include="SDL2\SDL2_GamePlatform.cs" />
     <Compile Include="SDL2\SDL2_GameWindow.cs" />
     <Compile Include="SDL2\Audio\AudioLoader.cs" />
