@@ -440,9 +440,9 @@ namespace Microsoft.Xna.Framework.Input
                 return SDL.SDL_JoystickGetButton(device, input.INPUT_ID) * inputMask;
             }
             else if (   input.INPUT_TYPE == InputType.PovUp ||
-                     input.INPUT_TYPE == InputType.PovDown ||
-                     input.INPUT_TYPE == InputType.PovLeft ||
-                     input.INPUT_TYPE == InputType.PovRight  )
+                        input.INPUT_TYPE == InputType.PovDown ||
+                        input.INPUT_TYPE == InputType.PovLeft ||
+                        input.INPUT_TYPE == InputType.PovRight  )
             {
                 return (SDL.SDL_JoystickGetHat(device, input.INPUT_ID) & (byte) input.INPUT_TYPE) * inputMask;
             }
