@@ -55,8 +55,8 @@ namespace Microsoft.Xna.Framework.Graphics
         private static ReadOnlyCollection<GraphicsAdapter> adapters;
         
 #if SDL2
-        private IntPtr _screen;
-        internal GraphicsAdapter(IntPtr sdlWindow)
+        private SDL2_GameWindow _screen;
+        internal GraphicsAdapter(SDL2_GameWindow sdlWindow)
         {
             _screen = sdlWindow;
         }
@@ -83,11 +83,9 @@ namespace Microsoft.Xna.Framework.Graphics
             get
             {
 #if SDL2
-                int x = 0, y = 0;
-                SDL2.SDL.SDL_GetWindowSize(_screen, ref x, ref y);
                 return new DisplayMode(
-                    x,
-                    y,
+                    _screen.INTERNAL_glFramebufferWidth,
+                    _screen.INTERNAL_glFramebufferHeight,
                     60, // FIXME: Assumption!
                     SurfaceFormat.Color
                 );
@@ -116,7 +114,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     adapters = new ReadOnlyCollection<GraphicsAdapter>(
                         new GraphicsAdapter[]
                         {
-                            new GraphicsAdapter(Game.Instance.Window.Handle)
+                            new GraphicsAdapter((SDL2_GameWindow) Game.Instance.Window)
                         }
                     );
 #elif IOS
