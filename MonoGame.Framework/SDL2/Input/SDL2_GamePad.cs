@@ -38,9 +38,6 @@ purpose and non-infringement.
 */
 #endregion License
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -384,7 +381,6 @@ namespace Microsoft.Xna.Framework.Input
                         SDL.SDL_GameControllerName(INTERNAL_devices[x]) +
                         ", will use SDL_GameController support."
                     );
-                    continue;
                 }
                 else
                 {
