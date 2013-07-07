@@ -134,7 +134,7 @@ namespace Microsoft.Xna.Framework.Content
                 header[0] = 1;
             }
             
-            uint frequency = (uint) (
+            int sampleRate = (
                 (header[4]) +
                 (header[5] << 8) +
                 (header[6] << 16) +
@@ -144,8 +144,8 @@ namespace Microsoft.Xna.Framework.Content
             return new SoundEffect(
                 input.AssetName,
                 data,
-                header[2],
-                frequency
+                sampleRate,
+                (header[2] == 2) ? AudioChannels.Stereo : AudioChannels.Mono
             );
 #endif
 		}
