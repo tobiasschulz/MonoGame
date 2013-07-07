@@ -92,7 +92,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             Dispose();
         }
-  
+
         /* Creates a standalone SoundEffectInstance from given wavedata. */
         internal SoundEffectInstance(byte[] buffer, int sampleRate, int channels)
         {
@@ -104,7 +104,7 @@ namespace Microsoft.Xna.Framework.Audio
                 sampleRate
             );
         }
-        
+
         /// <summary>
         /// Construct the instance from the given SoundEffect. The data buffer from the SoundEffect is 
         /// preserved in this instance as a reference. This constructor will bind the buffer in OpenAL.
