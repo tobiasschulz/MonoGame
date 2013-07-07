@@ -66,6 +66,7 @@ non-infringement.
 */
 #endregion License
 
+#region THREADED_GL Option
 // #define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
  * 
@@ -81,7 +82,9 @@ non-infringement.
  * Basically, if you have to enable this, you should feel very bad.
  * -flibit
  */
+#endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -91,6 +94,7 @@ using Microsoft.Xna.Framework.Input;
 
 using SDL2;
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {

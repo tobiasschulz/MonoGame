@@ -66,6 +66,7 @@ non-infringement.
 */
 #endregion License
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +78,7 @@ using Microsoft.Xna.Framework.Input.Touch;
 using Microsoft.Xna.Framework.Input;
 
 using SDL2;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {

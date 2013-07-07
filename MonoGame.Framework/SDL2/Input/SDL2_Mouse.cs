@@ -38,8 +38,11 @@ purpose and non-infringement.
 */
 #endregion License
 
+#region Using Statements
 using System;
+
 using SDL2;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
@@ -75,7 +78,7 @@ namespace Microsoft.Xna.Framework.Input
 
         #endregion
 
-        #region Public interface
+        #region Public Interface
 
         /// <summary>
         /// Gets mouse state information that includes position and button
@@ -127,7 +130,7 @@ namespace Microsoft.Xna.Framework.Input
             SDL.SDL_WarpMouseInWindow(INTERNAL_sdlWindowHandle, x, y);
         }
 
-        #endregion // Public interface
+        #endregion
     }
 }
 

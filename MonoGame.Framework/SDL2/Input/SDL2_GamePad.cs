@@ -37,11 +37,14 @@ permitted under your local laws, the contributors exclude the implied warranties
 purpose and non-infringement.
 */
 #endregion License
+
+#region Using Statements
 using System;
 using System.IO;
 using System.Xml.Serialization;
 
 using SDL2;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
