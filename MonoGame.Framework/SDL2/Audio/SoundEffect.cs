@@ -51,7 +51,6 @@ namespace Microsoft.Xna.Framework.Audio
 {
     public sealed class SoundEffect : IDisposable
     {
-		private Sound _sound;
 		private string _name = "";
 		private string _filename = "";
 		internal byte[] _data;
