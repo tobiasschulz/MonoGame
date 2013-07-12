@@ -120,7 +120,7 @@ namespace Microsoft.Xna.Framework
         private int INTERNAL_glColorAttachment;
         private int INTERNAL_glDepthStencilAttachment;
         
-        // These are internal for the SDL2_GamePlatform.
+        // These are internal for the SDL2_GamePlatform and GraphicsAdapter.
         internal int INTERNAL_glFramebufferWidth;
         internal int INTERNAL_glFramebufferHeight;
         
