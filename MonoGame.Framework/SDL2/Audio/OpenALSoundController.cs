@@ -109,8 +109,13 @@ namespace Microsoft.Xna.Framework.Audio
                 Log(ex.ToString());
 
 #if SDL2
-                System.Console.WriteLine("Error initializing OpenAL audio subsystem. Game will now exit.");
-                System.Console.WriteLine("(see debug log for more details)");
+                SDL2.SDL.SDL_ShowSimpleMessageBox(
+                    (uint) SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR,
+                    "OpenAL Error",
+                    "Error initializing audio subsystem. Game will now exit.\n" +
+                    "(see debug log for more details)",
+                    Game.Instance.Window.Handle
+                );
 #else
                 Log("Last error in enumerator is " + AudioDeviceEnumerator.LastError);
 

@@ -411,9 +411,14 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (!_extensions.Contains("GL_EXT_framebuffer_object"))
                 {
 #if SDL2
-                    System.Console.WriteLine("\n\nAn essential rendering feature is unsupported in your current drivers.");
-                    System.Console.WriteLine("Try updating your drivers to the latest version.");
-                    System.Console.WriteLine("If you are using the latest available drivers, your video card might not be able to run FEZ.");
+                    SDL2.SDL.SDL_ShowSimpleMessageBox(
+                        (uint) SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR,
+                        "FEZ - Fatal Error",
+                        "An essential rendering feature is unsupported in your current drivers." +
+                        "\nTry updating your drivers to the latest version." +
+                        "\n\nIf you are using the latest available drivers, your video card might not be able to run FEZ.",
+                        Game.Instance.Window.Handle
+                    );
 #else
                     MessageBox.Show(
                         "An essential rendering feature is unsupported in your current drivers." +
