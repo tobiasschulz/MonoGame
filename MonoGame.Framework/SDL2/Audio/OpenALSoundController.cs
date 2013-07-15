@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 #if SDL2
                 SDL2.SDL.SDL_ShowSimpleMessageBox(
-                    (uint) SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR,
+                    SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR,
                     "OpenAL Error",
                     "Error initializing audio subsystem. Game will now exit.\n" +
                     "(see debug log for more details)",

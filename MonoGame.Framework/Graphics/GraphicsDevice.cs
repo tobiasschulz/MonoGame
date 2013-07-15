@@ -412,7 +412,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
 #if SDL2
                     SDL2.SDL.SDL_ShowSimpleMessageBox(
-                        (uint) SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR,
+                        SDL2.SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR,
                         "FEZ - Fatal Error",
                         "An essential rendering feature is unsupported in your current drivers." +
                         "\nTry updating your drivers to the latest version." +
