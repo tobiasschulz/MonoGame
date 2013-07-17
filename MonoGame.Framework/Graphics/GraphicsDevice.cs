@@ -1850,6 +1850,11 @@ namespace Microsoft.Xna.Framework.Graphics
             _indexBufferDirty = true;
         }
 
+        public void SetVertexBuffers(params VertexBufferBinding[] binding)
+        {
+            throw new NotImplementedException("FIXME: flibit put this here.");
+        }
+
         public IndexBuffer Indices { set { SetIndexBuffer(value); } get { return _indexBuffer; } }
 
         internal Shader VertexShader
@@ -2433,6 +2438,18 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
+        public void DrawInstancedPrimitives(
+            PrimitiveType primitiveType,
+            int baseVertex,
+            int minVertexIndex,
+            int numVertices,
+            int startIndex,
+            int primitiveCount,
+            int instanceCount
+        ) {
+            throw new NotImplementedException("FIXME: flibit put this here.");
+        }
+
 #if PSM
         internal PssVertexBuffer GetVertexBuffer(VertexFormat[] vertexFormat, int requiredVertexLength, int requiredIndexLength)
         {
@@ -2529,6 +2546,11 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             throw new NotSupportedException();
+        }
+
+        public void GetBackBufferData<T>(T[] data) where T : struct
+        {
+            throw new NotImplementedException("FIXME: flibit put this here.");
         }
 
 #if DIRECTX		

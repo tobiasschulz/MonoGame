@@ -50,6 +50,8 @@ namespace Microsoft.Xna.Framework.Graphics
         internal int UserOffset;
 
 		public bool IsContentLost { get { return false; } }
+
+		public event EventHandler<EventArgs> ContentLost;
 		
 		public DynamicIndexBuffer(GraphicsDevice graphicsDevice, IndexElementSize indexElementSize, int indexCount, BufferUsage usage) :
 			base(graphicsDevice, indexElementSize, indexCount, usage, true)
