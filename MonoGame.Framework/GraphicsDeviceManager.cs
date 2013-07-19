@@ -268,8 +268,9 @@ namespace Microsoft.Xna.Framework
             GraphicsDevice.PresentationParameters.BackBufferWidth = PreferredBackBufferWidth;
             GraphicsDevice.PresentationParameters.BackBufferHeight = PreferredBackBufferHeight;
             GraphicsDevice.PresentationParameters.DepthStencilFormat = PreferredDepthStencilFormat;
-            GraphicsDevice.PresentationParameters.IsFullScreen = IsFullScreen;
+            IsFullScreen = _wantFullScreen;
 
+            // Make the Platform device changes.
             SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
             platform.BeginScreenDeviceChange(
                 GraphicsDevice.PresentationParameters.IsFullScreen
@@ -281,6 +282,7 @@ namespace Microsoft.Xna.Framework
                 GraphicsDevice.PresentationParameters.DepthStencilFormat
             );
 
+            // This platform uses VSyncEnabled rather than PresentationInterval.
             platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
 #else
 
