@@ -130,13 +130,10 @@ namespace Microsoft.Xna.Framework.Audio
             LoadAudioStream(_data);
         }
         
-        internal SoundEffect(string name, byte[] data, int channels, uint frequency)
+        internal SoundEffect(string name, byte[] buffer, int sampleRate, AudioChannels channels)
+            : this(buffer, sampleRate, channels)
         {
             _name = name;
-            _data = data;
-            Size = data.Length;
-            Format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
-            Rate = frequency;
         }
 
 		public SoundEffect (byte[] buffer, int sampleRate, AudioChannels channels)
