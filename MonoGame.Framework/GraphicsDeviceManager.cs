@@ -262,10 +262,25 @@ namespace Microsoft.Xna.Framework
 
             _game.ResizeWindow(false);
 #elif SDL2
+            // Apply the GraphicsDevice changes internally.
+            GraphicsDevice.PresentationParameters.BackBufferFormat = PreferredBackBufferFormat;
+            GraphicsDevice.PresentationParameters.BackBufferWidth = PreferredBackBufferWidth;
+            GraphicsDevice.PresentationParameters.BackBufferHeight = PreferredBackBufferHeight;
+            GraphicsDevice.PresentationParameters.DepthStencilFormat = PreferredDepthStencilFormat;
+            GraphicsDevice.PresentationParameters.IsFullScreen = IsFullScreen;
+            
             SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
-            platform.ResetWindow(_wantFullScreen);
-            // FIXME: HACK! Do this again. Wait, why do we need to do this?!
-            platform.ResetWindow(_wantFullScreen);
+            platform.BeginScreenDeviceChange(
+                GraphicsDevice.PresentationParameters.IsFullScreen
+            );
+            platform.EndScreenDeviceChange(
+                "SDL2",
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight,
+                GraphicsDevice.PresentationParameters.DepthStencilFormat
+            );
+            
+            platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
 #else
 
 #if ANDROID
@@ -510,20 +525,11 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-#if SDL2
-                return _game.Platform.VSyncEnabled;
-#else
                 return _synchronizedWithVerticalRetrace;
-#endif
             }
             set
             {
-#if SDL2
-                // TODO: I'm pretty sure this shouldn't occur until ApplyChanges().
-                _game.Platform.VSyncEnabled = value;
-#else
                 _synchronizedWithVerticalRetrace = value;
-#endif
             }
         }
 

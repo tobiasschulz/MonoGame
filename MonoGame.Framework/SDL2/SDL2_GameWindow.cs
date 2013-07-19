@@ -521,10 +521,6 @@ namespace Microsoft.Xna.Framework
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
-            
-#if THREADED_GL
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
-#endif
 
             /* Some window managers might try to minimize the window as we're
              * destroying it. This looks pretty stupid and could cause problems,
@@ -536,6 +532,10 @@ namespace Microsoft.Xna.Framework
                 "0",
                 SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
             );
+            
+#if THREADED_GL
+            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
+#endif
             
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
@@ -604,9 +604,6 @@ namespace Microsoft.Xna.Framework
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
             OpenTK.Graphics.OpenGL.GL.LoadAll();
-            
-            // We default to VSync being on.
-            IsVSync = true;
             
             // Assume we will have focus.
             IsActive = true;
