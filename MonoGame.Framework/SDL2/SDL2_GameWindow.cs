@@ -66,6 +66,7 @@ non-infringement.
 */
 #endregion License
 
+#region THREADED_GL Option
 #define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
  * 
@@ -81,7 +82,9 @@ non-infringement.
  * Basically, if you have to enable this, you should feel very bad.
  * -flibit
  */
+#endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -91,6 +94,7 @@ using Microsoft.Xna.Framework.Input;
 
 using SDL2;
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -105,6 +109,7 @@ namespace Microsoft.Xna.Framework
         #region Internal SDL2 window variables
         
         private IntPtr INTERNAL_sdlWindow;
+        
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
         private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
         
@@ -119,7 +124,7 @@ namespace Microsoft.Xna.Framework
         private int INTERNAL_glFramebuffer;
         private int INTERNAL_glColorAttachment;
         private int INTERNAL_glDepthStencilAttachment;
-        
+
         // These are internal for the SDL2_GamePlatform and GraphicsAdapter.
         internal int INTERNAL_glFramebufferWidth;
         internal int INTERNAL_glFramebufferHeight;
@@ -391,9 +396,9 @@ namespace Microsoft.Xna.Framework
                     {
                         string text;
                         unsafe { text = new string(evt.text.text); }
-                        for (int i = 0; i < text.Length; i++)
+                        if (text.Length > 0)
                         {
-                            OnTextInput(evt, new TextInputEventArgs(text[i]));
+                            OnTextInput(evt, new TextInputEventArgs(text[0]));
                         }
                     }
 
@@ -516,10 +521,6 @@ namespace Microsoft.Xna.Framework
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
-            
-#if THREADED_GL
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
-#endif
 
             /* Some window managers might try to minimize the window as we're
              * destroying it. This looks pretty stupid and could cause problems,
@@ -531,6 +532,10 @@ namespace Microsoft.Xna.Framework
                 "0",
                 SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
             );
+            
+#if THREADED_GL
+            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
+#endif
             
             SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
             
@@ -599,10 +604,6 @@ namespace Microsoft.Xna.Framework
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
             OpenTK.Graphics.OpenGL.GL.LoadAll();
-            
-            // We default to VSync being on.
-            // ... but FEZ already knows this.
-            // IsVSync = true;
             
             // Assume we will have focus.
             IsActive = true;

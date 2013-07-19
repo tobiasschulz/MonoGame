@@ -66,6 +66,7 @@ non-infringement.
 */
 #endregion License
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +78,7 @@ using Microsoft.Xna.Framework.Input.Touch;
 using Microsoft.Xna.Framework.Input;
 
 using SDL2;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -186,31 +188,6 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_window.INTERNAL_glFramebufferWidth,
                 INTERNAL_window.INTERNAL_glFramebufferHeight
             );
-        }
-
-        internal void ResetWindow(bool fullScreen)
-        {
-            // Window size
-            GraphicsDeviceManager graphicsDeviceManager = (GraphicsDeviceManager)
-                Game.Services.GetService(typeof(IGraphicsDeviceManager));
-            
-            int width = graphicsDeviceManager.PreferredBackBufferWidth;
-            int height = graphicsDeviceManager.PreferredBackBufferHeight;
-            DepthFormat format = graphicsDeviceManager.PreferredDepthStencilFormat;
-            
-            // Apply changes
-            BeginScreenDeviceChange(fullScreen);
-            EndScreenDeviceChange("SDL2", width, height, format);
-            
-            // Now we set our Presentation Parameters
-            GraphicsDevice device = (GraphicsDevice) graphicsDeviceManager.GraphicsDevice;
-            if (device != null)
-            {
-                PresentationParameters parms = device.PresentationParameters;
-                parms.BackBufferWidth = width;
-                parms.BackBufferHeight = height;
-                parms.IsFullScreen = fullScreen;
-            }
         }
         
         public void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight, DepthFormat backbufferFormat)
