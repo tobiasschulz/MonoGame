@@ -191,11 +191,6 @@ namespace Microsoft.Xna.Framework
                 INTERNAL_window.INTERNAL_glFramebufferHeight
             );
         }
-        
-        public void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight, DepthFormat backbufferFormat)
-        {
-            INTERNAL_window.EndScreenDeviceChange(screenDeviceName, clientWidth, clientHeight, backbufferFormat);
-        }
 
         public override void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight)
         {

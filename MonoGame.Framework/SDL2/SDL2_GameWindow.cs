@@ -699,20 +699,6 @@ namespace Microsoft.Xna.Framework
             int clientWidth,
             int clientHeight
         ) {
-            EndScreenDeviceChange(
-                screenDeviceName,
-                clientWidth,
-                clientHeight,
-                INTERNAL_depthFormat
-            );
-        }
-        
-        public void EndScreenDeviceChange(
-            string screenDeviceName,
-            int clientWidth,
-            int clientHeight,
-            DepthFormat backbufferFormat
-        ) {
             // Set screen device name, not that we use it...
             INTERNAL_deviceName = screenDeviceName;
             
@@ -780,6 +766,9 @@ namespace Microsoft.Xna.Framework
                 PixelType.UnsignedInt,
                 IntPtr.Zero
             );
+            
+            // Get our desired depth format directly from the GraphicsDevice.
+            DepthFormat backbufferFormat = Game.GraphicsDevice.PresentationParameters.DepthStencilFormat;
             
             // Update the depth attachment based on the desired DepthFormat.
             PixelFormat depthPixelFormat;

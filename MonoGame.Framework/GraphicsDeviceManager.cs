@@ -270,19 +270,17 @@ namespace Microsoft.Xna.Framework
             IsFullScreen = _wantFullScreen;
             
             // Make the Platform device changes.
-            SDL2_GamePlatform platform = (SDL2_GamePlatform) _game.Platform;
-            platform.BeginScreenDeviceChange(
+            _game.Platform.BeginScreenDeviceChange(
                 GraphicsDevice.PresentationParameters.IsFullScreen
             );
-            platform.EndScreenDeviceChange(
+            _game.Platform.EndScreenDeviceChange(
                 "SDL2",
                 GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.PresentationParameters.BackBufferHeight,
-                GraphicsDevice.PresentationParameters.DepthStencilFormat
+                GraphicsDevice.PresentationParameters.BackBufferHeight
             );
             
             // This platform uses VSyncEnabled rather than PresentationInterval.
-            platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
+            _game.Platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
 #else
 
 #if ANDROID
