@@ -432,6 +432,9 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.UseDxtCompression = int.Parse(versionString.Substring(0, 1)) > 2 && // Don't trust OpenGL 2's texture compression, crashed on at least one driver
                                                    _extensions.Contains("GL_EXT_texture_compression_s3tc");
 
+            GraphicsExtensions.SwapControlTearSupported = _extensions.Contains("WGL_EXT_swap_control_tear") ||
+                                                          _extensions.Contains("GLX_EXT_swap_control_tear");
+
             // Intel card driver detection
             /*if (vendorString.Contains("Intel") && versionString.Contains("Build"))
             {
@@ -1741,21 +1744,23 @@ namespace Microsoft.Xna.Framework.Graphics
                     GraphicsExtensions.CheckGLError();
                     if (renderTarget.DepthStencilFormat != DepthFormat.None)
 				    {
-                        GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
                         // http://www.songho.ca/opengl/gl_fbo.html
                     	// FramebufferRenderbuffer should be checked with CheckFramebufferStatus(GLFramebuffer) which is being done
                     	// below.  If we check for GLError here we could be catching errors from previous commands and not this.
                         //GraphicsExtensions.CheckGLError();
                         if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
 					    {
-                            GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+                            GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, FramebufferAttachment.DepthStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
                         	// http://www.songho.ca/opengl/gl_fbo.html
                         	// FramebufferRenderbuffer should be checked with CheckFramebufferStatus(GLFramebuffer) which is being done
                         	// below.  If we check for GLError here we could be catching errors from previous commands and not this.                            
                             //GraphicsExtensions.CheckGLError();
                         }
                         else
+                        {
+                            GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
                             GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, 0);
+                        }
 				    }
                     else
                         GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, 0);

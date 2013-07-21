@@ -76,6 +76,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 using Microsoft.Xna.Framework.Input;
 using OpenTK;
+using OpenTK.Graphics.OpenGL;
 
 namespace Microsoft.Xna.Framework
 {
@@ -97,7 +98,15 @@ namespace Microsoft.Xna.Framework
             set
             {
                 _view.Window.VSync = value ? OpenTK.VSyncMode.On : OpenTK.VSyncMode.Off;
-                _view.Window.Context.SwapInterval = value ? 1 : 0;
+                if (value)
+                {
+                    GL.GetError(); // clear error beforehand
+                    _view.Window.Context.SwapInterval = -1;   
+                    if (GL.GetError() != ErrorCode.NoError)
+                        _view.Window.Context.SwapInterval = 1;
+                }
+                else
+                    _view.Window.Context.SwapInterval = 0;
             }
         }
         

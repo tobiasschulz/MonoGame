@@ -35,6 +35,7 @@ namespace Microsoft.Xna.Framework.Graphics
         public static bool UseArbFramebuffer;
         public static bool UseDxtCompression;
         public static bool FboMultisampleSupported;
+        public static bool SwapControlTearSupported;
 
         public static bool IsRenderbuffer(uint renderbuffer)
         {
