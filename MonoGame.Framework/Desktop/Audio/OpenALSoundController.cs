@@ -24,6 +24,8 @@ namespace Microsoft.Xna.Framework.Audio
         const int ExpandSize = 32;
         const float BufferTimeout = 10; // in seconds
 
+        public const float EmitterDepth = 2.0f;
+
         class BufferAllocation
         {
             public int BufferId;
@@ -126,8 +128,14 @@ namespace Microsoft.Xna.Framework.Audio
             ALHelper.Efx.Filter(filterId, EfxFilterf.LowpassGainHF, 1);
             ALHelper.Check();
 
-            AL.DistanceModel(ALDistanceModel.InverseDistanceClamped);
+            AL.DistanceModel(ALDistanceModel.None);
             ALHelper.Check();
+
+            // listener settings
+            AL.Listener(ALListener3f.Position, 0, 0, 0);
+            AL.Listener(ALListener3f.Velocity, 0, 0, 0);
+            var orientation = new float[] { 0, 0, -1, 0, 1, 0 };
+            AL.Listener(ALListenerfv.Orientation, ref orientation);
 
             freeBuffers = new ConcurrentStack<int>();
             ExpandBuffers(PreallocatedBuffers);
@@ -376,7 +384,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             AL.Source(sourceId, ALSourceb.Looping, false);
             ALHelper.Check();
-            AL.Source(sourceId, ALSource3f.Position, 0, 0.0f, 0.1f);
+            AL.Source(sourceId, ALSource3f.Position, 0, 0.0f, -EmitterDepth);
             ALHelper.Check();
             AL.Source(sourceId, ALSourcef.Pitch, 1);
             ALHelper.Check();
@@ -425,8 +433,8 @@ namespace Microsoft.Xna.Framework.Audio
             var newSources = AL.GenSources(expandSize);
             ALHelper.Check();
 
-            Array.Reverse(newSources);
-            freeSources.PushRange(newSources);
+            for (int i = newSources.Length - 1; i >= 0; i--)
+                ResetSource(newSources[i]);
         }
 
         public float LowPassHFGain
