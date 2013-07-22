@@ -444,6 +444,9 @@ namespace Microsoft.Xna.Framework.Graphics
             GraphicsExtensions.UseDxtCompression = int.Parse(versionString.Substring(0, 1)) > 2 && // Don't trust OpenGL 2's texture compression, crashed on at least one driver
                                                    _extensions.Contains("GL_EXT_texture_compression_s3tc");
 
+            GraphicsExtensions.SwapControlTearSupported = _extensions.Contains("WGL_EXT_swap_control_tear") ||
+                                                          _extensions.Contains("GLX_EXT_swap_control_tear");
+
             // Intel card driver detection
             /*if (vendorString.Contains("Intel") && versionString.Contains("Build"))
             {
