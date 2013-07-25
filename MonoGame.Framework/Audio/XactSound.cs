@@ -67,7 +67,7 @@ namespace Microsoft.Xna.Framework.Audio
 						// 1 1 1 1 1 0 0 0 --- 248 - Attenuation_high
 						// 0 0 1 0 0 0 0 1 --- 033 - Attenuation_low
 
-						if (rpcTable == 198) {
+						if (rpcTable == 198 || rpcTable == 218) {
 							rpcEffects[i] = 0;
 						} else if (rpcTable == 248) {
 							rpcEffects[i] = 1;
