@@ -243,7 +243,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     int numModes = SDL2.SDL.SDL_GetNumDisplayModes(0);
                     for (int i = 0; i < numModes; i++)
                     {
-                        SDL2.SDL.SDL_GetDisplayMode(0, i, ref filler);
+                        SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
                         modes.Add(
                             new DisplayMode(
                                 filler.w,

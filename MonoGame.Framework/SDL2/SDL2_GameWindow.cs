@@ -181,8 +181,8 @@ namespace Microsoft.Xna.Framework
             get
             {
                 int x = 0, y = 0, w = 0, h = 0;
-                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
-                SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, ref w, ref h);
+                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
+                SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, out w, out h);
                 return new Rectangle(x, y, w, h);
             }
         }
@@ -734,7 +734,7 @@ namespace Microsoft.Xna.Framework
                 // Try to center the window around the old window position.
                 int x = 0;
                 int y = 0;
-                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, ref x, ref y);
+                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
                 SDL.SDL_SetWindowPosition(
                     INTERNAL_sdlWindow,
                     x + ((INTERNAL_glFramebufferWidth - clientWidth) / 2),
