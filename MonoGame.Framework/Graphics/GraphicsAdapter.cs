@@ -72,6 +72,10 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             _view = screen;
         }
+#else
+        internal GraphicsAdapter()
+        {
+        }
 #endif
         
         public void Dispose()
@@ -122,6 +126,9 @@ namespace Microsoft.Xna.Framework.Graphics
 						new GraphicsAdapter[] {new GraphicsAdapter(UIScreen.MainScreen)});
 #elif ANDROID
                     adapters = new ReadOnlyCollection<GraphicsAdapter>(new GraphicsAdapter[] { new GraphicsAdapter(Game.Instance.Window) });
+#else
+                    adapters = new ReadOnlyCollection<GraphicsAdapter>(
+						new GraphicsAdapter[] {new GraphicsAdapter()});
 #endif
                 }
                 return adapters;
