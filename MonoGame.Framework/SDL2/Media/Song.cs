@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Media
 		private static void initializeMixer()
 		{
 			if (!initialized)
-            {
+			{
 				SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO);
 				SDL_mixer.Mix_OpenAudio(44100, SDL.AUDIO_S16SYS, 2, 1024);
 				initialized = true;
@@ -77,9 +77,9 @@ namespace Microsoft.Xna.Framework.Media
 
 		#region Private Member Data
 
-        private IntPtr INTERNAL_mixMusic;
+		private IntPtr INTERNAL_mixMusic;
 
-        SDL_mixer.MusicFinishedDelegate musicFinishedDelegate;
+		SDL_mixer.MusicFinishedDelegate musicFinishedDelegate;
 
 		#endregion
 
@@ -189,7 +189,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			FilePath = fileName;
 			initializeMixer();
-            INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
+			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
 		}
 
 		~Song()
@@ -225,9 +225,9 @@ namespace Microsoft.Xna.Framework.Media
 			{
 				return;
 			}
-            musicFinishedDelegate = OnFinishedPlaying;
-            SDL_mixer.Mix_HookMusicFinished(musicFinishedDelegate);
-            SDL_mixer.Mix_PlayMusic(INTERNAL_mixMusic, 0);
+			musicFinishedDelegate = OnFinishedPlaying;
+			SDL_mixer.Mix_HookMusicFinished(musicFinishedDelegate);
+			SDL_mixer.Mix_PlayMusic(INTERNAL_mixMusic, 0);
 			PlayCount += 1;
 		}
 
