@@ -178,8 +178,8 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
 
             this.glTarget = TextureTarget.Texture2D;
-            
-            Threading.BlockOnUIThread(() =>
+
+            Threading.ScheduleOnUIThread(() =>
             {
                 // Store the current bound texture.
                 var prevTexture = GraphicsExtensions.GetBoundTexture2D();
@@ -277,7 +277,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new ArgumentNullException("data");
 
 #if OPENGL
-            Threading.BlockOnUIThread(() =>
+            Threading.ScheduleOnUIThread(() =>
             {
 #endif
 #if !PSM
@@ -387,8 +387,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
 
 #if !ANDROID
-                GL.Finish();
-                GraphicsExtensions.CheckGLError();
+                //GL.Finish();
+                //GraphicsExtensions.CheckGLError();
 #endif
                 // Restore the bound texture.
                 GL.BindTexture(TextureTarget.Texture2D, prevTexture);
@@ -404,7 +404,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #if !ANDROID
                 // Required to make sure that any texture uploads on a thread are completed
                 // before the main thread tries to use the texture.
-                GL.Finish();
+                //GL.Finish();
 #endif
             });
 #endif
