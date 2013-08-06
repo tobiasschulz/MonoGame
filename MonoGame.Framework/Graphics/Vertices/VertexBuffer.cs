@@ -78,7 +78,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #elif PSM
             //Do nothing, we cannot create the storage array yet
 #else
-            Threading.BlockOnUIThread(GenerateIfRequired);
+            Threading.ScheduleOnUIThread(GenerateIfRequired);
 #endif
 		}
 
@@ -357,7 +357,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else
             {
-                Threading.BlockOnUIThread(() => SetBufferData(bufferSize, elementSizeInBytes, offsetInBytes, data, startIndex, elementCount, vertexStride, options));
+                Threading.ScheduleOnUIThread(() => SetBufferData(bufferSize, elementSizeInBytes, offsetInBytes, data, startIndex, elementCount, vertexStride, options));
             }
 #endif
         }

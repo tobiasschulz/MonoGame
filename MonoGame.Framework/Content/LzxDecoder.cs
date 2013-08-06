@@ -69,7 +69,7 @@ namespace Microsoft.Xna.Framework.Content
 			m_state = new LzxState();
 			m_state.actual_size = 0;
 			m_state.window = new byte[wndsize];
-			for(int i = 0; i < wndsize; i++) m_state.window[i] = 0xDC;
+			//for(int i = 0; i < wndsize; i++) m_state.window[i] = 0xDC;
 			m_state.actual_size = wndsize;
 			m_state.window_size = wndsize;
 			m_state.window_posn = 0;
@@ -326,7 +326,10 @@ namespace Microsoft.Xna.Framework.Content
 								window_posn += (uint)match_length;
 								
 								/* copy match data - no worries about destination wraps */
-								while(match_length-- > 0) window[rundest++] = window[runsrc++];
+							    if (runsrc + match_length >= rundest)
+							        while(match_length-- > 0) window[rundest++] = window[runsrc++];
+                                else
+                                    Buffer.BlockCopy(window, runsrc, window, rundest, match_length);
 							}
 						}
 						break;

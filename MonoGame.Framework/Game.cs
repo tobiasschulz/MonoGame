@@ -439,68 +439,57 @@ namespace Microsoft.Xna.Framework
 
         public bool AssumeTargetElapsedTime;
 
+        void RunPendingActionsIfAny()
+        {
+            while (Threading.HasPendingActions)
+            {
+                Threading.Run();
+                System.Threading.Thread.Sleep(0);
+            }
+        }
+
+        bool updatedOnce;
+
         public void Tick()
         {
-            // NOTE: This code is very sensitive and can break very badly
-            // with even what looks like a safe change.  Be sure to test 
-            // any change fully in both the fixed and variable timestep 
-            // modes across multiple devices and platforms.
+            RunPendingActionsIfAny();
 
-        RetryTick:
+            var frameTime = _gameTimer.Elapsed;
 
             // Advance the accumulated elapsed time.
             if (AssumeTargetElapsedTime)    _accumulatedElapsedTime += _targetElapsedTime;
-            else                            _accumulatedElapsedTime += _gameTimer.Elapsed;
+            else                            _accumulatedElapsedTime += frameTime;
             
             _gameTimer.Reset();
             _gameTimer.Start();
 
-            // If we're in the fixed timestep mode and not enough time has elapsed
-            // to perform an update we sleep off the the remaining time to save battery
-            // life and/or release CPU time to other threads and processes.
-            if (IsFixedTimeStep && _accumulatedElapsedTime < TargetElapsedTime)
-            {
-                var sleepTime = (int)(TargetElapsedTime - _accumulatedElapsedTime).TotalMilliseconds;
-
-                // NOTE: While sleep can be inaccurate in general it is 
-                // accurate enough for frame limiting purposes if some
-                // fluctuation is an acceptable result.
-#if WINRT
-                Task.Delay(sleepTime).Wait();
-#else
-                System.Threading.Thread.Sleep(sleepTime);
-#endif
-                goto RetryTick;
-            }
+            bool doUpdate = true;
+            if (IsFixedTimeStep)
+                doUpdate = _accumulatedElapsedTime >= TargetElapsedTime;
 
             // Do not allow any update to take longer than our maximum.
             if (_accumulatedElapsedTime > _maxElapsedTime)
                 _accumulatedElapsedTime = _maxElapsedTime;
 
-            // http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.gametime.isrunningslowly.aspx
-            // Calculate IsRunningSlowly for the fixed time step, but only when the accumulated time
-            // exceeds the target time.
-
             if (IsFixedTimeStep)
             {
                 _gameTime.ElapsedGameTime = TargetElapsedTime;
-                var stepCount = 0;
-
-                _gameTime.IsRunningSlowly = (_accumulatedElapsedTime > TargetElapsedTime);
+                _gameTime.IsRunningSlowly = _accumulatedElapsedTime > TargetElapsedTime;
 
                 // Perform as many full fixed length time steps as we can.
-                while (_accumulatedElapsedTime >= TargetElapsedTime)
+                if (doUpdate)
                 {
-                    _gameTime.TotalGameTime += TargetElapsedTime;
-                    _accumulatedElapsedTime -= TargetElapsedTime;
-                    ++stepCount;
+                    while (_accumulatedElapsedTime >= TargetElapsedTime)
+                    {
+                        _gameTime.TotalGameTime += TargetElapsedTime;
+                        _accumulatedElapsedTime -= TargetElapsedTime;
 
-                    DoUpdate(_gameTime);
+                        updatedOnce = true;
+                        DoUpdate(_gameTime);
+                    }
                 }
 
-                // Draw needs to know the total elapsed time
-                // that occured for the fixed length updates.
-                _gameTime.ElapsedGameTime = TimeSpan.FromTicks(TargetElapsedTime.Ticks * stepCount);
+                _gameTime.ElapsedGameTime = frameTime;
             }
             else
             {
@@ -514,16 +503,21 @@ namespace Microsoft.Xna.Framework
                 DoUpdate(_gameTime);
             }
 
+            RunPendingActionsIfAny();
+
             // Draw unless the update suppressed it.
             if (_suppressDraw)
                 _suppressDraw = false;
-            else
+            else if (updatedOnce)
             {
-                lock (Threading.BackgroundContext)
+                //lock (Threading.BackgroundContext)
                 {
                     DoDraw(_gameTime);
+                    //Console.WriteLine(1.0 / _gameTime.ElapsedGameTime.TotalSeconds);
                 }
             }
+
+            //RunPendingActionsIfAny();
         }
 
         #endregion

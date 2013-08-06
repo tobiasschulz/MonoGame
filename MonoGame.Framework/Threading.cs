@@ -38,7 +38,7 @@ purpose and non-infringement.
 */
 #endregion License
 
-#define THREADED_GL
+// #define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
  * 
  * This class is designed to handle rendering coming from multiple threads, but
@@ -93,7 +93,7 @@ namespace Microsoft.Xna.Framework
 #elif ANDROID || SDL2
         static List<Action> actions = new List<Action>();
         static Mutex actionsMutex = new Mutex();
-#elif IOS
+#if IOS
         public static EAGLContext BackgroundContext;
 #endif
         static Threading()
@@ -182,6 +182,21 @@ namespace Microsoft.Xna.Framework
         }
 
 #if ANDROID || (SDL2 && !THREADED_GL)
+        internal static void ScheduleOnUIThread(Action action)
+        {
+            if (action == null)
+                throw new ArgumentNullException("action");
+
+            // If we are already on the UI thread, just call the action and be done with it
+            if (mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                action();
+                return;
+            }
+
+            Add(action);
+        }
+
         static void Add(Action action)
         {
             lock (actions)
@@ -205,6 +220,15 @@ namespace Microsoft.Xna.Framework
                 }
                 actions.Clear();
             }
+        }
+
+        internal static bool HasPendingActions
+        {
+            get
+            {
+                lock (actions)
+                    return actions.Count > 0;
+            } 
         }
 #endif
     }

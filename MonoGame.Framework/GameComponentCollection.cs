@@ -46,25 +46,35 @@ namespace Microsoft.Xna.Framework
     public sealed class GameComponentCollection : Collection<IGameComponent>
     {
         public event EventHandler<GameComponentCollectionEventArgs> ComponentAdded;
-
         public event EventHandler<GameComponentCollectionEventArgs> ComponentRemoved;
+
+        static readonly object Mutex = new object();
 
         protected override void ClearItems()
         {
-            for (int i = 0; i < base.Count; i++)
+            IGameComponent[] cache;
+            lock (Mutex)
             {
-                this.OnComponentRemoved(new GameComponentCollectionEventArgs(base[i]));
+                cache = new IGameComponent[Count];
+                for (int i = 0; i < cache.Length; i++)
+                    cache[i] = base[i];
+                base.ClearItems();
             }
-            base.ClearItems();
+
+            for (int i = 0; i < cache.Length; i++)
+                this.OnComponentRemoved(new GameComponentCollectionEventArgs(cache[i]));
         }
 
         protected override void InsertItem(int index, IGameComponent item)
         {
-            if (base.IndexOf(item) != -1)
+            lock (Mutex)
             {
-                throw new ArgumentException("Cannot Add Same Component Multiple Times");
+                if (base.IndexOf(item) != -1)
+                {
+                    throw new ArgumentException("Cannot Add Same Component Multiple Times");
+                }
+                base.InsertItem(index, item);
             }
-            base.InsertItem(index, item);
             if (item != null)
             {
                 this.OnComponentAdded(new GameComponentCollectionEventArgs(item));
@@ -89,8 +99,13 @@ namespace Microsoft.Xna.Framework
 
         protected override void RemoveItem(int index)
         {
-            IGameComponent gameComponent = base[index];
-            base.RemoveItem(index);
+            IGameComponent gameComponent;
+
+            lock (Mutex)
+            {
+                gameComponent = base[index];
+                base.RemoveItem(index);
+            }
             if (gameComponent != null)
             {
                 this.OnComponentRemoved(new GameComponentCollectionEventArgs(gameComponent));

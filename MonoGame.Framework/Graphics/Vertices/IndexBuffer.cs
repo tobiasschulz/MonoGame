@@ -84,7 +84,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new NotImplementedException("PSS Currently only supports ushort (SixteenBits) index elements");
             _buffer = new ushort[indexCount];
 #else
-            Threading.BlockOnUIThread(GenerateIfRequired);
+            Threading.ScheduleOnUIThread(GenerateIfRequired);
 #endif
 		}
 		
@@ -354,7 +354,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             else
             {
-                Threading.BlockOnUIThread(() => BufferData(offsetInBytes, data, startIndex, elementCount, options));
+                Threading.ScheduleOnUIThread(() => BufferData(offsetInBytes, data, startIndex, elementCount, options));
             }
 
 #endif
