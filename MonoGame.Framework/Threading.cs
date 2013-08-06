@@ -96,6 +96,7 @@ namespace Microsoft.Xna.Framework
 #if IOS
         public static EAGLContext BackgroundContext;
 #endif
+#endif
         static Threading()
         {
             mainThreadId = Thread.CurrentThread.ManagedThreadId;
