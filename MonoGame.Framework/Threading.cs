@@ -93,9 +93,8 @@ namespace Microsoft.Xna.Framework
 #elif ANDROID || SDL2
         static List<Action> actions = new List<Action>();
         static Mutex actionsMutex = new Mutex();
-#if IOS
+#elif IOS
         public static EAGLContext BackgroundContext;
-#endif
 #endif
         static Threading()
         {
