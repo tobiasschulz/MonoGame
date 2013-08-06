@@ -64,14 +64,14 @@ namespace Microsoft.Xna.Framework
     {
         static int mainThreadId;
         static int currentThreadId;
-#if ANDROID
+//#if ANDROID
         static List<Action> actions = new List<Action>();
         static Mutex actionsMutex = new Mutex();
-#elif IOS
+#if IOS
         public static EAGLContext BackgroundContext;
 #elif WINDOWS || LINUX
-        public static IGraphicsContext BackgroundContext;
-        public static IWindowInfo WindowInfo;
+        //public static IGraphicsContext BackgroundContext;
+        //public static IWindowInfo WindowInfo;
 #endif
         static Threading()
         {
@@ -130,6 +130,7 @@ namespace Microsoft.Xna.Framework
                 GraphicsExtensions.CheckGLError();
             }
 #elif WINDOWS || LINUX
+            /*
             if (BackgroundContext == null)
                 action();
             else lock (BackgroundContext)
@@ -144,6 +145,16 @@ namespace Microsoft.Xna.Framework
                 // Must make the context not current on this thread or the next thread will get error 170 from the MakeCurrent call
                 BackgroundContext.MakeCurrent(null);
             }
+            */
+
+            ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
+            Add(() =>
+            {
+                action();
+                resetEvent.Set();
+            });
+            resetEvent.Wait();
+
 #else
             ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
 #if MONOMAC
@@ -164,7 +175,22 @@ namespace Microsoft.Xna.Framework
 #endif
         }
 
-#if ANDROID
+        internal static void ScheduleOnUIThread(Action action)
+        {
+            if (action == null)
+                throw new ArgumentNullException("action");
+
+            // If we are already on the UI thread, just call the action and be done with it
+            if (mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                action();
+                return;
+            }
+
+            Add(action);
+        }
+
+//#if ANDROID
         static void Add(Action action)
         {
             lock (actions)
@@ -189,6 +215,15 @@ namespace Microsoft.Xna.Framework
                 actions.Clear();
             }
         }
-#endif
+
+        internal static bool HasPendingActions
+        {
+            get
+            {
+                lock (actions)
+                    return actions.Count > 0;
+            } 
+        }
+//#endif
     }
 }
