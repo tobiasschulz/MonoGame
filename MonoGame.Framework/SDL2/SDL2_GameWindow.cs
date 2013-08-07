@@ -325,7 +325,7 @@ namespace Microsoft.Xna.Framework
                     // Keyboard
                     if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
                     {
-                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
+                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
                         if (!keys.Contains(key))
                         {
                             keys.Add(key);
@@ -334,7 +334,7 @@ namespace Microsoft.Xna.Framework
                     }
                     else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
                     {
-                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
+                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
                         if (keys.Contains(key))
                         {
                             keys.Remove(key);
