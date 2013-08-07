@@ -1,45 +1,72 @@
 #region License
 /*
 Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009 The MonoGame Team
+MonoGame - Copyright © 2009-2012 The MonoGame Team
 
 All rights reserved.
 
-This license governs use of the accompanying software. If you use the software, you accept this license. If you do not
-accept the license, do not use the software.
+This license governs use of the accompanying software. If you use the software,
+you accept this license. If you do not accept the license, do not use the
+software.
 
 1. Definitions
-The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under
-U.S. copyright law.
 
-A "contribution" is the original software, or any additions or changes to the software.
-A "contributor" is any person that distributes its contribution under this license.
-"Licensed patents" are a contributor's patent claims that read directly on its contribution.
+The terms "reproduce," "reproduction," "derivative works," and "distribution"
+have the same meaning here as under U.S. copyright law.
+
+A "contribution" is the original software, or any additions or changes to the
+software.
+
+A "contributor" is any person that distributes its contribution under this
+license.
+
+"Licensed patents" are a contributor's patent claims that read directly on its
+contribution.
 
 2. Grant of Rights
-(A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3,
-each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
-(B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3,
-each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
+
+(A) Copyright Grant- Subject to the terms of this license, including the
+license conditions and limitations in section 3, each contributor grants you a
+non-exclusive, worldwide, royalty-free copyright license to reproduce its
+contribution, prepare derivative works of its contribution, and distribute its
+contribution or any derivative works that you create.
+
+(B) Patent Grant- Subject to the terms of this license, including the license
+conditions and limitations in section 3, each contributor grants you a
+non-exclusive, worldwide, royalty-free license under its licensed patents to
+make, have made, use, sell, offer for sale, import, and/or otherwise dispose of
+its contribution in the software or derivative works of the contribution in the
+software.
 
 3. Conditions and Limitations
-(A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
-(B) If you bring a patent claim against any contributor over patents that you claim are infringed by the software,
-your patent license from such contributor to the software ends automatically.
-(C) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution
-notices that are present in the software.
-(D) If you distribute any portion of the software in source code form, you may do so only under this license by including
-a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object
-code form, you may only do so under a license that complies with this license.
-(E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees
-or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent
-permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
-purpose and non-infringement.
+
+(A) No Trademark License- This license does not grant you rights to use any
+contributors' name, logo, or trademarks.
+
+(B) If you bring a patent claim against any contributor over patents that you
+claim are infringed by the software, your patent license from such contributor
+to the software ends automatically.
+
+(C) If you distribute any portion of the software, you must retain all
+copyright, patent, trademark, and attribution notices that are present in the
+software.
+
+(D) If you distribute any portion of the software in source code form, you may
+do so only under this license by including a complete copy of this license with
+your distribution. If you distribute any portion of the software in compiled or
+object code form, you may only do so under a license that complies with this
+license.
+
+(E) The software is licensed "as-is." You bear the risk of using it. The
+contributors give no express warranties, guarantees or conditions. You may have
+additional consumer rights under your local laws which this license cannot
+change. To the extent permitted under your local laws, the contributors exclude
+the implied warranties of merchantability, fitness for a particular purpose and
+non-infringement.
 */
 #endregion License
 
 #region Using Statements
-using System;
 using System.Collections.Generic;
 
 using SDL2;
@@ -47,401 +74,150 @@ using SDL2;
 
 namespace Microsoft.Xna.Framework.Input
 {
-	internal static class SDL2_KeyboardUtil
-	{
-		private static Dictionary<SDL.SDL_Keycode, Keys> INTERNAL_map;
-		
-		static SDL2_KeyboardUtil()
-		{
-			INTERNAL_map = new Dictionary<SDL.SDL_Keycode, Keys>();
-
-			var values = Enum.GetValues(typeof(SDL.SDL_Keycode));
-			
-			foreach (SDL.SDL_Keycode sdlKey in values)
-			{
-				INTERNAL_map[sdlKey] = INTERNAL_ToXNA(sdlKey);
-			}
-		}
-		
-		static Keys INTERNAL_ToXNA(SDL.SDL_Keycode key)
-		{
-			switch (key)
-			{
-				case SDL.SDL_Keycode.SDLK_a:
-					return Keys.A;
-
-				case SDL.SDL_Keycode.SDLK_LALT:
-					return Keys.LeftAlt;
-
-				case SDL.SDL_Keycode.SDLK_RALT:
-					return Keys.RightAlt;
-
-				case SDL.SDL_Keycode.SDLK_b:
-					return Keys.B;
-
-				case SDL.SDL_Keycode.SDLK_BACKSPACE:
-					return Keys.Back;
-
-				case SDL.SDL_Keycode.SDLK_BACKSLASH:
-					return Keys.OemBackslash;
-
-				case SDL.SDL_Keycode.SDLK_LEFTBRACKET:
-					return Keys.OemOpenBrackets;
-
-				case SDL.SDL_Keycode.SDLK_RIGHTBRACKET:
-					return Keys.OemCloseBrackets;
-
-				case SDL.SDL_Keycode.SDLK_c:
-					return Keys.C;
-
-				case SDL.SDL_Keycode.SDLK_CAPSLOCK:
-					return Keys.CapsLock;
-
-				case SDL.SDL_Keycode.SDLK_KP_CLEAR:
-					return Keys.OemClear;
-
-				case SDL.SDL_Keycode.SDLK_COMMA:
-					return Keys.OemComma;
-
-				case SDL.SDL_Keycode.SDLK_LCTRL:
-					return Keys.LeftControl;
-
-				case SDL.SDL_Keycode.SDLK_RCTRL:
-					return Keys.RightControl;
-
-				case SDL.SDL_Keycode.SDLK_d:
-					return Keys.D;
-
-				case SDL.SDL_Keycode.SDLK_DELETE:
-					return Keys.Delete;
-
-				case SDL.SDL_Keycode.SDLK_DOWN:
-					return Keys.Down;
-
-				case SDL.SDL_Keycode.SDLK_e:
-					return Keys.E;
-
-				case SDL.SDL_Keycode.SDLK_END:
-					return Keys.End;
-
-				case SDL.SDL_Keycode.SDLK_RETURN:
-					return Keys.Enter;
-
-				case SDL.SDL_Keycode.SDLK_ESCAPE:
-					return Keys.Escape;
-
-				case SDL.SDL_Keycode.SDLK_f:
-					return Keys.F;
-
-				case SDL.SDL_Keycode.SDLK_F1:
-					return Keys.F1;
-
-				case SDL.SDL_Keycode.SDLK_F10:
-					return Keys.F10;
-
-				case SDL.SDL_Keycode.SDLK_F11:
-					return Keys.F11;
-
-				case SDL.SDL_Keycode.SDLK_F12:
-					return Keys.F12;
-
-				case SDL.SDL_Keycode.SDLK_F13:
-					return Keys.F13;
-
-				case SDL.SDL_Keycode.SDLK_F14:
-					return Keys.F14;
-
-				case SDL.SDL_Keycode.SDLK_F15:
-					return Keys.F15;
-
-				case SDL.SDL_Keycode.SDLK_F16:
-					return Keys.F16;
-
-				case SDL.SDL_Keycode.SDLK_F17:
-					return Keys.F17;
-
-				case SDL.SDL_Keycode.SDLK_F18:
-					return Keys.F18;
-
-				case SDL.SDL_Keycode.SDLK_F19:
-					return Keys.F19;
-
-				case SDL.SDL_Keycode.SDLK_F2:
-					return Keys.F2;
-
-				case SDL.SDL_Keycode.SDLK_F20:
-					return Keys.F20;
-
-				case SDL.SDL_Keycode.SDLK_F21:
-					return Keys.F21;
-
-				case SDL.SDL_Keycode.SDLK_F22:
-					return Keys.F22;
-
-				case SDL.SDL_Keycode.SDLK_F23:
-					return Keys.F23;
-
-				case SDL.SDL_Keycode.SDLK_F24:
-					return Keys.F24;
-
-				case SDL.SDL_Keycode.SDLK_F3:
-					return Keys.F3;
-
-				case SDL.SDL_Keycode.SDLK_F4:
-					return Keys.F4;
-
-				case SDL.SDL_Keycode.SDLK_F5:
-					return Keys.F5;
-
-				case SDL.SDL_Keycode.SDLK_F6:
-					return Keys.F6;
-
-				case SDL.SDL_Keycode.SDLK_F7:
-					return Keys.F7;
-
-				case SDL.SDL_Keycode.SDLK_F8:
-					return Keys.F8;
-
-				case SDL.SDL_Keycode.SDLK_F9:
-					return Keys.F9;
-
-				case SDL.SDL_Keycode.SDLK_g:
-					return Keys.G;
-
-				case SDL.SDL_Keycode.SDLK_h:
-					return Keys.H;
-
-				case SDL.SDL_Keycode.SDLK_HOME:
-					return Keys.Home;
-
-				case SDL.SDL_Keycode.SDLK_i:
-					return Keys.I;
-
-				case SDL.SDL_Keycode.SDLK_INSERT:
-					return Keys.Insert;
-
-				case SDL.SDL_Keycode.SDLK_j:
-					return Keys.J;
-
-				case SDL.SDL_Keycode.SDLK_k:
-					return Keys.K;
-
-				case SDL.SDL_Keycode.SDLK_KP_0:
-					return Keys.NumPad0;
-
-				case SDL.SDL_Keycode.SDLK_KP_1:
-					return Keys.NumPad1;
-
-				case SDL.SDL_Keycode.SDLK_KP_2:
-					return Keys.NumPad2;
-
-				case SDL.SDL_Keycode.SDLK_KP_3:
-					return Keys.NumPad3;
-
-				case SDL.SDL_Keycode.SDLK_KP_4:
-					return Keys.NumPad4;
-
-				case SDL.SDL_Keycode.SDLK_KP_5:
-					return Keys.NumPad5;
-
-				case SDL.SDL_Keycode.SDLK_KP_6:
-					return Keys.NumPad6;
-
-				case SDL.SDL_Keycode.SDLK_KP_7:
-					return Keys.NumPad7;
-
-				case SDL.SDL_Keycode.SDLK_KP_8:
-					return Keys.NumPad8;
-
-				case SDL.SDL_Keycode.SDLK_KP_9:
-					return Keys.NumPad9;
-
-				case SDL.SDL_Keycode.SDLK_KP_PLUS:
-					return Keys.Add;
-
-				case SDL.SDL_Keycode.SDLK_KP_DECIMAL:
-					return Keys.Decimal;
-
-				case SDL.SDL_Keycode.SDLK_KP_DIVIDE:
-					return Keys.Divide;
-
-				case SDL.SDL_Keycode.SDLK_KP_ENTER:
-					return Keys.Enter;
-
-				case SDL.SDL_Keycode.SDLK_KP_MINUS:
-					return Keys.OemMinus;
-
-				case SDL.SDL_Keycode.SDLK_KP_MULTIPLY:
-					return Keys.Multiply;
-
-				case SDL.SDL_Keycode.SDLK_l:
-					return Keys.L;
-
-				case SDL.SDL_Keycode.SDLK_LSHIFT:
-					return Keys.LeftShift;
-
-				case SDL.SDL_Keycode.SDLK_LGUI:
-					return Keys.LeftWindows;
-
-				case SDL.SDL_Keycode.SDLK_LEFT:
-					return Keys.Left;
-
-				case SDL.SDL_Keycode.SDLK_m:
-					return Keys.M;
-
-				case SDL.SDL_Keycode.SDLK_MINUS:
-					return Keys.OemMinus;
-
-				case SDL.SDL_Keycode.SDLK_n:
-					return Keys.N;
-
-				case SDL.SDL_Keycode.SDLK_NUMLOCKCLEAR:
-					return Keys.NumLock;
-
-				case SDL.SDL_Keycode.SDLK_0:
-					return Keys.D0;
-
-				case SDL.SDL_Keycode.SDLK_1:
-					return Keys.D1;
-
-				case SDL.SDL_Keycode.SDLK_2:
-					return Keys.D2;
-
-				case SDL.SDL_Keycode.SDLK_3:
-					return Keys.D3;
-
-				case SDL.SDL_Keycode.SDLK_4:
-					return Keys.D4;
-
-				case SDL.SDL_Keycode.SDLK_5:
-					return Keys.D5;
-
-				case SDL.SDL_Keycode.SDLK_6:
-					return Keys.D6;
-
-				case SDL.SDL_Keycode.SDLK_7:
-					return Keys.D7;
-
-				case SDL.SDL_Keycode.SDLK_8:
-					return Keys.D8;
-
-				case SDL.SDL_Keycode.SDLK_9:
-					return Keys.D9;
-
-				case SDL.SDL_Keycode.SDLK_o:
-					return Keys.O;
-
-				case SDL.SDL_Keycode.SDLK_p:
-					return Keys.P;
-
-				case SDL.SDL_Keycode.SDLK_PAGEDOWN:
-					return Keys.PageDown;
-
-				case SDL.SDL_Keycode.SDLK_PAGEUP:
-					return Keys.PageUp;
-
-				case SDL.SDL_Keycode.SDLK_PAUSE:
-					return Keys.Pause;
-
-				case SDL.SDL_Keycode.SDLK_PERIOD:
-					return Keys.OemPeriod;
-
-				case SDL.SDL_Keycode.SDLK_PLUS:
-					return Keys.OemPlus;
-
-				case SDL.SDL_Keycode.SDLK_PRINTSCREEN:
-					return Keys.PrintScreen;
-
-				case SDL.SDL_Keycode.SDLK_q:
-					return Keys.Q;
-
-				case SDL.SDL_Keycode.SDLK_QUOTE:
-					return Keys.OemQuotes;
-
-				case SDL.SDL_Keycode.SDLK_r:
-					return Keys.R;
-
-				case SDL.SDL_Keycode.SDLK_RIGHT:
-					return Keys.Right;
-
-				case SDL.SDL_Keycode.SDLK_RSHIFT:
-					return Keys.RightShift;
-
-				case SDL.SDL_Keycode.SDLK_RGUI:
-					return Keys.RightWindows;
-
-				case SDL.SDL_Keycode.SDLK_s:
-					return Keys.S;
-
-				case SDL.SDL_Keycode.SDLK_SCROLLLOCK:
-					return Keys.Scroll;
-
-				case SDL.SDL_Keycode.SDLK_SEMICOLON:
-					return Keys.OemSemicolon;
-
-				case SDL.SDL_Keycode.SDLK_SLASH:
-					return Keys.OemQuestion;
-
-				case SDL.SDL_Keycode.SDLK_SLEEP:
-					return Keys.Sleep;
-
-				case SDL.SDL_Keycode.SDLK_SPACE:
-					return Keys.Space;
-
-				case SDL.SDL_Keycode.SDLK_t:
-					return Keys.T;
-
-				case SDL.SDL_Keycode.SDLK_TAB:
-					return Keys.Tab;
-
-				case SDL.SDL_Keycode.SDLK_BACKQUOTE:
-					return Keys.OemTilde;
-
-				case SDL.SDL_Keycode.SDLK_u:
-					return Keys.U;
-
-				case SDL.SDL_Keycode.SDLK_UNKNOWN:
-					return Keys.None;
-
-				case SDL.SDL_Keycode.SDLK_UP:
-					return Keys.Up;
-
-				case SDL.SDL_Keycode.SDLK_v:
-					return Keys.V;
-
-				case SDL.SDL_Keycode.SDLK_w:
-					return Keys.W;
-
-				case SDL.SDL_Keycode.SDLK_x:
-					return Keys.X;
-				
-				case SDL.SDL_Keycode.SDLK_y:
-					return Keys.Y;
-			
-				case SDL.SDL_Keycode.SDLK_z:				
-					return Keys.Z;
-
-				case SDL.SDL_Keycode.SDLK_QUESTION:
-					return Keys.OemQuestion;
-				
-				default:
-					return Keys.None;
-			}	
-		}
-			
-		public static Keys ToXNA(SDL.SDL_Keycode key)
-		{
-			Keys retVal;
-			if (INTERNAL_map.TryGetValue(key, out retVal))
-			{
-				return retVal;
-			}
-			else
-			{
-				System.Console.WriteLine("KEY FAILED TO REGISTER: " + key);
-				return INTERNAL_ToXNA(key);
-			}
-		}
-	}
+    internal static class SDL2_KeyboardUtil
+    {
+        private static Dictionary<SDL.SDL_Scancode, Keys> INTERNAL_map;
+
+        static SDL2_KeyboardUtil()
+        {
+            // Create the dictionary...
+            INTERNAL_map = new Dictionary<SDL.SDL_Scancode, Keys>();
+
+            // Then fill it with known keys that match up to XNA Keys.
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_A,               Keys.A);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_B,               Keys.B);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_C,               Keys.C);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_D,               Keys.D);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_E,               Keys.E);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F,               Keys.F);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_G,               Keys.G);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_H,               Keys.H);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_I,               Keys.I);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_J,               Keys.J);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_K,               Keys.K);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_L,               Keys.L);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_M,               Keys.M);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_N,               Keys.N);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_O,               Keys.O);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_P,               Keys.P);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_Q,               Keys.Q);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_R,               Keys.R);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_S,               Keys.S);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_T,               Keys.T);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_U,               Keys.U);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_V,               Keys.V);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_W,               Keys.W);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_X,               Keys.X);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_Y,               Keys.Y);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_Z,               Keys.Z);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_0,               Keys.D0);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_1,               Keys.D1);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_2,               Keys.D2);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_3,               Keys.D3);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_4,               Keys.D4);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_5,               Keys.D5);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_6,               Keys.D6);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_7,               Keys.D7);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_8,               Keys.D8);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_9,               Keys.D9);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_0,            Keys.NumPad0);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_1,            Keys.NumPad1);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_2,            Keys.NumPad2);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_3,            Keys.NumPad3);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_4,            Keys.NumPad4);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_5,            Keys.NumPad5);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_6,            Keys.NumPad6);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_7,            Keys.NumPad7);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_8,            Keys.NumPad8);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_9,            Keys.NumPad9);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_CLEAR,        Keys.OemClear);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_DECIMAL,      Keys.Decimal);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_DIVIDE,       Keys.Divide);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_ENTER,        Keys.Enter);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_MINUS,        Keys.OemMinus);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_MULTIPLY,     Keys.Multiply);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_PERIOD,       Keys.OemPeriod);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_KP_PLUS,         Keys.Add);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F1,              Keys.F1);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F2,              Keys.F2);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F3,              Keys.F3);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F4,              Keys.F4);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F5,              Keys.F5);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F6,              Keys.F6);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F7,              Keys.F7);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F8,              Keys.F8);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F9,              Keys.F9);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F10,             Keys.F10);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F11,             Keys.F11);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F12,             Keys.F12);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F13,             Keys.F13);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F14,             Keys.F14);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F15,             Keys.F15);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F16,             Keys.F16);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F17,             Keys.F17);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F18,             Keys.F18);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F19,             Keys.F19);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F20,             Keys.F20);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F21,             Keys.F21);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F22,             Keys.F22);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F23,             Keys.F23);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_F24,             Keys.F24);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_SPACE,           Keys.Space);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_UP,              Keys.Up);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_DOWN,            Keys.Down);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_LEFT,            Keys.Left);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RIGHT,           Keys.Right);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_LALT,            Keys.LeftAlt);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RALT,            Keys.RightAlt);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_LCTRL,           Keys.LeftControl);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RCTRL,           Keys.RightControl);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_LGUI,            Keys.LeftWindows);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RGUI,            Keys.RightWindows);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_LSHIFT,          Keys.LeftShift);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RSHIFT,          Keys.RightShift);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_APPLICATION,     Keys.Apps);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_SLASH,           Keys.OemQuestion);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_BACKSLASH,       Keys.OemBackslash);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_LEFTBRACKET,     Keys.OemOpenBrackets);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RIGHTBRACKET,    Keys.OemCloseBrackets);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_CAPSLOCK,        Keys.CapsLock);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_COMMA,           Keys.OemComma);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_DELETE,          Keys.Delete);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_END,             Keys.End);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_BACKSPACE,       Keys.Back);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_RETURN,          Keys.Enter);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE,          Keys.Escape);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_HOME,            Keys.Home);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_INSERT,          Keys.Insert);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_MINUS,           Keys.OemMinus);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_NUMLOCKCLEAR,    Keys.NumLock);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_PAGEUP,          Keys.PageUp);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_PAGEDOWN,        Keys.PageDown);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_PAUSE,           Keys.Pause);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_PERIOD,          Keys.OemPeriod);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_EQUALS,          Keys.OemPlus);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_PRINTSCREEN,     Keys.PrintScreen);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_APOSTROPHE,      Keys.OemQuotes);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_SCROLLLOCK,      Keys.Scroll);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_SEMICOLON,       Keys.OemSemicolon);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_SLEEP,           Keys.Sleep);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_TAB,             Keys.Tab);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_GRAVE,           Keys.OemTilde);
+            INTERNAL_map.Add(SDL.SDL_Scancode.SDL_SCANCODE_UNKNOWN,         Keys.None);
+        }
+
+        public static Keys ToXNA(SDL.SDL_Scancode key)
+        {
+            Keys retVal;
+            if (INTERNAL_map.TryGetValue(key, out retVal))
+            {
+                return retVal;
+            }
+            else
+            {
+                System.Console.WriteLine("KEY MISSING FROM SDL2->XNA DICTIONARY: " + key);
+                return Keys.None;
+            }
+        }
+    }
 }
-
