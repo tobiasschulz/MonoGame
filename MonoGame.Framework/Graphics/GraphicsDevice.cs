@@ -1762,7 +1762,14 @@ namespace Microsoft.Xna.Framework.Graphics
                         //GraphicsExtensions.CheckGLError();
                         if (renderTarget.DepthStencilFormat == DepthFormat.Depth24Stencil8)
 					    {
-                            GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, FramebufferAttachment.DepthStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+                            if (!GraphicsExtensions.UseArbFramebuffer)
+                            {
+                                GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLDepthAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+                                GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, GLStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+                            }
+                            else
+                                GraphicsExtensions.FramebufferRenderbuffer(GLFramebuffer, FramebufferAttachment.DepthStencilAttachment, GLRenderbuffer, renderTarget.glDepthStencilBuffer);
+
                         	// http://www.songho.ca/opengl/gl_fbo.html
                         	// FramebufferRenderbuffer should be checked with CheckFramebufferStatus(GLFramebuffer) which is being done
                         	// below.  If we check for GLError here we could be catching errors from previous commands and not this.                            

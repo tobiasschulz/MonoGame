@@ -609,6 +609,22 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			this.GetData(0, null, data, 0, data.Length);
 		}
+
+        public void GetDataAsync<T>(T[] data, Action<T[]> thenDo) where T : struct
+        {
+            if (data == null || data.Length == 0)
+                throw new ArgumentException("data cannot be null");
+            if (glFormat == (GLPixelFormat)All.CompressedTextureFormats)
+                throw new NotImplementedException();
+
+            Threading.ScheduleOnUIThread(() =>
+            {
+                GL.BindTexture(TextureTarget.Texture2D, glTexture);
+                GL.GetTexImage(TextureTarget.Texture2D, 0, glFormat, glType, data);
+                if (thenDo != null)
+                    thenDo(data);
+            });
+        }
 		
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
