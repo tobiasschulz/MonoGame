@@ -67,14 +67,11 @@ namespace Microsoft.Xna.Framework.Input
         // We use this to apply XInput-like rumble effects.
         internal static SDL.SDL_HapticEffect INTERNAL_effect = new SDL.SDL_HapticEffect
         {
-            type = SDL.SDL_HAPTIC_RUMBLE,
-            rumble = new SDL.SDL_HapticRumble
+            type = SDL.SDL_HAPTIC_LEFTRIGHT,
+            leftright = new SDL.SDL_HapticLeftRight
             {
-                type = SDL.SDL_HAPTIC_RUMBLE,
+                type = SDL.SDL_HAPTIC_LEFTRIGHT,
                 length = SDL.SDL_HAPTIC_INFINITY,
-                delay = 0,
-                button = 0,
-                interval = 0,
                 large_magnitude = ushort.MaxValue,
                 small_magnitude = ushort.MaxValue
             }
@@ -467,8 +464,8 @@ namespace Microsoft.Xna.Framework.Input
             }
             else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref INTERNAL_effect) == 1)
             {
-                INTERNAL_effect.rumble.large_magnitude = (ushort) (65535.0f * leftMotor);
-                INTERNAL_effect.rumble.small_magnitude = (ushort) (65535.0f * rightMotor);
+                INTERNAL_effect.leftright.large_magnitude = (ushort) (65535.0f * leftMotor);
+                INTERNAL_effect.leftright.small_magnitude = (ushort) (65535.0f * rightMotor);
                 SDL.SDL_HapticUpdateEffect(
                     INTERNAL_haptics[(int) playerIndex],
                     0,

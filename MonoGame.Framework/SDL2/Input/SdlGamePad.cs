@@ -809,8 +809,8 @@ namespace Microsoft.Xna.Framework.Input
             }
             else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref GamePad.INTERNAL_effect) == 1)
             {
-                GamePad.INTERNAL_effect.rumble.large_magnitude = (ushort) (65535.0f * leftMotor);
-                GamePad.INTERNAL_effect.rumble.small_magnitude = (ushort) (65535.0f * rightMotor);
+                GamePad.INTERNAL_effect.leftright.large_magnitude = (ushort) (65535.0f * leftMotor);
+                GamePad.INTERNAL_effect.leftright.small_magnitude = (ushort) (65535.0f * rightMotor);
                 SDL.SDL_HapticUpdateEffect(
                     INTERNAL_haptics[(int) playerIndex],
                     0,
