@@ -112,6 +112,19 @@ namespace Microsoft.Xna.Framework.Input
         private static IntPtr[] INTERNAL_devices = new IntPtr[4];
         private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
         
+        // We use this to apply XInput-like rumble effects.
+        private static SDL.SDL_HapticEffect INTERNAL_effect = new SDL.SDL_HapticEffect
+        {
+            type = SDL.SDL_HAPTIC_LEFTRIGHT,
+            leftright = new SDL.SDL_HapticLeftRight
+            {
+                type = SDL.SDL_HAPTIC_LEFTRIGHT,
+                length = SDL.SDL_HAPTIC_INFINITY,
+                large_magnitude = ushort.MaxValue,
+                small_magnitude = ushort.MaxValue
+            }
+        };
+        
         // Where we will load our config file into.
         private static MonoGameJoystickConfig INTERNAL_joystickConfig;
 
@@ -151,8 +164,10 @@ namespace Microsoft.Xna.Framework.Input
         // Convenience method to check for Rumble support
         private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
         {
-            return !(   INTERNAL_haptics[(int) playerIndex] == IntPtr.Zero ||
-                        SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[(int) playerIndex]) == 0  );
+            IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
+            return (    haptic != IntPtr.Zero &&
+                        (   SDL.SDL_HapticEffectSupported(haptic, ref INTERNAL_effect) == 1 ||
+                            SDL.SDL_HapticRumbleSupported(haptic) == 1  )   );
         }
 
         #endregion
@@ -371,9 +386,16 @@ namespace Microsoft.Xna.Framework.Input
                 {
                     INTERNAL_haptics[x] = SDL.SDL_HapticOpenFromJoystick(thisJoystick);
                 }
-                if (INTERNAL_HapticSupported((PlayerIndex) x))
+                if (INTERNAL_haptics[x] != IntPtr.Zero)
                 {
-                    SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+                    if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[x], ref INTERNAL_effect) == 1)
+                    {
+                        SDL.SDL_HapticNewEffect(INTERNAL_haptics[x], ref INTERNAL_effect);
+                    }
+                    else if (SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[x]) == 1)
+                    {
+                        SDL.SDL_HapticRumbleInit(INTERNAL_haptics[x]);
+                    }
                 }
     
                 // Check for an SDL_GameController configuration first!
@@ -942,15 +964,38 @@ namespace Microsoft.Xna.Framework.Input
             
             if (leftMotor <= 0.0f && rightMotor <= 0.0f)
             {
-                SDL.SDL_HapticRumbleStop(INTERNAL_haptics[(int) playerIndex]);
+                SDL.SDL_HapticStopAll(INTERNAL_haptics[(int)playerIndex]);
+            }
+            else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref INTERNAL_effect) == 1)
+            {
+                INTERNAL_effect.leftright.large_magnitude = (ushort) (65535.0f * leftMotor);
+                INTERNAL_effect.leftright.small_magnitude = (ushort) (65535.0f * rightMotor);
+                SDL.SDL_HapticUpdateEffect(
+                    INTERNAL_haptics[(int) playerIndex],
+                    0,
+                    ref INTERNAL_effect
+                );
+                SDL.SDL_HapticRunEffect(
+                    INTERNAL_haptics[(int) playerIndex],
+                    0,
+                    1
+                );
             }
             else
             {
-                // TODO: Left and right motors with SDL_HapticRumble (SDL 2.1?)
+                float strength;
+                if (leftMotor >= rightMotor)
+                {
+                    strength = leftMotor;
+                }
+                else
+                {
+                    strength = rightMotor;
+                }
                 SDL.SDL_HapticRumblePlay(
                     INTERNAL_haptics[(int) playerIndex],
-                    (leftMotor >= rightMotor) ? leftMotor : rightMotor,
-                    uint.MaxValue // Oh my...
+                    strength,
+                    uint.MaxValue // Oh dear...
                 );
             }
             return true;
