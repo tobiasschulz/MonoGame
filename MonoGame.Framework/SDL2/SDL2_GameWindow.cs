@@ -395,7 +395,7 @@ namespace Microsoft.Xna.Framework
                     else if (evt.type == SDL.SDL_EventType.SDL_TEXTINPUT && !INTERNAL_TextInputSuppress)
                     {
                         string text;
-                        unsafe { text = new string(evt.text.text); }
+                        unsafe { text = new string((char*) evt.text.text); }
                         if (text.Length > 0)
                         {
                             OnTextInput(evt, new TextInputEventArgs(text[0]));
