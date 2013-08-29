@@ -385,7 +385,7 @@ namespace Microsoft.Xna.Framework
                             // Should be called on user resize only, NOT ApplyChanges!.
                             OnClientSizeChanged();
                         }
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CHANGED)
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
                         {
                             Mouse.INTERNAL_WindowWidth = evt.window.data1;
                             Mouse.INTERNAL_WindowHeight = evt.window.data2;
