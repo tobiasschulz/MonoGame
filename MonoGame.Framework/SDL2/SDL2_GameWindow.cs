@@ -66,6 +66,16 @@ non-infringement.
 */
 #endregion License
 
+#region RESIZABLE_WINDOW Option
+// #define RESIZABLE_WINDOW
+/* So we've got this silly issue in SDL2's video API at the moment. We can't
+ * add/remove the resizable property to the SDL_Window*!
+ *
+ * So, if you want to have your GameWindow be resizable, uncomment this define.
+ * -flibit
+ */
+#endregion
+
 #region THREADED_GL Option
 // #define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
@@ -372,6 +382,9 @@ namespace Microsoft.Xna.Framework
                         {
                             Mouse.INTERNAL_WindowWidth = evt.window.data1;
                             Mouse.INTERNAL_WindowHeight = evt.window.data2;
+                            
+                            // Should be called on user resize as well as ApplyChanges().
+                            OnClientSizeChanged();
                         }
 
                         // Mouse Focus
@@ -573,7 +586,11 @@ namespace Microsoft.Xna.Framework
                 SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS |
                 SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
             );
+#if RESIZABLE_WINDOW
+            AllowUserResizing = true;
+#else
             AllowUserResizing = false;
+#endif
             
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_RED_SIZE, 8);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8);
