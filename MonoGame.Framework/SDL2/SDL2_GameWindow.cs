@@ -377,14 +377,18 @@ namespace Microsoft.Xna.Framework
                         }
 
                         // Window Resize
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED ||
-                                 evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
                         {
                             Mouse.INTERNAL_WindowWidth = evt.window.data1;
                             Mouse.INTERNAL_WindowHeight = evt.window.data2;
                             
-                            // Should be called on user resize as well as ApplyChanges().
+                            // Should be called on user resize only, NOT ApplyChanges!.
                             OnClientSizeChanged();
+                        }
+                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CHANGED)
+                        {
+                            Mouse.INTERNAL_WindowWidth = evt.window.data1;
+                            Mouse.INTERNAL_WindowHeight = evt.window.data2;
                         }
 
                         // Mouse Focus
