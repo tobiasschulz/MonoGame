@@ -102,7 +102,16 @@ namespace Microsoft.Xna.Framework.Audio
 				return false;
 			}
 		}
-		
+
+		public bool IsPreparing
+		{
+			get
+			{
+				// FIXME: What is this, exactly?
+				return false;
+			}
+		}
+
 		public string Name
 		{
 			get { return name; }

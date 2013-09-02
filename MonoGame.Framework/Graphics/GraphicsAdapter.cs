@@ -147,6 +147,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			throw new NotImplementedException();
 		}
 
+		public bool QueryBackBufferFormat(
+			GraphicsProfile graphicsProfile,
+			SurfaceFormat format,
+			DepthFormat depthFormat,
+			int multiSampleCount,
+			out SurfaceFormat selectedFormat,
+			out DepthFormat selectedDepthFormat,
+			out int selectedMultiSampleCount)
+		{
+			throw new NotImplementedException("flibit put this here.");
+		}
+
         public string Description
         {
             get
