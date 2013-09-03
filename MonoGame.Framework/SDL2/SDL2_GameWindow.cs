@@ -723,9 +723,6 @@ namespace Microsoft.Xna.Framework
             // Set screen device name, not that we use it...
             INTERNAL_deviceName = screenDeviceName;
             
-            // Window bounds
-            SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
-            
             // Bordered
             if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) == SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS)
             {
@@ -738,6 +735,9 @@ namespace Microsoft.Xna.Framework
             
             // Fullscreen (Note: this only reads the fullscreen flag)
             SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
+            
+            // Window bounds
+            SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
             
             // Window position
             if (    (INTERNAL_sdlWindowFlags_Current & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP &&
