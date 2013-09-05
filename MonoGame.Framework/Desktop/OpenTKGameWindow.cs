@@ -420,6 +420,12 @@ namespace Microsoft.Xna.Framework
 
         #region Public Methods
 
+        public override void ForceRefreshKeys()
+        {
+            window.Keyboard.ClearKeys();
+            keys.Clear();
+        }
+
         public void Dispose()
         {
             Dispose(true);

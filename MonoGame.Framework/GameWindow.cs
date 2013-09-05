@@ -186,5 +186,9 @@ namespace Microsoft.Xna.Framework {
 
 		protected internal abstract void SetSupportedOrientations (DisplayOrientation orientations);
 		protected abstract void SetTitle (string title);
+
+        public virtual void ForceRefreshKeys()
+        {
+        }
 	}
 }
