@@ -775,13 +775,19 @@ namespace Microsoft.Xna.Framework.Media
         #endregion
         
         #region The Theora audio decoder thread
-        private void StreamAudio(int buffer)
+        private bool StreamAudio(int buffer)
         {
             // The size of our abstracted buffer.
             const int BUFFER_SIZE = 4096 * 16;
             
             // Store our abstracted buffer into here.
             List<float> data = new List<float>();
+            
+            // Be sure we have an audio stream first!
+            if (Video.audioStream == IntPtr.Zero)
+            {
+                return false; // NOPE
+            }
             
             // Add to the buffer from the decoder until it's large enough.
             while (data.Count < BUFFER_SIZE && State != MediaState.Stopped)
@@ -796,15 +802,26 @@ namespace Microsoft.Xna.Framework.Media
                 // We've copied the audio, so free this.
                 TheoraPlay.THEORAPLAY_freeAudio(Video.audioStream);
                 
+                Stopwatch ohScrewIt = new Stopwatch();
+                ohScrewIt.Start();
                 do
                 {
                     Video.audioStream = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
                     if (State == MediaState.Stopped)
                     {
                         // Screw it, just bail out ASAP.
-                        return;
+                        return false;
                     }
-                } while (Video.audioStream == IntPtr.Zero);
+                } while (Video.audioStream == IntPtr.Zero && ohScrewIt.ElapsedMilliseconds < 100);
+                if (Video.audioStream == IntPtr.Zero)
+                {
+                    System.Console.WriteLine(
+                        "Reached end of Audio stream, or took " +
+                        ohScrewIt.ElapsedMilliseconds +
+                        "ms"
+                    );
+                    break;
+                }
                 currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
                 
                 if ((BUFFER_SIZE - data.Count) < 4096)
@@ -823,7 +840,9 @@ namespace Microsoft.Xna.Framework.Media
                     data.Count * 2 * currentAudio.channels, // Dear OpenAL: WTF?! Love, flibit
                     currentAudio.freq
                 );
+                return true;
             }
+            return false;
         }
         
         private void DecodeAudio()
@@ -840,7 +859,10 @@ namespace Microsoft.Xna.Framework.Media
             // Fill and queue the buffers.
             for (int i = 0; i < NUM_BUFFERS; i++)
             {
-                StreamAudio(buffers[i]);
+                if (!StreamAudio(buffers[i]))
+                {
+                    break;
+                }
             }
             AL.SourceQueueBuffers(audioSourceIndex, NUM_BUFFERS, buffers);
             
@@ -852,7 +874,10 @@ namespace Microsoft.Xna.Framework.Media
                 while (processed-- > 0)
                 {
                     int buffer = AL.SourceUnqueueBuffer(audioSourceIndex);
-                    StreamAudio(buffer);
+                    if (!StreamAudio(buffer))
+                    {
+                        break;
+                    }
                     AL.SourceQueueBuffer(audioSourceIndex, buffer);
                 }
             }
@@ -872,6 +897,13 @@ namespace Microsoft.Xna.Framework.Media
         {
             while (State != MediaState.Stopped)
             {
+                // Someone needs to look at their memory management...
+                if (Game.Instance == null)
+                {
+                    System.Console.WriteLine("Game exited before video player! Halting...");
+                    State = MediaState.Stopped;
+                }
+                
                 // Sleep when paused, update the video state when playing.
                 if (State == MediaState.Paused)
                 {
