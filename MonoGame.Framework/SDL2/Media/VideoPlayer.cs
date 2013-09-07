@@ -409,6 +409,9 @@ namespace Microsoft.Xna.Framework.Media
         
         // Store this to optimize things on our end.
         private Texture2D videoTexture;
+        
+        // Used to sync the A/V output on thread start.
+        private bool audioStarted;
         #endregion
         
         #region Private Member Data: TheoraPlay
@@ -466,6 +469,7 @@ namespace Microsoft.Xna.Framework.Media
             // Initialize private members.
             timer = new Stopwatch();
             frameLocked = false;
+            audioStarted = false;
             
             // Initialize this here to prevent null GetTexture returns.
             videoTexture = new Texture2D(
@@ -684,6 +688,10 @@ namespace Microsoft.Xna.Framework.Media
                 currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
                 audioDecoderThread.Start();
             }
+            else
+            {
+                audioStarted = true; // Welp.
+            }
             
             // Grab the first bit of video, set up the texture.
             if (TheoraPlay.THEORAPLAY_hasVideoStream(Video.theoraDecoder) != 0)
@@ -818,7 +826,7 @@ namespace Microsoft.Xna.Framework.Media
                     System.Console.WriteLine(
                         "Reached end of Audio stream, or took " +
                         ohScrewIt.ElapsedMilliseconds +
-                        "ms"
+                        "ms. Audio stopping."
                     );
                     break;
                 }
@@ -866,6 +874,9 @@ namespace Microsoft.Xna.Framework.Media
             }
             AL.SourceQueueBuffers(audioSourceIndex, NUM_BUFFERS, buffers);
             
+            // We now have some audio to start with. Go!
+            audioStarted = true;
+            
             while (State != MediaState.Stopped)
             {
                 // When a buffer has been processed, refill it.
@@ -889,12 +900,18 @@ namespace Microsoft.Xna.Framework.Media
             }
             AL.DeleteSource(audioSourceIndex);
             AL.DeleteBuffers(buffers);
+            
+            // Audio is done.
+            audioStarted = false;
         }
         #endregion
         
         #region The Theora video player thread
         private void RunVideo()
         {
+            // FIXME: Maybe use an actual thread synchronization technique.
+            while (!audioStarted && State != MediaState.Stopped);
+            
             while (State != MediaState.Stopped)
             {
                 // Someone needs to look at their memory management...
