@@ -155,6 +155,7 @@ namespace Microsoft.Xna.Framework.Audio
 							
 							XactSound sound = new XactSound(this, soundbankreader, soundOffset);
 							cue = new Cue(audioengine, cueNames[numSimpleCues+i], sound);
+							AudioEngine.Categories[sound.category].AddSound(cue);
 						} else {
 							uint variationTableOffset = soundbankreader.ReadUInt32 ();
 							uint transitionTableOffset = soundbankreader.ReadUInt32 ();
@@ -209,6 +210,7 @@ namespace Microsoft.Xna.Framework.Audio
 							soundbankstream.Seek (savepos, SeekOrigin.Begin);
 							
 							cue = new Cue(audioengine, cueNames[numSimpleCues+i], cueSounds, probs);
+							AudioEngine.Categories[cueSounds[0].category].AddSound(cue); // FIXME: 0 is an assumption.
 						}
 						
 						//Instance Limit
