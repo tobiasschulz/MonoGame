@@ -90,7 +90,21 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public static bool operator !=(DisplayMode left, DisplayMode right)
         {
-            return !(left == right);
+            // If we don't do this cast to (object), we'll get a stack overflow.
+            object leftObj = (object) left;
+            object rightObj = (object) right;
+            if (leftObj == null && rightObj == null)
+            {
+                return false;
+            }
+            if (leftObj == null || rightObj == null)
+            {
+                return true;
+            }
+            return !((left.format == right.format) &&
+                (left.height == right.height) &&
+                (left.refreshRate == right.refreshRate) &&
+                (left.width == right.width));
         }
 
         public static bool operator ==(DisplayMode left, DisplayMode right)
