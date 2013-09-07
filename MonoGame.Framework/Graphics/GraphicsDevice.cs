@@ -363,6 +363,9 @@ namespace Microsoft.Xna.Framework.Graphics
             GetGLExtensions();
 #endif // OPENGL
 
+            // Actually we don't need that many... limit to 4!
+            MaxTextureSlots = 4;
+
             Textures = new TextureCollection (MaxTextureSlots);
 			SamplerStates = new SamplerStateCollection (MaxTextureSlots);
 
