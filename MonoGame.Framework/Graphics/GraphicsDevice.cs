@@ -139,6 +139,8 @@ namespace Microsoft.Xna.Framework.Graphics
         private Shader _pixelShader;
         private bool _pixelShaderDirty;
 
+        public bool InError { get; private set; }
+
 #if OPENGL
         static List<Action> disposeActions = new List<Action>();
         static object disposeActionsLock = new object();
@@ -409,13 +411,8 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (!_extensions.Contains("GL_EXT_framebuffer_object"))
                 {
-                    MessageBox.Show(
-                        "An essential rendering feature is unsupported in your current drivers." +
-                        "\nTry updating your drivers to the latest version." +
-                        "\n\nIf you are using the latest available drivers, your video card might not be able to run FEZ.",
-                        "FEZ - Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                    throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
+                    GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
+                    InError = true;
                 }
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "GL_ARB_framebuffer_object not supported : will use GL_EXT_framebuffer_object instead.");
             }
