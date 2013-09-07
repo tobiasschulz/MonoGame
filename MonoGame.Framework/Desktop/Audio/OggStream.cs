@@ -365,13 +365,15 @@ namespace Microsoft.Xna.Framework.Audio
 
     public class OggStreamer : IDisposable
     {
-        const float DefaultUpdateRate = 60;
+        const float DefaultUpdateRate = 30;
         const int DefaultBufferSize = 22050;
 
         static readonly ReaderWriterLockSlim singletonLock = new ReaderWriterLockSlim();
         static readonly ReaderWriterLockSlim iterationLock = new ReaderWriterLockSlim();
 
         public static readonly ReaderWriterLockSlim decodeLock = new ReaderWriterLockSlim();
+
+        static readonly ManualResetEventSlim newStreamNotifier = new ManualResetEventSlim();
 
         readonly float[] readSampleBuffer;
         readonly short[] castBuffer;
@@ -452,6 +454,8 @@ namespace Microsoft.Xna.Framework.Audio
 
             Instance = null;
             singletonLock.ExitWriteLock();
+
+            newStreamNotifier.Set();
         }
 
         public float LowPassHFGain
@@ -497,6 +501,8 @@ namespace Microsoft.Xna.Framework.Audio
 
             iterationLock.EnterWriteLock();
             bool added = streams.Add(stream);
+            if (added)
+                newStreamNotifier.Set();
             iterationLock.ExitWriteLock();
 
             //if (added)
@@ -548,7 +554,6 @@ namespace Microsoft.Xna.Framework.Audio
         {
             while (!cancelled)
             {
-                //Thread.Sleep((int)(1000 / UpdateRate));
                 if (cancelled) break;
 
                 threadLocalStreams.Clear();
@@ -556,7 +561,12 @@ namespace Microsoft.Xna.Framework.Audio
                 threadLocalStreams.AddRange(streams);
                 iterationLock.ExitReadLock();
 
-                if (threadLocalStreams.Count == 0) continue;
+                if (threadLocalStreams.Count == 0)
+                {
+                    newStreamNotifier.Wait();
+                    newStreamNotifier.Reset();
+                    continue;
+                }
 
                 // look through buffers to know what the heck we should be doing
                 int lowestPlayingBufferCount = int.MaxValue;
@@ -589,6 +599,8 @@ namespace Microsoft.Xna.Framework.Audio
 
                 //if (lowestPlayingBufferCount < 5)
                 //    Console.WriteLine("lpbc : " + lowestPlayingBufferCount);
+
+                bool allIdle = true;
 
                 foreach (var stream in threadLocalStreams)
                 {
@@ -633,6 +645,7 @@ namespace Microsoft.Xna.Framework.Audio
                         else
                             buffer = stream.bufferStack.Pop();
 
+                        allIdle = false;
                         bool finished = FillBuffer(stream, buffer);
                         if (finished)
                         {
@@ -693,6 +706,9 @@ namespace Microsoft.Xna.Framework.Audio
                     }
                     stream.StoppingLock.ExitReadLock();
                 }
+
+                if (allIdle)
+                    Thread.Sleep((int) (1000 / UpdateRate));
             }
         }
     }
