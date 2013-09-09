@@ -977,6 +977,8 @@ namespace Microsoft.Xna.Framework.Graphics
                             SharpDX.DXGI.Format.B8G8R8A8_UNorm :
                             SharpDXHelper.ToFormat(PresentationParameters.BackBufferFormat);
 
+            int vSyncFrameLatency = PresentationParameters.PresentationInterval.GetFrameLatency();
+
             // If the swap chain already exists... update it.
             if (_swapChain != null)
             {
@@ -985,6 +987,17 @@ namespace Microsoft.Xna.Framework.Graphics
                                             PresentationParameters.BackBufferHeight,
                                             format,
                                             SwapChainFlags.None);
+
+                // Update Vsync setting.
+                using (var dxgiDevice = _d3dDevice.QueryInterface<SharpDX.DXGI.Device1>())
+                {
+                    // If VSync is disabled, Ensure that DXGI does not queue more than one frame at a time. This 
+                    // both reduces latency and ensures that the application will only render 
+                    // after each VSync, minimizing power consumption.
+                    // Setting latency to 0 (PresentInterval.Immediate) will result in the hardware default.
+                    // (normally 3) 
+                    dxgiDevice.MaximumFrameLatency = vSyncFrameLatency;
+                }
             }
 
             // Otherwise, create a new swap chain.
@@ -1019,10 +1032,12 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     _swapChain = new SwapChain(dxgiFactory, dxgiDevice, desc);
 
-                    // Ensure that DXGI does not queue more than one frame at a time. This 
+                    // If VSync is disabled, Ensure that DXGI does not queue more than one frame at a time. This 
                     // both reduces latency and ensures that the application will only render 
                     // after each VSync, minimizing power consumption.
-                    dxgiDevice.MaximumFrameLatency = 1;
+                    // Setting latency to 0 (PresentInterval.Immediate) will result in the hardware default.
+                    // (normally 3) 
+                    dxgiDevice.MaximumFrameLatency = vSyncFrameLatency;
                 }
             }
 
@@ -1403,11 +1418,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
             try
             {
-                // The first argument instructs DXGI to block until VSync, putting the application
-                // to sleep until the next VSync. This ensures we don't waste any cycles rendering
-                // frames that will never be displayed to the screen.
+                var syncInterval = PresentationParameters.PresentationInterval.GetFrameLatency();
+
+                // The first argument instructs DXGI to block n VSyncs before presenting.
                 lock (_d3dContext)
-                    _swapChain.Present(1, PresentFlags.None);
+                    _swapChain.Present(syncInterval, PresentFlags.None);
             }
             catch (SharpDX.SharpDXException)
             {
