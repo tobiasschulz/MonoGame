@@ -899,5 +899,14 @@ namespace Microsoft.Xna.Framework
         }
   
         #endregion
+
+        #region FEZ Stuff
+
+        public override void ForceRefreshKeys()
+        {
+            keys.Clear();
+        }
+
+        #endregion
     }
 }
