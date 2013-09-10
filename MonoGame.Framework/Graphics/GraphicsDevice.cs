@@ -140,6 +140,8 @@ namespace Microsoft.Xna.Framework.Graphics
         private Shader _pixelShader;
         private bool _pixelShaderDirty;
 
+        public bool InError { get; private set; }
+
 #if OPENGL
         static List<Action> disposeActions = new List<Action>();
         static object disposeActionsLock = new object();
@@ -362,6 +364,9 @@ namespace Microsoft.Xna.Framework.Graphics
             GetGLExtensions();
 #endif // OPENGL
 
+            // Actually we don't need that many... limit to 4!
+            MaxTextureSlots = 4;
+
             Textures = new TextureCollection (MaxTextureSlots);
 			SamplerStates = new SamplerStateCollection (MaxTextureSlots);
 
@@ -427,7 +432,8 @@ namespace Microsoft.Xna.Framework.Graphics
                         "FEZ - Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 #endif
 
-                    throw new InvalidOperationException("Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
+                    GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "Framebuffer objects are not supported by the current OpenGL driver, please update your drivers and try again!");
+                    InError = true;
                 }
                 GraphicsExtensions.LogToFile(GraphicsExtensions.LogSeverity.Warning, "GL_ARB_framebuffer_object not supported : will use GL_EXT_framebuffer_object instead.");
             }

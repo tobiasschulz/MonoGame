@@ -205,5 +205,9 @@ namespace Microsoft.Xna.Framework {
             return window;
         }
 #endif
-    }
+		
+        public virtual void ForceRefreshKeys()
+        {
+        }
+	}
 }

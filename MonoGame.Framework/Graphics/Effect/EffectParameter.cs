@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Diagnostics;
 
@@ -522,6 +523,39 @@ namespace Microsoft.Xna.Framework.Graphics
 
             StateKey = unchecked(NextStateKey++);
         }
+        public void SetValue(Matrix[] value, int length)
+        {
+            var arrayData = Data as float[];
+            if (arrayData == null || arrayData.Length < length * 16)
+                Data = arrayData = new float[length * 16];
+
+            for (int i = 0; i < length; i++)
+            {
+                var m = value[i];
+
+                arrayData[i * 16] = m.M11;
+                arrayData[i * 16 + 1] = m.M21;
+                arrayData[i * 16 + 2] = m.M31;
+                arrayData[i * 16 + 3] = m.M41;
+
+                arrayData[i * 16 + 4] = m.M12;
+                arrayData[i * 16 + 5] = m.M22;
+                arrayData[i * 16 + 6] = m.M32;
+                arrayData[i * 16 + 7] = m.M42;
+
+                arrayData[i * 16 + 8] = m.M13;
+                arrayData[i * 16 + 9] = m.M23;
+                arrayData[i * 16 + 10] = m.M33;
+                arrayData[i * 16 + 11] = m.M43;
+
+                arrayData[i * 16 + 12] = m.M14;
+                arrayData[i * 16 + 13] = m.M24;
+                arrayData[i * 16 + 14] = m.M34;
+                arrayData[i * 16 + 15] = m.M44;
+            }
+
+            StateKey = unchecked(NextStateKey++);
+        }
 
         public void SetValue(Quaternion value)
         {
@@ -648,18 +682,44 @@ namespace Microsoft.Xna.Framework.Graphics
             StateKey = unchecked(NextStateKey++);
         }
 
-        public void SetValue(Vector4[] value)
+        public unsafe void SetValue(Vector4[] value)
         {
             var arrayData = Data as float[];
             if (arrayData == null || arrayData.Length < value.Length * 4)
                 Data = arrayData = new float[value.Length * 4];
 
-            for (int i = 0; i < value.Length; i++)
+            fixed (Vector4* pValue = value)
+            fixed (float* pData = arrayData)
             {
-                arrayData[i * 4] = value[i].X;
-                arrayData[i * 4 + 1] = value[i].Y;
-                arrayData[i * 4 + 2] = value[i].Z;
-                arrayData[i * 4 + 3] = value[i].W;
+                var pValueAsFloat = (float*)pValue;
+                var dataIt = pData;
+
+                for (int i = 0; i < value.Length * 4; i++)
+                {
+                    *dataIt = *pValueAsFloat;
+                    pValueAsFloat++; dataIt++;
+                }
+            }
+
+            StateKey = unchecked(NextStateKey++);
+        }
+        public unsafe void SetValue(Vector4[] value, int length)
+        {
+            var arrayData = Data as float[];
+            if (arrayData == null || arrayData.Length < length * 4)
+                Data = arrayData = new float[length * 4];
+
+            fixed (Vector4* pValue = value)
+            fixed (float* pData = arrayData)
+            {
+                var pValueAsFloat = (float*)pValue;
+                var dataIt = pData;
+
+                for (int i = 0; i < length * 4; i++)
+                {
+                    *dataIt = *pValueAsFloat;
+                    pValueAsFloat++; dataIt++;
+                }
             }
 
             StateKey = unchecked(NextStateKey++);

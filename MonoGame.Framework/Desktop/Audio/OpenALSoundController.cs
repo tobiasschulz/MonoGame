@@ -317,10 +317,17 @@ namespace Microsoft.Xna.Framework.Audio
 
         public int[] TakeBuffers(int count)
         {
+            if (count == 0)
+                throw new ArgumentException("Attempting to take 0 OpenAL buffers -- why?");
+
             var buffersIds = new int[count];
             int popped = 0;
-            while ((popped += freeBuffers.TryPopRange(buffersIds, popped, count - popped)) < count)
-                ExpandBuffers();
+            while (popped < count)
+            {
+                while (!freeBuffers.TryPop(out buffersIds[popped]))
+                    ExpandBuffers();
+                popped++;
+            }
 
             return buffersIds;
         }
