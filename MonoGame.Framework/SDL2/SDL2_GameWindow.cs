@@ -656,7 +656,7 @@ namespace Microsoft.Xna.Framework
                 600,
                 0,
                 PixelFormat.Rgba,
-                PixelType.UnsignedInt,
+                PixelType.UnsignedByte,
                 IntPtr.Zero
             );
             GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
@@ -784,7 +784,7 @@ namespace Microsoft.Xna.Framework
                 clientHeight,
                 0,
                 PixelFormat.Rgba,
-                PixelType.UnsignedInt,
+                PixelType.UnsignedByte,
                 IntPtr.Zero
             );
             
