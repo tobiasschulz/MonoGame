@@ -786,7 +786,7 @@ namespace Microsoft.Xna.Framework.Media
         private bool StreamAudio(int buffer)
         {
             // The size of our abstracted buffer.
-            const int BUFFER_SIZE = 4096 * 16;
+            const int BUFFER_SIZE = 4096 * 2;
             
             // Store our abstracted buffer into here.
             List<float> data = new List<float>();
@@ -810,8 +810,6 @@ namespace Microsoft.Xna.Framework.Media
                 // We've copied the audio, so free this.
                 TheoraPlay.THEORAPLAY_freeAudio(Video.audioStream);
                 
-                Stopwatch ohScrewIt = new Stopwatch();
-                ohScrewIt.Start();
                 do
                 {
                     Video.audioStream = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
@@ -820,16 +818,7 @@ namespace Microsoft.Xna.Framework.Media
                         // Screw it, just bail out ASAP.
                         return false;
                     }
-                } while (Video.audioStream == IntPtr.Zero && ohScrewIt.ElapsedMilliseconds < 100);
-                if (Video.audioStream == IntPtr.Zero)
-                {
-                    System.Console.WriteLine(
-                        "Reached end of Audio stream, or took " +
-                        ohScrewIt.ElapsedMilliseconds +
-                        "ms. Audio stopping."
-                    );
-                    break;
-                }
+                } while (Video.audioStream == IntPtr.Zero);
                 currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
                 
                 if ((BUFFER_SIZE - data.Count) < 4096)
