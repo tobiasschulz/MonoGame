@@ -257,15 +257,23 @@ namespace Microsoft.Xna.Framework
             {
                 if (value)
                 {
-                    if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
+                    if (Environment.OSVersion.Platform == PlatformID.MacOSX || System.IO.Directory.Exists("/Users/"))
                     {
-                        GraphicsExtensions.LogToFile("Using EXT_swap_control_tear VSync!");
+                        // Apple is a big fat liar about swap_control_tear. Use stock VSync.
+                        SDL.SDL_GL_SetSwapInterval(1);
                     }
                     else
                     {
-                        GraphicsExtensions.LogToFile("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
-                        SDL.SDL_ClearError();
-                        SDL.SDL_GL_SetSwapInterval(1);
+                        if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
+                        {
+                            GraphicsExtensions.LogToFile("Using EXT_swap_control_tear VSync!");
+                        }
+                        else
+                        {
+                            GraphicsExtensions.LogToFile("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
+                            SDL.SDL_ClearError();
+                            SDL.SDL_GL_SetSwapInterval(1);
+                        }
                     }
                 }
                 else
