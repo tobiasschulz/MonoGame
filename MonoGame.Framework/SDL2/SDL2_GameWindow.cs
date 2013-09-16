@@ -872,7 +872,7 @@ namespace Microsoft.Xna.Framework
                     FramebufferTarget.Framebuffer,
                     Game.GraphicsDevice.IsRenderTargetBound ?
                         Game.GraphicsDevice.glRenderTargetFrameBuffer :
-                        (uint) Game.GraphicsDevice.glFramebuffer
+                        Game.GraphicsDevice.glFramebuffer
                 );
                 
                 INTERNAL_depthFormat = backbufferFormat;
