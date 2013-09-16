@@ -851,9 +851,6 @@ namespace Microsoft.Xna.Framework
                     attach = FramebufferAttachment.DepthAttachment;
                 }
                 
-                int oldFramebuffer;
-                GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
-             
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
                 
                 GL.FramebufferTexture2D(
@@ -871,7 +868,12 @@ namespace Microsoft.Xna.Framework
                     0
                 );
              
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
+                GL.BindFramebuffer(
+                    FramebufferTarget.Framebuffer,
+                    Game.GraphicsDevice.IsRenderTargetBound ?
+                        Game.GraphicsDevice.glRenderTargetFrameBuffer :
+                        (uint) Game.GraphicsDevice.glFramebuffer
+                );
                 
                 INTERNAL_depthFormat = backbufferFormat;
             }
