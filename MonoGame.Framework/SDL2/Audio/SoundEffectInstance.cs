@@ -305,7 +305,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Volume
 			AL.Source (sourceId, ALSourcef.Gain, _volume * SoundEffect.MasterVolume);
 			// Looping
-			AL.Source (sourceId, ALSourceb.Looping, IsLooped);
+			IsLooped = IsLooped; // This looks stupid, I know. But trust me. -flibit
 			// Pitch
 			AL.Source (sourceId, ALSourcef.Pitch, XnaPitchToAlPitch(_pitch));
 		}
@@ -387,14 +387,17 @@ namespace Microsoft.Xna.Framework.Audio
 			Stop ();
 		}
         
+        private int prevOffset = 0;
         internal void checkLoop()
         {
             int offset;
             AL.GetSource(soundBuffer.SourceId, ALGetSourcei.SampleOffset, out offset);
-            if (offset >= loopEnd)
+            if (offset >= loopEnd || offset < prevOffset)
             {
+                // Either we're past the loop end, or OpenAL brought us back to the start.
                 AL.Source(soundBuffer.SourceId, ALSourcei.SampleOffset, loopStart);
             }
+            prevOffset = offset; // FIXME: Possibly get sample offset instead?
         }
 
         /// <summary>
