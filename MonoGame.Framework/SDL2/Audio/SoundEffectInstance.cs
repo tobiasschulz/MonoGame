@@ -72,6 +72,9 @@ namespace Microsoft.Xna.Framework.Audio
 		private bool _looped = false;
 		private float _pan = 0f;
 		private float _pitch = 0f;
+        
+		private int loopStart;
+		private int loopEnd;
 
 		bool hasSourceId = false;
 		int sourceId;
@@ -110,6 +113,8 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			InitializeSound ();
             BindDataBuffer(parent._data, parent.Format, parent.Size, (int)parent.Rate);
+            loopStart = parent.loopStart;
+            loopEnd = parent.loopEnd;
 		}
 
         /// <summary>
@@ -178,6 +183,10 @@ namespace Microsoft.Xna.Framework.Audio
                 soundBuffer.Recycled -= HandleSoundBufferRecycled;
                 soundBuffer.Dispose();
                 soundBuffer = null;
+                if (controller.loopingInstances.Contains(this))
+                {
+                    controller.loopingInstances.Remove(this);
+                }
                 isDisposed = true;
             }
 		}
@@ -375,6 +384,16 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			Stop ();
 		}
+        
+        internal void checkLoop()
+        {
+            int offset;
+            AL.GetSource(soundBuffer.SourceId, ALGetSourcei.SampleOffset, out offset);
+            if (offset >= loopEnd)
+            {
+                AL.Source(soundBuffer.SourceId, ALSourcei.ByteOffset, loopStart);
+            }
+        }
 
         /// <summary>
         /// returns true if this object has been disposed.
@@ -396,6 +415,14 @@ namespace Microsoft.Xna.Framework.Audio
 
 			set {
 				_looped = value;
+				if (_looped && !controller.loopingInstances.Contains(this))
+				{
+					controller.loopingInstances.Add(this);
+				}
+				else if (!_looped && controller.loopingInstances.Contains(this))
+				{
+					controller.loopingInstances.Remove(this);
+				}
 				if (hasSourceId) {
 					// Looping
 					AL.Source (sourceId, ALSourceb.Looping, _looped);

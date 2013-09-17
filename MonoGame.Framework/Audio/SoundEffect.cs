@@ -101,6 +101,9 @@ namespace Microsoft.Xna.Framework.Audio
             get;
             set;
         }
+
+        internal int loopStart;
+        internal int loopEnd;
 #else
         private Sound _sound;
         private SoundEffectInstance _instance;
@@ -189,6 +192,21 @@ namespace Microsoft.Xna.Framework.Audio
             _sound = new Sound(_data, 1.0f, false);
 #endif
         }
+        
+        internal SoundEffect(string Name, byte[] buffer, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
+        {
+#if SDL2
+            _name = Name;
+            _data = buffer;
+            Size = buffer.Length;
+            Format = (channels == AudioChannels.Stereo) ? ALFormat.Stereo16 : ALFormat.Mono16;
+            Rate = sampleRate;
+            this.loopStart = loopStart;
+            this.loopEnd = loopStart + loopLength;
+#else
+            throw new NotImplementedException();
+#endif
+        }
 
         internal SoundEffect(string name, byte[] buffer, int sampleRate, AudioChannels channels)
             : this(buffer, sampleRate, channels)
@@ -209,6 +227,8 @@ namespace Microsoft.Xna.Framework.Audio
             Size = buffer.Length;
             Format = (channels == AudioChannels.Stereo) ? ALFormat.Stereo16 : ALFormat.Mono16;
             Rate = sampleRate;
+            loopStart = 0;
+            loopEnd = Size;
 #else
             //buffer should contain 16-bit PCM wave data
             short bitsPerSample = 16;

@@ -145,7 +145,9 @@ namespace Microsoft.Xna.Framework.Content
                 input.AssetName,
                 data,
                 sampleRate,
-                (header[2] == 2) ? AudioChannels.Stereo : AudioChannels.Mono
+                (header[2] == 2) ? AudioChannels.Stereo : AudioChannels.Mono,
+                loopStart,
+                loopLength
             );
 #endif
 		}

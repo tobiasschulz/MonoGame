@@ -26,6 +26,7 @@ namespace Microsoft.Xna.Framework.Audio
         private List<OALSoundBuffer> purgeMe;
         private bool _bSoundAvailable = false;
         private Exception _SoundInitException; // Here to bubble back up to the developer
+        internal List<SoundEffectInstance> loopingInstances;
 
         /// <summary>
         /// Sets up the hardware resources used by the controller.
@@ -52,6 +53,8 @@ namespace Microsoft.Xna.Framework.Audio
 			for (int x=0; x < MAX_NUMBER_OF_SOURCES; x++) {
 				availableSourcesCollection.Add (allSourcesArray [x]);
 			}
+            
+			loopingInstances = new List<SoundEffectInstance>();
 		}
 
         /// <summary>
@@ -323,7 +326,11 @@ namespace Microsoft.Xna.Framework.Audio
                 AL.Source (soundBuffer.SourceId, ALSourcei.Buffer, 0);
                 RecycleSource (soundBuffer);
             }
-
+   
+            foreach (SoundEffectInstance sfi in loopingInstances)
+            {
+                sfi.checkLoop();
+            }
         }
 
 #if IOS
