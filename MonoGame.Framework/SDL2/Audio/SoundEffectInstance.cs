@@ -393,7 +393,7 @@ namespace Microsoft.Xna.Framework.Audio
             AL.GetSource(soundBuffer.SourceId, ALGetSourcei.SampleOffset, out offset);
             if (offset >= loopEnd)
             {
-                AL.Source(soundBuffer.SourceId, ALSourcei.ByteOffset, loopStart);
+                AL.Source(soundBuffer.SourceId, ALSourcei.SampleOffset, loopStart);
             }
         }
 
