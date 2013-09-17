@@ -830,6 +830,12 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 #endif
         }
+        
+        // THIS IS AN EXTENSION OF THE XNA4 API! USE AS A LAST RESORT! -flibit
+        public static Texture2D FromFile(GraphicsDevice device, string filePath)
+        {
+            throw new NotImplementedException("flibit put this here.");
+        }
 
         private void FillTextureFromStream(Stream stream)
         {
