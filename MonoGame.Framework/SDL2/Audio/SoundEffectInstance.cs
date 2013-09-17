@@ -102,6 +102,8 @@ namespace Microsoft.Xna.Framework.Audio
                 buffer.Length,
                 sampleRate
             );
+            loopStart = 0;
+            loopEnd = buffer.Length;
         }
         
         /// <summary>
