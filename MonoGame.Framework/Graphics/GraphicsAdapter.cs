@@ -135,6 +135,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         } 
 		
+        /*
 		public bool QueryRenderTargetFormat(
 			GraphicsProfile graphicsProfile,
 			SurfaceFormat format,
@@ -246,6 +247,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new NotImplementedException();
             }
         }
+        */
 
         private DisplayModeCollection supportedDisplayModes = null;
         
@@ -279,6 +281,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        /*
         public int VendorId
         {
             get
@@ -286,6 +289,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new NotImplementedException();
             }
         }
+        */
     }
 }
 

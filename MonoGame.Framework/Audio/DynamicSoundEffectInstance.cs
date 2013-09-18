@@ -42,6 +42,7 @@ namespace Microsoft.Xna.Framework.Audio
             }                       
         }
 
+        /*
         public TimeSpan GetSampleDuration(int sizeInBytes)
         {
             throw new NotImplementedException();
@@ -51,6 +52,7 @@ namespace Microsoft.Xna.Framework.Audio
         {
             throw new NotImplementedException();
         }
+        */
 
         public override void Play()
         {

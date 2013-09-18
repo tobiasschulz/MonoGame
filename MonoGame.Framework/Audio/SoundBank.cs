@@ -203,7 +203,7 @@ namespace Microsoft.Xna.Framework.Audio
 									break;
 								}
 								default:
-									throw new NotImplementedException();
+									throw new NotSupportedException();
 								}
 							}
 							

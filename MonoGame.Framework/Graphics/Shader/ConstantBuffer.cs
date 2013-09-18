@@ -192,7 +192,7 @@ namespace Microsoft.Xna.Framework.Graphics
                         }
                         break;
                     default:
-                        throw new NotImplementedException("Not supported!");
+                        throw new NotSupportedException("Not supported!");
                 }
             }
 
