@@ -184,7 +184,9 @@ namespace Microsoft.Xna.Framework.Input
             
             // Get the intended config file path.
             string osConfigFile = "";
-            if (Environment.OSVersion.Platform == PlatformID.MacOSX || Directory.Exists("/Users/"))
+            if (    Environment.OSVersion.Platform == PlatformID.MacOSX ||
+                    (   System.IO.Directory.Exists("/Users/") &&
+                        Environment.OSVersion.Platform != PlatformID.Win32NT    )   )
             {
                 osConfigFile += Environment.GetEnvironmentVariable("HOME");
                 if (osConfigFile.Length == 0)

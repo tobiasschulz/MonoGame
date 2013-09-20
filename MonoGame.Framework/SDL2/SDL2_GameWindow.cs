@@ -257,7 +257,9 @@ namespace Microsoft.Xna.Framework
             {
                 if (value)
                 {
-                    if (Environment.OSVersion.Platform == PlatformID.MacOSX || System.IO.Directory.Exists("/Users/"))
+                    if (    Environment.OSVersion.Platform == PlatformID.MacOSX ||
+                            (   System.IO.Directory.Exists("/Users/") &&
+                                Environment.OSVersion.Platform != PlatformID.Win32NT    )   )
                     {
                         // Apple is a big fat liar about swap_control_tear. Use stock VSync.
                         SDL.SDL_GL_SetSwapInterval(1);
