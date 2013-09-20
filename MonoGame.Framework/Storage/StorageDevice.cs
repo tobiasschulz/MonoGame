@@ -467,6 +467,10 @@ namespace Microsoft.Xna.Framework.Storage
 #if WINRT
                 return ApplicationData.Current.LocalFolder.Path; 
 #else
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
                 if (Environment.OSVersion.Platform == PlatformID.MacOSX || Directory.Exists("/Users/"))
                 {
                     string osConfigDir = Environment.GetEnvironmentVariable("HOME");
@@ -477,7 +481,7 @@ namespace Microsoft.Xna.Framework.Storage
                     osConfigDir += "/Library/Application Support";
                     return osConfigDir;
                 }
-                else if (Environment.OSVersion.Platform == PlatformID.Unix)
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
                 {
                     // Assuming a non-OSX Unix platform will follow the XDG. Which it should.
                     string osConfigDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
