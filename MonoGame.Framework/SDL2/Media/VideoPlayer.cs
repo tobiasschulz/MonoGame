@@ -845,7 +845,7 @@ namespace Microsoft.Xna.Framework.Media
         private void DecodeAudio()
         {
             // The number of AL buffers to queue into the source.
-            const int NUM_BUFFERS = 2;
+            const int NUM_BUFFERS = 4;
             
             // Generate the source.
             audioSourceIndex = AL.GenSource();
