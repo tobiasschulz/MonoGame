@@ -205,7 +205,7 @@ namespace Microsoft.Xna.Framework.Audio
 			this.listener = listener;
 			this.emitter = emitter;
 			positionalAudio = true;
-			if (curSound.rpcVariables.ContainsKey("Distance"))
+			if (curSound != null && curSound.rpcVariables.ContainsKey("Distance"))
 			{
 				curSound.rpcVariables["Distance"] = Vector3.Distance(emitter.Position, listener.Position);
 			}

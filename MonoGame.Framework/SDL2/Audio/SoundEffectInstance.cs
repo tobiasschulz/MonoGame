@@ -232,8 +232,8 @@ namespace Microsoft.Xna.Framework.Audio
 				velocity = Vector3.Transform(velocity, orientation);
 
 				// FIXME: This is totally arbitrary. I dunno the exact ratio here.
-				position /= 100.0f;
-				velocity /= 100.0f;
+				position /= 255.0f;
+				velocity /= 255.0f;
 				
 				// set the position based on relative positon
 				AL.Source(sourceId, ALSource3f.Position, position.X, position.Y, position.Z);
