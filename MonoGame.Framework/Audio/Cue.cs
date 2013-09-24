@@ -205,6 +205,10 @@ namespace Microsoft.Xna.Framework.Audio
 			this.listener = listener;
 			this.emitter = emitter;
 			positionalAudio = true;
+			if (curSound.rpcVariables.ContainsKey("Distance"))
+			{
+				curSound.rpcVariables["Distance"] = Vector3.Distance(emitter.Position, listener.Position);
+			}
 		}
 
 		internal void Update()
@@ -232,6 +236,15 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// The sound property we're modifying
 					AudioEngine.RpcParameter parameter = curve.parameter;
+
+					/* If this is a built-in parameter, dump it. It's not relevant here.
+					 * Currently we just look at Distance, but there are more here!
+					 * -flibit
+					 */
+					if (curSound.rpcVariables[engine.variables[curve.variable].name].Equals("Distance"))
+					{
+						continue; // IGNORE MEEEEEE
+					}
 
 					// The variable that this curve is looking at
 					float varValue = curSound.rpcVariables[engine.variables[curve.variable].name];
