@@ -169,9 +169,9 @@ namespace Microsoft.Xna.Framework.Audio
                     loopStart * 2 * channels,
                     (int) parent.Rate
                 );
-                byte[] midBuf = new byte[parent._data.Length - (loopStart * 2 * channels)];
+                byte[] midBuf = new byte[(loopEnd * 2 * channels) - (loopStart * 2 * channels)];
                 int cur = 0;
-                for (int i = loopStart * 2 * channels; i < parent._data.Length; i++)
+                for (int i = loopStart * 2 * channels; i < (loopEnd * 2 * channels); i++)
                 {
                     midBuf[cur] = parent._data[i];
                     cur++;
