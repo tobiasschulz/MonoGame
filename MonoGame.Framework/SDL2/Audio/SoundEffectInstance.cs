@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework.Audio
 	{
 		private bool isDisposed = false;
 		private SoundState soundState = SoundState.Stopped;
-		private OALSoundBuffer soundBuffer;
+		private OALSoundBuffer[] soundBuffer;
 		private OpenALSoundController controller;
 		private SoundEffect soundEffect;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Xna.Framework.Audio
         /// </summary>
         public SoundEffectInstance()
         {
-            InitializeSound();
+            InitializeSound(1);
         }
 
         ~SoundEffectInstance()
@@ -95,8 +95,8 @@ namespace Microsoft.Xna.Framework.Audio
         /* Creates a standalone SoundEffectInstance from given wavedata. */
         internal SoundEffectInstance(byte[] buffer, int sampleRate, int channels)
         {
-            InitializeSound();
-            BindDataBuffer(
+            InitializeSound(1);
+            soundBuffer[0].BindDataBuffer(
                 buffer,
                 (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16,
                 buffer.Length,
@@ -113,38 +113,104 @@ namespace Microsoft.Xna.Framework.Audio
         /// <param name="parent"></param>
 		public SoundEffectInstance (SoundEffect parent)
 		{
-			InitializeSound ();
-            BindDataBuffer(parent._data, parent.Format, parent.Size, (int)parent.Rate);
             loopStart = parent.loopStart;
             loopEnd = parent.loopEnd;
+            int channels = (parent.Format == ALFormat.Stereo16) ? 2 : 1;
+            int numBuffers = 1;
+            if (parent.loopStart > 0)
+            {
+                numBuffers++;
+            }
+            if (parent.loopEnd < (parent._data.Length / 2 / channels))
+            {
+                numBuffers++;
+            }
+			InitializeSound(numBuffers);
+            if (numBuffers == 3)
+            {
+                soundBuffer[0].BindDataBuffer(
+                    parent._data,
+                    parent.Format,
+                    loopStart * 2 * channels,
+                    (int) parent.Rate
+                );
+                byte[] midBuf = new byte[(loopEnd * 2 * channels) - (loopStart * 2 * channels)];
+                int cur = 0;
+                for (int i = (loopStart * 2 * channels); i < loopEnd * 2 * channels; i++)
+                {
+                    midBuf[cur] = parent._data[i];
+                    cur++;
+                }
+                soundBuffer[1].BindDataBuffer(
+                    midBuf,
+                    parent.Format,
+                    midBuf.Length,
+                    (int) parent.Rate
+                );
+                midBuf = new byte[parent._data.Length - (loopEnd * 2 * channels)];
+                cur = 0;
+                for (int i = (loopEnd * 2 * channels); i < parent._data.Length; i++)
+                {
+                    midBuf[cur] = parent._data[i];
+                    cur++;
+                }
+                soundBuffer[2].BindDataBuffer(
+                    midBuf,
+                    parent.Format,
+                    midBuf.Length,
+                    (int) parent.Rate
+                );
+            }
+            else if (numBuffers == 2)
+            {
+                soundBuffer[0].BindDataBuffer(
+                    parent._data,
+                    parent.Format,
+                    loopStart * 2 * channels,
+                    (int) parent.Rate
+                );
+                byte[] midBuf = new byte[parent._data.Length - (loopStart * 2 * channels)];
+                int cur = 0;
+                for (int i = loopStart * 2 * channels; i < parent._data.Length; i++)
+                {
+                    midBuf[cur] = parent._data[i];
+                    cur++;
+                }
+                soundBuffer[1].BindDataBuffer(
+                    midBuf,
+                    parent.Format,
+                    midBuf.Length,
+                    (int) parent.Rate
+                );
+            }
+            else
+            {
+                soundBuffer[0].BindDataBuffer(
+                    parent._data,
+                    parent.Format,
+                    parent._data.Length,
+                    (int) parent.Rate
+                );
+            }
 		}
 
         /// <summary>
         /// Gets the OpenAL sound controller, constructs the sound buffer, and sets up the event delegates for
         /// the reserved and recycled events.
         /// </summary>
-		private void InitializeSound ()
+		private void InitializeSound(int numBuffers)
 		{
 			controller = OpenALSoundController.GetInstance;
-			soundBuffer = new OALSoundBuffer ();			
-			soundBuffer.Reserved += HandleSoundBufferReserved;
-			soundBuffer.Recycled += HandleSoundBufferRecycled;                        
+			soundBuffer = new OALSoundBuffer[numBuffers];
+            for (int i = 0; i < numBuffers; i++)
+            {
+                soundBuffer[i] = new OALSoundBuffer();
+                soundBuffer[i].Reserved += HandleSoundBufferReserved;
+                soundBuffer[i].Recycled += HandleSoundBufferRecycled;
+            }
 
 			positionalAudio = false;
 		}
-
-        /// <summary>
-        /// Preserves the given data buffer by reference and binds its contents to the OALSoundBuffer
-        /// that is created in the InitializeSound method.
-        /// </summary>
-        /// <param name="data">The sound data buffer</param>
-        /// <param name="format">The sound buffer data format, e.g. Mono, Mono16 bit, Stereo, etc.</param>
-        /// <param name="size">The size of the data buffer</param>
-        /// <param name="rate">The sampling rate of the sound effect, e.g. 44 khz, 22 khz.</param>
-        protected void BindDataBuffer(byte[] data, ALFormat format, int size, int rate)
-        {
-            soundBuffer.BindDataBuffer(data, format, size, rate);
-        }
 
         /// <summary>
         /// Event handler that resets internal state of this instance. The sound state will report
@@ -168,7 +234,7 @@ namespace Microsoft.Xna.Framework.Audio
         /// <param name="e"></param>
 		private void HandleSoundBufferReserved (object sender, EventArgs e)
 		{
-			sourceId = soundBuffer.SourceId;
+			sourceId = soundBuffer[0].SourceId;
 			hasSourceId = true;
 		}
 
@@ -181,10 +247,13 @@ namespace Microsoft.Xna.Framework.Audio
             if (!isDisposed)
             {
                 this.Stop(true);
-                soundBuffer.Reserved -= HandleSoundBufferReserved;
-                soundBuffer.Recycled -= HandleSoundBufferRecycled;
-                soundBuffer.Dispose();
-                soundBuffer = null;
+                for (int i = 0; i < soundBuffer.Length; i++)
+                {
+                    soundBuffer[i].Reserved -= HandleSoundBufferReserved;
+                    soundBuffer[i].Recycled -= HandleSoundBufferRecycled;
+                    soundBuffer[i].Dispose();
+                    soundBuffer[i] = null;
+                }
                 if (controller.loopingInstances.Contains(this))
                 {
                     controller.loopingInstances.Remove(this);
@@ -252,7 +321,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			if (hasSourceId && soundState == SoundState.Playing)
             {
-				controller.PauseSound (soundBuffer);
+				controller.PauseSound(soundBuffer[0]);
 				soundState = SoundState.Paused;
 			}
 		}
@@ -321,19 +390,37 @@ namespace Microsoft.Xna.Framework.Audio
 			if (hasSourceId) {
 				return;
 			}
-			bool isSourceAvailable = controller.ReserveSource (soundBuffer);
+			bool isSourceAvailable = controller.ReserveSource(soundBuffer[0]);
 			if (!isSourceAvailable)
 			{
 				System.Console.WriteLine("WARNING: AL SOURCE WAS NOT AVAILABLE. SKIPPING.");
 				return;
 				//throw new InstancePlayLimitException();
 			}
+   
+            if (soundBuffer.Length > 1)
+            {
+                for (int i = 0; i < soundBuffer.Length; i++)
+                {
+                    if (IsLooped && i == 2)
+                    {
+                        break; // FIXME: God help you if you Loop during playback.
+                    }
+                    AL.SourceQueueBuffer(
+                        soundBuffer[0].SourceId,
+                        soundBuffer[i].OpenALDataBuffer
+                    );
+                }
+                triggeredDequeue = false;
+            }
+            else
+            {
+                int bufferId = soundBuffer[0].OpenALDataBuffer;
+                AL.Source(soundBuffer[0].SourceId, ALSourcei.Buffer, bufferId);
+            }
+			ApplyState();
 
-            int bufferId = soundBuffer.OpenALDataBuffer;
-            AL.Source(soundBuffer.SourceId, ALSourcei.Buffer, bufferId);
-			ApplyState ();
-
-			controller.PlaySound (soundBuffer);            
+			controller.PlaySound(soundBuffer[0]);            
 			//Console.WriteLine ("playing: " + sourceId + " : " + soundEffect.Name);
 			soundState = SoundState.Playing;
 		}
@@ -350,7 +437,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (soundState == SoundState.Paused)
                 {
-                    controller.ResumeSound(soundBuffer);
+                    controller.ResumeSound(soundBuffer[0]);
                     soundState = SoundState.Playing;
                 }
             }
@@ -373,7 +460,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			if (hasSourceId) {
 				//Console.WriteLine ("stop " + sourceId + " : " + soundEffect.Name);
-				controller.StopSound (soundBuffer);
+				controller.StopSound(soundBuffer[0]);
 			}
 			soundState = SoundState.Stopped;
 		}
@@ -387,17 +474,17 @@ namespace Microsoft.Xna.Framework.Audio
 			Stop ();
 		}
         
-        private int prevOffset = 0;
+        bool triggeredDequeue = false;
         internal void checkLoop()
         {
-            int offset;
-            AL.GetSource(soundBuffer.SourceId, ALGetSourcei.SampleOffset, out offset);
-            if (offset >= loopEnd || offset < prevOffset)
+            int processed;
+            AL.GetSource(soundBuffer[0].SourceId, ALGetSourcei.BuffersProcessed, out processed);
+            if (!triggeredDequeue && processed > 0)
             {
-                // Either we're past the loop end, or OpenAL brought us back to the start.
-                AL.Source(soundBuffer.SourceId, ALSourcei.SampleOffset, loopStart);
+                AL.SourceUnqueueBuffer(soundBuffer[0].SourceId);
+                triggeredDequeue = true;
+                AL.Source(soundBuffer[0].SourceId, ALSourceb.Looping, true);
             }
-            prevOffset = offset; // FIXME: Possibly get sample offset instead?
         }
 
         /// <summary>
@@ -430,7 +517,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				if (hasSourceId) {
 					// Looping
-					AL.Source (sourceId, ALSourceb.Looping, _looped);
+					AL.Source (sourceId, ALSourceb.Looping, _looped && soundBuffer.Length == 1);
 				}
 			}
 		}
