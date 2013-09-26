@@ -195,6 +195,15 @@ namespace Microsoft.Xna.Framework.Audio
 									cueSounds[j] = new XactSound(this, soundbankreader, soundOffset);
 									break;
 								}
+								case 3:
+								{
+									uint soundOffset = soundbankreader.ReadUInt32();
+									float weightMin = soundbankreader.ReadInt32(); // FIXME: Should be float! -flibit
+									float weightMax = soundbankreader.ReadInt32(); // FIXME: Should be float! -flibit
+									uint idunnolol = soundbankreader.ReadUInt32();
+									cueSounds[j] = new XactSound(this, soundbankreader, soundOffset);
+									break;
+								}
 								case 4: //CompactWave
 								{
 									uint trackIndex = soundbankreader.ReadUInt16 ();
