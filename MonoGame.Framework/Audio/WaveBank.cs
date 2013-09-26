@@ -437,6 +437,12 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			throw new NotImplementedException ();
 		}
+
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
 		#endregion
     }
 }
