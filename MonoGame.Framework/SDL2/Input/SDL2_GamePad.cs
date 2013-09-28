@@ -199,7 +199,17 @@ namespace Microsoft.Xna.Framework.Input
             }
 
             // Add the index, better known as the instance ID, to the dictionary.
-            INTERNAL_instanceList.Add(SDL.SDL_JoystickInstanceID(thisJoystick), which);
+            int instance = SDL.SDL_JoystickInstanceID(thisJoystick);
+            if (INTERNAL_instanceList.ContainsKey(instance))
+            {
+                /* Some platforms (read: Windows) will try to open a joystick
+                 * multiple times. Fortunately, SDL2 covers this, but we need
+                 * our own set of checks to prevent duplicate entries.
+                 * -flibit
+                 */
+                return;
+            }
+            INTERNAL_instanceList.Add(instance, which);
 
             // Initialize the haptics for each joystick.
             if (SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
