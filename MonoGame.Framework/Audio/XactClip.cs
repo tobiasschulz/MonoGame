@@ -37,6 +37,12 @@ namespace Microsoft.Xna.Framework.Audio
 						i--;
 					}
 				}
+				if (instancePool.Count == 0)
+				{
+					// We're out of sounds, so we've stopped.
+					INTERNAL_playing = false;
+					INTERNAL_paused = false;
+				}
 			}
 			public override void Play() {
 				SoundEffectInstance newInstance = wave.CreateInstance();
@@ -44,6 +50,8 @@ namespace Microsoft.Xna.Framework.Audio
 				newInstance.IsLooped = IsLooped;
 				newInstance.Play();
 				instancePool.Add(newInstance);
+				INTERNAL_playing = true;
+				INTERNAL_paused = false;
 			}
 			public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
 				SoundEffectInstance newInstance = wave.CreateInstance();
@@ -54,7 +62,7 @@ namespace Microsoft.Xna.Framework.Audio
 				instancePool.Add(newInstance);
 			}
 			public override void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
-				// FIXME: How the hell are you mean to update a Cue position?! -flibit
+				// FIXME: How the hell are you meant to update a Cue position?! -flibit
 				instancePool[instancePool.Count - 1].Apply3D(listener, emitter);
 			}
 			public override void Stop() {
