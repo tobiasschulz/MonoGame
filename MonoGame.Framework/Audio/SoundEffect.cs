@@ -81,27 +81,8 @@ namespace Microsoft.Xna.Framework.Audio
         internal byte[] _data;
 
 #if SDL2
-
         // OpenAL-specific information
-
-        internal int Size
-        {
-            get;
-            set;
-        }
-
-        internal float Rate
-        {
-            get;
-            set;
-        }
-
-        internal ALFormat Format
-        {
-            get;
-            set;
-        }
-
+        internal int[] buffers;
         internal int loopStart;
         internal int loopEnd;
 #else
@@ -149,7 +130,7 @@ namespace Microsoft.Xna.Framework.Audio
                 throw new Content.ContentLoadException("Could not load audio data", e);
             }
 
-            _data = LoadAudioStream(s, 1.0f, false);
+            LoadAudioStream(s, 1.0f, false);
             s.Close();
 #else
             _sound = new Sound(_filename, 1.0f, false);
@@ -172,7 +153,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 throw new Content.ContentLoadException("Could not load audio data", e);
             }
-            _data = LoadAudioStream(s, 1.0f, false);
+            LoadAudioStream(s, 1.0f, false);
             s.Close();
 #else
             _sound = new Sound(_data, 1.0f, false);
@@ -183,7 +164,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal SoundEffect(Stream s)
         {
 #if SDL2
-            _data = LoadAudioStream(s, 1.0f, false);
+            LoadAudioStream(s, 1.0f, false);
 #elif !DIRECTX
             var data = new byte[s.Length];
             s.Read(data, 0, (int)s.Length);
@@ -197,12 +178,13 @@ namespace Microsoft.Xna.Framework.Audio
         {
 #if SDL2
             _name = Name;
-            _data = buffer;
-            Size = buffer.Length;
-            Format = (channels == AudioChannels.Stereo) ? ALFormat.Stereo16 : ALFormat.Mono16;
-            Rate = sampleRate;
-            this.loopStart = loopStart;
-            this.loopEnd = loopStart + loopLength;
+            INTERNAL_bufferData(
+                buffer,
+                sampleRate,
+                (int) channels,
+                loopStart,
+                loopStart + loopLength
+            );
 #else
             throw new NotImplementedException();
 #endif
@@ -223,12 +205,13 @@ namespace Microsoft.Xna.Framework.Audio
 #if DIRECTX            
             Initialize(new WaveFormat(sampleRate, (int)channels), buffer, 0, buffer.Length, 0, buffer.Length);
 #elif SDL2
-            _data = buffer;
-            Size = buffer.Length;
-            Format = (channels == AudioChannels.Stereo) ? ALFormat.Stereo16 : ALFormat.Mono16;
-            Rate = sampleRate;
-            loopStart = 0;
-            loopEnd = Size;
+            INTERNAL_bufferData(
+                buffer,
+                sampleRate,
+                (int) channels,
+                0,
+                buffer.Length
+            );
 #else
             //buffer should contain 16-bit PCM wave data
             short bitsPerSample = 16;
@@ -370,15 +353,19 @@ namespace Microsoft.Xna.Framework.Audio
             // has been reached. However, there is no limit on PC.
             return true;
 #elif SDL2
-            if (MasterVolume > 0.0f)
+            SoundEffectInstance instance = CreateInstance();
+            instance.Volume = volume;
+            instance.Pitch = pitch;
+            instance.Pan = pan;
+            instance.Play();
+            if (instance.State != SoundState.Playing)
             {
-                SoundEffectInstance instance = CreateInstance();
-                instance.Volume = volume;
-                instance.Pitch = pitch;
-                instance.Pan = pan;
-                instance.Play();
+                // Ran out of AL sources, probably.
+                instance.Dispose();
+                return false;
             }
-            return false;
+            OpenALSoundController.GetInstance.instancePool.Add(instance);
+            return true;
 #else
             if ( MasterVolume > 0.0f )
             {
@@ -526,17 +513,16 @@ namespace Microsoft.Xna.Framework.Audio
         public void Dispose()
         {
 #if SDL2
-            // No-op. Note that isDisposed remains false!
-#else
-
-#if DIRECTX
+            if (!IsDisposed)
+            {
+                AL.DeleteBuffers(buffers);
+            }
+#elif DIRECTX
             _dataStream.Dispose();
 #else
             _sound.Dispose();
 #endif
             isDisposed = true;
-
-#endif
         }
 
         #endregion
@@ -544,19 +530,172 @@ namespace Microsoft.Xna.Framework.Audio
         #region Additional OpenTK SoundEffect Code
 
 #if SDL2
-        byte[] LoadAudioStream(Stream s, float volume, bool looping)
+        private void LoadAudioStream(Stream s, float volume, bool looping)
         {
-            ALFormat format;
-            int size;
-            int freq;
             byte[] data;
+            int sampleRate = 0;
+            int numChannels = 0;
 
-            data = AudioLoader.Load(s, out format, out size, out freq);
-
-            Format = format;
-            Size = size;
-            Rate = freq;
-            return data;
+            using (BinaryReader reader = new BinaryReader(s))
+            {
+                //header
+                string signature = new string(reader.ReadChars(4));
+                if (signature != "RIFF")
+                {
+                    throw new NotSupportedException("Specified stream is not a wave file.");
+                }
+    
+                int riff_chunk_size = reader.ReadInt32();
+    
+                string wformat = new string(reader.ReadChars(4));
+                if (wformat != "WAVE")
+                {
+                    throw new NotSupportedException("Specified stream is not a wave file.");
+                }
+    
+                // WAVE header
+                string format_signature = new string(reader.ReadChars(4));
+                while (format_signature != "fmt ") {
+                    reader.ReadBytes(reader.ReadInt32());
+                    format_signature = new string(reader.ReadChars(4));
+                }
+    
+                int format_chunk_size = reader.ReadInt32();
+    
+                // total bytes read: tbp
+                int audio_format = reader.ReadInt16(); // 2
+                numChannels = reader.ReadInt16(); // 4
+                sampleRate = reader.ReadInt32();  // 8
+                int byte_rate = reader.ReadInt32();    // 12
+                int block_align = reader.ReadInt16();  // 14
+                int bits_per_sample = reader.ReadInt16(); // 16
+    
+                if (audio_format != 1)
+                {
+                    throw new NotSupportedException("Wave compression is not supported.");
+                }
+    
+                // reads residual bytes
+                if (format_chunk_size > 16)
+                    reader.ReadBytes(format_chunk_size - 16);
+                
+                string data_signature = new string(reader.ReadChars(4));
+    
+                while (data_signature.ToLower() != "data")
+                {
+                    reader.ReadBytes(reader.ReadInt32());
+                    data_signature = new string(reader.ReadChars(4));
+                }
+    
+                if (data_signature != "data")
+                {
+                    throw new NotSupportedException("Specified wave file is not supported.");
+                }
+    
+                int size = reader.ReadInt32();
+                data = reader.ReadBytes((int) reader.BaseStream.Length);
+            }
+            
+            INTERNAL_bufferData(
+                data,
+                sampleRate,
+                numChannels,
+                0,
+                data.Length
+            );
+        }
+        
+        private void INTERNAL_bufferData(byte[] data, int sampleRate, int channels, int loopStart, int loopEnd)
+        {
+            this.loopStart = loopStart;
+            this.loopEnd = loopEnd;
+            
+            ALFormat format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+            
+            int numBuffers = 1;
+            if (loopStart > 0)
+            {
+                numBuffers++;
+            }
+            if (loopEnd < (data.Length / 2 / channels))
+            {
+                numBuffers++;
+            }
+            
+            buffers = AL.GenBuffers(numBuffers);
+            
+            if (numBuffers == 3)
+            {
+                AL.BufferData(
+                    buffers[0],
+                    format,
+                    data,
+                    loopStart * 2 * channels,
+                    sampleRate
+                );
+                byte[] midBuf = new byte[(loopEnd * 2 * channels) - (loopStart * 2 * channels)];
+                int cur = 0;
+                for (int i = (loopStart * 2 * channels); i < loopEnd * 2 * channels; i++)
+                {
+                    midBuf[cur] = data[i];
+                    cur++;
+                }
+                AL.BufferData(
+                    buffers[1],
+                    format,
+                    midBuf,
+                    midBuf.Length,
+                    sampleRate
+                );
+                midBuf = new byte[data.Length - (loopEnd * 2 * channels)];
+                cur = 0;
+                for (int i = (loopEnd * 2 * channels); i < data.Length; i++)
+                {
+                    midBuf[cur] = data[i];
+                    cur++;
+                }
+                AL.BufferData(
+                    buffers[2],
+                    format,
+                    midBuf,
+                    midBuf.Length,
+                    sampleRate
+                );
+            }
+            else if (numBuffers == 2)
+            {
+                AL.BufferData(
+                    buffers[0],
+                    format,
+                    data,
+                    data.Length,
+                    sampleRate
+                );
+                byte[] midBuf = new byte[(loopEnd * 2 * channels) - (loopStart * 2 * channels)];
+                int cur = 0;
+                for (int i = loopStart * 2 * channels; i < (loopEnd * 2 * channels); i++)
+                {
+                    midBuf[cur] = data[i];
+                    cur++;
+                }
+                AL.BufferData(
+                    buffers[1],
+                    format,
+                    midBuf,
+                    midBuf.Length,
+                    sampleRate
+                );
+            }
+            else
+            {
+                AL.BufferData(
+                    buffers[0],
+                    format,
+                    data,
+                    data.Length,
+                    sampleRate
+                );
+            }
         }
 #endif
 

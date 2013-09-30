@@ -338,7 +338,7 @@ namespace Microsoft.Xna.Framework.Audio
 					SharpDX.Multimedia.WaveFormat waveFormat = new SharpDX.Multimedia.WaveFormat(rate, chans);
 					sounds[current_entry] = new SoundEffect(waveFormat, audiodata, 0, audiodata.Length, wavebankentry.LoopRegion.Offset, wavebankentry.LoopRegion.Length).CreateInstance();
 #else
-					sounds[current_entry] = new SoundEffectInstance(audiodata, rate, chans);
+					sounds[current_entry] = new SoundEffect(audiodata, rate, (AudioChannels) chans).CreateInstance();
 #endif                    
                 } else if (codec == MiniForamtTag_WMA) { //WMA or xWMA (or XMA2)
                     byte[] wmaSig = {0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x0, 0xaa, 0x0, 0x62, 0xce, 0x6c};
@@ -407,11 +407,11 @@ namespace Microsoft.Xna.Framework.Audio
                 } else if (codec == MiniFormatTag_ADPCM) {
                     using (MemoryStream dataStream = new MemoryStream(audiodata)) {
                         using (BinaryReader source = new BinaryReader(dataStream)) {
-                            sounds[current_entry] = new SoundEffectInstance(
+                            sounds[current_entry] = new SoundEffect(
                                 MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
                                 rate,
-                                chans
-                            );
+                                (AudioChannels) chans
+                            ).CreateInstance();
                         }
                     }
 #endif
@@ -435,7 +435,7 @@ namespace Microsoft.Xna.Framework.Audio
 		#region IDisposable implementation
 		public void Dispose ()
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
 		public bool IsDisposed

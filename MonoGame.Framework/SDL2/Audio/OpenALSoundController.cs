@@ -1,345 +1,205 @@
+#region License
+// /*
+// Microsoft Public License (Ms-PL)
+// MonoGame - Copyright © 2009 The MonoGame Team
+// 
+// All rights reserved.
+// 
+// This license governs use of the accompanying software. If you use the software, you accept this license. If you do not
+// accept the license, do not use the software.
+// 
+// 1. Definitions
+// The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under
+// U.S. copyright law.
+// 
+// A "contribution" is the original software, or any additions or changes to the software.
+// A "contributor" is any person that distributes its contribution under this license.
+// "Licensed patents" are a contributor's patent claims that read directly on its contribution.
+// 
+// 2. Grant of Rights
+// (A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
+// each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
+// (B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
+// each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
+// 
+// 3. Conditions and Limitations
+// (A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
+// (B) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, 
+// your patent license from such contributor to the software ends automatically.
+// (C) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution 
+// notices that are present in the software.
+// (D) If you distribute any portion of the software in source code form, you may do so only under this license by including 
+// a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object 
+// code form, you may only do so under a license that complies with this license.
+// (E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees
+// or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent
+// permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
+// purpose and non-infringement.
+// */
+#endregion License
+
+#region Using Statements
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Runtime.InteropServices;
 
-using OpenTK.Audio.OpenAL;
+#if IOS
+using System.Runtime.InteropServices;
+#endif
+
 using OpenTK;
+using OpenTK.Audio.OpenAL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Audio
 {
-	internal sealed class OpenALSoundController : IDisposable
-	{
-        private static OpenALSoundController _instance = null;
+    internal sealed class OpenALSoundController : IDisposable
+    {
+        // Stores the controller instance and if if there is a working context in it.
+        private static OpenALSoundController INTERNAL_instance = null;
+        private bool INTERNAL_soundAvailable = false;
+
+        // OpenAL Device/Context Handles
         private IntPtr _device;
         private ContextHandle _context;
-		//int outputSource;
-		//int[] buffers;
-        private AlcError _lastOpenALError;
-        private int[] allSourcesArray;
-        private const int MAX_NUMBER_OF_SOURCES = 32;
-        private const double PREFERRED_MIX_RATE = 44100;
-        private List<int> availableSourcesCollection;
-        private List<OALSoundBuffer> inUseSourcesCollection;
-        private List<OALSoundBuffer> playingSourcesCollection;
-        private List<OALSoundBuffer> purgeMe;
-        private bool _bSoundAvailable = false;
-        private Exception _SoundInitException; // Here to bubble back up to the developer
+
+        // Used to store SoundEffectInstances generated internally.
+        internal List<SoundEffectInstance> instancePool;
+
+        // Used to store looping SoundEffectInstances
         internal List<SoundEffectInstance> loopingInstances;
 
-        /// <summary>
-        /// Sets up the hardware resources used by the controller.
-        /// </summary>
-		private OpenALSoundController ()
-		{
-            if (!OpenSoundController())
+        private void CheckALError()
+        {
+            ALError err = AL.GetError();
+
+            if (err == ALError.NoError)
             {
                 return;
             }
-            // We have hardware here and it is ready
-            _bSoundAvailable = true;
 
+            System.Console.WriteLine("OpenAL Error: " + err);
+        }
 
-			allSourcesArray = new int[MAX_NUMBER_OF_SOURCES];
-			AL.GenSources (allSourcesArray);
+        private bool CheckALCError(string message)
+        {
+            AlcError err = Alc.GetError(_device);
 
-			availableSourcesCollection = new List<int> ();
-			inUseSourcesCollection = new List<OALSoundBuffer> ();
-			playingSourcesCollection = new List<OALSoundBuffer> ();
-            purgeMe = new List<OALSoundBuffer> ();
+            if (err == AlcError.NoError)
+            {
+                return false;
+            }
 
+            System.Console.WriteLine(message + " - OpenAL Device Error: " + err);
 
-			for (int x=0; x < MAX_NUMBER_OF_SOURCES; x++) {
-				availableSourcesCollection.Add (allSourcesArray [x]);
-			}
-            
-			loopingInstances = new List<SoundEffectInstance>();
-		}
+            return true;
+        }
 
-        /// <summary>
-        /// Open the sound device, sets up an audio context, and makes the new context
-        /// the current context. Note that this method will stop the playback of
-        /// music that was running prior to the game start. If any error occurs, then
-        /// the state of the controller is reset.
-        /// </summary>
-        /// <returns>True if the sound controller was setup, and false if not.</returns>
-        private bool OpenSoundController()
+        private bool INTERNAL_initSoundController()
         {
 #if IOS
-			alcMacOSXMixerOutputRate(PREFERRED_MIX_RATE);
+            alcMacOSXMixerOutputRate(44100);
 #endif
             try
             {
                 _device = Alc.OpenDevice(string.Empty);
             }
-            catch (Exception ex)
+            catch
             {
-                _SoundInitException = ex;
-                return (false);
+                return false;
             }
-            if (CheckALError("Could not open AL device"))
+            if (CheckALCError("Could not open AL device") || _device == IntPtr.Zero)
             {
-                return(false);
+                return false;
             }
-            if (_device != IntPtr.Zero)
-            {
-                int[] attribute = new int[0];
-                _context = Alc.CreateContext(_device, attribute);
-                if (CheckALError("Could not open AL context"))
-                {
-                    CleanUpOpenAL();
-                    return(false);
-                }
 
+            int[] attribute = new int[0];
+            _context = Alc.CreateContext(_device, attribute);
+            if (CheckALCError("Could not create OpenAL context") || _context == ContextHandle.Zero)
+            {
+                Dispose(true);
+                return false;
+            }
+
+            Alc.MakeContextCurrent(_context);
+            if (CheckALCError("Could not make OpenAL context current"))
+            {
+                Dispose(true);
+                return false;
+            }
+
+            return true;
+        }
+
+        private OpenALSoundController()
+        {
+            INTERNAL_soundAvailable = INTERNAL_initSoundController();
+            instancePool = new List<SoundEffectInstance>();
+            loopingInstances = new List<SoundEffectInstance>();
+        }
+
+        public void Dispose()
+        {
+            Dispose(false);
+        }
+
+        private void Dispose(bool force)
+        {
+            if (INTERNAL_soundAvailable || force)
+            {
+                Alc.MakeContextCurrent(ContextHandle.Zero);
                 if (_context != ContextHandle.Zero)
                 {
-                    Alc.MakeContextCurrent(_context);
-                    if (CheckALError("Could not make AL context current"))
-                    {
-                        CleanUpOpenAL();
-                        return(false);
-                    }
-                    return (true);
+                    Alc.DestroyContext (_context);
+                    _context = ContextHandle.Zero;
                 }
-            }
-            return (false);
-        }
-
-		public static OpenALSoundController GetInstance {
-			get {
-				if (_instance == null)
-					_instance = new OpenALSoundController ();
-				return _instance;
-			}
-
-		}
-
-        /// <summary>
-        /// Checks the error state of the OpenAL driver. If a value that is not AlcError.NoError
-        /// is returned, then the operation message and the error code is output to the console.
-        /// </summary>
-        /// <param name="operation">the operation message</param>
-        /// <returns>true if an error occurs, and false if not.</returns>
-		public bool CheckALError (string operation)
-		{
-			_lastOpenALError = Alc.GetError (_device);
-
-			if (_lastOpenALError == AlcError.NoError) {
-				return(false);
-			}
-
-			string errorFmt = "OpenAL Error: {0}";
-			Console.WriteLine (String.Format ("{0} - {1}",
-							operation,
-							//string.Format (errorFmt, Alc.GetString (_device, _lastOpenALError))));
-							string.Format (errorFmt, _lastOpenALError)));
-            return (true);
-		}
-
-        /// <summary>
-        /// Destroys the AL context and closes the device, when they exist.
-        /// </summary>
-		private void CleanUpOpenAL ()
-		{
-			Alc.MakeContextCurrent (ContextHandle.Zero);
-			if (_context != ContextHandle.Zero) {
-				Alc.DestroyContext (_context);
-				_context = ContextHandle.Zero;
-			}
-			if (_device != IntPtr.Zero) {
-				Alc.CloseDevice (_device);
-				_device = IntPtr.Zero;
-			}
-            _bSoundAvailable = false;
-		}
-
-		public void Dispose ()
-		{
-            if(_bSoundAvailable)
-    			CleanUpOpenAL ();
-		}
-
-        /// <summary>
-        /// Reserves the given sound buffer. If there are no available sources then false is
-        /// returned, otherwise true will be returned and the sound buffer can be played. If
-        /// the controller was not able to setup the hardware, then false will be returned.
-        /// </summary>
-        /// <param name="soundBuffer">The sound buffer you want to play</param>
-        /// <returns>True if the buffer can be played, and false if not.</returns>
-		public bool ReserveSource (OALSoundBuffer soundBuffer)
-		{
-            if (!CheckInitState())
-            {
-                return(false);
-            }
-            int sourceNumber;
-			if (availableSourcesCollection.Count == 0) {
-
-				soundBuffer.SourceId = 0;
-				return false;
-			}
-			
-
-			sourceNumber = availableSourcesCollection.First ();
-			soundBuffer.SourceId = sourceNumber;
-			inUseSourcesCollection.Add (soundBuffer);
-
-			availableSourcesCollection.Remove (sourceNumber);
-
-			//sourceId = sourceNumber;
-			return true;
-		}
-
-		public void RecycleSource (OALSoundBuffer soundBuffer)
-		{
-            if (!CheckInitState())
-            {
-                return;
-            }
-            inUseSourcesCollection.Remove(soundBuffer);
-			availableSourcesCollection.Add (soundBuffer.SourceId);
-			soundBuffer.RecycleSoundBuffer();
-		}
-
-		public void PlaySound (OALSoundBuffer soundBuffer)
-        {
-            if (!CheckInitState())
-            {
-                return;
-            }
-            lock (playingSourcesCollection)
-            {
-                playingSourcesCollection.Add (soundBuffer);
-            }
-			AL.SourcePlay (soundBuffer.SourceId);
-		}
-
-		public void StopSound (OALSoundBuffer soundBuffer)
-        {
-            if (!CheckInitState())
-            {
-                return;
-            }
-            AL.SourceStop(soundBuffer.SourceId);
-
-            AL.Source (soundBuffer.SourceId, ALSourcei.Buffer, 0);
-            lock (playingSourcesCollection) {
-                playingSourcesCollection.Remove (soundBuffer);
-            }
-            RecycleSource (soundBuffer);
-		}
-
-		public void PauseSound (OALSoundBuffer soundBuffer)
-		{
-            if (!CheckInitState())
-            {
-                return;
-            }
-            AL.SourcePause(soundBuffer.SourceId);
-		}
-
-        public void ResumeSound(OALSoundBuffer soundBuffer)
-        {
-            if (!CheckInitState())
-            {
-                return;
-            }
-            AL.SourcePlay(soundBuffer.SourceId);
-        }
-
-		public bool IsState (OALSoundBuffer soundBuffer, int state)
-		{
-            if (!CheckInitState())
-            {
-                return (false);
-            }
-            int sourceState;
-
-			AL.GetSource (soundBuffer.SourceId, ALGetSourcei.SourceState, out sourceState);
-
-			if (state == sourceState) {
-				return true;
-			}
-
-			return false;
-		}
-
-        /// <summary>
-        /// Checks if the AL controller was initialized properly. If there was an
-        /// exception thrown during the OpenAL init, then that exception is thrown
-        /// inside of NoAudioHardwareException.
-        /// </summary>
-        /// <returns>True if the controller was initialized, false if not.</returns>
-        private bool CheckInitState()
-        {
-            if (!_bSoundAvailable)
-            {
-                if (_SoundInitException != null)
+                if (_device != IntPtr.Zero)
                 {
-                    Exception e = _SoundInitException;
-                    _SoundInitException = null;
-                    throw (new NoAudioHardwareException("No audio hardware available.", e));
+                    Alc.CloseDevice (_device);
+                    _device = IntPtr.Zero;
                 }
-                return (false);
+                INTERNAL_soundAvailable = false;
             }
-            return (true);
         }
 
-        public double SourceCurrentPosition (int sourceId)
-		{
-            if (!CheckInitState())
-            {
-                return(0.0);
-            }
-            int pos;
-			AL.GetSource (sourceId, ALGetSourcei.SampleOffset, out pos);
-			return pos;
-		}
-
-        /// <summary>
-        /// Called repeatedly, this method cleans up the state of the management lists. This method
-        /// will also lock on the playingSourcesCollection. Sources that are stopped will be recycled
-        /// using the RecycleSource method.
-        /// </summary>
-		public void Update ()
+        public static OpenALSoundController GetInstance
         {
-            if (!_bSoundAvailable)
+            get
             {
-                //OK to ignore this here because the game can run without sound.
-                 return;
+                if (INTERNAL_instance == null)
+                {
+                    INTERNAL_instance = new OpenALSoundController();
+                }
+                return INTERNAL_instance;
             }
-            purgeMe.Clear();
+        }
 
-            ALSourceState state;
-            lock (playingSourcesCollection) {
-                for (int i=playingSourcesCollection.Count-1; i >= 0; i--) {
-                    var soundBuffer = playingSourcesCollection [i];
-                    state = AL.GetSourceState (soundBuffer.SourceId);
-                    if (state == ALSourceState.Stopped) {
-                        purgeMe.Add (soundBuffer);
-                        playingSourcesCollection.RemoveAt (i);
-                    }
+        public void Update()
+        {
+            if (!INTERNAL_soundAvailable)
+            {
+                return;
+            }
+#if DEBUG
+            CheckALError();
+#endif
+            foreach (SoundEffectInstance sfi in instancePool)
+            {
+                if (!sfi.INTERNAL_checkPlaying())
+                {
+                    sfi.Dispose();
+                    instancePool.Remove(sfi);
                 }
             }
-            foreach (var soundBuffer in purgeMe) {
-                AL.Source (soundBuffer.SourceId, ALSourcei.Buffer, 0);
-                RecycleSource (soundBuffer);
-            }
-   
             foreach (SoundEffectInstance sfi in loopingInstances)
             {
-                sfi.checkLoop();
+                sfi.INTERNAL_checkLoop();
             }
         }
 
 #if IOS
-		public const string OpenALLibrary = "/System/Library/Frameworks/OpenAL.framework/OpenAL";
-
-		[DllImport(OpenALLibrary, EntryPoint = "alcMacOSXMixerOutputRate")]
-		static extern void alcMacOSXMixerOutputRate (double rate); // caution
+        [DllImport("/System/Library/Frameworks/OpenAL.framework/OpenAL", EntryPoint = "alcMacOSXMixerOutputRate")]
+        static extern void alcMacOSXMixerOutputRate(double rate);
 #endif
 
-	}
+    }
 }
-

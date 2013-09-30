@@ -386,14 +386,12 @@
     <Compile Include="GamerServices\LeaderboardReader.cs" />
     <Compile Include="GamerServices\LeaderboardWriter.cs" />
     <Compile Include="GamerServices\PropertyDictionary.cs" />
-    <Compile Include="SDL2\Audio\OALSoundBuffer.cs" />
     <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
     <Compile Include="Audio\SoundEffect.cs" />
     <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
     <Compile Include="SDL2\Input\SDL2_GamePad.cs" />
     <Compile Include="SDL2\SDL2_GamePlatform.cs" />
     <Compile Include="SDL2\SDL2_GameWindow.cs" />
-    <Compile Include="SDL2\Audio\AudioLoader.cs" />
     <Compile Include="SDL2\Input\SDL2_Mouse.cs" />
     <Compile Include="SDL2\Input\SDL2_KeyboardUtil.cs" />
     <Compile Include="SDL2\Media\Video.cs" />
