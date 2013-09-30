@@ -30,18 +30,12 @@ namespace Microsoft.Xna.Framework.Audio
 			public override void Update() {
 				for (int i = 0; i < instancePool.Count; i++)
 				{
-					if (instancePool[i].INTERNAL_checkPlaying())
+					if (instancePool[i].State == SoundState.Stopped)
 					{
 						instancePool[i].Dispose();
 						instancePool.RemoveAt(i);
 						i--;
 					}
-				}
-				if (instancePool.Count == 0)
-				{
-					// We're out of sounds, so we've stopped.
-					INTERNAL_playing = false;
-					INTERNAL_paused = false;
 				}
 			}
 			public override void Play() {
@@ -50,8 +44,6 @@ namespace Microsoft.Xna.Framework.Audio
 				newInstance.IsLooped = IsLooped;
 				newInstance.Play();
 				instancePool.Add(newInstance);
-				INTERNAL_playing = true;
-				INTERNAL_paused = false;
 			}
 			public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
 				SoundEffectInstance newInstance = wave.CreateInstance();
@@ -72,16 +64,12 @@ namespace Microsoft.Xna.Framework.Audio
 					sfi.Dispose();
 				}
 				instancePool.Clear();
-				INTERNAL_playing = false;
-				INTERNAL_paused = false;
 			}
 			public override void Pause() {
 				foreach (SoundEffectInstance sfi in instancePool)
 				{
 					sfi.Pause();
 				}
-				INTERNAL_playing = true;
-				INTERNAL_paused = true;
 			}
 			public override void Resume()
 			{
@@ -89,22 +77,32 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					sfi.Resume();
 				}
-				INTERNAL_playing = true;
-				INTERNAL_paused = false;
 			}
-			private bool INTERNAL_playing = false;
 			public override bool Playing {
 				get
 				{
-					return INTERNAL_playing;
+					foreach (SoundEffectInstance sfi in instancePool)
+					{
+						if (sfi.State != SoundState.Stopped)
+						{
+							return true;
+						}
+					}
+					return false;
 				}
 			}
-			private bool INTERNAL_paused = false;
 			public override bool IsPaused
 			{
 				get
 				{
-					return INTERNAL_paused;
+					foreach (SoundEffectInstance sfi in instancePool)
+					{
+						if (sfi.State == SoundState.Paused)
+						{
+							return true;
+						}
+					}
+					return false;
 				}
 			}
 			private float INTERNAL_volume = 1.0f;

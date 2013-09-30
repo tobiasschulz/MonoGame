@@ -213,9 +213,12 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal void Update()
 		{
+			foreach (XactSound sound in sounds)
+			{
+				sound.Update();
+			}
 			if (curSound != null && IsPlaying)
 			{
-				curSound.Update();
 				// Positional audio update
 				if (positionalAudio)
 				{

@@ -117,11 +117,6 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
-        internal bool INTERNAL_checkPlaying()
-        {
-            return (AL.GetSourceState(INTERNAL_alSource) == ALSourceState.Stopped);
-        }
-
         private void INTERNAL_addLoopingInstance()
         {
             if (!OpenALSoundController.GetInstance.loopingInstances.Contains(this))
@@ -144,7 +139,6 @@ namespace Microsoft.Xna.Framework.Audio
 
         internal SoundEffectInstance(SoundEffect parent)
         {
-            State = SoundState.Stopped;
             INTERNAL_parentEffect = parent;
         }
 
@@ -234,8 +228,23 @@ namespace Microsoft.Xna.Framework.Audio
 
         public SoundState State
         {
-            get;
-            private set;
+            get
+            {
+                if (INTERNAL_alSource == -1)
+                {
+                    return SoundState.Stopped;
+                }
+                ALSourceState state = AL.GetSourceState(INTERNAL_alSource);
+                if (state == ALSourceState.Playing)
+                {
+                    return SoundState.Playing;
+                }
+                else if (state == ALSourceState.Paused)
+                {
+                    return SoundState.Paused;
+                }
+                return SoundState.Stopped;
+            }
         }
 
         private float INTERNAL_volume = 1.0f;
@@ -304,9 +313,18 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void Play()
         {
+            if (State != SoundState.Stopped)
+            {
+                // FIXME: Is this XNA4 behavior?
+                Stop();
+            }
+
             if (INTERNAL_alSource != -1)
             {
-                return;
+                // The sound has stopped, but hasn't cleaned up yet...
+                AL.SourceStop(INTERNAL_alSource);
+                AL.DeleteSource(INTERNAL_alSource);
+                INTERNAL_alSource = -1;
             }
 
             INTERNAL_alSource = AL.GenSource();
@@ -354,7 +372,6 @@ namespace Microsoft.Xna.Framework.Audio
             Pitch = Pitch;
 
             AL.SourcePlay(INTERNAL_alSource);
-            State = SoundState.Playing;
         }
 
         public void Pause ()
@@ -362,7 +379,6 @@ namespace Microsoft.Xna.Framework.Audio
             if (INTERNAL_alSource != -1 && State == SoundState.Playing)
             {
                 AL.SourcePause(INTERNAL_alSource);
-                State = SoundState.Paused;
             }
         }
 
@@ -371,7 +387,6 @@ namespace Microsoft.Xna.Framework.Audio
             if (INTERNAL_alSource != -1 && State == SoundState.Paused)
             {
                 AL.SourcePlay(INTERNAL_alSource);
-                State = SoundState.Playing;
             }
         }
 
@@ -384,7 +399,6 @@ namespace Microsoft.Xna.Framework.Audio
                 INTERNAL_alSource = -1;
             }
             INTERNAL_removeLoopingInstance();
-            State = SoundState.Stopped;
         }
 
         public void Stop(bool immediate)

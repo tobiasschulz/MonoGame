@@ -184,7 +184,7 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
             for (int i = 0; i < instancePool.Count; i++)
             {
-                if (instancePool[i].INTERNAL_checkPlaying())
+                if (instancePool[i].State == SoundState.Stopped)
                 {
                     instancePool[i].Dispose();
                     instancePool.RemoveAt(i);
