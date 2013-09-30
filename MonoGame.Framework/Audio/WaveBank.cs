@@ -25,8 +25,31 @@ SOFTWARE.
 */
 #endregion License
 
+// #define THREADED_DECODING
+/* So, you probably noticed how slow MSADPCM decoding is...
+ *
+ * Right now it's basically pumping every single file in the bank
+ * to MSADPCMToPCM at once. For large XACT projects, this can be
+ * absurdly slow.
+ *
+ * The better long-term solution is to either introduce an internal
+ * streaming API to MonoGame's audio engine, or add MSADPCM support
+ * to OpenAL, but for now, we're stuck decoding all at once.
+ *
+ * This define tries to put as many MSADPCM decodes as possible onto
+ * threads, but be warned: This is VERY unstable and may not even
+ * improve things all that much. So yeah.
+ *
+ * TL;DR: Here be Dragons.
+ *
+ * -flibit
+ */
 using System;
 using System.IO;
+
+#if THREADED_DECODING
+using System.Threading;
+#endif
 
 using Microsoft.Xna.Framework;
 
@@ -99,6 +122,10 @@ namespace Microsoft.Xna.Framework.Audio
             wavebankentry.PlayRegion.Offset = 0;
 
             int wavebank_offset = 0;
+
+#if THREADED_DECODING
+            Thread[] adpcmThreads = new Thread[Environment.ProcessorCount - 1];
+#endif
 
 #if WINRT
 			const char notSeparator = '/';
@@ -405,6 +432,38 @@ namespace Microsoft.Xna.Framework.Audio
                  * -flibit
                  */
                 } else if (codec == MiniFormatTag_ADPCM) {
+#if THREADED_DECODING
+                    bool usingThread = false;
+                    for (int i = 0; i < (Environment.ProcessorCount - 1); i++)
+                    {
+                        if (adpcmThreads[i] == null || !adpcmThreads[i].IsAlive)
+                        {
+                            ADPCMContainer adpcmObject = new ADPCMContainer(
+                                current_entry,
+                                audiodata,
+                                (short) chans,
+                                (short) align,
+                                rate
+                            );
+                            adpcmThreads[i] = new Thread(new ParameterizedThreadStart(INTERNAL_decodeADPCM));
+                            adpcmThreads[i].Start(adpcmObject);
+                            usingThread = true;
+                        }
+                    }
+                    if (!usingThread)
+                    {
+                        // Just run on the main thread.
+                        using (MemoryStream dataStream = new MemoryStream(audiodata)) {
+                            using (BinaryReader source = new BinaryReader(dataStream)) {
+                                sounds[current_entry] = new SoundEffect(
+                                    MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
+                                    rate,
+                                    (AudioChannels) chans
+                                );
+                            }
+                        }
+                    }
+#else
                     using (MemoryStream dataStream = new MemoryStream(audiodata)) {
                         using (BinaryReader source = new BinaryReader(dataStream)) {
                             sounds[current_entry] = new SoundEffect(
@@ -415,12 +474,23 @@ namespace Microsoft.Xna.Framework.Audio
                         }
                     }
 #endif
+#endif
                 } else {
                     throw new NotImplementedException();
                 }
                 
             }
 			
+#if THREADED_DECODING
+            for (int i = 0; i < (Environment.ProcessorCount - 1); i++)
+            {
+                if (adpcmThreads != null && adpcmThreads[i] != null)
+                {
+                    adpcmThreads[i].Join();
+                    adpcmThreads = null;
+                }
+            }
+#endif
 			audioEngine.Wavebanks[BankName] = this;
 			IsDisposed = false;
         }
@@ -452,6 +522,43 @@ namespace Microsoft.Xna.Framework.Audio
 			get;
 			private set;
 		}
+		#endregion
+
+		#region Threaded ADPCM Decoding
+
+#if THREADED_DECODING
+		private class ADPCMContainer
+		{
+			public int effectIndex;
+			public byte[] adpcmData;
+			public short channels;
+			public short blockAlign;
+			public int sampleRate;
+			public ADPCMContainer(int effect, byte[] data, short chans, short align, int rate)
+			{
+				effectIndex = effect;
+				adpcmData = data;
+				channels = chans;
+				blockAlign = align;
+				sampleRate = rate;
+			}
+		}
+
+		private void INTERNAL_decodeADPCM(object obj)
+		{
+			ADPCMContainer adpcm = (ADPCMContainer) obj;
+			using (MemoryStream dataStream = new MemoryStream(adpcm.adpcmData)) {
+				using (BinaryReader source = new BinaryReader(dataStream)) {
+					sounds[adpcm.effectIndex] = new SoundEffect(
+						MSADPCMToPCM.MSADPCM_TO_PCM(source, adpcm.channels, adpcm.blockAlign),
+						adpcm.sampleRate,
+						(AudioChannels) adpcm.channels
+					);
+				}
+			}
+		}
+#endif
+
 		#endregion
     }
 }
