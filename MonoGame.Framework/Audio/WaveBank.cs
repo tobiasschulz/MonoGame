@@ -422,6 +422,7 @@ namespace Microsoft.Xna.Framework.Audio
             }
 			
 			audioEngine.Wavebanks[BankName] = this;
+			IsDisposed = false;
         }
 		
 		public WaveBank(AudioEngine audioEngine, string streamingWaveBankFilename, int offset, short packetsize)
@@ -435,11 +436,15 @@ namespace Microsoft.Xna.Framework.Audio
 		#region IDisposable implementation
 		public void Dispose ()
 		{
-			foreach (SoundEffect sf in sounds)
+			if (!IsDisposed)
 			{
-				sf.Dispose();
+				foreach (SoundEffect sf in sounds)
+				{
+					sf.Dispose();
+				}
+				sounds = null;
+				IsDisposed = true;
 			}
-			sounds = null;
 		}
 
 		public bool IsDisposed

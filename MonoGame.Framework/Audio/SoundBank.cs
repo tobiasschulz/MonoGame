@@ -56,8 +56,10 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
             // Check for windows-style directory separator character
             filename = fileName.Replace(notSeparator, separator);
-			audioengine = audioEngine;
-		}
+
+            audioengine = audioEngine;
+            IsDisposed = false;
+        }
 		
 		//Defer loading because some programs load soundbanks before wavebanks
 		private void Load ()
@@ -273,11 +275,15 @@ namespace Microsoft.Xna.Framework.Audio
 		#region IDisposable implementation
 		public void Dispose ()
 		{
-			foreach (KeyValuePair<string, Cue> cue in cues)
+			if (!IsDisposed)
 			{
-				cue.Value.Dispose();
+				foreach (KeyValuePair<string, Cue> cue in cues)
+				{
+					cue.Value.Dispose();
+				}
+				cues.Clear();
+				IsDisposed = true;
 			}
-			cues.Clear();
 		}
 
 		public bool IsDisposed
