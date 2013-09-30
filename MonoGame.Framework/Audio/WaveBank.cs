@@ -487,7 +487,7 @@ namespace Microsoft.Xna.Framework.Audio
                 if (adpcmThreads != null && adpcmThreads[i] != null)
                 {
                     adpcmThreads[i].Join();
-                    adpcmThreads = null;
+                    adpcmThreads[i] = null;
                 }
             }
 #endif
