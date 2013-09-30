@@ -182,12 +182,13 @@ namespace Microsoft.Xna.Framework.Audio
 #if DEBUG
             CheckALError();
 #endif
-            foreach (SoundEffectInstance sfi in instancePool)
+            for (int i = 0; i < instancePool.Count; i++)
             {
-                if (!sfi.INTERNAL_checkPlaying())
+                if (instancePool[i].INTERNAL_checkPlaying())
                 {
-                    sfi.Dispose();
-                    instancePool.Remove(sfi);
+                    instancePool[i].Dispose();
+                    instancePool.RemoveAt(i);
+                    i--;
                 }
             }
             foreach (SoundEffectInstance sfi in loopingInstances)

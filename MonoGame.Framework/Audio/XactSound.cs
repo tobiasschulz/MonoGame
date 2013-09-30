@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 		bool complexSound;
 		XactClip[] soundClips;
-		SoundEffectInstance wave;
 
 		float staticVolume;
 		
@@ -37,7 +36,8 @@ namespace Microsoft.Xna.Framework.Audio
 			} else {
 				uint trackIndex = soundReader.ReadUInt16 ();
 				byte waveBankIndex = soundReader.ReadByte ();
-				wave = soundBank.GetWave(waveBankIndex, trackIndex);
+				soundClips = new XactClip[1];
+				soundClips[0] = new XactClip(soundBank.GetWave(waveBankIndex, trackIndex));
 			}
 			
 			if ( (flags & 0x1E) != 0 ) {
@@ -117,105 +117,74 @@ namespace Microsoft.Xna.Framework.Audio
 //			complexSound = false;
 //			wave = sound;
 //		}
-		public XactSound (SoundEffectInstance sound) {
-			complexSound = false;
-			wave = sound;
+		public XactSound (SoundEffect sound) {
+			soundClips = new XactClip[1];
+			soundClips[0] = new XactClip(sound);
 		}		
 
-		public void Play() {
-			if (complexSound) {
-				foreach (XactClip clip in soundClips) {
-					clip.Play();
-				}
-			} else {
-				if (wave.State == SoundState.Playing) wave.Stop ();
-				wave.Play ();
+		public void Update()
+		{
+			foreach (XactClip clip in soundClips)
+			{
+				clip.Update();
 			}
 		}
 
+		public void Play() {
+				foreach (XactClip clip in soundClips) {
+					clip.Play();
+				}
+		}
+
 		internal void PlayPositional(AudioListener listener, AudioEmitter emitter) {
-			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
 					clip.PlayPositional(listener, emitter);
 				}
-			} else {
-				if (wave.State == SoundState.Playing) wave.Stop();
-				wave.Apply3D(listener, emitter);
-				wave.Play();
-			}
 		}
 
 		internal void UpdatePosition(AudioListener listener, AudioEmitter emitter)
 		{
-			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
 					clip.UpdatePosition(listener, emitter);
 				}
-			} else {
-				wave.Apply3D(listener, emitter);
-			}
 			
 		}
 		
 		public void Stop() {
-			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
 					clip.Stop();
 				}
-			} else {
-				wave.Stop ();
-			}
 		}
 		
 		public void Pause() {
-			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
 					clip.Pause();
 				}
-			} else {
-				wave.Pause ();
-			}
 		}
                 
 		public void Resume() {
-			if (complexSound) {
 				foreach (XactClip clip in soundClips) {
 					clip.Resume();
 				}
-			} else {
-				wave.Resume ();
-			}
 		}
 		
 		public float Volume {
 			get {
-				if (complexSound) {
 					return soundClips[0].Volume;
-				} else {
-					return wave.Volume;
-				}
 			}
 			set {
-				if (complexSound) {
 					foreach (XactClip clip in soundClips) {
 						clip.Volume = value * staticVolume;
 					}
-				} else {
-					wave.Volume = value * staticVolume;
-				}
 			}
 		}
 		
 		public bool Playing {
 			get {
-				if (complexSound) {
 					foreach (XactClip clip in soundClips) {
 						if (clip.Playing) return true;
 					}
 					return false;
-				} else {
-					return wave.State != SoundState.Stopped;
-				}
 			}
 		}
 
@@ -223,14 +192,10 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
-				if (complexSound) {
 					foreach (XactClip clip in soundClips) {
 						if (clip.IsPaused) return true;
 					}
 					return false;
-				} else {
-					return wave.State == SoundState.Paused;
-				}
 			}
 		}
 		

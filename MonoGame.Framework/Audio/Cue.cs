@@ -215,6 +215,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			if (curSound != null && IsPlaying)
 			{
+				curSound.Update();
 				// Positional audio update
 				if (positionalAudio)
 				{

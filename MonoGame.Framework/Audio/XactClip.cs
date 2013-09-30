@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Audio
 {
@@ -10,6 +11,7 @@ namespace Microsoft.Xna.Framework.Audio
 		abstract class ClipEvent {
 			public XactClip clip;
 			
+			public abstract void Update();
 			public abstract void Play();
 			public abstract void PlayPositional(AudioListener listener, AudioEmitter emitter);
 			public abstract void UpdatePosition(AudioListener listener, AudioEmitter emitter);
@@ -19,54 +21,112 @@ namespace Microsoft.Xna.Framework.Audio
 			public abstract bool Playing { get; }
 			public abstract float Volume { get; set; }
 			public abstract bool IsPaused { get; }
+			public abstract bool IsLooped { get; set; }
 		}
 		
 		class EventPlayWave : ClipEvent {
-			public SoundEffectInstance wave;
+			public SoundEffect wave;
+			private List<SoundEffectInstance> instancePool = new List<SoundEffectInstance>();
+			public override void Update() {
+				for (int i = 0; i < instancePool.Count; i++)
+				{
+					if (instancePool[i].INTERNAL_checkPlaying())
+					{
+						instancePool[i].Dispose();
+						instancePool.RemoveAt(i);
+						i--;
+					}
+				}
+			}
 			public override void Play() {
-				wave.Volume = clip.Volume;
-				if (wave.State == SoundState.Playing) wave.Stop ();
-				wave.Play ();
+				SoundEffectInstance newInstance = wave.CreateInstance();
+				newInstance.Volume = Volume;
+				newInstance.IsLooped = IsLooped;
+				newInstance.Play();
+				instancePool.Add(newInstance);
 			}
 			public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
-				wave.Volume =  clip.Volume;
-				if (wave.State == SoundState.Playing) wave.Stop();
-				wave.Apply3D(listener, emitter);
-				wave.Play();
+				SoundEffectInstance newInstance = wave.CreateInstance();
+				newInstance.Volume = Volume;
+				newInstance.IsLooped = IsLooped;
+				newInstance.Apply3D(listener, emitter);
+				newInstance.Play();
+				instancePool.Add(newInstance);
 			}
 			public override void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
-				wave.Apply3D(listener, emitter);
+				// FIXME: How the hell are you mean to update a Cue position?! -flibit
+				instancePool[instancePool.Count - 1].Apply3D(listener, emitter);
 			}
 			public override void Stop() {
-				wave.Stop ();
+				foreach (SoundEffectInstance sfi in instancePool)
+				{
+					sfi.Stop();
+					sfi.Dispose();
+				}
+				instancePool.Clear();
+				INTERNAL_playing = false;
+				INTERNAL_paused = false;
 			}
 			public override void Pause() {
-				wave.Pause ();
+				foreach (SoundEffectInstance sfi in instancePool)
+				{
+					sfi.Pause();
+				}
+				INTERNAL_playing = true;
+				INTERNAL_paused = true;
 			}
 			public override void Resume()
 			{
-				wave.Volume = clip.Volume;
-				if (wave.State == SoundState.Paused)
-					wave.Resume();
+				foreach (SoundEffectInstance sfi in instancePool)
+				{
+					sfi.Resume();
+				}
+				INTERNAL_playing = true;
+				INTERNAL_paused = false;
 			}
+			private bool INTERNAL_playing = false;
 			public override bool Playing {
-				get {
-					return wave.State != SoundState.Stopped;
+				get
+				{
+					return INTERNAL_playing;
 				}
 			}
+			private bool INTERNAL_paused = false;
 			public override bool IsPaused
 			{
 				get
 				{
-					return wave.State == SoundState.Paused;
+					return INTERNAL_paused;
 				}
 			}
+			private float INTERNAL_volume = 1.0f;
 			public override float Volume {
-				get {
-					return wave.Volume;
+				get
+				{
+					return INTERNAL_volume;
 				}
-				set {
-					wave.Volume = value;
+				set
+				{
+					INTERNAL_volume = value;
+					foreach (SoundEffectInstance sfi in instancePool)
+					{
+						sfi.Volume = INTERNAL_volume;
+					}
+				}
+			}
+			private bool INTERNAL_looped = false;
+			public override bool IsLooped {
+				get
+				{
+					return INTERNAL_looped;
+				}
+				set
+				{
+					INTERNAL_looped = value;
+					foreach (SoundEffectInstance sfi in instancePool)
+					{
+						sfi.IsLooped = INTERNAL_looped;
+					}
 				}
 			}
 		}
@@ -104,7 +164,7 @@ namespace Microsoft.Xna.Framework.Audio
 					clipReader.ReadUInt16 ();
 					
 					evnt.wave = soundBank.GetWave(waveBankIndex, trackIndex);
-					evnt.wave.IsLooped = loopCount == 255;
+					evnt.IsLooped = loopCount == 255;
 					
 					events[i] = evnt;
 					break;
@@ -117,6 +177,22 @@ namespace Microsoft.Xna.Framework.Audio
 			
 			
 			clipReader.BaseStream.Seek (oldPosition, SeekOrigin.Begin);
+		}
+
+		public XactClip(SoundEffect effect)
+		{
+			EventPlayWave evt = new EventPlayWave();
+			evt.wave = effect;
+			events = new ClipEvent[1];
+			events[0] = evt;
+			events[0].clip = this;
+		}
+
+		public void Update() {
+			foreach (ClipEvent evt in events)
+			{
+				evt.Update();
+			}
 		}
 		
 		public void Play() {

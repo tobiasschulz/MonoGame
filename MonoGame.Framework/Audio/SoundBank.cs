@@ -237,7 +237,7 @@ namespace Microsoft.Xna.Framework.Audio
 			loaded = true;
         }
 		
-		internal SoundEffectInstance GetWave(byte waveBankIndex, uint trackIndex) {
+		internal SoundEffect GetWave(byte waveBankIndex, uint trackIndex) {
 			return waveBanks[waveBankIndex].sounds[trackIndex];
 		}
 		
@@ -273,7 +273,11 @@ namespace Microsoft.Xna.Framework.Audio
 		#region IDisposable implementation
 		public void Dispose ()
 		{
-			throw new NotImplementedException ();
+			foreach (KeyValuePair<string, Cue> cue in cues)
+			{
+				cue.Value.Dispose();
+			}
+			cues.Clear();
 		}
 
 		public bool IsDisposed

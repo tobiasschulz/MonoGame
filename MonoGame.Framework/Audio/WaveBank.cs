@@ -34,7 +34,7 @@ namespace Microsoft.Xna.Framework.Audio
 {
     public class WaveBank : IDisposable
     {
-        internal SoundEffectInstance[] sounds;
+        internal SoundEffect[] sounds;
         internal string BankName;
 
         struct Segment
@@ -195,7 +195,7 @@ namespace Microsoft.Xna.Framework.Audio
                 entry_name[wavebankdata.EntryNameElementSize] = 0;
             }
 
-            sounds = new SoundEffectInstance[wavebankdata.EntryCount];
+            sounds = new SoundEffect[wavebankdata.EntryCount];
 
             for (int current_entry = 0; current_entry < wavebankdata.EntryCount; current_entry++)
             {
@@ -336,9 +336,9 @@ namespace Microsoft.Xna.Framework.Audio
                     //write PCM data into a wav
 #if DIRECTX
 					SharpDX.Multimedia.WaveFormat waveFormat = new SharpDX.Multimedia.WaveFormat(rate, chans);
-					sounds[current_entry] = new SoundEffect(waveFormat, audiodata, 0, audiodata.Length, wavebankentry.LoopRegion.Offset, wavebankentry.LoopRegion.Length).CreateInstance();
+					sounds[current_entry] = new SoundEffect(waveFormat, audiodata, 0, audiodata.Length, wavebankentry.LoopRegion.Offset, wavebankentry.LoopRegion.Length);
 #else
-					sounds[current_entry] = new SoundEffect(audiodata, rate, (AudioChannels) chans).CreateInstance();
+					sounds[current_entry] = new SoundEffect(audiodata, rate, (AudioChannels) chans);
 #endif                    
                 } else if (codec == MiniForamtTag_WMA) { //WMA or xWMA (or XMA2)
                     byte[] wmaSig = {0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x0, 0xaa, 0x0, 0x62, 0xce, 0x6c};
@@ -386,7 +386,7 @@ namespace Microsoft.Xna.Framework.Audio
                         using (var audioFile = File.Create(filename))
                             audioFile.Write(audiodata, 0, audiodata.Length);
                         
-                        sounds[current_entry] = new SoundEffect(filename).CreateInstance();
+                        sounds[current_entry] = new SoundEffect(filename);
 #else
 						throw new NotImplementedException();
 #endif
@@ -411,7 +411,7 @@ namespace Microsoft.Xna.Framework.Audio
                                 MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
                                 rate,
                                 (AudioChannels) chans
-                            ).CreateInstance();
+                            );
                         }
                     }
 #endif
@@ -435,7 +435,11 @@ namespace Microsoft.Xna.Framework.Audio
 		#region IDisposable implementation
 		public void Dispose ()
 		{
-			throw new NotImplementedException();
+			foreach (SoundEffect sf in sounds)
+			{
+				sf.Dispose();
+			}
+			sounds = null;
 		}
 
 		public bool IsDisposed
