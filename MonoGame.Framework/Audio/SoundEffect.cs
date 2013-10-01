@@ -85,6 +85,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal int[] buffers;
         internal int loopStart;
         internal int loopEnd;
+        private TimeSpan INTERNAL_duration = TimeSpan.Zero;
 #else
         private Sound _sound;
         private SoundEffectInstance _instance;
@@ -130,7 +131,7 @@ namespace Microsoft.Xna.Framework.Audio
                 throw new Content.ContentLoadException("Could not load audio data", e);
             }
 
-            LoadAudioStream(s, 1.0f, false);
+            INTERNAL_loadAudioStream(s);
             s.Close();
 #else
             _sound = new Sound(_filename, 1.0f, false);
@@ -153,7 +154,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 throw new Content.ContentLoadException("Could not load audio data", e);
             }
-            LoadAudioStream(s, 1.0f, false);
+            INTERNAL_loadAudioStream(s);
             s.Close();
 #else
             _sound = new Sound(_data, 1.0f, false);
@@ -164,7 +165,7 @@ namespace Microsoft.Xna.Framework.Audio
         internal SoundEffect(Stream s)
         {
 #if SDL2
-            LoadAudioStream(s, 1.0f, false);
+            INTERNAL_loadAudioStream(s);
 #elif !DIRECTX
             var data = new byte[s.Length];
             s.Read(data, 0, (int)s.Length);
@@ -385,10 +386,6 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region Public Properties
 
-#if SDL2
-        private TimeSpan _duration = TimeSpan.Zero;
-#endif
-
         public TimeSpan Duration
         {
             get
@@ -399,7 +396,7 @@ namespace Microsoft.Xna.Framework.Audio
                 
                 return TimeSpan.FromSeconds((float)sampleCount / (float)avgBPS);
 #elif SDL2
-                return _duration;
+                return INTERNAL_duration;
 #else
                 if ( _sound != null )
                 {
@@ -530,7 +527,7 @@ namespace Microsoft.Xna.Framework.Audio
         #region Additional OpenTK SoundEffect Code
 
 #if SDL2
-        private void LoadAudioStream(Stream s, float volume, bool looping)
+        private void INTERNAL_loadAudioStream(Stream s)
         {
             byte[] data;
             int sampleRate = 0;
@@ -538,64 +535,66 @@ namespace Microsoft.Xna.Framework.Audio
 
             using (BinaryReader reader = new BinaryReader(s))
             {
-                //header
+                // RIFF Signature
                 string signature = new string(reader.ReadChars(4));
                 if (signature != "RIFF")
                 {
                     throw new NotSupportedException("Specified stream is not a wave file.");
                 }
-    
-                int riff_chunk_size = reader.ReadInt32();
-    
+
+                reader.ReadInt32(); // Riff Chunk Size
+
                 string wformat = new string(reader.ReadChars(4));
                 if (wformat != "WAVE")
                 {
                     throw new NotSupportedException("Specified stream is not a wave file.");
                 }
-    
-                // WAVE header
+
+                // WAVE Header
                 string format_signature = new string(reader.ReadChars(4));
-                while (format_signature != "fmt ") {
+                while (format_signature != "fmt ")
+                {
                     reader.ReadBytes(reader.ReadInt32());
                     format_signature = new string(reader.ReadChars(4));
                 }
-    
+
                 int format_chunk_size = reader.ReadInt32();
-    
-                // total bytes read: tbp
-                int audio_format = reader.ReadInt16(); // 2
-                numChannels = reader.ReadInt16(); // 4
-                sampleRate = reader.ReadInt32();  // 8
-                int byte_rate = reader.ReadInt32();    // 12
-                int block_align = reader.ReadInt16();  // 14
-                int bits_per_sample = reader.ReadInt16(); // 16
-    
+
+                // Header Information
+                int audio_format = reader.ReadInt16();  // 2
+                numChannels = reader.ReadInt16();       // 4
+                sampleRate = reader.ReadInt32();        // 8
+                reader.ReadInt32();                     // 12, Byte Rate
+                reader.ReadInt16();                     // 14, Block Align
+                reader.ReadInt16();                     // 16, Bits Per Sample
+
                 if (audio_format != 1)
                 {
                     throw new NotSupportedException("Wave compression is not supported.");
                 }
-    
-                // reads residual bytes
+
+                // Reads residual bytes
                 if (format_chunk_size > 16)
+                {
                     reader.ReadBytes(format_chunk_size - 16);
-                
+                }
+
+                // data Signature
                 string data_signature = new string(reader.ReadChars(4));
-    
                 while (data_signature.ToLower() != "data")
                 {
                     reader.ReadBytes(reader.ReadInt32());
                     data_signature = new string(reader.ReadChars(4));
                 }
-    
                 if (data_signature != "data")
                 {
                     throw new NotSupportedException("Specified wave file is not supported.");
                 }
-    
-                int size = reader.ReadInt32();
+
+                reader.ReadInt32(); // Size, might be used for line below
                 data = reader.ReadBytes((int) reader.BaseStream.Length);
             }
-            
+
             INTERNAL_bufferData(
                 data,
                 sampleRate,
@@ -604,14 +603,16 @@ namespace Microsoft.Xna.Framework.Audio
                 data.Length
             );
         }
-        
+
         private void INTERNAL_bufferData(byte[] data, int sampleRate, int channels, int loopStart, int loopEnd)
         {
             this.loopStart = loopStart;
             this.loopEnd = loopEnd;
-            
+
+            INTERNAL_duration = TimeSpan.FromSeconds(data.Length / 2 / channels / ((double) sampleRate));
+
             ALFormat format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
-            
+
             int numBuffers = 1;
             if (loopStart > 0)
             {
@@ -621,9 +622,9 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 numBuffers++;
             }
-            
+
             buffers = AL.GenBuffers(numBuffers);
-            
+
             if (numBuffers == 3)
             {
                 AL.BufferData(
