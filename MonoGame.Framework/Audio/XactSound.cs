@@ -64,13 +64,14 @@ namespace Microsoft.Xna.Framework.Audio
 						// 1 1 0 0 0 1 1 0 --- 198 - Attenuation
 						// 1 1 1 1 1 0 0 0 --- 248 - Attenuation_high
 						// 0 0 1 0 0 0 0 1 --- 033 - Attenuation_low
-
-						if (rpcTable == 198 || rpcTable == 218) {
+						if (rpcTable == 198 || rpcTable == 218 || rpcTable == 050) {
 							rpcEffects[i] = 0;
-						} else if (rpcTable == 248) {
+						} else if (rpcTable == 248 || rpcTable == 001) {
 							rpcEffects[i] = 1;
-						} else if (rpcTable == 033) {
+						} else if (rpcTable == 033 || rpcTable == 150) {
 							rpcEffects[i] = 2;
+						} else if (rpcTable == 000) {
+							rpcEffects[i] = 3;
 						} else {
 							throw new NotImplementedException("Check the XACT RPC parsing!");
 						}
