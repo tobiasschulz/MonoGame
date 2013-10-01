@@ -40,17 +40,10 @@ namespace Microsoft.Xna.Framework.Audio
 				soundClips[0] = new XactClip(soundBank.GetWave(waveBankIndex, trackIndex));
 			}
 			
-			if ( (flags & 0x1E) != 0 ) {
+			if ( (flags & 0xE) != 0 ) { // RPC Tables
 				uint extraDataLen = soundReader.ReadUInt16 ();
 
-				if ((flags & 0x10) != 0) { // FIXME: Verify this!
-					byte numPresets = soundReader.ReadByte();
-					uint[] presets = new uint[numPresets];
-					for (int i = 0; i < numPresets; i++)
-					{
-						presets[i] = soundReader.ReadUInt32();
-					}
-				} else if ((flags == 0x02) || (flags == 0x03)) { // FIXME: Verify this!
+				if ((flags == 0x02) || (flags == 0x03)) { // FIXME: Verify this!
 
 					// The number of RPC presets that affect this sound.
 					uint numRPCPresets = soundReader.ReadByte();
@@ -97,6 +90,16 @@ namespace Microsoft.Xna.Framework.Audio
 				} else {
 					// Screw it, just skip the block.
 					soundReader.BaseStream.Seek(extraDataLen - 2, SeekOrigin.Current);
+				}
+			}
+
+			if ((flags & 0x10) != 0) { // DSP Presets
+				uint extraDataLen = soundReader.ReadUInt16 ();
+				byte numPresets = soundReader.ReadByte();
+				uint[] presets = new uint[numPresets];
+				for (int i = 0; i < numPresets; i++)
+				{
+					presets[i] = soundReader.ReadUInt32();
 				}
 			}
 			
