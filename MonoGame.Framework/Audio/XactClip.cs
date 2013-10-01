@@ -55,7 +55,14 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 			public override void UpdatePosition(AudioListener listener, AudioEmitter emitter) {
 				// FIXME: How the hell are you meant to update a Cue position?! -flibit
-				instancePool[instancePool.Count - 1].Apply3D(listener, emitter);
+				try
+				{
+					instancePool[instancePool.Count - 1].Apply3D(listener, emitter);
+				}
+				catch(ArgumentOutOfRangeException e)
+				{
+					// FIXME: Not a huge deal, but this should be looked at. -flibit
+				}
 			}
 			public override void Stop() {
 				foreach (SoundEffectInstance sfi in instancePool)
@@ -136,6 +143,36 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			}
 		}
+
+		class EventWavePlayVariation : ClipEvent {
+			// FIXME: Implement EventWavePlayVariation -flibit
+			public override void Update(){}
+			public override void Play(){}
+			public override void PlayPositional(AudioListener listener, AudioEmitter emitter){}
+			public override void UpdatePosition(AudioListener listener, AudioEmitter emitter){}
+			public override void Stop(){}
+			public override void Pause(){}
+			public override void Resume(){}
+			public override bool Playing { get { return false; } }
+			public override float Volume { get; set; }
+			public override bool IsPaused { get { return false; } }
+			public override bool IsLooped { get; set; }
+		}
+
+		class EventSetVolume : ClipEvent {
+			// FIXME: Implement EventSetVolume -flibit
+			public override void Update(){}
+			public override void Play(){}
+			public override void PlayPositional(AudioListener listener, AudioEmitter emitter){}
+			public override void UpdatePosition(AudioListener listener, AudioEmitter emitter){}
+			public override void Stop(){}
+			public override void Pause(){}
+			public override void Resume(){}
+			public override bool Playing { get { return false; } }
+			public override float Volume { get; set; }
+			public override bool IsPaused { get { return false; } }
+			public override bool IsLooped { get; set; }
+		}
 		
 		ClipEvent[] events;
 		
@@ -152,15 +189,20 @@ namespace Microsoft.Xna.Framework.Audio
 				
 				uint eventId = eventInfo & 0x1F;
 				switch (eventId) {
+				case 0:
+					// FIXME: SetVolumeEventInfo -flibit
+					EventSetVolume volEvnt = new EventSetVolume();
+					events[i] = volEvnt;
+					break;
 				case 1:
 				case 4:
+				case 6: // FIXME: What is this?! -flibit
 					EventPlayWave evnt = new EventPlayWave();
 					
 					
 					clipReader.ReadUInt32 (); //unkn
 					uint trackIndex = clipReader.ReadUInt16 ();
 					byte waveBankIndex = clipReader.ReadByte ();
-					
 					
 					var loopCount = clipReader.ReadByte ();
 				    // if loopCount == 255 its an infinite loop
@@ -173,6 +215,11 @@ namespace Microsoft.Xna.Framework.Audio
 					evnt.IsLooped = loopCount == 255;
 					
 					events[i] = evnt;
+					break;
+				case 3:
+					// FIXME: WavePlayVariationEventInfo -flibit
+					EventWavePlayVariation playVarEvt = new EventWavePlayVariation();
+					events[i] = playVarEvt;
 					break;
 				default:
 					throw new NotImplementedException("eventInfo & 0x1F = " + eventId);

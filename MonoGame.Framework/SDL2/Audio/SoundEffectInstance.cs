@@ -279,6 +279,11 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void Apply3D(AudioListener[] listeners, AudioEmitter emitter)
         {
+            if (INTERNAL_alSource == -1)
+            {
+                return;
+            }
+
             // Get AL's listener position
             float x, y, z;
             AL.GetListener(ALListener3f.Position, out x, out y, out z);
