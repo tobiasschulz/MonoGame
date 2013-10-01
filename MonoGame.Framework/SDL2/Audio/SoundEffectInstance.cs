@@ -107,6 +107,10 @@ namespace Microsoft.Xna.Framework.Audio
         bool triggeredDequeue = false;
         internal void INTERNAL_checkLoop()
         {
+            if (INTERNAL_alSource == -1)
+            {
+                return;
+            }
             int processed;
             AL.GetSource(INTERNAL_alSource, ALGetSourcei.BuffersProcessed, out processed);
             if (!triggeredDequeue && processed > 0)
