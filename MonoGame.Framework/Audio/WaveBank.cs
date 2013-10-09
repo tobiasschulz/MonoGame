@@ -423,60 +423,8 @@ namespace Microsoft.Xna.Framework.Audio
                         //An xWMA or XMA2 file. Can't be played atm :(
                         throw new NotImplementedException();
                     }
-#if !DIRECTX
-                /* DirectX platforms can use XAudio2 to stream MSADPCM natively.
-                 * This code is cross-platform, but the problem is that it just
-                 * decodes ALL of the wavedata here. For XAudio2 in particular,
-                 * this is probably ludicrous.
-                 *
-                 * You need to write a DIRECTX ADPCM reader that just loads this
-                 * into the SoundEffect. No decoding should be necessary.
-                 * -flibit
-                 */
                 } else if (codec == MiniFormatTag_ADPCM) {
-#if THREADED_DECODING
-                    bool usingThread = false;
-                    for (int i = 0; i < (Environment.ProcessorCount - 1); i++)
-                    {
-                        if (adpcmThreads[i] == null || !adpcmThreads[i].IsAlive)
-                        {
-                            ADPCMContainer adpcmObject = new ADPCMContainer(
-                                current_entry,
-                                audiodata,
-                                (short) chans,
-                                (short) align,
-                                rate
-                            );
-                            adpcmThreads[i] = new Thread(new ParameterizedThreadStart(INTERNAL_decodeADPCM));
-                            adpcmThreads[i].Start(adpcmObject);
-                            usingThread = true;
-                        }
-                    }
-                    if (!usingThread)
-                    {
-                        // Just run on the main thread.
-                        using (MemoryStream dataStream = new MemoryStream(audiodata)) {
-                            using (BinaryReader source = new BinaryReader(dataStream)) {
-                                sounds[current_entry] = new SoundEffect(
-                                    MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
-                                    rate,
-                                    (AudioChannels) chans
-                                );
-                            }
-                        }
-                    }
-#else
-                    using (MemoryStream dataStream = new MemoryStream(audiodata)) {
-                        using (BinaryReader source = new BinaryReader(dataStream)) {
-                            sounds[current_entry] = new SoundEffect(
-                                MSADPCMToPCM.MSADPCM_TO_PCM(source, (short) chans, (short) align),
-                                rate,
-                                (AudioChannels) chans
-                            );
-                        }
-                    }
-#endif
-#endif
+                    sounds[current_entry] = new SoundEffect(audiodata, rate, (AudioChannels) chans, align + 22);
                 } else {
                     throw new NotImplementedException();
                 }

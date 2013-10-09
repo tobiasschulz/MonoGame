@@ -247,6 +247,18 @@ namespace Microsoft.Xna.Framework.Audio
             _sound = new Sound(_data, 1.0f, false);
 #endif
         }
+        
+        internal SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels, int compressionAlign)
+        {
+            INTERNAL_bufferData(
+                buffer,
+                sampleRate,
+                (int) channels,
+                0,
+                buffer.Length,
+                compressionAlign
+            );
+        }
 
         public SoundEffect(byte[] buffer, int offset, int count, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
         {
@@ -606,12 +618,56 @@ namespace Microsoft.Xna.Framework.Audio
 
         private void INTERNAL_bufferData(byte[] data, int sampleRate, int channels, int loopStart, int loopEnd)
         {
+            INTERNAL_bufferData(data, sampleRate, channels, loopStart, loopEnd, 0);
+        }
+
+        private void INTERNAL_bufferData(byte[] data, int sampleRate, int channels, int loopStart, int loopEnd, int compressionAlign)
+        {
             this.loopStart = loopStart;
             this.loopEnd = loopEnd;
 
             INTERNAL_duration = TimeSpan.FromSeconds(data.Length / 2 / channels / ((double) sampleRate));
 
-            ALFormat format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+            ALFormat format;
+            if (compressionAlign > 0)
+            {
+                if (AL.Get(ALGetString.Extensions).Contains("AL_EXT_MSADPCM"))
+                {
+                    if (compressionAlign == 70)
+                    {
+                        format = (channels == 2) ? ALFormat.StereoMsadpcm128Ext : ALFormat.MonoMsadpcm128Ext;
+                    }
+                    else if (compressionAlign == 38)
+                    {
+                        format = (channels == 2) ? ALFormat.StereoMsadpcm64Ext : ALFormat.MonoMsadpcm64Ext;
+                    }
+                    else
+                    {
+                        throw new Exception("MSADPCM blockAlign unsupported in AL_EXT_MSADPCM!");
+                    }
+                }
+                else
+                {
+                    byte[] newData;
+                    using (MemoryStream stream = new MemoryStream(data))
+                    {
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            newData = MSADPCMToPCM.MSADPCM_TO_PCM(
+                                reader,
+                                (short) channels,
+                                (short) (compressionAlign - 22)
+                            );
+                        }
+                    }
+                    data = newData;
+                    format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+                }
+            }
+            else
+            {
+                format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+            }
 
             int numBuffers = 1;
             if (loopStart > 0)
