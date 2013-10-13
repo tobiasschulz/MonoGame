@@ -151,6 +151,9 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			//TODO: Probabilities
 			curSound = sounds[variationRand.Next (sounds.Length)];
+
+			// There may not have been a sound when we first set volume.
+			curSound.Volume = volume * rpcVolume;
 			
 			if (positionalAudio)
 			{
