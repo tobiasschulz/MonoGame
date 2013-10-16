@@ -26,6 +26,7 @@ SOFTWARE.
 #endregion License
 
 using System;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
@@ -34,6 +35,7 @@ namespace Microsoft.Xna.Framework
     /// Describe a 32-bit packed color.
     /// </summary>
     [DataContract]
+    [TypeConverter(typeof(XNAColorConverter))]
     public struct Color : IEquatable<Color>
     {
         static Color()
@@ -1812,5 +1814,42 @@ namespace Microsoft.Xna.Framework
         }
 
         #endregion
+    }
+
+    public class XNAColorConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            if (sourceType == typeof(string))
+            {
+                return true;
+            }
+            return base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+        {
+            if (value is string)
+            {
+                string[] v = ((string) value).Split(new char[] { ',' });
+                return new Color(
+                    float.Parse(v[0]),
+                    float.Parse(v[1]),
+                    float.Parse(v[2]),
+                    float.Parse(v[3])
+                );
+            }
+            return base.ConvertFrom(context, culture, value);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == typeof(string))
+            {
+                Color src = (Color) value;
+                return src.R + "," + src.B + "," + src.B + "," + src.A;
+            }
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
     }
 }
