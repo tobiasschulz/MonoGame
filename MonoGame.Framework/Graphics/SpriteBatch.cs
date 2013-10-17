@@ -370,7 +370,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					_texCoordTL, 
 					_texCoordBR);			
 			
-			
 			if (autoFlush)
 			{
 				FlushIfNeeded();
