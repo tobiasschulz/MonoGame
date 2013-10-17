@@ -721,6 +721,15 @@ namespace Microsoft.Xna.Framework
 			                            GraphicsDevice.PresentationParameters.BackBufferHeight);
 
             GraphicsDevice.Viewport = viewport;
+
+            // FIXME: What is the behavior of ScissorRect on ApplyChanges anyway? -flibit
+            GraphicsDevice.ScissorRectangle = new Rectangle(
+                0,
+                0,
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight
+            );
+
 			Platform.EndScreenDeviceChange(string.Empty, viewport.Width, viewport.Height);
         }
 
