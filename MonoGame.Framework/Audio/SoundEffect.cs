@@ -97,18 +97,6 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region Internal Constructors
 
-#if DIRECTX
-        internal SoundEffect()
-        {
-        }
-
-        // Extended constructor which supports custom formats / compression.
-        internal SoundEffect(WaveFormat format, byte[] buffer, int offset, int count, int loopStart, int loopLength)
-        {
-            Initialize(format, buffer, offset, count, loopStart, loopLength);
-        }
-
-#else
         internal SoundEffect(string fileName)
         {
             _filename = fileName;
@@ -159,8 +147,7 @@ namespace Microsoft.Xna.Framework.Audio
 #else
             _sound = new Sound(_data, 1.0f, false);
 #endif
-        }        
-#endif
+        }
 
         internal SoundEffect(Stream s)
         {
@@ -174,7 +161,13 @@ namespace Microsoft.Xna.Framework.Audio
             _sound = new Sound(_data, 1.0f, false);
 #endif
         }
-        
+
+        internal SoundEffect(string name, byte[] buffer, int sampleRate, AudioChannels channels)
+            : this(buffer, sampleRate, channels)
+        {
+            _name = name;
+        }
+
         internal SoundEffect(string Name, byte[] buffer, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
         {
 #if SDL2
@@ -191,10 +184,35 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
         }
 
-        internal SoundEffect(string name, byte[] buffer, int sampleRate, AudioChannels channels)
-            : this(buffer, sampleRate, channels)
+        internal SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
         {
-            _name = name;
+#if SDL2
+            INTERNAL_bufferData(
+                buffer,
+                sampleRate,
+                (int) channels,
+                loopStart,
+                loopStart + loopLength
+            );
+#else
+            throw new NotImplementedException();
+#endif
+        }
+
+        internal SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels, int compressionAlign)
+        {
+#if SDL2
+            INTERNAL_bufferData(
+                buffer,
+                sampleRate,
+                (int) channels,
+                0,
+                buffer.Length,
+                compressionAlign
+            );
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         #endregion
@@ -246,18 +264,6 @@ namespace Microsoft.Xna.Framework.Audio
 
             _sound = new Sound(_data, 1.0f, false);
 #endif
-        }
-        
-        internal SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels, int compressionAlign)
-        {
-            INTERNAL_bufferData(
-                buffer,
-                sampleRate,
-                (int) channels,
-                0,
-                buffer.Length,
-                compressionAlign
-            );
         }
 
         public SoundEffect(byte[] buffer, int offset, int count, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
