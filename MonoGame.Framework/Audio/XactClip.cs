@@ -144,6 +144,29 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+        class EventPlayMultiWave : EventPlayWave {
+            public SoundEffect[] waves;
+            private List<SoundEffectInstance> instancePool = new List<SoundEffectInstance>();
+
+            public override void Play() {
+                // FIXME: Random waves!
+                SoundEffectInstance newInstance = waves[0].CreateInstance();
+                newInstance.Volume = Volume;
+                newInstance.IsLooped = IsLooped;
+                newInstance.Play();
+                instancePool.Add(newInstance);
+            }
+            public override void PlayPositional(AudioListener listener, AudioEmitter emitter) {
+                // FIXME: Random waves!
+                SoundEffectInstance newInstance = waves[0].CreateInstance();
+                newInstance.Volume = Volume;
+                newInstance.IsLooped = IsLooped;
+                newInstance.Apply3D(listener, emitter);
+                newInstance.Play();
+                instancePool.Add(newInstance);
+            }
+        }
+
 		class EventWavePlayVariation : ClipEvent {
 			// FIXME: Implement EventWavePlayVariation -flibit
 			public override void Update(){}
@@ -196,7 +219,6 @@ namespace Microsoft.Xna.Framework.Audio
 					break;
 				case 1:
 				case 4:
-				case 6: // FIXME: What is this?! -flibit
 					EventPlayWave evnt = new EventPlayWave();
 					
 					
@@ -217,10 +239,58 @@ namespace Microsoft.Xna.Framework.Audio
 					events[i] = evnt;
 					break;
 				case 3:
+                case 8: // FIXME: lolwuta
 					// FIXME: WavePlayVariationEventInfo -flibit
 					EventWavePlayVariation playVarEvt = new EventWavePlayVariation();
 					events[i] = playVarEvt;
 					break;
+                case 6:
+                    EventPlayMultiWave evt = new EventPlayMultiWave();
+                    
+                    // A whole bunch of shit nobody cares about
+                    clipReader.ReadBytes(33);
+                    // u16 0    0
+                    // u8 255   255
+                    // u32 12   12
+                    // u16 0    0
+                    // u8 156   123
+                    // u8 255   254
+                    // u16 100  215
+                    // u8 151   151
+                    // u16 180  214
+                    
+                    // u8 0
+                    // u8 122
+                    // u16 68
+                    
+                    // u8 0
+                    // u8 122
+                    // u16 68
+                    
+                    // u8 0
+                    // u8 240
+                    // u16 65
+                    
+                    // u8 0
+                    // u8 240
+                    // u16 65
+                    
+                    // u8 32    16
+                    
+                    ushort numEntries = clipReader.ReadUInt16();
+                    evt.waves = new SoundEffect[numEntries];
+                    clipReader.ReadUInt16(); // 3
+                    clipReader.ReadBytes(4); // 255 each
+                    for (ushort j = 0; j < numEntries; j++)
+                    {
+                        ushort index = clipReader.ReadUInt16();
+                        byte wavebank = clipReader.ReadByte();
+                        byte minWeight = clipReader.ReadByte();
+                        byte weight = clipReader.ReadByte();
+                        evt.waves[j] = soundBank.GetWave(wavebank, index);
+                    }
+                    events[i] = evt;
+                    break;
 				default:
 					throw new NotImplementedException("eventInfo & 0x1F = " + eventId);
 				}
