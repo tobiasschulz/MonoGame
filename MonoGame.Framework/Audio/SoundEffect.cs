@@ -629,6 +629,11 @@ namespace Microsoft.Xna.Framework.Audio
 
         private void INTERNAL_bufferData(byte[] data, int sampleRate, int channels, int loopStart, int loopEnd, int compressionAlign)
         {
+            // If there's no loopEnd, just assume we're going to the end.
+            if (loopEnd == 0)
+            {
+                loopEnd = data.Length;
+            }
             this.loopStart = loopStart;
             this.loopEnd = loopEnd;
 
