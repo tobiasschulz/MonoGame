@@ -328,7 +328,20 @@ namespace Microsoft.Xna.Framework.Audio
 			foreach (uint curCode in INTERNAL_activeSound.RPCCodes)
 			{
 				RPC curRPC = INTERNAL_baseEngine.INTERNAL_getRPC(curCode);
-				float result = curRPC.CalculateRPC(GetVariable(curRPC.Variable));
+				float result;
+				try
+				{
+					result = curRPC.CalculateRPC(GetVariable(curRPC.Variable));
+				}
+				catch
+				{
+					// It's a global variable we're looking for!
+					result = curRPC.CalculateRPC(
+						INTERNAL_baseEngine.GetGlobalVariable(
+							curRPC.Variable
+						)
+					);
+				}
 				if (curRPC.Parameter == RPCParameter.Volume)
 				{
 					// FIXME: Multiple Volume combinations?
