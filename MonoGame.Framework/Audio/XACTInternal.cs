@@ -210,6 +210,17 @@ namespace Microsoft.Xna.Framework.Audio
 					}
 				}
 			}
+
+			// Clamp the result to +/- 10000.
+			if (result > 10000.0f)
+			{
+				result = 10000.0f;
+			}
+			else if (result < -10000.0f)
+			{
+				result = -10000.0f;
+			}
+
 			return result;
 		}
 	}

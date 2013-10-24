@@ -344,8 +344,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				if (curRPC.Parameter == RPCParameter.Volume)
 				{
-					// FIXME: Multiple Volume combinations?
-					rpcVolume += (result / 10000.0f);
+					rpcVolume *= 1.0f + (result / 10000.0f);
 				}
 				else
 				{
