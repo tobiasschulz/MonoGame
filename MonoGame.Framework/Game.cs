@@ -657,6 +657,7 @@ namespace Microsoft.Xna.Framework
         private void Components_ComponentAdded(
             object sender, GameComponentCollectionEventArgs e)
         {
+            e.GameComponent.Initialize();
             CategorizeComponent(e.GameComponent);
         }
 
