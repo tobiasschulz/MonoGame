@@ -538,7 +538,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			SoundEffectInstance result = INTERNAL_wave.CreateInstance();
 			// FIXME: Verify this!
-			result.Pitch = 1.0f + (random.Next(INTERNAL_minPitch, INTERNAL_maxPitch) / 100.0f);
+			result.Pitch = (random.Next(INTERNAL_minPitch, INTERNAL_maxPitch) / 100.0f);
 			// FIXME: Better looping!
 			result.IsLooped = (INTERNAL_loopCount == 255);
 			return result;
