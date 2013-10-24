@@ -61,7 +61,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
-					if (sfi.State == SoundState.Playing)
+					if (sfi.State != SoundState.Stopped)
 					{
 						return true;
 					}
