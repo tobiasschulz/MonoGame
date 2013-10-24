@@ -1,158 +1,158 @@
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Audio
 {
+	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audiocategory.aspx
 	public struct AudioCategory : IEquatable<AudioCategory>
 	{
-		string name;
-		AudioEngine engine;
+		private List<Cue> managedCues;
+		private List<Cue> unmanagedCues;
 
-		internal float volume;
-		internal bool isBackgroundMusic;
-		internal bool isPublic;
+		private float INTERNAL_volume;
 
-		internal bool instanceLimit;
-		internal int maxInstances;
-
-		List<Cue> sounds;
-
-		//insatnce limiting behaviour
-		internal enum MaxInstanceBehaviour {
-			FailToPlay,
-			Queue,
-			ReplaceOldest,
-			ReplaceQuietest,
-			ReplaceLowestPriority,
-		}
-		internal MaxInstanceBehaviour instanceBehaviour;
-
-		internal enum CrossfadeType {
-			Linear,
-			Logarithmic,
-			EqualPower,
-		}
-		internal CrossfadeType fadeType;
-		internal float fadeIn;
-		internal float fadeOut;
-
-		
-		internal AudioCategory (AudioEngine audioengine, string name, BinaryReader reader)
+		private string INTERNAL_name;
+		public string Name
 		{
-		    Debug.Assert(audioengine != null);
-            Debug.Assert(!string.IsNullOrEmpty(name));
-
-			this.sounds = new List<Cue>();
-			this.name = name;
-			engine = audioengine;
-
-			maxInstances = reader.ReadByte ();
-			instanceLimit = maxInstances != 0xff;
-
-			fadeIn = (reader.ReadUInt16 () / 1000f);
-			fadeOut = (reader.ReadUInt16 () / 1000f);
-
-			byte instanceFlags = reader.ReadByte ();
-			fadeType = (CrossfadeType)(instanceFlags & 0x7);
-			instanceBehaviour = (MaxInstanceBehaviour)(instanceFlags >> 3);
-
-			reader.ReadUInt16 (); //unkn
-
-			byte vol = reader.ReadByte (); //volume in unknown format
-			//lazy 4-param fitting:
-			//0xff 6.0
-			//0xca 2.0
-			//0xbf 1.0
-			//0xb4 0.0
-			//0x8f -4.0
-			//0x5a -12.0
-			//0x14 -38.0
-			//0x00 -96.0
-			var a = -96.0;
-			var b = 0.432254984608615;
-			var c = 80.1748600297963;
-			var d = 67.7385212334047;
-			volume = (float)(((a-d)/(1+(Math.Pow(vol/c, b)))) + d);
-
-			byte visibilityFlags = reader.ReadByte ();
-			isBackgroundMusic = (visibilityFlags & 0x1) != 0;
-			isPublic = (visibilityFlags & 0x2) != 0;
+			get
+			{
+				return INTERNAL_name;
+			}
 		}
 
-		internal void AddSound(Cue sound)
-		{
-			sounds.Add(sound);
+		internal AudioCategory(
+			string name,
+			float volume
+		) {
+			INTERNAL_name = name;
+			INTERNAL_volume = volume;
+			managedCues = new List<Cue>();
+			unmanagedCues = new List<Cue>();
 		}
 
-		public string Name { get { return name; } }
-
-		public void Pause ()
+		public void Pause()
 		{
-			foreach (var sound in sounds)
-				sound.Pause();
+			foreach (Cue curCue in managedCues)
+			{
+				curCue.Pause();
+			}
+			foreach (Cue curCue in unmanagedCues)
+			{
+				curCue.Pause();
+			}
 		}
 
-		public void Resume ()
+		public void Resume()
 		{
-			foreach (var sound in sounds)
-				sound.Resume();
-		}
-
-		public void Stop ()
-		{
-			foreach (var sound in sounds)
-				sound.Stop(AudioStopOptions.Immediate);
-		}
-
-		public void Stop (AudioStopOptions option)
-		{
-			foreach (var sound in sounds)
-				sound.Stop(option);
+			foreach (Cue curCue in managedCues)
+			{
+				curCue.Resume();
+			}
+			foreach (Cue curCue in unmanagedCues)
+			{
+				curCue.Resume();
+			}
 		}
 
 		public void SetVolume(float volume)
 		{
-			foreach (var sound in sounds)
-				sound.SetVariable("Volume", volume);
+			INTERNAL_volume = volume;
+			foreach (Cue curCue in managedCues)
+			{
+				curCue.SetVariable("Volume", volume);
+			}
+			foreach (Cue curCue in unmanagedCues)
+			{
+				curCue.SetVariable("Volume", volume);
+			}
 		}
 
-        public static bool operator ==(AudioCategory first, AudioCategory second)
-        {
-            return first.engine == second.engine && first.name.Equals(second.name, StringComparison.Ordinal);
-        }
-
-        public static bool operator !=(AudioCategory first, AudioCategory second)
-	    {
-            return first.engine != second.engine || !first.name.Equals(second.name, StringComparison.Ordinal);
-	    }
-
-	    public bool Equals(AudioCategory other)
+		public void Stop(AudioStopOptions options)
 		{
-            return engine == other.engine && name.Equals(other.name, StringComparison.Ordinal);
+			foreach (Cue curCue in managedCues)
+			{
+				curCue.Stop(options);
+			}
+			foreach (Cue curCue in unmanagedCues)
+			{
+				curCue.Stop(options);
+			}
 		}
 
-        public override bool Equals(object obj)
-        {
-            if (obj is AudioCategory)
-            {
-                var other = (AudioCategory)obj;
-                return engine == other.engine && name.Equals(other.name, StringComparison.Ordinal);
-            }
+		public override int GetHashCode()
+		{
+			// FIXME: Verify this!
+			return Name.GetHashCode();
+		}
 
-            return false;
-        }
+		public bool Equals(AudioCategory other)
+		{
+			return (GetHashCode() == other.GetHashCode());
+		}
 
-        public override int GetHashCode()
-        {
-            return name.GetHashCode() ^ engine.GetHashCode();
-        }
+		public override bool Equals(Object obj)
+		{
+			// FIXME: Check obj type
+			return (GetHashCode() == obj.GetHashCode());
+		}
 
-        public override string ToString()
-        {
-            return name;
-        }
+		public static bool op_Equality(
+			AudioCategory value1,
+			AudioCategory value2
+		) {
+			return value1.Equals(value2);
+		}
+
+		public static bool op_Inequality(
+			AudioCategory value1,
+			AudioCategory value2
+		) {
+			return !(value1.Equals(value2));
+		}
+
+		internal void INTERNAL_update()
+		{
+			// Unmanaged Cues are only removed when the user disposes them.
+			for (int i = 0; i < unmanagedCues.Count; i++)
+			{
+				if (unmanagedCues[i].IsDisposed)
+				{
+					unmanagedCues.RemoveAt(i);
+					i--;
+				}
+				else
+				{
+					unmanagedCues[i].INTERNAL_update();
+				}
+			}
+
+			// Managed Cues are removed when they have stopped playing.
+			for (int i = 0; i < managedCues.Count; i++)
+			{
+				if (!managedCues[i].IsPlaying)
+				{
+					managedCues[i].Dispose();
+					managedCues.RemoveAt(i);
+					i--;
+				}
+				else
+				{
+					managedCues[i].INTERNAL_update();
+				}
+			}
+		}
+
+		internal void INTERNAL_addCue(Cue newCue, bool managed)
+		{
+			if (managed)
+			{
+				managedCues.Add(newCue);
+			}
+			else
+			{
+				unmanagedCues.Add(newCue);
+			}
+			newCue.SetVariable("Volume", INTERNAL_volume);
+		}
 	}
 }
-

@@ -284,8 +284,6 @@
     <Compile Include="Content\LzxDecoder.cs" />
     <Compile Include="Input\GamePadDeadZone.cs" />
     <Compile Include="Content\ContentReaders\CurveReader.cs" />
-    <Compile Include="Audio\XactClip.cs" />
-    <Compile Include="Audio\XactSound.cs" />
     <Compile Include="LaunchParameters.cs" />
     <Compile Include="Audio\AudioCategory.cs" />
     <Compile Include="Content\ContentReaders\AlphaTestEffectReader.cs" />
@@ -401,6 +399,8 @@
     <Compile Include="Storage\StorageDeviceHelper.cs" />
     <Compile Include="GamerServices\GuideAlreadyVisibleException.cs" />
     <Compile Include="Graphics\Vertices\VertexBufferBinding.cs" />
+    <Compile Include="Audio\CueData.cs" />
+    <Compile Include="Audio\XACTInternal.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">

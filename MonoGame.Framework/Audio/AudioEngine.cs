@@ -1,269 +1,468 @@
-#region License
-/*
-Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009 The MonoGame Team
-
-All rights reserved.
-
-This license governs use of the accompanying software. If you use the software, you accept this license. If you do not
-accept the license, do not use the software.
-
-1. Definitions
-The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under 
-U.S. copyright law.
-
-A "contribution" is the original software, or any additions or changes to the software.
-A "contributor" is any person that distributes its contribution under this license.
-"Licensed patents" are a contributor's patent claims that read directly on its contribution.
-
-2. Grant of Rights
-(A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
-(B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
-
-3. Conditions and Limitations
-(A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
-(B) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, 
-your patent license from such contributor to the software ends automatically.
-(C) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution 
-notices that are present in the software.
-(D) If you distribute any portion of the software in source code form, you may do so only under this license by including 
-a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object 
-code form, you may only do so under a license that complies with this license.
-(E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees
-or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent
-permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
-purpose and non-infringement.
-*/
-#endregion License
-
 using System;
-using System.IO;
 using System.Collections.Generic;
-
-using Microsoft.Xna.Framework;
+using System.IO;
 
 namespace Microsoft.Xna.Framework.Audio
 {
+	// http://msdn.microsoft.com/en-us/library/dd940262.aspx
 	public class AudioEngine : IDisposable
 	{
 		public const int ContentVersion = 46;
-		
-		internal Dictionary<string, WaveBank> Wavebanks = new Dictionary<string, WaveBank>();
 
-		internal List<SoundBank> SoundBanks = new List<SoundBank>();
+		private Dictionary<string, WaveBank> INTERNAL_waveBanks;
 
-		AudioCategory[] categories;
-		Dictionary<string, int> categoryLookup = new Dictionary<string, int>();
+		private List<AudioCategory> INTERNAL_categories;
+		private List<Variable> INTERNAL_variables;
+		private Dictionary<long, RPC> INTERNAL_RPCs;
+		private List<DSPParameter> INTERNAL_dspParameters;
+		private List<DSPPreset> INTERNAL_dspPresets;
 
-		internal AudioCategory[] Categories { get { return categories; } }
-
-		internal struct Variable {
-			public string name;
-			public float value;
-
-			public bool isGlobal;
-			public bool isReadOnly;
-			public bool isPublic;
-			public bool isReserved;
-
-			public float initValue;
-			public float maxValue;
-			public float minValue;
-		}
-		internal Variable[] variables;
-		Dictionary<string, int> variableLookup = new Dictionary<string, int>();
-
-
-		internal enum RpcPointType {
-			Linear,
-			Fast,
-			Slow,
-			SinCos
-		}
-		internal struct RpcPoint {
-			public float x, y;
-			public RpcPointType type;
-		}
-
-		internal enum RpcParameter {
-			Volume,
-			Pitch,
-			ReverbSend,
-			FilterFrequency,
-			FilterQFactor
-		}
-		internal struct RpcCurve {
-			public int variable;
-			public RpcParameter parameter;
-			public RpcPoint[] points;
-		}
-
-		internal RpcCurve[] rpcCurves;
-
-
-
-		public AudioEngine (string settingsFile)
-			: this(settingsFile, TimeSpan.Zero, "")
+		public bool IsDisposed
 		{
+			get;
+			private set;
 		}
-		
-		public AudioEngine (string settingsFile, TimeSpan lookAheadTime, string rendererId)
+
+		public event EventHandler<EventArgs> Disposing;
+
+		public AudioEngine(string settingsFile)
 		{
-			//Read the xact settings file
-			//Credits to alisci01 for initial format documentation
-#if !ANDROID
-			using (var stream = TitleContainer.OpenStream(settingsFile))
+			if (String.IsNullOrEmpty(settingsFile))
 			{
-#else
-			using (var fileStream = Game.Activity.Assets.Open(settingsFile))
+				throw new ArgumentNullException("settingsFile");
+			}
+
+#if ANDROID
+			using (FileStream fileStream = Game.Activity.Assets.Open(settingsFile))
 			{
 				MemoryStream stream = new MemoryStream();
 				fileStream.CopyTo(stream);
 				stream.Position = 0;
+#else
+			using (Stream stream = TitleContainer.OpenStream(settingsFile))
+			{
 #endif
-				using (var reader = new BinaryReader(stream)) {
-					uint magic = reader.ReadUInt32 ();
-					if (magic != 0x46534758) { //'XGFS'
-						throw new ArgumentException ("XGS format not recognized");
+				using (BinaryReader reader = new BinaryReader(stream))
+				{
+					// Check the file header. Should be 'XGFS'
+					if (reader.ReadUInt32() != 0x46534758)
+					{
+						throw new ArgumentException("XGFS format not recognized!");
 					}
 
-					uint toolVersion = reader.ReadUInt16 ();
-					uint formatVersion = reader.ReadUInt16 ();
-#if DEBUG
-					if (formatVersion != 42) {
-						System.Diagnostics.Debug.WriteLine ("Warning: XGS format not supported");
+					// Check the Content and Tool versions
+					if (reader.ReadUInt16() != ContentVersion)
+					{
+						throw new ArgumentException("XGFS Content version!");
 					}
-#endif
-					uint crc = reader.ReadUInt16 (); //??
-
-					uint lastModifiedLow = reader.ReadUInt32 ();
-					uint lastModifiedHigh = reader.ReadUInt32 ();
-
-					reader.ReadByte (); //unkn, 0x03. Platform?
-
-					uint numCats = reader.ReadUInt16 ();
-					uint numVars = reader.ReadUInt16 ();
-
-					reader.ReadUInt16 (); //unkn, 0x16
-					reader.ReadUInt16 (); //unkn, 0x16
-
-					uint numRpc = reader.ReadUInt16 ();
-					uint numDspPresets = reader.ReadUInt16 ();
-					uint numDspParams = reader.ReadUInt16 ();
-
-					uint catsOffset = reader.ReadUInt32 ();
-					uint varsOffset = reader.ReadUInt32 ();
-
-					reader.ReadUInt32 (); //unknown, leads to a short with value of 1?
-					uint catNameIndexOffset = reader.ReadUInt32 ();
-					reader.ReadUInt32 (); //unknown, two shorts of values 2 and 3?
-					uint varNameIndexOffset = reader.ReadUInt32 ();
-
-					uint catNamesOffset = reader.ReadUInt32 ();
-					uint varNamesOffset = reader.ReadUInt32 ();
-					uint rpcOffset = reader.ReadUInt32 ();
-					uint dspPresetsOffset = reader.ReadUInt32 ();
-					uint dspParamsOffset = reader.ReadUInt32 ();
-					reader.BaseStream.Seek (catNamesOffset, SeekOrigin.Begin);
-					string[] categoryNames = readNullTerminatedStrings (numCats, reader);
-
-					categories = new AudioCategory[numCats];
-					reader.BaseStream.Seek (catsOffset, SeekOrigin.Begin);
-					for (int i=0; i<numCats; i++) {
-						categories [i] = new AudioCategory (this, categoryNames [i], reader);
-						categoryLookup.Add (categoryNames [i], i);
+					if (reader.ReadUInt16() != 42)
+					{
+						throw new ArgumentException("XGFS Tool version!");
 					}
 
-					reader.BaseStream.Seek (varNamesOffset, SeekOrigin.Begin);
-					string[] varNames = readNullTerminatedStrings (numVars, reader);
+					// Unknown value
+					reader.ReadUInt16();
 
-					variables = new Variable[numVars];
-					reader.BaseStream.Seek (varsOffset, SeekOrigin.Begin);
-					for (int i=0; i<numVars; i++) {
-						variables [i].name = varNames [i];
+					// Last Modified, Unused
+					reader.ReadUInt64();
 
-						byte flags = reader.ReadByte ();
-						variables [i].isPublic = (flags & 0x1) != 0;
-						variables [i].isReadOnly = (flags & 0x2) != 0;
-						variables [i].isGlobal = (flags & 0x4) == 0;
-						variables [i].isReserved = (flags & 0x8) != 0;
-						
-						variables [i].initValue = reader.ReadSingle ();
-						variables [i].minValue = reader.ReadSingle ();
-						variables [i].maxValue = reader.ReadSingle ();
+					// Unknown value
+					reader.ReadByte();
 
-						variables [i].value = variables [i].initValue;
+					// Number of AudioCategories
+					ushort numCategories = reader.ReadUInt16();
 
-						variableLookup.Add (varNames [i], i);
+					// Number of XACT Variables
+					ushort numVariables = reader.ReadUInt16();
+
+					// Unknown value, KEY#1 Length?
+					reader.ReadUInt16();
+
+					// Unknown value, KEY#2 Length?
+					reader.ReadUInt16();
+
+					// Number of RPC Variables
+					ushort numRPCs = reader.ReadUInt16();
+
+					// Number of DSP Presets/Parameters
+					ushort numDSPPresets = reader.ReadUInt16();
+					ushort numDSPParameters = reader.ReadUInt16();
+
+					// Category Offset in XGS File
+					uint categoryOffset = reader.ReadUInt32();
+
+					// Variable Offset in XGS File
+					uint variableOffset = reader.ReadUInt32();
+
+					// Unknown value, KEY#1 Offset?
+					reader.ReadUInt32();
+
+					// Category Name Index Offset, unused
+					reader.ReadUInt32();
+
+					// Unknown value, KEY#2 Offset?
+					reader.ReadUInt32();
+
+					// Variable Name Index Offset, unused
+					reader.ReadUInt32();
+
+					// Category Name Offset in XGS File
+					uint categoryNameOffset = reader.ReadUInt32();
+
+					// Variable Name Offset in XGS File
+					uint variableNameOffset = reader.ReadUInt32();
+
+					// RPC Variable Offset in XGS File
+					uint rpcOffset = reader.ReadUInt32();
+
+					// DSP Preset/Parameter Offsets in XGS File
+					uint dspPresetOffset = reader.ReadUInt32();
+					uint dspParameterOffset = reader.ReadUInt32();
+
+					// Obtain the Audio Category Names
+					reader.BaseStream.Seek(categoryNameOffset, SeekOrigin.Begin);
+					string[] categoryNames = new string[numCategories];
+					for (int i = 0; i < numCategories; i++)
+					{
+						List<char> builtString = new List<char>();
+						while (reader.PeekChar() != 0)
+						{
+							builtString.Add(reader.ReadChar());
+						}
+						reader.ReadChar(); // Null terminator
+						categoryNames[i] = new string(builtString.ToArray());
 					}
 
-					rpcCurves = new RpcCurve[numRpc];
-					reader.BaseStream.Seek (rpcOffset, SeekOrigin.Begin);
-					for (int i=0; i<numRpc; i++) {
-						rpcCurves [i].variable = reader.ReadUInt16 ();
-						int pointCount = (int)reader.ReadByte ();
-						rpcCurves [i].parameter = (RpcParameter)reader.ReadUInt16 ();
+					// Obtain the Audio Categories
+					reader.BaseStream.Seek(categoryOffset, SeekOrigin.Begin);
+					INTERNAL_categories = new List<AudioCategory>();
+					for (int i = 0; i < numCategories; i++)
+					{
+						// Maximum instances, Unused
+						reader.ReadByte();
 
-						rpcCurves [i].points = new RpcPoint[pointCount];
-						for (int j=0; j<pointCount; j++) {
-							rpcCurves [i].points [j].x = reader.ReadSingle ();
-							rpcCurves [i].points [j].y = reader.ReadSingle ();
-							rpcCurves [i].points [j].type = (RpcPointType)reader.ReadByte ();
+						// Fade In/Out, Unused
+						reader.ReadUInt16();
+						reader.ReadUInt16();
+
+						// Instance Behavior Flags, Unused
+						reader.ReadByte();
+
+						// Unknown value
+						reader.ReadUInt16();
+
+						// Volume
+						// FIXME: This is entirely arbitrary!
+						byte volByte = reader.ReadByte();
+						float volume = (float) (volByte / 255.0f);
+
+						// Visibility Flags, unused
+						reader.ReadByte();
+
+						// Add to the engine list
+						INTERNAL_categories.Add(
+							new AudioCategory(
+								categoryNames[i],
+								volume
+							)
+						);
+					}
+
+					// Obtain the Variable Names
+					reader.BaseStream.Seek(variableNameOffset, SeekOrigin.Begin);
+					string[] variableNames = new string[numVariables];
+					for (int i = 0; i < numVariables; i++)
+					{
+						List<char> builtString = new List<char>();
+						while (reader.PeekChar() != 0)
+						{
+							builtString.Add(reader.ReadChar());
+						}
+						reader.ReadChar(); // Null terminator
+						variableNames[i] = new string(builtString.ToArray());
+					}
+
+					// Obtain the Variables
+					reader.BaseStream.Seek(variableOffset, SeekOrigin.Begin);
+					INTERNAL_variables = new List<Variable>();
+					for (int i = 0; i < numVariables; i++)
+					{
+						// Variable Accessibility (See Variable constructor)
+						byte varFlags = reader.ReadByte();
+
+						// Variable Value, Boundaries
+						float initialValue =	reader.ReadSingle();
+						float minValue =	reader.ReadSingle();
+						float maxValue =	reader.ReadSingle();
+
+						// Add to the engine list
+						INTERNAL_variables.Add(
+							new Variable(
+								variableNames[i],
+								(varFlags & 0x01) != 0,
+								(varFlags & 0x02) != 0,
+								(varFlags & 0x04) == 0,
+								(varFlags & 0x08) != 0,
+								initialValue,
+								minValue,
+								maxValue
+							)
+						);
+					}
+
+					// Append built-in properties to Variable list
+					bool hasVolume = false;
+					foreach (Variable curVar in INTERNAL_variables)
+					{
+						if (curVar.Name.Equals("Volume"))
+						{
+							hasVolume = true;
 						}
 					}
+					if (!hasVolume)
+					{
+						INTERNAL_variables.Add(
+							new Variable(
+								"Volume",
+								true,
+								false,
+								false,
+								false,
+								1.0f,
+								0.0f,
+								1.0f
+							)
+						);
+					}
 
+					// Obtain the RPC Curves
+					reader.BaseStream.Seek(rpcOffset, SeekOrigin.Begin);
+					INTERNAL_RPCs = new Dictionary<long, RPC>();
+					for (int i = 0; i < numRPCs; i++)
+					{
+						// RPC "Code", used by the SoundBanks
+						long rpcCode = reader.BaseStream.Position;
+
+						// RPC Variable
+						ushort rpcVariable = reader.ReadUInt16();
+
+						// Number of RPC Curve Points
+						byte numPoints = reader.ReadByte();
+
+						// RPC Parameter
+						ushort rpcParameter = reader.ReadUInt16();
+
+						// RPC Curve Points
+						RPCPoint[] rpcPoints = new RPCPoint[numPoints];
+						for (byte j = 0; j < numPoints; j++)
+						{
+							float x = reader.ReadSingle();
+							float y = reader.ReadSingle();
+							byte type = reader.ReadByte();
+							rpcPoints[j] = new RPCPoint(
+								x, y,
+								(RPCPointType) type
+							);
+						}
+
+						// Add to the engine list
+						INTERNAL_RPCs.Add(
+							rpcCode,
+							new RPC(
+								INTERNAL_variables[rpcVariable].Name,
+								rpcParameter,
+								rpcPoints
+							)
+						);
+					}
+
+					// Obtain the DSP Parameters
+					reader.BaseStream.Seek(dspParameterOffset, SeekOrigin.Begin);
+					INTERNAL_dspParameters = new List<DSPParameter>();
+					for (int i = 0; i < numDSPParameters; i++)
+					{
+						// Effect Parameter Type
+						byte type = reader.ReadByte();
+
+						// Effect value, boundaries
+						float value = reader.ReadSingle();
+						float minVal = reader.ReadSingle();
+						float maxVal = reader.ReadSingle();
+
+						// Unknown value
+						reader.ReadUInt16();
+
+						// Add to Parameter list
+						INTERNAL_dspParameters.Add(
+							new DSPParameter(
+								type,
+								value,
+								minVal,
+								maxVal
+							)
+						);
+					}
+
+					// Obtain the DSP Presets
+					reader.BaseStream.Seek(dspPresetOffset, SeekOrigin.Begin);
+					INTERNAL_dspPresets = new List<DSPPreset>();
+					int total = 0;
+					for (int i = 0; i < numDSPPresets; i++)
+					{
+						bool global = (reader.ReadByte() == 1);
+						uint numParams = reader.ReadUInt32();
+						DSPParameter[] parameters = new DSPParameter[numParams];
+						for (uint j = 0; j < numParams; j++)
+						{
+							parameters[j] = INTERNAL_dspParameters[total++];
+						}
+						INTERNAL_dspPresets.Add(
+							new DSPPreset(global, parameters)
+						);
+					}
 				}
 			}
+
+			// Create the WaveBank Dictionary
+			INTERNAL_waveBanks = new Dictionary<string, WaveBank>();
+
+			// Finally.
+			IsDisposed = false;
 		}
 
-		//wtf C#
-		private static string[] readNullTerminatedStrings (uint count, BinaryReader reader)
-		{
-			string[] ret = new string[count];
-			for (int i=0; i<count; i++) {
-				List<char> s = new List<char> ();
-				while (reader.PeekChar() != 0) {
-					s.Add (reader.ReadChar ()); 
-				}
-				reader.ReadChar ();
-				ret [i] = new string (s.ToArray ());
-			}
-			return ret;
+		public AudioEngine(
+			string settingsFile,
+			TimeSpan lookAheadTime,
+			string rendererId
+		) {
+			throw new NotSupportedException();
 		}
-		
-		public void Update ()
+
+		~AudioEngine()
 		{
-			foreach (SoundBank curBank in SoundBanks)
+			Dispose(true);
+		}
+
+		public void Dispose()
+		{
+			Dispose(false);
+		}
+
+		public void Dispose(bool disposing)
+		{
+			if (!IsDisposed)
 			{
-				curBank.Update();
+				if (Disposing != null)
+				{
+					Disposing.Invoke(this, null);
+				}
+				INTERNAL_categories.Clear();
+				INTERNAL_variables.Clear();
+				INTERNAL_RPCs.Clear();
+				IsDisposed = true;
 			}
 		}
-		
-		public AudioCategory GetCategory (string name)
+
+		public AudioCategory GetCategory(string name)
 		{
-			return categories [categoryLookup [name]];
+			if (String.IsNullOrEmpty(name))
+			{
+				throw new ArgumentNullException("name");
+			}
+			for (int i = 0; i < INTERNAL_categories.Count; i++)
+			{
+				if (INTERNAL_categories[i].Name.Equals(name))
+				{
+					return INTERNAL_categories[i];
+				}
+			}
+			throw new InvalidOperationException("Category not found!");
 		}
 
 		public float GetGlobalVariable(string name)
 		{
-			return variables[variableLookup[name]].value;
+			if (String.IsNullOrEmpty(name))
+			{
+				throw new ArgumentNullException("name");
+			}
+			for (int i = 0; i < INTERNAL_variables.Count; i++)
+			{
+				if (name.Equals(INTERNAL_variables[i].Name))
+				{
+					if (!INTERNAL_variables[i].IsGlobal)
+					{
+						throw new InvalidOperationException("Variable not global!");
+					}
+					return INTERNAL_variables[i].GetValue();
+				}
+			}
+			throw new InvalidOperationException("Variable not found!");
 		}
 
-		public void SetGlobalVariable (string name, float value)
+		public void SetGlobalVariable(string name, float value)
 		{
-			if (variableLookup.ContainsKey(name))
+			if (String.IsNullOrEmpty(name))
 			{
-				variables [variableLookup [name]].value = value;
+				throw new ArgumentNullException("name");
+			}
+			for (int i = 0; i < INTERNAL_variables.Count; i++)
+			{
+				if (name.Equals(INTERNAL_variables[i].Name))
+				{
+					if (!INTERNAL_variables[i].IsGlobal)
+					{
+						throw new InvalidOperationException("Variable not global!");
+					}
+					INTERNAL_variables[i].SetValue(value);
+					return; // We made it!
+				}
+			}
+			throw new InvalidOperationException("Variable not found!");
+		}
+
+		public void Update()
+		{
+			// TODO: RPC updates from Global Variables
+
+			// Update Cues
+			foreach (AudioCategory curCategory in INTERNAL_categories)
+			{
+				curCategory.INTERNAL_update();
 			}
 		}
-		
-		#region IDisposable implementation
-		public void Dispose ()
+
+		internal void INTERNAL_addWaveBank(string name, WaveBank waveBank)
 		{
+			INTERNAL_waveBanks.Add(name, waveBank);
 		}
-		#endregion
+
+		internal void INTERNAL_removeWaveBank(string name)
+		{
+			INTERNAL_waveBanks.Remove(name);
+		}
+
+		internal SoundEffect INTERNAL_getWaveBankTrack(string name, ushort track)
+		{
+			return INTERNAL_waveBanks[name].INTERNAL_getTrack(track);
+		}
+
+		internal RPC INTERNAL_getRPC(uint code)
+		{
+			return INTERNAL_RPCs[code];
+		}
+
+		internal void INTERNAL_addCue(Cue newCue, ushort category, bool managed)
+		{
+			List<Variable> cueVariables = new List<Variable>();
+			foreach (Variable curVar in INTERNAL_variables)
+			{
+				if (!curVar.IsGlobal)
+				{
+					cueVariables.Add(curVar.Clone());
+				}
+			}
+			newCue.INTERNAL_genVariables(cueVariables);
+			INTERNAL_categories[category].INTERNAL_addCue(newCue, managed);
+		}
 	}
 }
-

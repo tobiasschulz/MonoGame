@@ -1,96 +1,92 @@
-#region License
-/*
-Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009 The MonoGame Team
-
-All rights reserved.
-
-This license governs use of the accompanying software. If you use the software, you accept this license. If you do not
-accept the license, do not use the software.
-
-1. Definitions
-The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under 
-U.S. copyright law.
-
-A "contribution" is the original software, or any additions or changes to the software.
-A "contributor" is any person that distributes its contribution under this license.
-"Licensed patents" are a contributor's patent claims that read directly on its contribution.
-
-2. Grant of Rights
-(A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
-(B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, 
-each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
-
-3. Conditions and Limitations
-(A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
-(B) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, 
-your patent license from such contributor to the software ends automatically.
-(C) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution 
-notices that are present in the software.
-(D) If you distribute any portion of the software in source code form, you may do so only under this license by including 
-a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object 
-code form, you may only do so under a license that complies with this license.
-(E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees
-or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent
-permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
-purpose and non-infringement.
-*/
-#endregion License
-
 using System;
-
+using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Audio
 {
-	public class Cue : IDisposable
+	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.cue.aspx
+	public sealed class Cue : IDisposable
 	{
-		AudioEngine engine;
-		string name;
-		XactSound[] sounds;
-		float[] probs;
-		XactSound curSound;
-		Random variationRand;
+		private AudioEngine INTERNAL_baseEngine;
 
-		// Positional sound variables
-		// Only enabled when Apply3D is called before a Play().
+		private CueData INTERNAL_data;
+		private XACTSound INTERNAL_activeSound;
+		private List<SoundEffectInstance> INTERNAL_instancePool;
 
-		// FIXME: Once you go positional, you can't go back. *Cough*
-		private bool positionalAudio;
-		private AudioListener listener;
-		private AudioEmitter emitter;
-		
-		float volume = 1.0f;
+		private bool INTERNAL_isPositional;
+		private AudioListener INTERNAL_listener;
+		private AudioEmitter INTERNAL_emitter;
 
-		// FIXME: This should really be an array for each RPC table and type.
-		float rpcVolume = 1.0f;
-		
+		private List<Variable> INTERNAL_variables;
+
+		private static Random random = new Random();
+
+		public bool IsCreated
+		{
+			get;
+			private set;
+		}
+
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
+
 		public bool IsPaused
 		{
-			get {
-				if (curSound != null)
-					return curSound.IsPaused;
-				return true;
-			}
-		}
-		
-		public bool IsPlaying
-		{
-			get {
-				if (curSound != null) {
-					return curSound.Playing;
+			get
+			{
+				if (INTERNAL_instancePool == null)
+				{
+					return false;
+				}
+				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+				{
+					if (sfi.State == SoundState.Paused)
+					{
+						return true;
+					}
 				}
 				return false;
 			}
 		}
-		
+
+		public bool IsPlaying
+		{
+			get
+			{
+				if (INTERNAL_instancePool == null)
+				{
+					return false;
+				}
+				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+				{
+					if (sfi.State == SoundState.Playing)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+
+		public bool IsPrepared
+		{
+			get;
+			private set;
+		}
+
+		public bool IsPreparing
+		{
+			get;
+			private set;
+		}
+
 		public bool IsStopped
 		{
-			get {
-				if (curSound != null) {
-					return !curSound.Playing;
-				}
-				return true;
+			get
+			{
+				return !IsPlaying;
 			}
 		}
 
@@ -98,243 +94,260 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
-				// FIXME: What is this, exactly?
-				return false;
-			}
-		}
-
-		public bool IsPreparing
-		{
-			get
-			{
-				// FIXME: What is this, exactly?
+				// FIXME: Authored Stop Options?
 				return false;
 			}
 		}
 
 		public string Name
 		{
-			get { return name; }
+			get;
+			private set;
 		}
-		
-		internal Cue (AudioEngine engine, string cuename, XactSound sound)
+
+		public event EventHandler<EventArgs> Disposing;
+
+		internal Cue(
+			AudioEngine audioEngine,
+			List<string> waveBankNames,
+			string name,
+			CueData data,
+			bool managed
+		) {
+			INTERNAL_baseEngine = audioEngine;
+
+			Name = name;
+
+			INTERNAL_data = data;
+			foreach (XACTSound curSound in data.Sounds)
+			{
+				if (!curSound.HasLoadedTracks)
+				{
+					curSound.LoadTracks(
+						INTERNAL_baseEngine,
+						waveBankNames
+					);
+				}
+			}
+
+			INTERNAL_baseEngine.INTERNAL_addCue(
+				this,
+				data.Category,
+				managed
+			);
+
+			INTERNAL_isPositional = false;
+		}
+
+		public void Apply3D(AudioListener listener, AudioEmitter emitter)
 		{
-			this.engine = engine;
-			name = cuename;
-			sounds = new XactSound[1];
-			sounds[0] = sound;
-			
-			probs = new float[1];
-			probs[0] = 1.0f;
-			
-			variationRand = new Random();
+			if (IsPlaying && !INTERNAL_isPositional)
+			{
+				throw new InvalidOperationException("Apply3D call after Play!");
+			}
+			if (listener == null)
+			{
+				throw new ArgumentNullException("listener");
+			}
+			if (emitter == null)
+			{
+				throw new ArgumentNullException("emitter");
+			}
+			INTERNAL_listener = listener;
+			INTERNAL_emitter = emitter;
+			SetVariable(
+				"Distance",
+				Vector3.Distance(
+					INTERNAL_emitter.Position,
+					INTERNAL_listener.Position
+				)
+			);
+			// TODO: All Internal 3D Audio Variables
+			INTERNAL_isPositional = true;
 		}
-		
-		internal Cue(AudioEngine engine, string cuename, XactSound[] _sounds, float[] _probs)
+
+		public void Dispose()
 		{
-			this.engine = engine;
-			name = cuename;
-			sounds = _sounds;
-			probs = _probs;
-			
-			variationRand = new Random();
+			if (!IsDisposed)
+			{
+				if (Disposing != null)
+				{
+					Disposing.Invoke(this, null);
+				}
+				if (INTERNAL_instancePool != null)
+				{
+					foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+					{
+						sfi.Dispose();
+					}
+					INTERNAL_instancePool = null;
+				}
+				IsDisposed = true;
+			}
 		}
-		
+
+		public float GetVariable(string name)
+		{
+			if (String.IsNullOrEmpty(name))
+			{
+				throw new ArgumentNullException("name");
+			}
+			foreach (Variable curVar in INTERNAL_variables)
+			{
+				if (name.Equals(curVar.Name))
+				{
+					return curVar.GetValue();
+				}
+			}
+			throw new Exception("Instance variable not found!");
+		}
+
 		public void Pause()
 		{
-			if (curSound != null) {
-				curSound.Pause();
+			if (!IsPlaying)
+			{
+				return;
+			}
+			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+			{
+				sfi.Pause();
 			}
 		}
-		
+
 		public void Play()
 		{
-			//TODO: Probabilities
-			curSound = sounds[variationRand.Next (sounds.Length)];
-
-			// There may not have been a sound when we first set volume.
-			curSound.Volume = volume * rpcVolume;
-			
-			if (positionalAudio)
+			if (IsPlaying)
 			{
-				curSound.PlayPositional(listener, emitter);
+				throw new InvalidOperationException("Cue already playing!");
 			}
-			else
+
+			double max = 0.0;
+			for (int i = 0; i < INTERNAL_data.Probabilities.Length; i++)
 			{
-				curSound.Play();
+				max += INTERNAL_data.Probabilities[i];
+			}
+			double next = random.NextDouble() * max;
+			for (int i = INTERNAL_data.Probabilities.Length - 1; i >= 0; i--)
+			{
+				if (next > max - INTERNAL_data.Probabilities[i])
+				{
+					INTERNAL_activeSound = INTERNAL_data.Sounds[i];
+					break;
+				}
+				max -= INTERNAL_data.Probabilities[i];
+			}
+
+			INTERNAL_instancePool = INTERNAL_activeSound.GenerateInstances();
+
+			if (INTERNAL_isPositional)
+			{
+				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+				{
+					sfi.Apply3D(
+						INTERNAL_listener,
+						INTERNAL_emitter
+					);
+				}
+			}
+			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+			{
+				sfi.Play();
 			}
 		}
-		
+
 		public void Resume()
 		{
-			if (curSound != null) {
-				curSound.Resume ();
+			if (!IsPaused)
+			{
+				return;
+			}
+			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+			{
+				sfi.Resume();
 			}
 		}
-		
+
+		public void SetVariable(string name, float value)
+		{
+			if (String.IsNullOrEmpty(name))
+			{
+				throw new ArgumentNullException("name");
+			}
+			foreach (Variable curVar in INTERNAL_variables)
+			{
+				if (name.Equals(curVar.Name))
+				{
+					curVar.SetValue(value);
+					return;
+				}
+			}
+			throw new Exception("Instance variable not found!");
+		}
+
 		public void Stop(AudioStopOptions options)
 		{
-			if (curSound != null) {
-				curSound.Stop();
-			}
-		}
-		
-		public void SetVariable (string name, float value)
-		{
-			if (name == "Volume") {
-				volume = value;
-				if (curSound != null) {
-					curSound.Volume = value * rpcVolume;
-				}
-			} else if (curSound != null && curSound.rpcVariables.ContainsKey(name)) {
-				curSound.rpcVariables[name] = value;
-			} else {
-				engine.SetGlobalVariable (name, value);
-			}
-		}
-		
-		public float GetVariable (string name)
-		{
-			if (name == "Volume") {
-				return volume;
-			} else if (curSound != null && curSound.rpcVariables.ContainsKey(name)) {
-				return curSound.rpcVariables[name];
-			} else {
-				return engine.GetGlobalVariable (name);
-			}
-		}
-		
-		public void Apply3D(AudioListener listener, AudioEmitter emitter) {
-			this.listener = listener;
-			this.emitter = emitter;
-			positionalAudio = true;
-			if (curSound != null && curSound.rpcVariables.ContainsKey("Distance"))
+			if (!IsPlaying)
 			{
-				curSound.rpcVariables["Distance"] = Vector3.Distance(emitter.Position, listener.Position);
+				return;
+			}
+			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+			{
+				sfi.Stop();
 			}
 		}
 
-		internal void Update()
+		internal void INTERNAL_update()
 		{
-			foreach (XactSound sound in sounds)
+			if (INTERNAL_instancePool == null)
 			{
-				sound.Update();
+				return; // Nothing to do... for now.
 			}
-			if (curSound != null && IsPlaying)
+
+			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
 			{
-				// Positional audio update
-				if (positionalAudio)
+				if (INTERNAL_instancePool[i].State == SoundState.Stopped)
 				{
-					curSound.UpdatePosition(listener, emitter);
+					INTERNAL_instancePool[i].Dispose();
+					INTERNAL_instancePool.RemoveAt(i);
+					i--;
 				}
-				UpdateRPCVariables();
 			}
-		}
 
-		private void UpdateRPCVariables()
-		{
-			// RPC effects update
-			if (curSound.rpcEffects != null)
+			if (INTERNAL_isPositional)
 			{
-				for (int i = 0; i < curSound.rpcEffects.Length; i++)
+				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
-					// The current curve from the RPC effects
-					AudioEngine.RpcCurve curve = engine.rpcCurves[curSound.rpcEffects[i]];
-
-					// The sound property we're modifying
-					AudioEngine.RpcParameter parameter = curve.parameter;
-
-					/* If this is a built-in parameter, dump it. It's not relevant here.
-					 * Currently we just look at Distance, but there are more here!
-					 * -flibit
-					 */
-					if (curSound.rpcVariables[engine.variables[curve.variable].name].Equals("Distance"))
-					{
-						continue; // IGNORE MEEEEEE
-					}
-
-					// The variable that this curve is looking at
-					float varValue = curSound.rpcVariables[engine.variables[curve.variable].name];
-
-					// Applying this when we're done...
-					float curveResult = 0.0f;
-
-					// FIXME: ALL OF THIS IS ASSUMING LINEAR CURVES!
-
-					if (varValue == 0.0f)
-					{
-						// If it's 0, we're just at the stock value.
-						if (curve.points[0].x == 0.0f)
-						{
-							// Some curves may start x->0 elsewhere.
-							curveResult = curve.points[0].y;
-						}
-					}
-					else if (varValue <= curve.points[0].x)
-					{
-						// Zero to first defined point
-						curveResult = curve.points[0].y / (varValue / curve.points[0].x);
-					}
-					else if (varValue >= curve.points[curve.points.Length - 1].x)
-					{
-						// Last defined point to infinity
-						curveResult = curve.points[curve.points.Length - 1].y / (curve.points[curve.points.Length - 1].x / varValue);
-					}
-					else
-					{
-						// Something between points...
-						for (int x = 0; x < curve.points.Length - 1; x++)
-						{
-							// y = b
-							curveResult = curve.points[x].y;
-							if (varValue >= curve.points[x].x && varValue <= curve.points[x + 1].x)
-							{
-								// y += mx
-								curveResult +=
-									((curve.points[x + 1].y - curve.points[x].y) /
-									(curve.points[x + 1].x - curve.points[x].x)) *
-										(varValue - curve.points[x].x);
-								// Pre-algebra, rockin`!
-								break;
-							}
-						}
-					}
-
-					// Clamp it down, we can't have massive results.
-					if (curveResult > 10000.0f)
-					{
-						curveResult = 10000.0f;
-					}
-					else if (curveResult < -10000.0f)
-					{
-						curveResult = -10000.0f;
-					}
-
-					// FIXME: All parameter types!
-					if (parameter == AudioEngine.RpcParameter.Volume)
-					{
-						// FIXME: Multiple volumes?
-						rpcVolume = 1.0f + (curveResult / 10000.0f);
-						curSound.Volume = volume * rpcVolume;
-					}
-					else
-					{
-						throw new NotImplementedException("RPC Parameter Types!");
-					}
+					sfi.Apply3D(
+						INTERNAL_listener,
+						INTERNAL_emitter
+					);
 				}
 			}
+
+			float rpcVolume = 1.0f;
+			foreach (uint curCode in INTERNAL_activeSound.RPCCodes)
+			{
+				RPC curRPC = INTERNAL_baseEngine.INTERNAL_getRPC(curCode);
+				float result = curRPC.CalculateRPC(GetVariable(curRPC.Variable));
+				if (curRPC.Parameter == RPCParameter.Volume)
+				{
+					// FIXME: Multiple Volume combinations?
+					rpcVolume += (result / 10000.0f);
+				}
+				else
+				{
+					throw new Exception("RPC Parameter Type: " + curRPC.Parameter);
+				}
+			}
+			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+			{
+				sfi.Volume = GetVariable("Volume") * rpcVolume;
+			}
 		}
-		
-		public bool IsDisposed { get { return false; } }
-		
-		
-		
-		#region IDisposable implementation
-		public void Dispose ()
+
+		internal void INTERNAL_genVariables(List<Variable> cueVariables)
 		{
-			//_sound.Dispose();
+			INTERNAL_variables = cueVariables;
 		}
-		#endregion
 	}
 }
-
