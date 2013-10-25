@@ -52,6 +52,12 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
+		public float Pitch
+		{
+			get;
+			private set;
+		}
+
 		public ushort Category
 		{
 			get;
@@ -92,8 +98,7 @@ namespace Microsoft.Xna.Framework.Audio
 			Volume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
 			// Sound Pitch, unused
-			// FIXME: How do we use this?
-			reader.ReadUInt16();
+			Pitch = (reader.ReadInt16() / 1000.0f);
 
 			// Unknown value
 			reader.ReadByte();
@@ -198,10 +203,11 @@ namespace Microsoft.Xna.Framework.Audio
 				curClip.GenerateInstances(result);
 			}
 
-			// Apply authored volume
+			// Apply authored volume, pitch
 			foreach (SoundEffectInstance sfi in result)
 			{
 				sfi.Volume = Volume;
+				sfi.Pitch *= Pitch; // Respect pitch variations!
 			}
 
 			return result;
