@@ -97,7 +97,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Sound Volume
 			Volume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
-			// Sound Pitch, unused
+			// Sound Pitch
 			Pitch = (reader.ReadInt16() / 1000.0f);
 
 			// Unknown value
