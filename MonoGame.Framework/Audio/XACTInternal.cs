@@ -1,5 +1,24 @@
 namespace Microsoft.Xna.Framework.Audio
 {
+	internal class XACTCalculator
+	{
+		public static float CalculateVolume(byte binaryValue)
+		{
+			// FIXME: This calculation probably came from someone's TI-83.
+			double dBValue = (
+				(
+					(-96.0 - 67.7385212334047) /
+					(1 + System.Math.Pow(
+						binaryValue / 80.1748600297963,
+						0.432254984608615
+					))
+				) + 67.7385212334047
+			);
+			double powerValue = System.Math.Pow(10, dBValue / 10.0);
+			return (float) System.Math.Sqrt(powerValue);
+		}
+	}
+
 	internal class Variable
 	{
 		public string Name

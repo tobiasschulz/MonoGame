@@ -89,9 +89,7 @@ namespace Microsoft.Xna.Framework.Audio
 			Category = reader.ReadUInt16();
 
 			// Sound Volume
-			// FIXME: This is entirely arbitrary!
-			byte volByte = reader.ReadByte();
-			Volume = (float) (volByte / 255.0f);
+			Volume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
 			// Sound Pitch, unused
 			// FIXME: How do we use this?

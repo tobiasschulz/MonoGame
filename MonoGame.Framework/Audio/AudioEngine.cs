@@ -152,9 +152,7 @@ namespace Microsoft.Xna.Framework.Audio
 						reader.ReadUInt16();
 
 						// Volume
-						// FIXME: This is entirely arbitrary!
-						byte volByte = reader.ReadByte();
-						float volume = (float) (volByte / 255.0f);
+						float volume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
 						// Visibility Flags, unused
 						reader.ReadByte();
