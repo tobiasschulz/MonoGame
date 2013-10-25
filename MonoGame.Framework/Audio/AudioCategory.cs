@@ -6,10 +6,20 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audiocategory.aspx
 	public struct AudioCategory : IEquatable<AudioCategory>
 	{
+		private class FloatInstance
+		{
+			public float Value;
+			public FloatInstance(float initial)
+			{
+				Value = initial;
+			}
+		}
+
 		private List<Cue> managedCues;
 		private List<Cue> unmanagedCues;
 
-		private float INTERNAL_volume;
+		// Grumble, struct returns...
+		private FloatInstance INTERNAL_volume;
 
 		private string INTERNAL_name;
 		public string Name
@@ -25,7 +35,7 @@ namespace Microsoft.Xna.Framework.Audio
 			float volume
 		) {
 			INTERNAL_name = name;
-			INTERNAL_volume = volume;
+			INTERNAL_volume = new FloatInstance(volume);
 			managedCues = new List<Cue>();
 			unmanagedCues = new List<Cue>();
 		}
@@ -56,7 +66,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void SetVolume(float volume)
 		{
-			INTERNAL_volume = volume;
+			INTERNAL_volume.Value = volume;
 			foreach (Cue curCue in managedCues)
 			{
 				curCue.SetVariable("Volume", volume);
@@ -81,7 +91,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public override int GetHashCode()
 		{
-			// FIXME: Verify this!
 			return Name.GetHashCode();
 		}
 
@@ -92,8 +101,11 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public override bool Equals(Object obj)
 		{
-			// FIXME: Check obj type
-			return (GetHashCode() == obj.GetHashCode());
+			if (obj is AudioCategory)
+			{
+				return Equals((AudioCategory) obj);
+			}
+			return false;
 		}
 
 		public static bool op_Equality(
@@ -152,7 +164,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				unmanagedCues.Add(newCue);
 			}
-			newCue.SetVariable("Volume", INTERNAL_volume);
+			newCue.SetVariable("Volume", INTERNAL_volume.Value);
 		}
 	}
 }
