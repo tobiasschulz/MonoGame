@@ -515,6 +515,8 @@ namespace Microsoft.Xna.Framework.Media
             // Be sure we can even get something from TheoraPlay...
             if (    State == MediaState.Stopped ||
                     Video.theoraDecoder == IntPtr.Zero ||
+                    previousFrame == IntPtr.Zero ||
+                    Video.videoStream == IntPtr.Zero ||
                     TheoraPlay.THEORAPLAY_isInitialized(Video.theoraDecoder) == 0   )
             {
                 return videoTexture; // Screw it, give them the old one.
@@ -998,13 +1000,48 @@ namespace Microsoft.Xna.Framework.Media
                         timer.Reset();
                         
                         // If looping, go back to the start. Otherwise, we'll be exiting.
-                        if (IsLooped)
+                        if (IsLooped && State == MediaState.Playing)
                         {
-                            // FIXME: Er, wait, shit.
-                            throw new NotImplementedException("Theora looping not implemented!");
-                            // Revert to first frame.
-                            // AL Stop
-                            // AL Rewind
+                            // Wait for the audio thread to end.
+                            State = MediaState.Stopped;
+                            audioDecoderThread.Join();
+                            
+                            // Now we pretend we're playing again.
+                            State = MediaState.Playing;
+                            
+                            // Free everything and start over.
+                            TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
+                            previousFrame = IntPtr.Zero;
+                            Video.Dispose();
+                            Video.Initialize();
+                            
+                            // Grab the initial audio again.
+                            if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
+                            {
+                                currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
+                                audioDecoderThread = new Thread(new ThreadStart(DecodeAudio));
+                                audioDecoderThread.Start();
+                            }
+                            else
+                            {
+                                audioStarted = true; // Welp.
+                            }
+                            
+                            // Grab the initial video again.
+                            if (TheoraPlay.THEORAPLAY_hasVideoStream(Video.theoraDecoder) != 0)
+                            {
+                                currentVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                                previousFrame = Video.videoStream;
+                                do
+                                {
+                                    // The decoder miiight not be ready yet.
+                                    Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
+                                } while (Video.videoStream == IntPtr.Zero);
+                                nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
+                            }
+                            
+                            // FIXME: Maybe use an actual thread synchronization technique.
+                            while (!audioStarted && State != MediaState.Stopped);
                         }
                         else
                         {
