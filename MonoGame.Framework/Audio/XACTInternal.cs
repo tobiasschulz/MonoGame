@@ -1,3 +1,9 @@
+using System;
+
+#if SDL2
+using OpenTK.Audio.OpenAL;
+#endif
+
 namespace Microsoft.Xna.Framework.Audio
 {
 	internal class XACTCalculator
@@ -8,14 +14,14 @@ namespace Microsoft.Xna.Framework.Audio
 			double dBValue = (
 				(
 					(-96.0 - 67.7385212334047) /
-					(1 + System.Math.Pow(
+					(1 + Math.Pow(
 						binaryValue / 80.1748600297963,
 						0.432254984608615
 					))
 				) + 67.7385212334047
 			);
-			double powerValue = System.Math.Pow(10, dBValue / 10.0);
-			return (float) System.Math.Sqrt(powerValue);
+			double powerValue = Math.Pow(10, dBValue / 10.0);
+			return (float) Math.Sqrt(powerValue);
 		}
 	}
 
@@ -298,6 +304,19 @@ namespace Microsoft.Xna.Framework.Audio
 
 	internal class DSPPreset
 	{
+		public string Name
+		{
+			get;
+			private set;
+		}
+
+		private int effectHandle;
+		public int Handle
+		{
+			get;
+			private set;
+		}
+
 		public bool IsGlobal
 		{
 			get;
@@ -310,10 +329,73 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
-		public DSPPreset(bool global, DSPParameter[] parameters)
-		{
+		public DSPPreset(
+			string name,
+			bool global,
+			DSPParameter[] parameters
+		) {
+			Name = name;
 			IsGlobal = global;
 			Parameters = parameters;
+
+			if (Name.Equals("Reverb"))
+			{
+#if SDL2
+				// Obtain EFX entry points
+				EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+
+				// Generate the EffectSlot and Effect
+				Handle = EFX.GenAuxiliaryEffectSlot();
+				effectHandle = EFX.GenEffect();
+
+				// Set up the Revert Effect
+				EFX.BindEffect(effectHandle, EfxEffectType.EaxReverb);
+
+				// TODO: Use DSP Parameters on EAXReverb Effect. They don't bind very cleanly. :/
+
+				// Bind the Effect to the EffectSlot. XACT will use the EffectSlot.
+				EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
+#else
+				throw new NotImplementedException();
+#endif
+			}
+			else
+			{
+				throw new Exception("DSP type unknown: " + Name);
+			}
+		}
+
+		public void SetParameter(int index, float value)
+		{
+			Parameters[index].Value = value;
+			if (Name.Equals("Reverb"))
+			{
+				// Obtain EFX entry points
+				EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+	
+				// Apply the value to the parameter
+				if (index == 17)
+				{
+#if SDL2
+					EFX.Effect(
+						effectHandle,
+						EfxEffectf.EaxReverbGain,
+						Parameters[index].Value
+					);
+					EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
+#else
+					throw new NotImplementedException();
+#endif
+				}
+				else
+				{
+					throw new Exception("DSP parameter unhandled: " + index);
+				}
+			}
+			else
+			{
+				throw new Exception("DSP type unknown: " + Name);
+			}
 		}
 	}
 }

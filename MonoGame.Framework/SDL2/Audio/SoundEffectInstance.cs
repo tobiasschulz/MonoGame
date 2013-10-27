@@ -62,9 +62,10 @@ namespace Microsoft.Xna.Framework.Audio
 
         #endregion
 
-        #region Private Variables: OpenAL Source
+        #region Private Variables: OpenAL Source, EffectSlot
 
         private int INTERNAL_alSource = -1;
+        private int INTERNAL_alEffectSlot = -1;
 
         #endregion
   
@@ -321,6 +322,18 @@ namespace Microsoft.Xna.Framework.Audio
             IsLooped = IsLooped;
             Pitch = Pitch;
 
+            // Apply EFX
+            if (INTERNAL_alEffectSlot != -1)
+            {
+                AL.Source(
+                    INTERNAL_alSource,
+                    ALSource3i.EfxAuxiliarySendFilter,
+                    INTERNAL_alEffectSlot,
+                    0,
+                    0
+                );
+            }
+
             AL.SourcePlay(INTERNAL_alSource);
         }
 
@@ -353,6 +366,25 @@ namespace Microsoft.Xna.Framework.Audio
         public void Stop(bool immediate)
         {
             Stop();
+        }
+
+        #endregion
+
+        #region Internal EFX Methods
+
+        internal void INTERNAL_applyEffect(int effectSlotHandle)
+        {
+            INTERNAL_alEffectSlot = effectSlotHandle;
+            if (INTERNAL_alSource != -1)
+            {
+                AL.Source(
+                    INTERNAL_alSource,
+                    ALSource3i.EfxAuxiliarySendFilter,
+                    INTERNAL_alEffectSlot,
+                    0,
+                    0
+                );
+            }
         }
 
         #endregion

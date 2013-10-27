@@ -76,6 +76,12 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
+		public uint[] DSPCodes
+		{
+			get;
+			private set;
+		}
+
 		public XACTSound(ushort track, byte waveBank)
 		{
 			INTERNAL_clips = new XACTClip[1];
@@ -138,19 +144,19 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 
 			// Parse DSP Presets
+			DSPCodes = new uint[0]; // Eww... -flibit
 			if ((soundFlags & 0x10) != 0)
 			{
 				// DSP Presets Length, unused
 				reader.ReadUInt16();
 
 				// Number of DSP Presets
-				byte numPresets = reader.ReadByte();
+				DSPCodes = new uint[reader.ReadByte()];
 
-				// Obtain Preset List
-				for (byte j = 0; j < numPresets; j++)
+				// Obtain DSP Preset codes
+				for (byte j = 0; j < DSPCodes.Length; j++)
 				{
-					// TODO: DSP Presets
-					reader.ReadUInt32();
+					DSPCodes[j] = reader.ReadUInt32();
 				}
 			}
 

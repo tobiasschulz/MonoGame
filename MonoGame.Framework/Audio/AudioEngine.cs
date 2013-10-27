@@ -15,7 +15,7 @@ namespace Microsoft.Xna.Framework.Audio
 		private List<Variable> INTERNAL_variables;
 		private Dictionary<long, RPC> INTERNAL_RPCs;
 		private List<DSPParameter> INTERNAL_dspParameters;
-		private List<DSPPreset> INTERNAL_dspPresets;
+		private Dictionary<long, DSPPreset> INTERNAL_dspPresets;
 
 		public bool IsDisposed
 		{
@@ -303,19 +303,35 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// Obtain the DSP Presets
 					reader.BaseStream.Seek(dspPresetOffset, SeekOrigin.Begin);
-					INTERNAL_dspPresets = new List<DSPPreset>();
+					INTERNAL_dspPresets = new Dictionary<long, DSPPreset>();
 					int total = 0;
 					for (int i = 0; i < numDSPPresets; i++)
 					{
+						// DSP "Code", used by the SoundBanks
+						long dspCode = reader.BaseStream.Position;
+
+						// Preset Accessibility
 						bool global = (reader.ReadByte() == 1);
+
+						// Number of preset parameters
 						uint numParams = reader.ReadUInt32();
+
+						// Obtain DSP Parameters
 						DSPParameter[] parameters = new DSPParameter[numParams];
 						for (uint j = 0; j < numParams; j++)
 						{
 							parameters[j] = INTERNAL_dspParameters[total++];
 						}
+
+						// Add to DSP Preset list
+						// FIXME: Did XNA4 PC ever go past Reverb?
 						INTERNAL_dspPresets.Add(
-							new DSPPreset(global, parameters)
+							dspCode,
+							new DSPPreset(
+								"Reverb",
+								global,
+								parameters
+							)
 						);
 					}
 				}
@@ -420,7 +436,36 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Update()
 		{
-			// TODO: RPC updates from Global Variables
+			// Update Global RPCs
+			foreach (KeyValuePair<long, RPC> curRPC in INTERNAL_RPCs)
+			foreach (Variable curVar in INTERNAL_variables)
+			{
+				if (curVar.Name.Equals(curRPC.Value.Variable) && curVar.IsGlobal)
+				{
+					if (curRPC.Value.Parameter == RPCParameter.Volume)
+					{
+						// TODO: Global volume?
+					}
+					else if (curRPC.Value.Parameter >= RPCParameter.NUM_PARAMETERS)
+					{
+						// FIXME: ASSUMPTION MANIA UP IN THIS BIZNAZZ
+						foreach (KeyValuePair<long, DSPPreset> curDSP in INTERNAL_dspPresets)
+						{
+							if (curDSP.Value.Name.Equals("Reverb"))
+							{
+								curDSP.Value.SetParameter(
+									(int) curRPC.Value.Parameter - (int) RPCParameter.NUM_PARAMETERS,
+									GetGlobalVariable(curVar.Name)
+								);
+							}
+						}
+					}
+					else
+					{
+						throw new Exception("RPC Parameter Type: " + curRPC.Value.Parameter);
+					}
+				}
+			}
 
 			// Update Cues
 			foreach (AudioCategory curCategory in INTERNAL_categories)
@@ -448,6 +493,11 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			return INTERNAL_RPCs[code];
 		}
+
+		internal int INTERNAL_getDSP(uint code)
+		{
+			return INTERNAL_dspPresets[code].Handle;
+		} 
 
 		internal void INTERNAL_addCue(Cue newCue, ushort category, bool managed)
 		{

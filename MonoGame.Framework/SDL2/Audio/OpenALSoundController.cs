@@ -65,6 +65,12 @@ namespace Microsoft.Xna.Framework.Audio
         // Used to store SoundEffectInstances generated internally.
         internal List<SoundEffectInstance> instancePool;
 
+        public EffectsExtension EFX
+        {
+            get;
+            private set;
+        }
+
         private void CheckALError()
         {
             ALError err = AL.GetError();
@@ -123,6 +129,8 @@ namespace Microsoft.Xna.Framework.Audio
                 Dispose(true);
                 return false;
             }
+
+            EFX = new EffectsExtension();
 
             return true;
         }
