@@ -59,14 +59,11 @@ namespace Microsoft.Xna.Framework.Audio
         private bool INTERNAL_soundAvailable = false;
 
         // OpenAL Device/Context Handles
-        private IntPtr _device;
-        private ContextHandle _context;
+        private IntPtr INTERNAL_alDevice;
+        private ContextHandle INTERNAL_alContext;
 
         // Used to store SoundEffectInstances generated internally.
         internal List<SoundEffectInstance> instancePool;
-
-        // Used to store looping SoundEffectInstances
-        internal List<SoundEffectInstance> loopingInstances;
 
         private void CheckALError()
         {
@@ -82,7 +79,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         private bool CheckALCError(string message)
         {
-            AlcError err = Alc.GetError(_device);
+            AlcError err = Alc.GetError(INTERNAL_alDevice);
 
             if (err == AlcError.NoError)
             {
@@ -101,26 +98,26 @@ namespace Microsoft.Xna.Framework.Audio
 #endif
             try
             {
-                _device = Alc.OpenDevice(string.Empty);
+                INTERNAL_alDevice = Alc.OpenDevice(string.Empty);
             }
             catch
             {
                 return false;
             }
-            if (CheckALCError("Could not open AL device") || _device == IntPtr.Zero)
+            if (CheckALCError("Could not open AL device") || INTERNAL_alDevice == IntPtr.Zero)
             {
                 return false;
             }
 
             int[] attribute = new int[0];
-            _context = Alc.CreateContext(_device, attribute);
-            if (CheckALCError("Could not create OpenAL context") || _context == ContextHandle.Zero)
+            INTERNAL_alContext = Alc.CreateContext(INTERNAL_alDevice, attribute);
+            if (CheckALCError("Could not create OpenAL context") || INTERNAL_alContext == ContextHandle.Zero)
             {
                 Dispose(true);
                 return false;
             }
 
-            Alc.MakeContextCurrent(_context);
+            Alc.MakeContextCurrent(INTERNAL_alContext);
             if (CheckALCError("Could not make OpenAL context current"))
             {
                 Dispose(true);
@@ -134,7 +131,6 @@ namespace Microsoft.Xna.Framework.Audio
         {
             INTERNAL_soundAvailable = INTERNAL_initSoundController();
             instancePool = new List<SoundEffectInstance>();
-            loopingInstances = new List<SoundEffectInstance>();
         }
 
         public void Dispose()
@@ -147,15 +143,15 @@ namespace Microsoft.Xna.Framework.Audio
             if (INTERNAL_soundAvailable || force)
             {
                 Alc.MakeContextCurrent(ContextHandle.Zero);
-                if (_context != ContextHandle.Zero)
+                if (INTERNAL_alContext != ContextHandle.Zero)
                 {
-                    Alc.DestroyContext (_context);
-                    _context = ContextHandle.Zero;
+                    Alc.DestroyContext (INTERNAL_alContext);
+                    INTERNAL_alContext = ContextHandle.Zero;
                 }
-                if (_device != IntPtr.Zero)
+                if (INTERNAL_alDevice != IntPtr.Zero)
                 {
-                    Alc.CloseDevice (_device);
-                    _device = IntPtr.Zero;
+                    Alc.CloseDevice (INTERNAL_alDevice);
+                    INTERNAL_alDevice = IntPtr.Zero;
                 }
                 INTERNAL_soundAvailable = false;
             }
@@ -190,10 +186,6 @@ namespace Microsoft.Xna.Framework.Audio
                     instancePool.RemoveAt(i);
                     i--;
                 }
-            }
-            foreach (SoundEffectInstance sfi in loopingInstances)
-            {
-                sfi.INTERNAL_checkLoop();
             }
         }
 

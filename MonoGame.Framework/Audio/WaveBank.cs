@@ -205,21 +205,25 @@ namespace Microsoft.Xna.Framework.Audio
 						if (entryCodec == 0x0) // PCM
 						{
 							INTERNAL_sounds[curEntry] = new SoundEffect(
+								"WaveBank Sound",
 								entryData,
-								(int) entryFrequency,
-								(AudioChannels) entryChannels,
-								(int) entryLoopOffset,
-								(int) entryLoopLength
+								entryFrequency,
+								entryChannels,
+								entryLoopOffset,
+								entryLoopLength,
+								0
 							);
 						}
 						else if (entryCodec == 0x2) // ADPCM
 						{
-							// TODO: MSADPCM loop data!
 							INTERNAL_sounds[curEntry] = new SoundEffect(
+								"WaveBank Sound",
 								entryData,
-								(int) entryFrequency,
-								(AudioChannels) entryChannels,
-								(int) entryAlignment + 22
+								entryFrequency,
+								entryChannels,
+								entryLoopOffset,
+								entryLoopLength,
+								entryAlignment + 22
 							);
 						}
 						else if (entryCodec == 0x3) // WMA

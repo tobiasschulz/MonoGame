@@ -64,92 +64,53 @@ namespace Microsoft.Xna.Framework.Content
         }
 
 		protected internal override SoundEffect Read(ContentReader input, SoundEffect existingInstance)
-		{         
-             // NXB format for SoundEffect...
-            //            
-            // Byte [format size]	Format	WAVEFORMATEX structure
-            // UInt32	Data size	
-            // Byte [data size]	Data	Audio waveform data
-            // Int32	Loop start	In bytes (start must be format block aligned)
-            // Int32	Loop length	In bytes (length must be format block aligned)
-            // Int32	Duration	In milliseconds
-
-            // WAVEFORMATEX structure...
-            //
-            //typedef struct {
-            //  WORD  wFormatTag;       // byte[0]  +2
-            //  WORD  nChannels;        // byte[2]  +2
-            //  DWORD nSamplesPerSec;   // byte[4]  +4
-            //  DWORD nAvgBytesPerSec;  // byte[8]  +4
-            //  WORD  nBlockAlign;      // byte[12] +2
-            //  WORD  wBitsPerSample;   // byte[14] +2
-            //  WORD  cbSize;           // byte[16] +2
-            //} WAVEFORMATEX;
+		{
+            // Format block length
+            uint formatLength = input.ReadUInt32();
             
-			byte[] header = input.ReadBytes(input.ReadInt32());
-			byte[] data = input.ReadBytes(input.ReadInt32());
-			int loopStart = input.ReadInt32();
-			int loopLength = input.ReadInt32();
-			int num = input.ReadInt32();
-
-#if DIRECTX            
-            var count = data.Length;
-            var format = (int)BitConverter.ToUInt16(header, 0);
-            var sampleRate = (int)BitConverter.ToUInt16(header, 4);
-            var channels = BitConverter.ToUInt16(header, 2);
-            //var avgBPS = (int)BitConverter.ToUInt16(header, 8);
-            var blockAlignment = (int)BitConverter.ToUInt16(header, 12);
-            //var bps = (int)BitConverter.ToUInt16(header, 14);
-
-            SharpDX.Multimedia.WaveFormat waveFormat;
-            if (format == 1)
-                waveFormat = new SharpDX.Multimedia.WaveFormat(sampleRate, channels);
-            else if (format == 2)
-                waveFormat = new SharpDX.Multimedia.WaveFormatAdpcm(sampleRate, channels, blockAlignment);
-            else
-                throw new NotSupportedException("Unsupported wave format!");
-
-            return new SoundEffect(waveFormat, data, 0, count, loopStart, loopLength)
-            {
-                Name = input.AssetName,
-            };
-#else
-            if (header[0] == 2 && header[1] == 0)
-            {
-                // We've found MSADPCM data! Let's decode it here.
-                using (MemoryStream origDataStream = new MemoryStream(data))
-                {
-                    using (BinaryReader reader = new BinaryReader(origDataStream))
-                    {
-                        byte[] newData = MSADPCMToPCM.MSADPCM_TO_PCM(
-                            reader,
-                            header[2],
-                            (short) ((header[12] / header[2]) - 22)
-                        );
-                        data = newData;
-                    }
-                }
-                
-                // This is PCM data now!
-                header[0] = 1;
-            }
+            // Wavedata format
+            ushort format = input.ReadUInt16();
             
-            int sampleRate = (
-                (header[4]) +
-                (header[5] << 8) +
-                (header[6] << 16) +
-                (header[7] << 24)
-            );
+            // Number of channels
+            ushort channels = input.ReadUInt16();
+            
+            // Sample rate
+            uint sampleRate = input.ReadUInt32();
+            
+            // Averate bytes per second, unused
+            input.ReadUInt32();
+            
+            // Block alignment, needed for MSADPCM
+            ushort blockAlign = input.ReadUInt16();
+            
+            // Bit depth, unused
+            input.ReadUInt16();
+            
+            // cbSize, unused
+            input.ReadUInt16();
+            
+            // Seek past the rest of this crap
+            input.BaseStream.Seek(formatLength - 18, SeekOrigin.Current);
+            
+            // Wavedata
+            byte[] data = input.ReadBytes(input.ReadInt32());
+            
+            // Loop information
+            uint loopStart = input.ReadUInt32();
+            uint loopLength = input.ReadUInt32();
+            
+            // Sound duration in milliseconds, unused
+            input.ReadUInt32();
             
             return new SoundEffect(
                 input.AssetName,
                 data,
                 sampleRate,
-                (header[2] == 2) ? AudioChannels.Stereo : AudioChannels.Mono,
+                channels,
                 loopStart,
-                loopLength
+                loopLength,
+                (uint) ((format == 2) ? (blockAlign / channels) : (ushort) 0)
             );
-#endif
 		}
 	}
 }

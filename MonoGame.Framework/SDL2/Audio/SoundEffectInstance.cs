@@ -102,43 +102,6 @@ namespace Microsoft.Xna.Framework.Audio
 
         #endregion
 
-        #region Internal OpenALSoundController Interop Methods
-
-        bool triggeredDequeue = false;
-        internal void INTERNAL_checkLoop()
-        {
-            if (INTERNAL_alSource == -1)
-            {
-                return;
-            }
-            int processed;
-            AL.GetSource(INTERNAL_alSource, ALGetSourcei.BuffersProcessed, out processed);
-            if (!triggeredDequeue && processed > 0)
-            {
-                AL.SourceUnqueueBuffer(INTERNAL_alSource);
-                triggeredDequeue = true;
-                AL.Source(INTERNAL_alSource, ALSourceb.Looping, true);
-            }
-        }
-
-        private void INTERNAL_addLoopingInstance()
-        {
-            if (!OpenALSoundController.GetInstance.loopingInstances.Contains(this))
-            {
-                OpenALSoundController.GetInstance.loopingInstances.Add(this);
-            }
-        }
-
-        private void INTERNAL_removeLoopingInstance()
-        {
-            if (OpenALSoundController.GetInstance.loopingInstances.Contains(this))
-            {
-                OpenALSoundController.GetInstance.loopingInstances.Remove(this);
-            }
-        }
-
-        #endregion
-
         #region Constructors, Deconstructors, Dispose Method
 
         internal SoundEffectInstance(SoundEffect parent)
@@ -180,18 +143,9 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 INTERNAL_looped = value;
-                if (INTERNAL_looped)
-                {
-                    INTERNAL_addLoopingInstance();
-                }
-                else if (!INTERNAL_looped)
-                {
-                    INTERNAL_removeLoopingInstance();
-                }
                 if (INTERNAL_alSource != -1)
                 {
-                    // Only set if we don't have complex looping.
-                    AL.Source(INTERNAL_alSource, ALSourceb.Looping, INTERNAL_looped && INTERNAL_parentEffect.buffers.Length == 1);
+                    AL.Source(INTERNAL_alSource, ALSourceb.Looping, INTERNAL_looped);
                 }
             }
         }
@@ -342,26 +296,9 @@ namespace Microsoft.Xna.Framework.Audio
                 System.Console.WriteLine("WARNING: AL SOURCE WAS NOT AVAILABLE. SKIPPING.");
                 return;
             }
-
-            if (INTERNAL_parentEffect.buffers.Length > 1)
-            {
-                for (int i = 0; i < INTERNAL_parentEffect.buffers.Length; i++)
-                {
-                    if (IsLooped && i == 2)
-                    {
-                        break; // FIXME: God help you if you Loop during playback.
-                    }
-                    AL.SourceQueueBuffer(
-                        INTERNAL_alSource,
-                        INTERNAL_parentEffect.buffers[i]
-                    );
-                }
-                triggeredDequeue = false;
-            }
-            else
-            {
-                AL.Source(INTERNAL_alSource, ALSourcei.Buffer, INTERNAL_parentEffect.buffers[0]);
-            }
+   
+            // Attach the buffer to this source
+            AL.Source(INTERNAL_alSource, ALSourcei.Buffer, INTERNAL_parentEffect.buffer);
 
             // Apply Pan/Position
             if (INTERNAL_positionalAudio)
@@ -407,7 +344,6 @@ namespace Microsoft.Xna.Framework.Audio
                 AL.DeleteSource(INTERNAL_alSource);
                 INTERNAL_alSource = -1;
             }
-            INTERNAL_removeLoopingInstance();
         }
 
         public void Stop(bool immediate)
