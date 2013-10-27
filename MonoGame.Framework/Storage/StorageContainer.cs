@@ -120,19 +120,24 @@ namespace Microsoft.Xna.Framework.Storage
 			// From the examples the root is based on MyDocuments folder
 #if WINDOWS_STOREAPP
             var saved = "";
-#else
+#elif SDL2
             string saved;
-            if (    Environment.OSVersion.Platform == PlatformID.MacOSX ||
-                    Environment.OSVersion.Platform == PlatformID.Unix   )
+            if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+            {
+                saved = Path.Combine(StorageDevice.StorageRoot, "SavedGames");
+            }
+            else if (   SDL2_GamePlatform.OSVersion.Equals("Mac OS X") ||
+                        SDL2_GamePlatform.OSVersion.Equals("Linux") )
             {
                 // Unix systems are expected to have a dedicated userdata folder.
                 saved = StorageDevice.StorageRoot;
             }
             else
             {
-                string root = StorageDevice.StorageRoot;
-                saved = Path.Combine(root,"SavedGames");
+                throw new Exception("StorageContainer: SDL2 platform not handled!");
             }
+#else
+            string saved = Path.Combine(StorageDevice.StorageRoot, "SavedGames");
 #endif
             _storagePath = Path.Combine(saved, name);
 			
