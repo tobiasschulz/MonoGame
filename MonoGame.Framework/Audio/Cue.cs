@@ -353,7 +353,10 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 			{
-				sfi.Volume = GetVariable("Volume") * rpcVolume;
+				/* The final volume should be the combination of the
+				 * authored volume, Volume variable and RPC volume result.
+				 */
+				sfi.Volume = INTERNAL_activeSound.Volume * GetVariable("Volume") * rpcVolume;
 			}
 		}
 
