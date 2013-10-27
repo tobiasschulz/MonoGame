@@ -76,7 +76,7 @@ namespace Microsoft.Xna.Framework.Audio
         private List<SoundEffectInstance> _toBeRecycledInstances;
 #elif SDL2
         // OpenAL-specific information
-        internal int buffer;
+        internal int INTERNAL_buffer;
         private TimeSpan INTERNAL_duration = TimeSpan.Zero;
 #else
         private Sound _sound;
@@ -464,7 +464,7 @@ namespace Microsoft.Xna.Framework.Audio
 #if SDL2
             if (!IsDisposed)
             {
-                AL.DeleteBuffer(buffer);
+                AL.DeleteBuffer(INTERNAL_buffer);
             }
 #elif DIRECTX
             _dataStream.Dispose();
@@ -611,9 +611,9 @@ namespace Microsoft.Xna.Framework.Audio
             }
 
             // Create the buffer and load it!
-            buffer = AL.GenBuffer();
+            INTERNAL_buffer = AL.GenBuffer();
             AL.BufferData(
-                buffer,
+                INTERNAL_buffer,
                 format,
                 data,
                 data.Length,
@@ -624,7 +624,7 @@ namespace Microsoft.Xna.Framework.Audio
             if (loopStart > 0 || loopEnd > 0)
             {
                 AL.Buffer(
-                    buffer,
+                    INTERNAL_buffer,
                     ALBufferiv.LoopPointsSoft,
                     new uint[]
                     {

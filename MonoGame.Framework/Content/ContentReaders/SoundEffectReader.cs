@@ -53,64 +53,64 @@ namespace Microsoft.Xna.Framework.Content
 	internal class SoundEffectReader : ContentTypeReader<SoundEffect>
 	{
 #if ANDROID
-        static string[] supportedExtensions = new string[] { ".wav", ".mp3", ".ogg", ".mid" };
+		static string[] supportedExtensions = new string[] { ".wav", ".mp3", ".ogg", ".mid" };
 #else
-        static string[] supportedExtensions = new string[] { ".wav", ".aiff", ".ac3", ".mp3" };
+		static string[] supportedExtensions = new string[] { ".wav", ".aiff", ".ac3", ".mp3" };
 #endif
 
-        internal static string Normalize(string fileName)
-        {
-            return Normalize(fileName, supportedExtensions);
-        }
+		internal static string Normalize(string fileName)
+		{
+			return Normalize(fileName, supportedExtensions);
+		}
 
 		protected internal override SoundEffect Read(ContentReader input, SoundEffect existingInstance)
 		{
-            // Format block length
-            uint formatLength = input.ReadUInt32();
-            
-            // Wavedata format
-            ushort format = input.ReadUInt16();
-            
-            // Number of channels
-            ushort channels = input.ReadUInt16();
-            
-            // Sample rate
-            uint sampleRate = input.ReadUInt32();
-            
-            // Averate bytes per second, unused
-            input.ReadUInt32();
-            
-            // Block alignment, needed for MSADPCM
-            ushort blockAlign = input.ReadUInt16();
-            
-            // Bit depth, unused
-            input.ReadUInt16();
-            
-            // cbSize, unused
-            input.ReadUInt16();
-            
-            // Seek past the rest of this crap
-            input.BaseStream.Seek(formatLength - 18, SeekOrigin.Current);
-            
-            // Wavedata
-            byte[] data = input.ReadBytes(input.ReadInt32());
-            
-            // Loop information
-            uint loopStart = input.ReadUInt32();
-            uint loopLength = input.ReadUInt32();
-            
-            // Sound duration in milliseconds, unused
-            input.ReadUInt32();
-            
-            return new SoundEffect(
-                input.AssetName,
-                data,
-                sampleRate,
-                channels,
-                loopStart,
-                loopLength,
-                (uint) ((format == 2) ? (blockAlign / channels) : (ushort) 0)
-            );
+			// Format block length
+			uint formatLength = input.ReadUInt32();
+
+			// Wavedata format
+			ushort format = input.ReadUInt16();
+
+			// Number of channels
+			ushort channels = input.ReadUInt16();
+
+			// Sample rate
+			uint sampleRate = input.ReadUInt32();
+
+			// Averate bytes per second, unused
+			input.ReadUInt32();
+
+			// Block alignment, needed for MSADPCM
+			ushort blockAlign = input.ReadUInt16();
+
+			// Bit depth, unused
+			input.ReadUInt16();
+
+			// cbSize, unused
+			input.ReadUInt16();
+
+			// Seek past the rest of this crap
+			input.BaseStream.Seek(formatLength - 18, SeekOrigin.Current);
+
+			// Wavedata
+			byte[] data = input.ReadBytes(input.ReadInt32());
+
+			// Loop information
+			uint loopStart = input.ReadUInt32();
+			uint loopLength = input.ReadUInt32();
+
+			// Sound duration in milliseconds, unused
+			input.ReadUInt32();
+
+			return new SoundEffect(
+				input.AssetName,
+				data,
+				sampleRate,
+				channels,
+				loopStart,
+				loopLength,
+				(uint) ((format == 2) ? (blockAlign / channels) : (ushort) 0)
+			);
 		}
 	}
 }

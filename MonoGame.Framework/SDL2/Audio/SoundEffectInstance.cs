@@ -298,7 +298,11 @@ namespace Microsoft.Xna.Framework.Audio
             }
    
             // Attach the buffer to this source
-            AL.Source(INTERNAL_alSource, ALSourcei.Buffer, INTERNAL_parentEffect.buffer);
+            AL.Source(
+                INTERNAL_alSource,
+                ALSourcei.Buffer,
+                INTERNAL_parentEffect.INTERNAL_buffer
+            );
 
             // Apply Pan/Position
             if (INTERNAL_positionalAudio)
