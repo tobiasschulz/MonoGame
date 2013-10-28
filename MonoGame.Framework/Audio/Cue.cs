@@ -221,6 +221,31 @@ namespace Microsoft.Xna.Framework.Audio
 				throw new InvalidOperationException("Cue already playing!");
 			}
 
+			if (GetVariable("NumCueInstances") > INTERNAL_data.InstanceLimit)
+			{
+				if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Fail)
+				{
+					return; // Just ignore us...
+				}
+				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Queue)
+				{
+					throw new Exception("Cue Queueing not handled!");
+				}
+				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceOldest)
+				{
+					INTERNAL_baseEngine.INTERNAL_removeOldestCue(Name);
+				}
+				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceQuietest)
+				{
+					INTERNAL_baseEngine.INTERNAL_removeQuietestCue(Name);
+				}
+				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceLowestPriority)
+				{
+					// FIXME: Priority?
+					INTERNAL_baseEngine.INTERNAL_removeOldestCue(Name);
+				}
+			}
+
 			double max = 0.0;
 			for (int i = 0; i < INTERNAL_data.Probabilities.Length; i++)
 			{

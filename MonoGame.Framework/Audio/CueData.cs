@@ -6,6 +6,15 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	internal class CueData
 	{
+		public enum MaxInstanceBehavior : byte
+		{
+			Fail,
+			Queue,
+			ReplaceOldest,
+			ReplaceQuietest,
+			ReplaceLowestPriority
+		}
+
 		public XACTSound[] Sounds
 		{
 			get;
@@ -19,6 +28,18 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 
 		public float[] Probabilities
+		{
+			get;
+			private set;
+		}
+
+		public byte InstanceLimit
+		{
+			get;
+			private set;
+		}
+
+		public MaxInstanceBehavior MaxCueBehavior
 		{
 			get;
 			private set;
@@ -39,6 +60,12 @@ namespace Microsoft.Xna.Framework.Audio
 			Sounds = sounds;
 			Category = Sounds[0].Category; // FIXME: Assumption!
 			Probabilities = probabilities;
+		}
+
+		public void SetLimit(byte instanceLimit, byte behavior)
+		{
+			InstanceLimit = instanceLimit;
+			MaxCueBehavior = (MaxInstanceBehavior) (behavior >> 3);
 		}
 	}
 

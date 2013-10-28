@@ -512,5 +512,27 @@ namespace Microsoft.Xna.Framework.Audio
 			newCue.INTERNAL_genVariables(cueVariables);
 			INTERNAL_categories[category].INTERNAL_addCue(newCue, managed);
 		}
+
+		internal void INTERNAL_removeOldestCue(string name)
+		{
+			foreach (AudioCategory curCategory in INTERNAL_categories)
+			{
+				if (curCategory.INTERNAL_removeOldestCue(name))
+				{
+					return;
+				}
+			}
+		}
+
+		internal void INTERNAL_removeQuietestCue(string name)
+		{
+			foreach (AudioCategory curCategory in INTERNAL_categories)
+			{
+				if (curCategory.INTERNAL_removeQuietestCue(name))
+				{
+					return;
+				}
+			}
+		}
 	}
 }

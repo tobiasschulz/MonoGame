@@ -18,6 +18,8 @@ namespace Microsoft.Xna.Framework.Audio
 		private List<Cue> managedCues;
 		private List<Cue> unmanagedCues;
 
+		private Dictionary<string, int> cueInstanceCounts;
+
 		// Grumble, struct returns...
 		private FloatInstance INTERNAL_volume;
 
@@ -38,6 +40,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_volume = new FloatInstance(volume);
 			managedCues = new List<Cue>();
 			unmanagedCues = new List<Cue>();
+			cueInstanceCounts = new Dictionary<string, int>();
 		}
 
 		public void Pause()
@@ -129,11 +132,16 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (unmanagedCues[i].IsDisposed)
 				{
+					cueInstanceCounts[unmanagedCues[i].Name] -= 1;
 					unmanagedCues.RemoveAt(i);
 					i--;
 				}
 				else
 				{
+					unmanagedCues[i].SetVariable(
+						"NumCueInstances",
+						cueInstanceCounts[unmanagedCues[i].Name]
+					);
 					unmanagedCues[i].INTERNAL_update();
 				}
 			}
@@ -143,12 +151,17 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (!managedCues[i].IsPlaying)
 				{
+					cueInstanceCounts[managedCues[i].Name] -= 1;
 					managedCues[i].Dispose();
 					managedCues.RemoveAt(i);
 					i--;
 				}
 				else
 				{
+					managedCues[i].SetVariable(
+						"NumCueInstances",
+						cueInstanceCounts[managedCues[i].Name]
+					);
 					managedCues[i].INTERNAL_update();
 				}
 			}
@@ -164,7 +177,89 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				unmanagedCues.Add(newCue);
 			}
+			if (cueInstanceCounts.ContainsKey(newCue.Name))
+			{
+				cueInstanceCounts[newCue.Name] += 1;
+			}
+			else
+			{
+				cueInstanceCounts.Add(newCue.Name, 1);
+			}
+			newCue.SetVariable("NumCueInstances", cueInstanceCounts[newCue.Name]);
 			newCue.SetVariable("Volume", INTERNAL_volume.Value);
+		}
+
+		internal bool INTERNAL_removeOldestCue(string name)
+		{
+			// Try to remove a managed Cue first
+			for (int i = 0; i < managedCues.Count; i++)
+			{
+				if (managedCues[i].Name.Equals(name))
+				{
+					cueInstanceCounts[name] -= 1;
+					managedCues[i].Stop(AudioStopOptions.AsAuthored);
+					managedCues[i].Dispose();
+					managedCues.RemoveAt(i);
+					return true;
+				}
+			}
+			foreach (Cue curCue in unmanagedCues)
+			{
+				if (curCue.Name.Equals(name) && curCue.IsPlaying)
+				{
+					// We can't remove the instance, only stop it.
+					curCue.Stop(AudioStopOptions.AsAuthored);
+					return true;
+				}
+			}
+
+			// Didn't find anything...
+			return false;
+		}
+
+		internal bool INTERNAL_removeQuietestCue(string name)
+		{
+			float lowestVolume = float.MaxValue;
+			int lowestIndex = -1;
+			for (int i = 0; i < managedCues.Count; i++)
+			{
+				if (	managedCues[i].Name.Equals(name) &&
+					managedCues[i].GetVariable("Volume") < lowestVolume	)
+				{
+					lowestVolume = managedCues[i].GetVariable("Volume");
+					lowestIndex = i;
+				}
+			}
+			for (int i = 0; i < unmanagedCues.Count; i++)
+			{
+				if (	unmanagedCues[i].Name.Equals(name) &&
+					unmanagedCues[i].GetVariable("Volume") < lowestVolume	)
+				{
+					lowestVolume = unmanagedCues[i].GetVariable("Volume");
+					lowestIndex = i + managedCues.Count;
+				}
+			}
+
+			if (lowestIndex == -1)
+			{
+				// Didn't find anything...
+				return false;
+			}
+
+			if (lowestIndex >= managedCues.Count)
+			{
+				// We can't remove the instance, only stop it.
+				unmanagedCues[lowestIndex - managedCues.Count].Stop(AudioStopOptions.AsAuthored);
+				return true;
+			}
+			else
+			{
+				cueInstanceCounts[name] -= 1;
+				managedCues[lowestIndex].Stop(AudioStopOptions.AsAuthored);
+				managedCues[lowestIndex].Dispose();
+				managedCues.RemoveAt(lowestIndex);
+				return true;
+			}
 		}
 	}
 }

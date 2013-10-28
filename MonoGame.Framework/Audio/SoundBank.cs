@@ -325,10 +325,20 @@ namespace Microsoft.Xna.Framework.Audio
 							);
 						}
 
-						// TODO: Cue instance limit
-						reader.ReadUInt32();
-						reader.ReadByte();
-						reader.ReadByte();
+						// Cue instance limit
+						byte instanceLimit = reader.ReadByte();
+
+						// Fade In/Out, unused
+						reader.ReadUInt16();
+						reader.ReadUInt16();
+
+						// Cue max instance behavior
+						byte behavior = reader.ReadByte();
+
+						INTERNAL_cueData[cueNames[numCueSimple + i]].SetLimit(
+							instanceLimit,
+							behavior
+						);
 					}
 				}
 			}
