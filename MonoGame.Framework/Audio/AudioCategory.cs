@@ -15,8 +15,7 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
-		private List<Cue> managedCues;
-		private List<Cue> unmanagedCues;
+		private List<Cue> activeCues;
 
 		private Dictionary<string, int> cueInstanceCounts;
 
@@ -38,18 +37,13 @@ namespace Microsoft.Xna.Framework.Audio
 		) {
 			INTERNAL_name = name;
 			INTERNAL_volume = new FloatInstance(volume);
-			managedCues = new List<Cue>();
-			unmanagedCues = new List<Cue>();
+			activeCues = new List<Cue>();
 			cueInstanceCounts = new Dictionary<string, int>();
 		}
 
 		public void Pause()
 		{
-			foreach (Cue curCue in managedCues)
-			{
-				curCue.Pause();
-			}
-			foreach (Cue curCue in unmanagedCues)
+			foreach (Cue curCue in activeCues)
 			{
 				curCue.Pause();
 			}
@@ -57,11 +51,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Resume()
 		{
-			foreach (Cue curCue in managedCues)
-			{
-				curCue.Resume();
-			}
-			foreach (Cue curCue in unmanagedCues)
+			foreach (Cue curCue in activeCues)
 			{
 				curCue.Resume();
 			}
@@ -70,11 +60,7 @@ namespace Microsoft.Xna.Framework.Audio
 		public void SetVolume(float volume)
 		{
 			INTERNAL_volume.Value = volume;
-			foreach (Cue curCue in managedCues)
-			{
-				curCue.SetVariable("Volume", volume);
-			}
-			foreach (Cue curCue in unmanagedCues)
+			foreach (Cue curCue in activeCues)
 			{
 				curCue.SetVariable("Volume", volume);
 			}
@@ -82,14 +68,14 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Stop(AudioStopOptions options)
 		{
-			foreach (Cue curCue in managedCues)
+			foreach (Cue curCue in activeCues)
 			{
 				curCue.Stop(options);
+				curCue.SetVariable("NumCueInstances", 0);
+				cueInstanceCounts[curCue.Name] -= 1;
+				curCue.INTERNAL_checkActive();
 			}
-			foreach (Cue curCue in unmanagedCues)
-			{
-				curCue.Stop(options);
-			}
+			activeCues.Clear();
 		}
 
 		public override int GetHashCode()
@@ -128,137 +114,89 @@ namespace Microsoft.Xna.Framework.Audio
 		internal void INTERNAL_update()
 		{
 			// Unmanaged Cues are only removed when the user disposes them.
-			for (int i = 0; i < unmanagedCues.Count; i++)
+			for (int i = 0; i < activeCues.Count; i++)
 			{
-				if (unmanagedCues[i].IsDisposed)
+				activeCues[i].INTERNAL_startPlayback();
+				if (!activeCues[i].INTERNAL_checkActive())
 				{
-					cueInstanceCounts[unmanagedCues[i].Name] -= 1;
-					unmanagedCues.RemoveAt(i);
+					cueInstanceCounts[activeCues[i].Name] -= 1;
+					activeCues.RemoveAt(i);
 					i--;
 				}
 				else
 				{
-					unmanagedCues[i].SetVariable(
-						"NumCueInstances",
-						cueInstanceCounts[unmanagedCues[i].Name]
-					);
-					unmanagedCues[i].INTERNAL_update();
+					activeCues[i].INTERNAL_update();
 				}
 			}
-
-			// Managed Cues are removed when they have stopped playing.
-			for (int i = 0; i < managedCues.Count; i++)
+			foreach (Cue curCue in activeCues)
 			{
-				if (!managedCues[i].IsPlaying)
-				{
-					cueInstanceCounts[managedCues[i].Name] -= 1;
-					managedCues[i].Dispose();
-					managedCues.RemoveAt(i);
-					i--;
-				}
-				else
-				{
-					managedCues[i].SetVariable(
-						"NumCueInstances",
-						cueInstanceCounts[managedCues[i].Name]
-					);
-					managedCues[i].INTERNAL_update();
-				}
+				curCue.SetVariable(
+					"NumCueInstances",
+					cueInstanceCounts[curCue.Name]
+				);
 			}
 		}
 
-		internal void INTERNAL_addCue(Cue newCue, bool managed)
+		internal void INTERNAL_initCue(Cue newCue)
 		{
-			if (managed)
+			if (!cueInstanceCounts.ContainsKey(newCue.Name))
 			{
-				managedCues.Add(newCue);
-			}
-			else
-			{
-				unmanagedCues.Add(newCue);
-			}
-			if (cueInstanceCounts.ContainsKey(newCue.Name))
-			{
-				cueInstanceCounts[newCue.Name] += 1;
-			}
-			else
-			{
-				cueInstanceCounts.Add(newCue.Name, 1);
+				cueInstanceCounts.Add(newCue.Name, 0);
 			}
 			newCue.SetVariable("NumCueInstances", cueInstanceCounts[newCue.Name]);
 			newCue.SetVariable("Volume", INTERNAL_volume.Value);
 		}
 
-		internal bool INTERNAL_removeOldestCue(string name)
+		internal void INTERNAL_addCue(Cue newCue)
 		{
-			// Try to remove a managed Cue first
-			for (int i = 0; i < managedCues.Count; i++)
-			{
-				if (managedCues[i].Name.Equals(name))
-				{
-					cueInstanceCounts[name] -= 1;
-					managedCues[i].Stop(AudioStopOptions.AsAuthored);
-					managedCues[i].Dispose();
-					managedCues.RemoveAt(i);
-					return true;
-				}
-			}
-			foreach (Cue curCue in unmanagedCues)
-			{
-				if (curCue.Name.Equals(name) && curCue.IsPlaying)
-				{
-					// We can't remove the instance, only stop it.
-					curCue.Stop(AudioStopOptions.AsAuthored);
-					return true;
-				}
-			}
-
-			// Didn't find anything...
-			return false;
+			cueInstanceCounts[newCue.Name] += 1;
+			newCue.SetVariable("NumCueInstances", cueInstanceCounts[newCue.Name]);
+			activeCues.Add(newCue);
 		}
 
-		internal bool INTERNAL_removeQuietestCue(string name)
+		internal void INTERNAL_removeLatestCue()
+		{
+			Cue toDie = activeCues[activeCues.Count - 1];
+			cueInstanceCounts[toDie.Name] -= 1;
+			activeCues.RemoveAt(activeCues.Count - 1);
+		}
+
+		internal void INTERNAL_removeOldestCue(string name)
+		{
+			for (int i = 0; i < activeCues.Count; i++)
+			{
+				if (activeCues[i].Name.Equals(name))
+				{
+					cueInstanceCounts[name] -= 1;
+					activeCues[i].Stop(AudioStopOptions.AsAuthored);
+					activeCues[i].INTERNAL_checkActive();
+					activeCues.RemoveAt(i);
+					return;
+				}
+			}
+		}
+
+		internal void INTERNAL_removeQuietestCue(string name)
 		{
 			float lowestVolume = float.MaxValue;
 			int lowestIndex = -1;
-			for (int i = 0; i < managedCues.Count; i++)
+
+			for (int i = 0; i < activeCues.Count; i++)
 			{
-				if (	managedCues[i].Name.Equals(name) &&
-					managedCues[i].GetVariable("Volume") < lowestVolume	)
+				if (	activeCues[i].Name.Equals(name) &&
+					activeCues[i].GetVariable("Volume") < lowestVolume	)
 				{
-					lowestVolume = managedCues[i].GetVariable("Volume");
+					lowestVolume = activeCues[i].GetVariable("Volume");
 					lowestIndex = i;
 				}
 			}
-			for (int i = 0; i < unmanagedCues.Count; i++)
-			{
-				if (	unmanagedCues[i].Name.Equals(name) &&
-					unmanagedCues[i].GetVariable("Volume") < lowestVolume	)
-				{
-					lowestVolume = unmanagedCues[i].GetVariable("Volume");
-					lowestIndex = i + managedCues.Count;
-				}
-			}
 
-			if (lowestIndex == -1)
-			{
-				// Didn't find anything...
-				return false;
-			}
-
-			if (lowestIndex >= managedCues.Count)
-			{
-				// We can't remove the instance, only stop it.
-				unmanagedCues[lowestIndex - managedCues.Count].Stop(AudioStopOptions.AsAuthored);
-				return true;
-			}
-			else
+			if (lowestIndex > -1)
 			{
 				cueInstanceCounts[name] -= 1;
-				managedCues[lowestIndex].Stop(AudioStopOptions.AsAuthored);
-				managedCues[lowestIndex].Dispose();
-				managedCues.RemoveAt(lowestIndex);
-				return true;
+				activeCues[lowestIndex].Stop(AudioStopOptions.AsAuthored);
+				activeCues[lowestIndex].INTERNAL_checkActive();
+				activeCues.RemoveAt(lowestIndex);
 			}
 		}
 	}

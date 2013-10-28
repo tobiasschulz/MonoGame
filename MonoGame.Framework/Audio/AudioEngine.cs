@@ -499,7 +499,7 @@ namespace Microsoft.Xna.Framework.Audio
 			return INTERNAL_dspPresets[code].Handle;
 		} 
 
-		internal void INTERNAL_addCue(Cue newCue, ushort category, bool managed)
+		internal AudioCategory INTERNAL_initCue(Cue newCue, ushort category)
 		{
 			List<Variable> cueVariables = new List<Variable>();
 			foreach (Variable curVar in INTERNAL_variables)
@@ -510,29 +510,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			}
 			newCue.INTERNAL_genVariables(cueVariables);
-			INTERNAL_categories[category].INTERNAL_addCue(newCue, managed);
-		}
-
-		internal void INTERNAL_removeOldestCue(string name)
-		{
-			foreach (AudioCategory curCategory in INTERNAL_categories)
-			{
-				if (curCategory.INTERNAL_removeOldestCue(name))
-				{
-					return;
-				}
-			}
-		}
-
-		internal void INTERNAL_removeQuietestCue(string name)
-		{
-			foreach (AudioCategory curCategory in INTERNAL_categories)
-			{
-				if (curCategory.INTERNAL_removeQuietestCue(name))
-				{
-					return;
-				}
-			}
+			return INTERNAL_categories[category];
 		}
 	}
 }

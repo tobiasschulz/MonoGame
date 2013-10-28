@@ -18,6 +18,11 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private List<Variable> INTERNAL_variables;
 
+		private AudioCategory INTERNAL_category;
+		private bool INTERNAL_isManaged;
+
+		private bool INTERNAL_queuedPlayback;
+
 		private static Random random = new Random();
 
 		public bool IsCreated
@@ -130,13 +135,20 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			}
 
-			INTERNAL_baseEngine.INTERNAL_addCue(
+			INTERNAL_isManaged = managed;
+
+			INTERNAL_category = INTERNAL_baseEngine.INTERNAL_initCue(
 				this,
-				data.Category,
-				managed
+				data.Category
 			);
 
 			INTERNAL_isPositional = false;
+			INTERNAL_queuedPlayback = false;
+		}
+
+		~Cue()
+		{
+			Dispose();
 		}
 
 		public void Apply3D(AudioListener listener, AudioEmitter emitter)
@@ -181,6 +193,7 @@ namespace Microsoft.Xna.Framework.Audio
 						sfi.Dispose();
 					}
 					INTERNAL_instancePool = null;
+					INTERNAL_queuedPlayback = false;
 				}
 				IsDisposed = true;
 			}
@@ -221,10 +234,14 @@ namespace Microsoft.Xna.Framework.Audio
 				throw new InvalidOperationException("Cue already playing!");
 			}
 
-			if (GetVariable("NumCueInstances") > INTERNAL_data.InstanceLimit)
+			INTERNAL_category.INTERNAL_initCue(this);
+
+			if (GetVariable("NumCueInstances") >= INTERNAL_data.InstanceLimit)
 			{
 				if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Fail)
 				{
+					// What we just did should be undone. Oops.
+					INTERNAL_category.INTERNAL_removeLatestCue();
 					return; // Just ignore us...
 				}
 				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Queue)
@@ -233,18 +250,20 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceOldest)
 				{
-					INTERNAL_baseEngine.INTERNAL_removeOldestCue(Name);
+					INTERNAL_category.INTERNAL_removeOldestCue(Name);
 				}
 				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceQuietest)
 				{
-					INTERNAL_baseEngine.INTERNAL_removeQuietestCue(Name);
+					INTERNAL_category.INTERNAL_removeQuietestCue(Name);
 				}
 				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceLowestPriority)
 				{
 					// FIXME: Priority?
-					INTERNAL_baseEngine.INTERNAL_removeOldestCue(Name);
+					INTERNAL_category.INTERNAL_removeOldestCue(Name);
 				}
 			}
+
+			INTERNAL_category.INTERNAL_addCue(this);
 
 			double max = 0.0;
 			for (int i = 0; i < INTERNAL_data.Probabilities.Length; i++)
@@ -284,10 +303,8 @@ namespace Microsoft.Xna.Framework.Audio
 					);
 				}
 			}
-			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
-			{
-				sfi.Play();
-			}
+
+			INTERNAL_queuedPlayback = true;
 		}
 
 		public void Resume()
@@ -321,8 +338,13 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Stop(AudioStopOptions options)
 		{
-			if (!IsPlaying)
+			if (INTERNAL_instancePool == null)
 			{
+				return;
+			}
+			if (INTERNAL_queuedPlayback)
+			{
+				INTERNAL_queuedPlayback = false;
 				return;
 			}
 			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
@@ -331,13 +353,33 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		internal void INTERNAL_startPlayback()
+		{
+			if (INTERNAL_queuedPlayback)
+			{
+				INTERNAL_queuedPlayback = false;
+				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+				{
+					sfi.Play();
+				}
+			}
+		}
+
+		internal bool INTERNAL_checkActive()
+		{
+			if (IsStopped && !INTERNAL_queuedPlayback)
+			{
+				if (INTERNAL_isManaged)
+				{
+					Dispose();
+				}
+				return false;
+			}
+			return true;
+		}
+
 		internal void INTERNAL_update()
 		{
-			if (INTERNAL_instancePool == null)
-			{
-				return; // Nothing to do... for now.
-			}
-
 			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
 			{
 				if (INTERNAL_instancePool[i].State == SoundState.Stopped)

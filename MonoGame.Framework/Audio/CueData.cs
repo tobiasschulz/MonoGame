@@ -53,6 +53,10 @@ namespace Microsoft.Xna.Framework.Audio
 			Sounds[0] = sound;
 			Category = sound.Category;
 			Probabilities[0] = 1.0f;
+
+			// Assume we can have max instances, for now.
+			InstanceLimit = 255;
+			MaxCueBehavior = MaxInstanceBehavior.ReplaceOldest;
 		}
 
 		public CueData(XACTSound[] sounds, float[] probabilities)
