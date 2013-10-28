@@ -376,7 +376,11 @@ namespace Microsoft.Xna.Framework.Audio
 				else if (eventType == 6)
 				{
 					// Unknown values
-					reader.ReadBytes(13);
+					reader.ReadBytes(9);
+
+					// Pitch variation
+					short minPitch = reader.ReadInt16();
+					short maxPitch = reader.ReadInt16();
 
 					// Volume variation
 					float minVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
@@ -408,7 +412,9 @@ namespace Microsoft.Xna.Framework.Audio
 					}
 
 					// Finally.
-					INTERNAL_events[i] = new PlayWaveVariationVolumeEvent(
+					INTERNAL_events[i] = new PlayWaveVariationPitchVolumeEvent(
+						minPitch,
+						maxPitch,
 						minVolume,
 						maxVolume,
 						tracks,
@@ -489,7 +495,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (curEvent.Type == 6)
 				{
-					((PlayWaveVariationVolumeEvent) curEvent).LoadTracks(
+					((PlayWaveVariationPitchVolumeEvent) curEvent).LoadTracks(
 						audioEngine,
 						waveBankNames
 					);
@@ -515,7 +521,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (curEvent.Type == 6)
 				{
-					result.Add(((PlayWaveVariationVolumeEvent) curEvent).GenerateInstance());
+					result.Add(((PlayWaveVariationPitchVolumeEvent) curEvent).GenerateInstance());
 				}
 			}
 		}
@@ -673,8 +679,11 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 	}
 
-	internal class PlayWaveVariationVolumeEvent : XACTEvent
+	internal class PlayWaveVariationPitchVolumeEvent : XACTEvent
 	{
+		private short INTERNAL_minPitch;
+		private short INTERNAL_maxPitch;
+
 		private float INTERNAL_minVolume;
 		private float INTERNAL_maxVolume;
 
@@ -687,13 +696,17 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private static Random random = new Random();
 
-		public PlayWaveVariationVolumeEvent(
+		public PlayWaveVariationPitchVolumeEvent(
+			short minPitch,
+			short maxPitch,
 			float minVolume,
 			float maxVolume,
 			ushort[] tracks,
 			byte[] waveBanks,
 			byte[] weights
 		) : base(6) {
+			INTERNAL_minPitch = minPitch;
+			INTERNAL_maxPitch = maxPitch;
 			INTERNAL_minVolume = minVolume;
 			INTERNAL_maxVolume = maxVolume;
 			INTERNAL_tracks = tracks;
@@ -725,12 +738,13 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (next > max - INTERNAL_weights[i])
 				{
-					SoundEffectInstance retVal = INTERNAL_waves[i].CreateInstance();
-					return retVal;
+					SoundEffectInstance result = INTERNAL_waves[i].CreateInstance();
+					result.Pitch = (random.Next(INTERNAL_minPitch, INTERNAL_maxPitch) / 1000.0f);
+					return result;
 				}
 				max -= INTERNAL_weights[i];
 			}
-			throw new Exception("PlayWaveVariationVolumeEvent... what?!");
+			throw new Exception("PlayWaveVariationPitchVolumeEvent... what?!");
 		}
 	}
 }
