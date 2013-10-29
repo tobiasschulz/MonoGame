@@ -278,8 +278,16 @@ namespace Microsoft.Xna.Framework.Audio
 				// Load the Event
 				if (eventType == 1)
 				{
-					// Unknown value
-					reader.ReadUInt32();
+					// Unknown values
+					reader.ReadBytes(3);
+
+					/* Event Flags
+					 * 0x01 = Break Loop
+					 * 0x02 = Use Speaker Position
+					 * 0x04 = Use Center Speaker
+					 * 0x08 = New Speaker Position On Loop
+					 */
+					reader.ReadByte();
 
 					// WaveBank Track Index
 					ushort track = reader.ReadUInt16();
@@ -303,7 +311,18 @@ namespace Microsoft.Xna.Framework.Audio
 				else if (eventType == 3)
 				{
 					// Unknown values
-					reader.ReadBytes(9);
+					reader.ReadBytes(3);
+
+					/* Event Flags
+					 * 0x01 = Break Loop
+					 * 0x02 = Use Speaker Position
+					 * 0x04 = Use Center Speaker
+					 * 0x08 = New Speaker Position On Loop
+					 */
+					reader.ReadByte();
+
+					// Unknown values
+					reader.ReadBytes(5);
 
 					// Number of WaveBank tracks
 					ushort numTracks = reader.ReadUInt16();
@@ -337,7 +356,15 @@ namespace Microsoft.Xna.Framework.Audio
 				else if (eventType == 4)
 				{
 					// Unknown values
-					reader.ReadBytes(4);
+					reader.ReadBytes(3);
+
+					/* Event Flags
+					 * 0x01 = Break Loop
+					 * 0x02 = Use Speaker Position
+					 * 0x04 = Use Center Speaker
+					 * 0x08 = New Speaker Position On Loop
+					 */
+					reader.ReadByte();
 					
 					// WaveBank track
 					ushort track = reader.ReadUInt16();
@@ -380,7 +407,18 @@ namespace Microsoft.Xna.Framework.Audio
 				else if (eventType == 6)
 				{
 					// Unknown values
-					reader.ReadBytes(9);
+					reader.ReadBytes(3);
+
+					/* Event Flags
+					 * 0x01 = Break Loop
+					 * 0x02 = Use Speaker Position
+					 * 0x04 = Use Center Speaker
+					 * 0x08 = New Speaker Position On Loop
+					 */
+					reader.ReadByte();
+
+					// Unknown values
+					reader.ReadBytes(5);
 
 					// Pitch variation
 					short minPitch = reader.ReadInt16();
