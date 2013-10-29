@@ -492,6 +492,7 @@ namespace Microsoft.Xna.Framework.Audio
 					 * So, uh, screw it, here's a hack.
 					 * -flibit
 					 */
+					reader.ReadBytes(17);
 					INTERNAL_events[i] = new PlayWaveVariationEvent(
 						new ushort[] { 72, 74 },
 						new byte[] { 0, 0 },
