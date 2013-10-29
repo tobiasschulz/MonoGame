@@ -387,12 +387,22 @@ namespace Microsoft.Xna.Framework.Audio
 					float maxVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
 					// Unknown values
-					reader.ReadBytes(18);
+					reader.ReadBytes(17);
+
+					// Variation flags
+					// FIXME: There's probably more to these flags...
+					byte varFlags = reader.ReadByte();
+					if (varFlags == 16)
+					{
+						// Throw out the volume variation.
+						minVolume = 0.0f;
+						maxVolume = 0.0f;
+					}
 
 					// Number of WaveBank tracks
 					ushort numTracks = reader.ReadUInt16();
 
-					// Unknown value
+					// Variation Type, unused
 					reader.ReadUInt16();
 
 					// Unknown values
