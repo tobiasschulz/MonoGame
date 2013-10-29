@@ -370,7 +370,17 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					Disposing.Invoke(this, null);
 				}
+				foreach (AudioCategory curCategory in INTERNAL_categories)
+				{
+					curCategory.Stop(AudioStopOptions.Immediate);
+				}
 				INTERNAL_categories.Clear();
+				foreach (KeyValuePair<long, DSPPreset> curDSP in INTERNAL_dspPresets)
+				{
+					curDSP.Value.Dispose();
+				}
+				INTERNAL_dspPresets.Clear();
+				INTERNAL_dspParameters.Clear();
 				INTERNAL_variables.Clear();
 				INTERNAL_RPCs.Clear();
 				IsDisposed = true;

@@ -365,6 +365,20 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		public void Dispose()
+		{
+#if SDL2
+			// Obtain EFX entry points
+			EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+
+			// Delete EFX data
+			EFX.DeleteAuxiliaryEffectSlot(Handle);
+			EFX.DeleteEffect(effectHandle);
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
 		public void SetParameter(int index, float value)
 		{
 			Parameters[index].Value = value;
