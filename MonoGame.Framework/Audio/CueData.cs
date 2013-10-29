@@ -662,7 +662,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				max -= INTERNAL_weights[i];
 			}
-			throw new Exception("PlayWaveVariationPitchVolumeEvent... what?!");
+			throw new Exception("PlayWaveEvent... what?!");
 		}
 	}
 }
