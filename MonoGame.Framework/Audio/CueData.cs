@@ -359,8 +359,12 @@ namespace Microsoft.Xna.Framework.Audio
 					float minVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
 					float maxVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
-					// Unknown values, but familiar table format
-					reader.ReadBytes(17);
+					// Unknown values
+					reader.ReadSingle();
+					reader.ReadSingle();
+					reader.ReadSingle();
+					reader.ReadSingle();
+					reader.ReadByte();
 					
 					// Finally.
 					INTERNAL_events[i] = new PlayWavePitchVolumeEvent(
@@ -387,7 +391,11 @@ namespace Microsoft.Xna.Framework.Audio
 					float maxVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
 					// Unknown values
-					reader.ReadBytes(17);
+					reader.ReadSingle();
+					reader.ReadSingle();
+					reader.ReadSingle();
+					reader.ReadSingle();
+					reader.ReadByte();
 
 					// Variation flags
 					// FIXME: There's probably more to these flags...
