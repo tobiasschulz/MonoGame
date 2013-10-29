@@ -260,6 +260,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public XACTClip(ushort track, byte waveBank)
 		{
+			INTERNAL_clipVolume = 1.0f;
 			INTERNAL_events = new XACTEvent[1];
 			INTERNAL_events[0] = new PlayWaveEvent(
 				new ushort[] { track },
