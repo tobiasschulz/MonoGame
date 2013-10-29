@@ -327,7 +327,7 @@ namespace Microsoft.Xna.Framework.Audio
 					// Number of WaveBank tracks
 					ushort numTracks = reader.ReadUInt16();
 
-					// Unknown value
+					// Variation Type, unused
 					reader.ReadUInt16();
 
 					// Unknown values
@@ -486,38 +486,16 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (eventType == 8)
 				{
-					// Unknown value
-					reader.ReadByte();
-					
-					// Loop Count
-					byte loopCount = reader.ReadByte();
-					
-					// Unknown value
-					reader.ReadByte();
-					
-					// WaveBank index
-					byte waveBank = reader.ReadByte();
-					
-					// Unknown value
-					reader.ReadUInt16();
-					
-					// Unknown value
-					reader.ReadByte();
-					
-					// Track index, I think?
-					ushort track = reader.ReadUInt16();
-					track = 0; // FIXME: Apparently not.
-					
-					// Unknown Value
-					reader.ReadUInt32();
-					
-					// Unknown value
-					reader.ReadUInt32();
-					
-					INTERNAL_events[i] = new PlayWaveEvent(
-						track,
-						waveBank,
-						loopCount
+					/* So there's this weird event that
+					 * I've only ever seen once. It's tagged
+					 * 8 with _none_ of the data inside.
+					 * So, uh, screw it, here's a hack.
+					 * -flibit
+					 */
+					INTERNAL_events[i] = new PlayWaveVariationEvent(
+						new ushort[] { 72, 74 },
+						new byte[] { 0, 0 },
+						new byte[] { 93, 255 }
 					);
 				}
 				else
