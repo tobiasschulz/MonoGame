@@ -196,8 +196,8 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				for (int i = 0; i < INTERNAL_clips.Length; i++)
 				{
-					// Unknown value
-					reader.ReadByte();
+					// XACT Clip volume
+					float clipVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
 
 					// XACT Clip Offset in Bank
 					uint offset = reader.ReadUInt32();
@@ -212,7 +212,7 @@ namespace Microsoft.Xna.Framework.Audio
 					reader.BaseStream.Seek(offset, SeekOrigin.Begin);
 
 					// Parse the Clip.
-					INTERNAL_clips[i] = new XACTClip(reader);
+					INTERNAL_clips[i] = new XACTClip(reader, clipVolume);
 
 					// Back to where we were...
 					reader.BaseStream.Seek(curPos, SeekOrigin.Begin);
@@ -256,14 +256,27 @@ namespace Microsoft.Xna.Framework.Audio
 	{
 		private XACTEvent[] INTERNAL_events;
 
+		private float INTERNAL_clipVolume;
+
 		public XACTClip(ushort track, byte waveBank)
 		{
 			INTERNAL_events = new XACTEvent[1];
-			INTERNAL_events[0] = new PlayWaveEvent(track, waveBank, 0);
+			INTERNAL_events[0] = new PlayWaveEvent(
+				new ushort[] { track },
+				new byte[] { waveBank },
+				0,
+				0,
+				0.0f,
+				0.0f,
+				0,
+				new byte[] { 0xFF }
+			);
 		}
 
-		public XACTClip(BinaryReader reader)
+		public XACTClip(BinaryReader reader, float clipVolume)
 		{
+			INTERNAL_clipVolume = clipVolume;
+
 			// Number of XACT Events
 			INTERNAL_events = new XACTEvent[reader.ReadByte()];
 
@@ -303,9 +316,14 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// Finally.
 					INTERNAL_events[i] = new PlayWaveEvent(
-						track,
-						waveBank,
-						loopCount
+						new ushort[] { track },
+						new byte[] { waveBank },
+						0,
+						0,
+						0.0f,
+						0.0f,
+						loopCount,
+						new byte[] { 0xFF }
 					);
 				}
 				else if (eventType == 3)
@@ -347,9 +365,14 @@ namespace Microsoft.Xna.Framework.Audio
 					}
 
 					// Finally.
-					INTERNAL_events[i] = new PlayWaveVariationEvent(
+					INTERNAL_events[i] = new PlayWaveEvent(
 						tracks,
 						waveBanks,
+						0,
+						0,
+						0.0f,
+						0.0f,
+						0,
 						weights
 					);
 				}
@@ -394,14 +417,15 @@ namespace Microsoft.Xna.Framework.Audio
 					reader.ReadByte();
 					
 					// Finally.
-					INTERNAL_events[i] = new PlayWavePitchVolumeEvent(
-						track,
-						waveBank,
-						loopCount,
+					INTERNAL_events[i] = new PlayWaveEvent(
+						new ushort[] { track },
+						new byte[] { waveBank },
 						minPitch,
 						maxPitch,
 						minVolume,
-						maxVolume
+						maxVolume,
+						loopCount,
+						new byte[] { 0xFF }
 					);
 				}
 				else if (eventType == 6)
@@ -474,13 +498,14 @@ namespace Microsoft.Xna.Framework.Audio
 					}
 
 					// Finally.
-					INTERNAL_events[i] = new PlayWaveVariationPitchVolumeEvent(
+					INTERNAL_events[i] = new PlayWaveEvent(
+						tracks,
+						waveBanks,
 						minPitch,
 						maxPitch,
 						minVolume,
 						maxVolume,
-						tracks,
-						waveBanks,
+						0,
 						weights
 					);
 				}
@@ -493,9 +518,14 @@ namespace Microsoft.Xna.Framework.Audio
 					 * -flibit
 					 */
 					reader.ReadBytes(17);
-					INTERNAL_events[i] = new PlayWaveVariationEvent(
+					INTERNAL_events[i] = new PlayWaveEvent(
 						new ushort[] { 72, 74 },
 						new byte[] { 0, 0 },
+						0,
+						0,
+						0.0f,
+						0.0f,
+						0,
 						new byte[] { 93, 255 }
 					);
 				}
@@ -515,28 +545,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (curEvent.Type == 1)
 				{
-					((PlayWaveEvent) curEvent).LoadTrack(
-						audioEngine,
-						waveBankNames
-					);
-				}
-				else if (curEvent.Type == 3)
-				{
-					((PlayWaveVariationEvent) curEvent).LoadTracks(
-						audioEngine,
-						waveBankNames
-					);
-				}
-				else if (curEvent.Type == 4)
-				{
-					((PlayWavePitchVolumeEvent) curEvent).LoadTrack(
-						audioEngine,
-						waveBankNames
-					);
-				}
-				else if (curEvent.Type == 6)
-				{
-					((PlayWaveVariationPitchVolumeEvent) curEvent).LoadTracks(
+					((PlayWaveEvent) curEvent).LoadTracks(
 						audioEngine,
 						waveBankNames
 					);
@@ -550,19 +559,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (curEvent.Type == 1)
 				{
-					result.Add(((PlayWaveEvent) curEvent).GenerateInstance());
-				}
-				else if (curEvent.Type == 3)
-				{
-					result.Add(((PlayWaveVariationEvent) curEvent).GenerateInstance());
-				}
-				else if (curEvent.Type == 4)
-				{
-					result.Add(((PlayWavePitchVolumeEvent) curEvent).GenerateInstance());
-				}
-				else if (curEvent.Type == 6)
-				{
-					result.Add(((PlayWaveVariationPitchVolumeEvent) curEvent).GenerateInstance());
+					result.Add(((PlayWaveEvent) curEvent).GenerateInstance(INTERNAL_clipVolume));
 				}
 			}
 		}
@@ -584,174 +581,40 @@ namespace Microsoft.Xna.Framework.Audio
 
 	internal class PlayWaveEvent : XACTEvent
 	{
-		private ushort INTERNAL_track;
-		private byte INTERNAL_waveBank;
+		private ushort[] INTERNAL_tracks;
+		private byte[] INTERNAL_waveBanks;
+
+		private short INTERNAL_minPitch;
+		private short INTERNAL_maxPitch;
+
+		private float INTERNAL_minVolume;
+		private float INTERNAL_maxVolume;
+
 		private byte INTERNAL_loopCount;
 
-		private SoundEffect INTERNAL_wave;
+		private byte[] INTERNAL_weights;
+
+		private SoundEffect[] INTERNAL_waves;
+
+		private static Random random = new Random();
 
 		public PlayWaveEvent(
-			ushort track,
-			byte waveBank,
-			byte loopCount
-		) : base(1) {
-			INTERNAL_track = track;
-			INTERNAL_waveBank = waveBank;
-			INTERNAL_loopCount = loopCount;
-		}
-
-		public void LoadTrack(AudioEngine audioEngine, List<string> waveBankNames)
-		{
-			INTERNAL_wave = audioEngine.INTERNAL_getWaveBankTrack(
-				waveBankNames[INTERNAL_waveBank],
-				INTERNAL_track
-			);
-		}
-
-		public SoundEffectInstance GenerateInstance()
-		{
-			SoundEffectInstance result = INTERNAL_wave.CreateInstance();
-			// FIXME: Better looping!
-			result.IsLooped = (INTERNAL_loopCount == 255);
-			return result;
-		}
-	}
-
-	internal class PlayWaveVariationEvent : XACTEvent
-	{
-		private ushort[] INTERNAL_tracks;
-		private byte[] INTERNAL_waveBanks;
-
-		private byte[] INTERNAL_weights;
-
-		private SoundEffect[] INTERNAL_waves;
-
-		private static Random random = new Random();
-
-		public PlayWaveVariationEvent(
 			ushort[] tracks,
 			byte[] waveBanks,
-			byte[] weights
-		) : base(3) {
-			INTERNAL_tracks = tracks;
-			INTERNAL_waveBanks = waveBanks;
-			INTERNAL_weights = weights;
-			INTERNAL_waves = new SoundEffect[tracks.Length];
-		}
-
-		public void LoadTracks(AudioEngine audioEngine, List<string> waveBankNames)
-		{
-			for (int i = 0; i < INTERNAL_waves.Length; i++)
-			{
-				INTERNAL_waves[i] = audioEngine.INTERNAL_getWaveBankTrack(
-					waveBankNames[INTERNAL_waveBanks[i]],
-					INTERNAL_tracks[i]
-				);
-			}
-		}
-
-		public SoundEffectInstance GenerateInstance()
-		{
-			double max = 0.0;
-			for (int i = 0; i < INTERNAL_weights.Length; i++)
-			{
-				max += INTERNAL_weights[i];
-			}
-			double next = random.NextDouble() * max;
-			for (int i = INTERNAL_weights.Length - 1; i >= 0; i--)
-			{
-				if (next > max - INTERNAL_weights[i])
-				{
-					return INTERNAL_waves[i].CreateInstance();
-				}
-				max -= INTERNAL_weights[i];
-			}
-			throw new Exception("PlayWaveVariationEvent... what?!");
-		}
-	}
-
-	internal class PlayWavePitchVolumeEvent : XACTEvent
-	{
-		private ushort INTERNAL_track;
-		private byte INTERNAL_waveBank;
-		private byte INTERNAL_loopCount;
-		private short INTERNAL_minPitch;
-		private short INTERNAL_maxPitch;
-		private float INTERNAL_minVolume;
-		private float INTERNAL_maxVolume;
-
-		private SoundEffect INTERNAL_wave;
-		
-		private static Random random = new Random();
-
-		public PlayWavePitchVolumeEvent(
-			ushort track,
-			byte waveBank,
-			byte loopCount,
-			short minPitch,
-			short maxPitch,
-			float minVolume,
-			float maxVolume
-		) : base(4) {
-			INTERNAL_track = track;
-			INTERNAL_waveBank = waveBank;
-			INTERNAL_loopCount = loopCount;
-			INTERNAL_minPitch = minPitch;
-			INTERNAL_maxPitch = maxPitch;
-			INTERNAL_minVolume = minVolume;
-			INTERNAL_maxVolume = maxVolume;
-		}
-
-		public void LoadTrack(AudioEngine audioEngine, List<string> waveBankNames)
-		{
-			INTERNAL_wave = audioEngine.INTERNAL_getWaveBankTrack(
-				waveBankNames[INTERNAL_waveBank],
-				INTERNAL_track
-			);
-		}
-
-		public SoundEffectInstance GenerateInstance()
-		{
-			SoundEffectInstance result = INTERNAL_wave.CreateInstance();
-			result.Pitch = (random.Next(INTERNAL_minPitch, INTERNAL_maxPitch) / 1000.0f);
-			// FIXME: Better looping!
-			result.IsLooped = (INTERNAL_loopCount == 255);
-			return result;
-		}
-	}
-
-	internal class PlayWaveVariationPitchVolumeEvent : XACTEvent
-	{
-		private short INTERNAL_minPitch;
-		private short INTERNAL_maxPitch;
-
-		private float INTERNAL_minVolume;
-		private float INTERNAL_maxVolume;
-
-		private ushort[] INTERNAL_tracks;
-		private byte[] INTERNAL_waveBanks;
-
-		private byte[] INTERNAL_weights;
-
-		private SoundEffect[] INTERNAL_waves;
-
-		private static Random random = new Random();
-
-		public PlayWaveVariationPitchVolumeEvent(
 			short minPitch,
 			short maxPitch,
 			float minVolume,
 			float maxVolume,
-			ushort[] tracks,
-			byte[] waveBanks,
+			byte loopCount,
 			byte[] weights
-		) : base(6) {
+		) : base(1) {
+			INTERNAL_tracks = tracks;
+			INTERNAL_waveBanks = waveBanks;
 			INTERNAL_minPitch = minPitch;
 			INTERNAL_maxPitch = maxPitch;
 			INTERNAL_minVolume = minVolume;
 			INTERNAL_maxVolume = maxVolume;
-			INTERNAL_tracks = tracks;
-			INTERNAL_waveBanks = waveBanks;
+			INTERNAL_loopCount = loopCount;
 			INTERNAL_weights = weights;
 			INTERNAL_waves = new SoundEffect[tracks.Length];
 		}
@@ -767,7 +630,7 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
-		public SoundEffectInstance GenerateInstance()
+		public SoundEffectInstance GenerateInstance(float clipVolume)
 		{
 			double max = 0.0;
 			for (int i = 0; i < INTERNAL_weights.Length; i++)
@@ -780,7 +643,21 @@ namespace Microsoft.Xna.Framework.Audio
 				if (next > max - INTERNAL_weights[i])
 				{
 					SoundEffectInstance result = INTERNAL_waves[i].CreateInstance();
-					result.Pitch = (random.Next(INTERNAL_minPitch, INTERNAL_maxPitch) / 1000.0f);
+					result.Volume = (
+						clipVolume + (float) (
+							(	random.NextDouble() *
+								(INTERNAL_maxVolume - INTERNAL_minVolume)
+							) + INTERNAL_minVolume
+						)
+					);
+					result.Pitch = (
+						random.Next(
+							INTERNAL_minPitch,
+							INTERNAL_maxPitch
+						) / 1000.0f
+					);
+					// FIXME: Better looping!
+					result.IsLooped = (INTERNAL_loopCount == 255);
 					return result;
 				}
 				max -= INTERNAL_weights[i];
