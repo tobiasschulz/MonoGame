@@ -499,6 +499,11 @@ namespace Microsoft.Xna.Framework.Audio
 			return INTERNAL_waveBanks[name].INTERNAL_getTrack(track);
 		}
 
+		internal string INTERNAL_getVariableName(ushort index)
+		{
+			return INTERNAL_variables[index].Name;
+		}
+
 		internal RPC INTERNAL_getRPC(uint code)
 		{
 			return INTERNAL_RPCs[code];

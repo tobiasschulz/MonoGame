@@ -225,11 +225,14 @@ namespace Microsoft.Xna.Framework.Audio
 							ushort varTableFlags = reader.ReadUInt16();
 
 							// Unknown value
-							reader.ReadUInt32();
+							reader.ReadUInt16();
+
+							// Probability Control Variable, if applicable
+							ushort variable = reader.ReadUInt16();
 
 							// Create data for the CueData
 							XACTSound[] cueSounds = new XACTSound[numVariations];
-							float[] cueProbs = new float[numVariations];
+							float[,] cueProbs = new float[numVariations, 2];
 
 							// Used to determine Variation storage format
 							int varTableType = (varTableFlags >> 3) & 0x0007;
@@ -248,7 +251,8 @@ namespace Microsoft.Xna.Framework.Audio
 									cueSounds[j] = new XACTSound(track, waveBank);
 
 									// Calculate probability based on weight
-									cueProbs[j] = (wMax - wMin) / 255.0f;
+									cueProbs[j, 0] = wMax / 255.0f;
+									cueProbs[j, 1] = wMin / 255.0f;
 								}
 								else if (varTableType == 1)
 								{
@@ -270,7 +274,8 @@ namespace Microsoft.Xna.Framework.Audio
 									reader.BaseStream.Seek(varPos, SeekOrigin.Begin);
 
 									// Calculate probability based on weight
-									cueProbs[j] = (wMax - wMin) / 255.0f;
+									cueProbs[j, 0] = wMax / 255.0f;
+									cueProbs[j, 1] = wMin / 255.0f;
 								}
 								else if (varTableType == 3)
 								{
@@ -295,7 +300,8 @@ namespace Microsoft.Xna.Framework.Audio
 									reader.BaseStream.Seek(varPos, SeekOrigin.Begin);
 
 									// Calculate probability based on weight
-									cueProbs[j] = (wMax - wMin) / 1.0f;
+									cueProbs[j, 0] = wMax;
+									cueProbs[j, 1] = wMin;
 								}
 								else if (varTableType == 4)
 								{
@@ -307,7 +313,8 @@ namespace Microsoft.Xna.Framework.Audio
 									cueSounds[j] = new XACTSound(track, waveBank);
 
 									// FIXME: Assume Sound weight is 100%
-									cueProbs[j] = 1.0f;
+									cueProbs[j, 0] = 1.0f;
+									cueProbs[j, 1] = 0.0f;
 								}
 								else
 								{
@@ -321,7 +328,11 @@ namespace Microsoft.Xna.Framework.Audio
 							// Add Built CueData to Dictionary
 							INTERNAL_cueData.Add(
 								cueNames[numCueSimple + i],
-								new CueData(cueSounds, cueProbs)
+								new CueData(
+									cueSounds,
+									cueProbs,
+									(varTableType == 3) ? INTERNAL_baseEngine.INTERNAL_getVariableName(variable) : String.Empty
+								)
 							);
 						}
 

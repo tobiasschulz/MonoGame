@@ -27,7 +27,19 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
-		public float[] Probabilities
+		public float[,] Probabilities
+		{
+			get;
+			private set;
+		}
+
+		public bool IsUserControlled
+		{
+			get;
+			private set;
+		}
+
+		public string UserControlVariable
 		{
 			get;
 			private set;
@@ -48,22 +60,33 @@ namespace Microsoft.Xna.Framework.Audio
 		public CueData(XACTSound sound)
 		{
 			Sounds = new XACTSound[1];
-			Probabilities = new float[1];
+			Probabilities = new float[1, 2];
 
 			Sounds[0] = sound;
 			Category = sound.Category;
-			Probabilities[0] = 1.0f;
+			Probabilities[0, 0] = 1.0f;
+			Probabilities[0, 1] = 0.0f;
+			IsUserControlled = false;
 
 			// Assume we can have max instances, for now.
 			InstanceLimit = 255;
 			MaxCueBehavior = MaxInstanceBehavior.ReplaceOldest;
 		}
 
-		public CueData(XACTSound[] sounds, float[] probabilities)
-		{
+		public CueData(
+			XACTSound[] sounds,
+			float[,] probabilities,
+			string controlVariable
+		) {
 			Sounds = sounds;
 			Category = Sounds[0].Category; // FIXME: Assumption!
 			Probabilities = probabilities;
+			IsUserControlled = !String.IsNullOrEmpty(controlVariable);
+			UserControlVariable = controlVariable;
+
+			// Assume we can have max instances, for now.
+			InstanceLimit = 255;
+			MaxCueBehavior = MaxInstanceBehavior.ReplaceOldest;
 		}
 
 		public void SetLimit(byte instanceLimit, byte behavior)
@@ -231,10 +254,9 @@ namespace Microsoft.Xna.Framework.Audio
 			HasLoadedTracks = true;
 		}
 
-		public List<SoundEffectInstance> GenerateInstances()
+		public List<SoundEffectInstance> GenerateInstances(List<SoundEffectInstance> result)
 		{
 			// Get the SoundEffectInstance List
-			List<SoundEffectInstance> result = new List<SoundEffectInstance>();
 			foreach (XACTClip curClip in INTERNAL_clips)
 			{
 				curClip.GenerateInstances(result);

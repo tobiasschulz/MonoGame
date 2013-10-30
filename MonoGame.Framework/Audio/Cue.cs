@@ -12,6 +12,10 @@ namespace Microsoft.Xna.Framework.Audio
 		private XACTSound INTERNAL_activeSound;
 		private List<SoundEffectInstance> INTERNAL_instancePool;
 
+		// User-controlled sounds require a bit more trickery.
+		private bool INTERNAL_userControlledPlaying;
+		private float INTERNAL_controlledValue;
+
 		private bool INTERNAL_isPositional;
 		private AudioListener INTERNAL_listener;
 		private AudioEmitter INTERNAL_emitter;
@@ -41,10 +45,6 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
-				if (INTERNAL_instancePool == null)
-				{
-					return false;
-				}
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					if (sfi.State == SoundState.Paused)
@@ -60,10 +60,6 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
-				if (INTERNAL_instancePool == null)
-				{
-					return false;
-				}
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					if (sfi.State != SoundState.Stopped)
@@ -142,8 +138,11 @@ namespace Microsoft.Xna.Framework.Audio
 				data.Category
 			);
 
+			INTERNAL_userControlledPlaying = false;
 			INTERNAL_isPositional = false;
 			INTERNAL_queuedPlayback = false;
+
+			INTERNAL_instancePool = new List<SoundEffectInstance>();
 		}
 
 		~Cue()
@@ -192,7 +191,7 @@ namespace Microsoft.Xna.Framework.Audio
 					{
 						sfi.Dispose();
 					}
-					INTERNAL_instancePool = null;
+					INTERNAL_instancePool.Clear();
 					INTERNAL_queuedPlayback = false;
 				}
 				IsDisposed = true;
@@ -265,33 +264,12 @@ namespace Microsoft.Xna.Framework.Audio
 
 			INTERNAL_category.INTERNAL_addCue(this);
 
-			double max = 0.0;
-			for (int i = 0; i < INTERNAL_data.Probabilities.Length; i++)
+			if (!INTERNAL_calculateNextSound())
 			{
-				max += INTERNAL_data.Probabilities[i];
-			}
-			double next = random.NextDouble() * max;
-			for (int i = INTERNAL_data.Probabilities.Length - 1; i >= 0; i--)
-			{
-				if (next > max - INTERNAL_data.Probabilities[i])
-				{
-					INTERNAL_activeSound = INTERNAL_data.Sounds[i];
-					break;
-				}
-				max -= INTERNAL_data.Probabilities[i];
+				return;
 			}
 
-			INTERNAL_instancePool = INTERNAL_activeSound.GenerateInstances();
-
-			foreach (uint curDSP in INTERNAL_activeSound.DSPCodes)
-			{
-				int handle = INTERNAL_baseEngine.INTERNAL_getDSP(curDSP);
-				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
-				{
-					// FIXME: This only applies the last DSP!
-					sfi.INTERNAL_applyEffect(handle);
-				}
-			}
+			INTERNAL_setupSounds();
 
 			if (INTERNAL_isPositional)
 			{
@@ -338,10 +316,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Stop(AudioStopOptions options)
 		{
-			if (INTERNAL_instancePool == null)
-			{
-				return;
-			}
 			if (INTERNAL_queuedPlayback)
 			{
 				INTERNAL_queuedPlayback = false;
@@ -351,6 +325,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				sfi.Stop();
 			}
+			INTERNAL_userControlledPlaying = false;
 		}
 
 		internal void INTERNAL_startPlayback()
@@ -367,7 +342,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal bool INTERNAL_checkActive()
 		{
-			if (IsStopped && !INTERNAL_queuedPlayback)
+			if (IsStopped && !INTERNAL_queuedPlayback && !INTERNAL_userControlledPlaying)
 			{
 				if (INTERNAL_isManaged)
 				{
@@ -387,6 +362,32 @@ namespace Microsoft.Xna.Framework.Audio
 					INTERNAL_instancePool[i].Dispose();
 					INTERNAL_instancePool.RemoveAt(i);
 					i--;
+				}
+			}
+
+			// User control updates
+			if (INTERNAL_data.IsUserControlled)
+			{
+				if (	INTERNAL_userControlledPlaying &&
+					INTERNAL_controlledValue != GetVariable(INTERNAL_data.UserControlVariable)	)
+				{
+					// TODO: Crossfading
+					Stop(AudioStopOptions.Immediate);
+					if (!INTERNAL_calculateNextSound())
+					{
+						// Nothing to play, bail.
+						return;
+					}
+					INTERNAL_setupSounds();
+					foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+					{
+						sfi.Play();
+					}
+				}
+
+				if (INTERNAL_activeSound == null)
+				{
+					return;
 				}
 			}
 
@@ -440,6 +441,73 @@ namespace Microsoft.Xna.Framework.Audio
 		internal void INTERNAL_genVariables(List<Variable> cueVariables)
 		{
 			INTERNAL_variables = cueVariables;
+		}
+
+		private bool INTERNAL_calculateNextSound()
+		{
+			INTERNAL_activeSound = null;
+
+			// Pick a sound based on a Cue instance variable
+			if (INTERNAL_data.IsUserControlled)
+			{
+				INTERNAL_userControlledPlaying = true;
+				INTERNAL_controlledValue = GetVariable(
+					INTERNAL_data.UserControlVariable
+				);
+				for (int i = 0; i < INTERNAL_data.Probabilities.Length / 2; i++)
+				{
+					if (	INTERNAL_controlledValue <= INTERNAL_data.Probabilities[i, 0] &&
+						INTERNAL_controlledValue >= INTERNAL_data.Probabilities[i, 1]	)
+					{
+						INTERNAL_activeSound = INTERNAL_data.Sounds[i];
+						return true;
+					}
+				}
+
+				/* This should only happen when the
+				 * UserControlVariable is none of the sound
+				 * probabilities, in which case we are just
+				 * silent. But, we are still claiming to be
+				 * "playing" in the meantime.
+				 * -flibit
+				 */
+				return false;
+			}
+
+			// Randomly pick a sound
+			double max = 0.0;
+			for (int i = 0; i < INTERNAL_data.Probabilities.GetLength(0); i++)
+			{
+				max += INTERNAL_data.Probabilities[i, 0] - INTERNAL_data.Probabilities[i, 1];
+			}
+			double next = random.NextDouble() * max;
+
+			for (int i = INTERNAL_data.Probabilities.GetLength(0) - 1; i >= 0; i--)
+			{
+				if (next > max - (INTERNAL_data.Probabilities[i, 0] - INTERNAL_data.Probabilities[i, 1]))
+				{
+					INTERNAL_activeSound = INTERNAL_data.Sounds[i];
+					break;
+				}
+				max -= INTERNAL_data.Probabilities[i, 0] - INTERNAL_data.Probabilities[i, 1];
+			}
+
+			return true;
+		}
+
+		private void INTERNAL_setupSounds()
+		{
+			INTERNAL_activeSound.GenerateInstances(INTERNAL_instancePool);
+
+			foreach (uint curDSP in INTERNAL_activeSound.DSPCodes)
+			{
+				int handle = INTERNAL_baseEngine.INTERNAL_getDSP(curDSP);
+				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+				{
+					// FIXME: This only applies the last DSP!
+					sfi.INTERNAL_applyEffect(handle);
+				}
+			}
 		}
 	}
 }
