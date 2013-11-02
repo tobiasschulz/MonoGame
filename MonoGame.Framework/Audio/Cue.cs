@@ -324,12 +324,21 @@ namespace Microsoft.Xna.Framework.Audio
 			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 			{
 				sfi.Stop();
+				sfi.Dispose();
 			}
+			INTERNAL_instancePool.Clear();
 			INTERNAL_userControlledPlaying = false;
+
+			// If this is a managed Cue, we're done here.
+			if (INTERNAL_isManaged)
+			{
+				Dispose();
+			}
 		}
 
-		internal void INTERNAL_startPlayback()
+		internal bool INTERNAL_update()
 		{
+			// If this is our first update, time to play!
 			if (INTERNAL_queuedPlayback)
 			{
 				INTERNAL_queuedPlayback = false;
@@ -338,23 +347,7 @@ namespace Microsoft.Xna.Framework.Audio
 					sfi.Play();
 				}
 			}
-		}
 
-		internal bool INTERNAL_checkActive()
-		{
-			if (IsStopped && !INTERNAL_queuedPlayback && !INTERNAL_userControlledPlaying)
-			{
-				if (INTERNAL_isManaged)
-				{
-					Dispose();
-				}
-				return false;
-			}
-			return true;
-		}
-
-		internal void INTERNAL_update()
-		{
 			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
 			{
 				if (INTERNAL_instancePool[i].State == SoundState.Stopped)
@@ -376,7 +369,7 @@ namespace Microsoft.Xna.Framework.Audio
 					if (!INTERNAL_calculateNextSound())
 					{
 						// Nothing to play, bail.
-						return;
+						return true;
 					}
 					INTERNAL_setupSounds();
 					foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
@@ -387,7 +380,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 				if (INTERNAL_activeSound == null)
 				{
-					return;
+					return INTERNAL_userControlledPlaying;
 				}
 			}
 
@@ -436,6 +429,17 @@ namespace Microsoft.Xna.Framework.Audio
 				 */
 				sfi.Volume = INTERNAL_activeSound.Volume * GetVariable("Volume") * rpcVolume;
 			}
+
+			// Finally, check if we're still active.
+			if (IsStopped && !INTERNAL_queuedPlayback && !INTERNAL_userControlledPlaying)
+			{
+				if (INTERNAL_isManaged)
+				{
+					Dispose();
+				}
+				return false;
+			}
+			return true;
 		}
 
 		internal void INTERNAL_genVariables(List<Variable> cueVariables)

@@ -73,7 +73,6 @@ namespace Microsoft.Xna.Framework.Audio
 				curCue.Stop(options);
 				curCue.SetVariable("NumCueInstances", 0);
 				cueInstanceCounts[curCue.Name] -= 1;
-				curCue.INTERNAL_checkActive();
 			}
 			activeCues.Clear();
 		}
@@ -116,16 +115,11 @@ namespace Microsoft.Xna.Framework.Audio
 			// Unmanaged Cues are only removed when the user disposes them.
 			for (int i = 0; i < activeCues.Count; i++)
 			{
-				activeCues[i].INTERNAL_startPlayback();
-				if (!activeCues[i].INTERNAL_checkActive())
+				if (!activeCues[i].INTERNAL_update())
 				{
 					cueInstanceCounts[activeCues[i].Name] -= 1;
 					activeCues.RemoveAt(i);
 					i--;
-				}
-				else
-				{
-					activeCues[i].INTERNAL_update();
 				}
 			}
 			foreach (Cue curCue in activeCues)
@@ -169,7 +163,6 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					cueInstanceCounts[name] -= 1;
 					activeCues[i].Stop(AudioStopOptions.AsAuthored);
-					activeCues[i].INTERNAL_checkActive();
 					activeCues.RemoveAt(i);
 					return;
 				}
@@ -195,7 +188,6 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				cueInstanceCounts[name] -= 1;
 				activeCues[lowestIndex].Stop(AudioStopOptions.AsAuthored);
-				activeCues[lowestIndex].INTERNAL_checkActive();
 				activeCues.RemoveAt(lowestIndex);
 			}
 		}
