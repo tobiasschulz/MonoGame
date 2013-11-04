@@ -426,9 +426,9 @@
     <EmbeddedResource Include="Graphics\Effect\Resources\SkinnedEffect.ogl.mgfxo" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ThirdParty\SDL2#\SDL2#.csproj">
+    <ProjectReference Include="..\ThirdParty\SDL2#\SDL2-CS.csproj">
       <Project>{85480198-8711-4355-830E-72FD794AD3F6}</Project>
-      <Name>SDL2#</Name>
+      <Name>SDL2-CS</Name>
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\NVorbis\NVorbis\NVorbis.csproj">
       <Project>{A372E591-DFEF-49C4-9C82-98C4361EFCCD}</Project>
