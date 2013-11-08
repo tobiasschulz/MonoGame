@@ -34,6 +34,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Xna.Framework
 {
     [DataContract]
+    [TypeConverter(typeof(XNAVector3Converter))]
     public struct Vector3 : IEquatable<Vector3>
     {
         #region Private Fields
@@ -740,5 +741,41 @@ namespace Microsoft.Xna.Framework
         }
 
         #endregion
+    }
+
+    public class XNAVector3Converter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            if (sourceType == typeof(string))
+            {
+                return true;
+            }
+            return base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+        {
+            if (value is string)
+            {
+                string[] v = ((string) value).Split(new char[] { ',' });
+                return new Vector3(
+                    float.Parse(v[0]),
+                    float.Parse(v[1]),
+                    float.Parse(v[2])
+                );
+            }
+            return base.ConvertFrom(context, culture, value);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == typeof(string))
+            {
+                Vector3 src = (Vector3) value;
+                return src.X + "," + src.Y + "," + src.Z;
+            }
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
     }
 }
