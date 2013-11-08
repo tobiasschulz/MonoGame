@@ -26,6 +26,7 @@ SOFTWARE.
 #endregion License
 
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.Globalization;
 using System.Runtime.Serialization;
@@ -33,6 +34,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Xna.Framework
 {
     [DataContract]
+    [TypeConverter(typeof(XNAVector2Converter))]
     public struct Vector2 : IEquatable<Vector2>
     {
         #region Private Fields
@@ -557,5 +559,40 @@ namespace Microsoft.Xna.Framework
         }
 
         #endregion Operators
+    }
+
+    public class XNAVector2Converter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            if (sourceType == typeof(string))
+            {
+                return true;
+            }
+            return base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+        {
+            if (value is string)
+            {
+                string[] v = ((string) value).Split(new char[] { ',' });
+                return new Vector2(
+                    float.Parse(v[0]),
+                    float.Parse(v[1])
+                );
+            }
+            return base.ConvertFrom(context, culture, value);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == typeof(string))
+            {
+                Vector2 src = (Vector2) value;
+                return src.X + "," + src.Y;
+            }
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
     }
 }
