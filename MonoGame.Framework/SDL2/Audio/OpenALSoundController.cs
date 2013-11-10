@@ -132,6 +132,15 @@ namespace Microsoft.Xna.Framework.Audio
 
             EFX = new EffectsExtension();
 
+            float[] ori = new float[]
+            {
+                0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f
+            };
+            AL.Listener(ALListenerfv.Orientation, ref ori);
+            AL.Listener(ALListener3f.Position, 0.0f, 0.0f, 0.0f);
+            AL.Listener(ALListener3f.Velocity, 0.0f, 0.0f, 0.0f);
+            AL.Listener(ALListenerf.Gain, 1.0f);
+
             return true;
         }
 

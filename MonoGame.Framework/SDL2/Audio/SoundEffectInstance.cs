@@ -163,7 +163,13 @@ namespace Microsoft.Xna.Framework.Audio
                 INTERNAL_pan = value;
                 if (INTERNAL_alSource != -1)
                 {
-                    AL.Source(INTERNAL_alSource, ALSource3f.Position, INTERNAL_pan, 0.0f, 0.1f);
+                    AL.Source(
+                        INTERNAL_alSource,
+                        ALSource3f.Position,
+                        INTERNAL_pan,
+                        0.0f,
+                        (float) Math.Sqrt(1 - Math.Pow(INTERNAL_pan, 2))
+                    );
                 }
             }
         }
@@ -240,29 +246,21 @@ namespace Microsoft.Xna.Framework.Audio
             }
 
             // Get AL's listener position
-            float x, y, z;
-            AL.GetListener(ALListener3f.Position, out x, out y, out z);
-
             for (int i = 0; i < listeners.Length; i++)
             {
                 AudioListener listener = listeners[i];
-
-                // Get the emitter offset from origin
-                Vector3 posOffset = emitter.Position - listener.Position;
 
                 // Set up orientation matrix
                 Matrix orientation = Matrix.CreateWorld(Vector3.Zero, listener.Forward, listener.Up);
 
                 // Set up our final position and velocity according to orientation of listener
-                position = new Vector3(x + posOffset.X, y + posOffset.Y, z + posOffset.Z);
-                position = Vector3.Transform(position, orientation);
-                velocity = emitter.Velocity;
-                velocity = Vector3.Transform(velocity, orientation);
+                position = Vector3.Transform(emitter.Position - listener.Position, orientation);
+                velocity = Vector3.Transform(emitter.Velocity - listener.Velocity, orientation);
 
                 // FIXME: This is totally arbitrary. I dunno the exact ratio here.
                 position /= 255.0f;
                 velocity /= 255.0f;
-                
+
                 // Set the position based on relative positon
                 AL.Source(INTERNAL_alSource, ALSource3f.Position, position.X, position.Y, position.Z);
                 AL.Source(INTERNAL_alSource, ALSource3f.Velocity, velocity.X, velocity.Y, velocity.Z);
