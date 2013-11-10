@@ -292,6 +292,7 @@ namespace Microsoft.Xna.Framework.Audio
 				0.0f,
 				0.0f,
 				0,
+				0,
 				new byte[] { 0xFF }
 			);
 		}
@@ -346,6 +347,7 @@ namespace Microsoft.Xna.Framework.Audio
 						0.0f,
 						0.0f,
 						loopCount,
+						0,
 						new byte[] { 0xFF }
 					);
 				}
@@ -395,6 +397,7 @@ namespace Microsoft.Xna.Framework.Audio
 						0,
 						0.0f,
 						0.0f,
+						0,
 						0,
 						weights
 					);
@@ -448,6 +451,7 @@ namespace Microsoft.Xna.Framework.Audio
 						minVolume,
 						maxVolume,
 						loopCount,
+						0,
 						new byte[] { 0xFF }
 					);
 				}
@@ -501,8 +505,8 @@ namespace Microsoft.Xna.Framework.Audio
 					// Number of WaveBank tracks
 					ushort numTracks = reader.ReadUInt16();
 
-					// Variation Type, unused
-					reader.ReadUInt16();
+					// Variation Playlist Type, unused
+					ushort variationType = reader.ReadUInt16();
 
 					// Unknown values
 					reader.ReadBytes(4);
@@ -529,6 +533,7 @@ namespace Microsoft.Xna.Framework.Audio
 						minVolume,
 						maxVolume,
 						0,
+						variationType,
 						weights
 					);
 				}
@@ -548,6 +553,7 @@ namespace Microsoft.Xna.Framework.Audio
 						0,
 						0.0f,
 						0.0f,
+						0,
 						0,
 						new byte[] { 93, 255 }
 					);
@@ -604,6 +610,15 @@ namespace Microsoft.Xna.Framework.Audio
 
 	internal class PlayWaveEvent : XACTEvent
 	{
+		private enum VariationPlaylistType : ushort
+		{
+			Ordered,
+			OrderedFromRandom,
+			Random,
+			RandomNoImmediateRepeats,
+			Shuffle
+		}
+
 		private ushort[] INTERNAL_tracks;
 		private byte[] INTERNAL_waveBanks;
 
@@ -615,7 +630,9 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private byte INTERNAL_loopCount;
 
+		private VariationPlaylistType INTERNAL_variationType;
 		private byte[] INTERNAL_weights;
+		private int INTERNAL_curWave;
 
 		private SoundEffect[] INTERNAL_waves;
 
@@ -629,6 +646,7 @@ namespace Microsoft.Xna.Framework.Audio
 			float minVolume,
 			float maxVolume,
 			byte loopCount,
+			ushort variationType,
 			byte[] weights
 		) : base(1) {
 			INTERNAL_tracks = tracks;
@@ -638,8 +656,10 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_minVolume = minVolume;
 			INTERNAL_maxVolume = maxVolume;
 			INTERNAL_loopCount = loopCount;
+			INTERNAL_variationType = (VariationPlaylistType) variationType;
 			INTERNAL_weights = weights;
 			INTERNAL_waves = new SoundEffect[tracks.Length];
+			INTERNAL_curWave = -1;
 		}
 
 		public void LoadTracks(AudioEngine audioEngine, List<string> waveBankNames)
@@ -655,37 +675,96 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public SoundEffectInstance GenerateInstance(float clipVolume)
 		{
-			double max = 0.0;
-			for (int i = 0; i < INTERNAL_weights.Length; i++)
+			INTERNAL_getNextSound();
+			SoundEffectInstance result = INTERNAL_waves[INTERNAL_curWave].CreateInstance();
+			result.Volume = (
+				clipVolume + (float) (
+					(	random.NextDouble() *
+						(INTERNAL_maxVolume - INTERNAL_minVolume)
+					) + INTERNAL_minVolume
+				)
+			);
+			result.Pitch = (
+				random.Next(
+					INTERNAL_minPitch,
+					INTERNAL_maxPitch
+				) / 1000.0f
+			);
+			// FIXME: Better looping!
+			result.IsLooped = (INTERNAL_loopCount == 255);
+			return result;
+		}
+
+		private void INTERNAL_getNextSound()
+		{
+			if (INTERNAL_variationType == VariationPlaylistType.Ordered)
 			{
-				max += INTERNAL_weights[i];
-			}
-			double next = random.NextDouble() * max;
-			for (int i = INTERNAL_weights.Length - 1; i >= 0; i--)
-			{
-				if (next > max - INTERNAL_weights[i])
+				INTERNAL_curWave += 1;
+				if (INTERNAL_curWave >= INTERNAL_waves.Length)
 				{
-					SoundEffectInstance result = INTERNAL_waves[i].CreateInstance();
-					result.Volume = (
-						clipVolume + (float) (
-							(	random.NextDouble() *
-								(INTERNAL_maxVolume - INTERNAL_minVolume)
-							) + INTERNAL_minVolume
-						)
-					);
-					result.Pitch = (
-						random.Next(
-							INTERNAL_minPitch,
-							INTERNAL_maxPitch
-						) / 1000.0f
-					);
-					// FIXME: Better looping!
-					result.IsLooped = (INTERNAL_loopCount == 255);
-					return result;
+					INTERNAL_curWave = 0;
 				}
-				max -= INTERNAL_weights[i];
 			}
-			throw new Exception("PlayWaveEvent... what?!");
+			else if (INTERNAL_variationType == VariationPlaylistType.OrderedFromRandom)
+			{
+				// FIXME: It seems like XACT organizes this for us?
+				INTERNAL_curWave += 1;
+				if (INTERNAL_curWave >= INTERNAL_waves.Length)
+				{
+					INTERNAL_curWave = 0;
+				}
+			}
+			else if (INTERNAL_variationType == VariationPlaylistType.Random)
+			{
+				double max = 0.0;
+				for (int i = 0; i < INTERNAL_weights.Length; i++)
+				{
+					max += INTERNAL_weights[i];
+				}
+				double next = random.NextDouble() * max;
+				for (int i = INTERNAL_weights.Length - 1; i >= 0; i--)
+				{
+					if (next > max - INTERNAL_weights[i])
+					{
+						INTERNAL_curWave = i;
+						return;
+					}
+					max -= INTERNAL_weights[i];
+				}
+			}
+			else if (INTERNAL_variationType == VariationPlaylistType.RandomNoImmediateRepeats)
+			{
+				double max = 0.0;
+				for (int i = 0; i < INTERNAL_weights.Length; i++)
+				{
+					if (i == INTERNAL_curWave)
+					{
+						continue;
+					}
+					max += INTERNAL_weights[i];
+				}
+				double next = random.NextDouble() * max;
+				for (int i = INTERNAL_weights.Length - 1; i >= 0; i--)
+				{
+					if (i == INTERNAL_curWave)
+					{
+						continue;
+					}
+					if (next > max - INTERNAL_weights[i])
+					{
+						INTERNAL_curWave = i;
+						return;
+					}
+					max -= INTERNAL_weights[i];
+				}
+			}
+			else
+			{
+				throw new Exception(
+					"Variation Playlist Type unhandled: " +
+					INTERNAL_variationType
+				);
+			}
 		}
 	}
 }
