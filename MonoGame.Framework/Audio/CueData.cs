@@ -489,13 +489,13 @@ namespace Microsoft.Xna.Framework.Audio
 					// Variation flags
 					// FIXME: There's probably more to these flags...
 					byte varFlags = reader.ReadByte();
-					if ((varFlags & 0x10) != 0x10)
+					if ((varFlags & 0x20) != 0x20)
 					{
 						// Throw out the volume variation.
 						minVolume = 0.0f;
 						maxVolume = 0.0f;
 					}
-					if ((varFlags & 0x20) != 0x20)
+					if ((varFlags & 0x10) != 0x10)
 					{
 						// Throw out the pitch variation
 						minPitch = 0;
