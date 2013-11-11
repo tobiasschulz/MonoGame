@@ -254,8 +254,10 @@ namespace Microsoft.Xna.Framework.Audio
 			HasLoadedTracks = true;
 		}
 
-		public List<SoundEffectInstance> GenerateInstances(List<SoundEffectInstance> result)
-		{
+		public List<SoundEffectInstance> GenerateInstances(
+			List<SoundEffectInstance> result,
+			List<float> volumeResult
+		) {
 			// Get the SoundEffectInstance List
 			foreach (XACTClip curClip in INTERNAL_clips)
 			{
@@ -268,6 +270,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Respect volume/pitch variations!
 				sfi.Volume *= Volume;
 				sfi.Pitch *= Pitch;
+				volumeResult.Add(sfi.Volume);
 			}
 
 			return result;

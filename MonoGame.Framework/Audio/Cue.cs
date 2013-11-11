@@ -11,6 +11,7 @@ namespace Microsoft.Xna.Framework.Audio
 		private CueData INTERNAL_data;
 		private XACTSound INTERNAL_activeSound;
 		private List<SoundEffectInstance> INTERNAL_instancePool;
+		private List<float> INTERNAL_instanceVolumes;
 
 		// User-controlled sounds require a bit more trickery.
 		private bool INTERNAL_userControlledPlaying;
@@ -143,6 +144,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_queuedPlayback = false;
 
 			INTERNAL_instancePool = new List<SoundEffectInstance>();
+			INTERNAL_instanceVolumes = new List<float>();
 		}
 
 		~Cue()
@@ -192,6 +194,7 @@ namespace Microsoft.Xna.Framework.Audio
 						sfi.Dispose();
 					}
 					INTERNAL_instancePool.Clear();
+					INTERNAL_instanceVolumes.Clear();
 					INTERNAL_queuedPlayback = false;
 				}
 				IsDisposed = true;
@@ -327,6 +330,7 @@ namespace Microsoft.Xna.Framework.Audio
 				sfi.Dispose();
 			}
 			INTERNAL_instancePool.Clear();
+			INTERNAL_instanceVolumes.Clear();
 			INTERNAL_userControlledPlaying = false;
 
 			// If this is a managed Cue, we're done here.
@@ -354,6 +358,7 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					INTERNAL_instancePool[i].Dispose();
 					INTERNAL_instancePool.RemoveAt(i);
+					INTERNAL_instanceVolumes.RemoveAt(i);
 					i--;
 				}
 			}
@@ -422,12 +427,12 @@ namespace Microsoft.Xna.Framework.Audio
 					throw new Exception("RPC Parameter Type: " + curRPC.Parameter);
 				}
 			}
-			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
 			{
 				/* The final volume should be the combination of the
 				 * authored volume, Volume variable and RPC volume result.
 				 */
-				sfi.Volume = INTERNAL_activeSound.Volume * GetVariable("Volume") * rpcVolume;
+				INTERNAL_instancePool[i].Volume = INTERNAL_instanceVolumes[i] * GetVariable("Volume") * rpcVolume;
 			}
 
 			// Finally, check if we're still active.
@@ -501,7 +506,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void INTERNAL_setupSounds()
 		{
-			INTERNAL_activeSound.GenerateInstances(INTERNAL_instancePool);
+			INTERNAL_activeSound.GenerateInstances(INTERNAL_instancePool, INTERNAL_instanceVolumes);
 
 			foreach (uint curDSP in INTERNAL_activeSound.DSPCodes)
 			{
