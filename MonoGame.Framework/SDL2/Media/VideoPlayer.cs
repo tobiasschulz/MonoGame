@@ -404,9 +404,6 @@ namespace Microsoft.Xna.Framework.Media
         // We use this to update our PlayPosition.
         private Stopwatch timer;
         
-        // Thread containing our video player.
-        private Thread playerThread;
-        
         // Store this to optimize things on our end.
         private Texture2D videoTexture;
         
@@ -423,9 +420,6 @@ namespace Microsoft.Xna.Framework.Media
         
         // Audio's done separately from the player thread.
         private Thread audioDecoderThread;
-        
-        // Used to prevent a frame from getting lost before we get the texture.
-        private bool frameLocked;
         #endregion
         
         #region Private Member Data: OpenAL
@@ -475,7 +469,6 @@ namespace Microsoft.Xna.Framework.Media
             
             // Initialize private members.
             timer = new Stopwatch();
-            frameLocked = false;
             audioStarted = false;
             
             // Initialize this here to prevent null GetTexture returns.
@@ -607,7 +600,11 @@ namespace Microsoft.Xna.Framework.Media
                         // Stop everything, clean up. We out.
                         State = MediaState.Stopped;
                         audioDecoderThread.Join();
+                        TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
                         Video.Dispose();
+                        
+                        // We're done, so give them the last frame.
+                        return videoTexture;
                     }
                 }
             }
@@ -760,7 +757,7 @@ namespace Microsoft.Xna.Framework.Media
             }
             
             // In rare cases, the thread might still be going. Wait until it's done.
-            if (playerThread != null && playerThread.IsAlive)
+            if (audioDecoderThread != null && audioDecoderThread.IsAlive)
             {
                 Stop();
             }
