@@ -519,19 +519,18 @@ namespace Microsoft.Xna.Framework.Media
             while (nextVideo.playms <= timer.ElapsedMilliseconds && !missedFrame)
             {
                 currentVideo = nextVideo;
-                IntPtr oldestFrame = previousFrame;
-                IntPtr oldFrame = Video.videoStream;
-                Video.videoStream = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
-                if (Video.videoStream != IntPtr.Zero)
+                IntPtr nextFrame = TheoraPlay.THEORAPLAY_getVideo(Video.theoraDecoder);
+                if (nextFrame != IntPtr.Zero)
                 {
+                    TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
+                    previousFrame = Video.videoStream;
+                    Video.videoStream = nextFrame;
                     nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
-                    previousFrame = oldFrame;
-                    TheoraPlay.THEORAPLAY_freeVideo(oldestFrame);
                     missedFrame = false;
                 }
                 else
                 {
-                    // Don't bother waiting for the next frame, just gun it.
+                    // Don't mind me, just ignoring that complete failure above!
                     missedFrame = true;
                 }
                 
