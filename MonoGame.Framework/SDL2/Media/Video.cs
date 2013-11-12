@@ -61,7 +61,6 @@ namespace Microsoft.Xna.Framework.Media
         #region Internal Variables: TheoraPlay
         internal IntPtr theoraDecoder;
         internal IntPtr videoStream;
-        internal IntPtr audioStream;
         #endregion
         
         #region Internal Properties
@@ -127,7 +126,6 @@ namespace Microsoft.Xna.Framework.Media
             // Set everything to NULL. Yes, this actually matters later.
             theoraDecoder = IntPtr.Zero;
             videoStream = IntPtr.Zero;
-            audioStream = IntPtr.Zero;
             
             // Initialize the decoder nice and early...
             IsDisposed = true;
