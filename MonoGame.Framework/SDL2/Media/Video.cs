@@ -56,7 +56,6 @@ namespace Microsoft.Xna.Framework.Media
     {
         #region Private Variables: Video Implementation
         private string _fileName;
-        private Color _backColor = Color.Black;
         #endregion
         
         #region Internal Variables: TheoraPlay
@@ -193,16 +192,6 @@ namespace Microsoft.Xna.Framework.Media
                 Thread.Sleep(10);
             }
             
-            // Initialize the audio stream pointer and get our first packet.
-            if (TheoraPlay.THEORAPLAY_hasAudioStream(theoraDecoder) != 0)
-            {
-                while (audioStream == IntPtr.Zero)
-                {
-                    audioStream = TheoraPlay.THEORAPLAY_getAudio(theoraDecoder);
-                    Thread.Sleep(10);
-                }
-            }
-            
             // Initialize the video stream pointer and get our first frame.
             if (TheoraPlay.THEORAPLAY_hasVideoStream(theoraDecoder) != 0)
             {
@@ -239,13 +228,6 @@ namespace Microsoft.Xna.Framework.Media
             {
                 TheoraPlay.THEORAPLAY_freeVideo(videoStream);
                 videoStream = IntPtr.Zero;
-            }
-            
-            // Free and unassign the audio stream.
-            if (audioStream != IntPtr.Zero)
-            {
-                TheoraPlay.THEORAPLAY_freeAudio(audioStream);
-                audioStream = IntPtr.Zero;
             }
             
             IsDisposed = true;
