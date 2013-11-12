@@ -415,7 +415,6 @@ namespace Microsoft.Xna.Framework.Media
         // Grabbed from the Video streams.
         private TheoraPlay.THEORAPLAY_VideoFrame currentVideo;
         private TheoraPlay.THEORAPLAY_VideoFrame nextVideo;
-        private TheoraPlay.THEORAPLAY_AudioPacket currentAudio;
         private IntPtr previousFrame;
         
         // Audio's done separately from the player thread.
@@ -562,7 +561,6 @@ namespace Microsoft.Xna.Framework.Media
                         // Grab the initial audio again.
                         if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
                         {
-                            currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
                             audioDecoderThread = new Thread(new ThreadStart(DecodeAudio));
                             audioDecoderThread.Start();
                         }
@@ -776,7 +774,6 @@ namespace Microsoft.Xna.Framework.Media
             // Grab the first bit of audio. We're trying to start the decoding ASAP.
             if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
             {
-                currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
                 audioDecoderThread.Start();
             }
             else
@@ -906,40 +903,28 @@ namespace Microsoft.Xna.Framework.Media
             // Store our abstracted buffer into here.
             List<float> data = new List<float>();
             
-            // Be sure we have an audio stream first!
-            if (Video.audioStream == IntPtr.Zero)
-            {
-                return false; // NOPE
-            }
+            // We'll store this here, so alBufferData can use it too.
+            TheoraPlay.THEORAPLAY_AudioPacket currentAudio;
             
             // Add to the buffer from the decoder until it's large enough.
-            while (data.Count < BUFFER_SIZE && State != MediaState.Stopped)
-            {
+            while (
+                State != MediaState.Stopped &&
+                TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) == 0
+            );
+            while (
+                data.Count < BUFFER_SIZE &&
+                State != MediaState.Stopped &&
+                TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) > 0
+            ) {
+                IntPtr audioPtr = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
+                currentAudio = TheoraPlay.getAudioPacket(audioPtr);
                 data.AddRange(
                     TheoraPlay.getSamples(
                         currentAudio.samples,
                         currentAudio.frames * currentAudio.channels
                     )
                 );
-                
-                // We've copied the audio, so free this.
-                TheoraPlay.THEORAPLAY_freeAudio(Video.audioStream);
-                
-                do
-                {
-                    Video.audioStream = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
-                    if (State == MediaState.Stopped)
-                    {
-                        // Screw it, just bail out ASAP.
-                        return false;
-                    }
-                } while (Video.audioStream == IntPtr.Zero);
-                currentAudio = TheoraPlay.getAudioPacket(Video.audioStream);
-                
-                if ((BUFFER_SIZE - data.Count) < 4096)
-                {
-                    break;
-                }
+                TheoraPlay.THEORAPLAY_freeAudio(audioPtr);
             }
             
             // If we actually got data, buffer it into OpenAL.
@@ -984,6 +969,16 @@ namespace Microsoft.Xna.Framework.Media
             
             while (State != MediaState.Stopped)
             {
+                // Emergency use only
+                if (Game.Instance == null)
+                {
+                    System.Console.WriteLine("Game exited before Video! Bailing.");
+                    AL.SourceStop(audioSourceIndex);
+                    AL.DeleteSource(audioSourceIndex);
+                    AL.DeleteBuffers(buffers);
+                    return;
+                }
+                
                 // When a buffer has been processed, refill it.
                 int processed;
                 AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processed);
