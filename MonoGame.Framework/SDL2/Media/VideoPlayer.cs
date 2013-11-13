@@ -905,6 +905,8 @@ namespace Microsoft.Xna.Framework.Media
             
             // We'll store this here, so alBufferData can use it too.
             TheoraPlay.THEORAPLAY_AudioPacket currentAudio;
+            currentAudio.channels = 0;
+            currentAudio.freq = 0;
             
             // Add to the buffer from the decoder until it's large enough.
             while (
