@@ -2007,11 +2007,6 @@ namespace Microsoft.Xna.Framework.Graphics
             _indexBufferDirty = true;
         }
 
-        public void SetVertexBuffers(params VertexBufferBinding[] binding)
-        {
-            throw new NotImplementedException("FIXME: flibit put this here.");
-        }
-
         public IndexBuffer Indices { set { SetIndexBuffer(value); } get { return _indexBuffer; } }
 
         internal Shader VertexShader
