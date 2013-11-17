@@ -128,7 +128,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 #if OPENGL
-		internal void Apply(Shader shader, IntPtr offset)
+		internal void Apply(Shader shader, IntPtr offset, int divisor = 0)
 		{
             VertexDeclarationAttributeInfo attrInfo;
             int shaderHash = shader.GetHashCode();
@@ -168,6 +168,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     this.VertexStride,
                     (IntPtr)(offset.ToInt64() + element.Offset));
                 GraphicsExtensions.CheckGLError();
+                GL.VertexAttribDivisor(element.AttributeLocation, divisor);
             }
             GraphicsDevice.SetVertexAttributeArray(attrInfo.EnabledAttributes);
 		}
