@@ -2460,7 +2460,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _vertexBuffers[1].VertexBuffer.VertexDeclaration.Apply(
                 _vertexShader,
                 (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * startIndex),
-                1
+                _vertexBuffers[1].InstanceFrequency
             );
 
             // Draw!
