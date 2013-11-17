@@ -681,14 +681,25 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
 				throw new NotImplementedException();
 			} else {
-				if (rect.HasValue) {
+				Rectangle subRect = new Rectangle(0, 0, this.width, this.height);
+				if (rect.HasValue)
+				{
+					subRect.X = rect.Value.X;
+					subRect.Y = rect.Value.Y;
+					subRect.Width = rect.Value.Width;
+					subRect.Height = rect.Value.Height;
+				}
+				if (rect.HasValue && (rect.Value.X != 0 || rect.Value.Y != 0 || rect.Value.Width != this.width || rect.Value.Height != this.height)
+							|| startIndex != 0 || (elementCount >= subRect.Width*subRect.Height)) {
 					var temp = new T[this.width*this.height];
 					GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, temp);
 					int z = 0, w = 0;
 
-					for(int y= rect.Value.Y; y < rect.Value.Y+ rect.Value.Height; y++) {
-						for(int x=rect.Value.X; x < rect.Value.X + rect.Value.Width; x++) {
-							data[z*rect.Value.Width+w] = temp[(y*width)+x];
+					for(int y = subRect.Y; y < subRect.Y + subRect.Height; y++) {
+						for(int x = subRect.X; x < subRect.X + subRect.Width; x++) {
+							if (z*subRect.Width+w < startIndex) continue;
+							if (z*subRect.Width+w - startIndex >= elementCount) break;
+							data[z*subRect.Width+w-startIndex] = temp[(y*width)+x];
 							w++;
 						}
 						z++;
