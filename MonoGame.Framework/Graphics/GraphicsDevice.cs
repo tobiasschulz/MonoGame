@@ -2432,6 +2432,53 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
+        public void DrawInstancedPrimitives(
+            PrimitiveType primitiveType,
+            int baseVertex,
+            int minVertexIndex,
+            int numVertices,
+            int startIndex,
+            int primitiveCount,
+            int instanceCount
+        ) {
+#if OPENGL
+            // Note that minVertexIndex and numVertices are NOT used!
+
+            // Flush the GL state before moving on!
+            ApplyState(true);
+
+            // Unsigned short or unsigned int?
+            bool shortIndices = _indexBuffer.IndexElementSize == IndexElementSize.SixteenBits;
+
+            // Set up the shared vertex buffer
+            _vertexBuffers[0].VertexBuffer.VertexDeclaration.Apply(
+                _vertexShader,
+                (IntPtr) (_vertexBuffers[0].VertexBuffer.VertexDeclaration.VertexStride * baseVertex)
+            );
+
+            // Set up the instance vertex buffer
+            _vertexBuffers[1].VertexBuffer.VertexDeclaration.Apply(
+                _vertexShader,
+                (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * startIndex)
+            );
+
+            // Draw!
+            GL.DrawElementsInstancedBaseVertex(
+                PrimitiveTypeGL(primitiveType),
+                GetElementCountArray(primitiveType, primitiveCount),
+                shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt,
+                (IntPtr) (startIndex * (shortIndices ? 2 : 4)),
+                instanceCount,
+                baseVertex
+            );
+
+            // Check for errors in the debug context
+            GraphicsExtensions.CheckGLError();
+#else
+            throw new NotImplementedException();
+#endif
+        }
+
         public void DrawUserPrimitives<T>(PrimitiveType primitiveType, T[] vertexData, int vertexOffset, int primitiveCount) where T : struct, IVertexType
         {
             DrawUserPrimitives(primitiveType, vertexData, vertexOffset, primitiveCount, VertexDeclarationCache<T>.VertexDeclaration);
@@ -2623,18 +2670,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
             throw new NotImplementedException("Not implemented");
 #endif
-        }
-
-        public void DrawInstancedPrimitives(
-            PrimitiveType primitiveType,
-            int baseVertex,
-            int minVertexIndex,
-            int numVertices,
-            int startIndex,
-            int primitiveCount,
-            int instanceCount
-        ) {
-            throw new NotImplementedException("FIXME: flibit put this here.");
         }
 
 #if PSM
