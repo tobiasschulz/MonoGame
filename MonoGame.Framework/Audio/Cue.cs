@@ -175,7 +175,7 @@ namespace Microsoft.Xna.Framework.Audio
 					INTERNAL_listener.Position
 				)
 			);
-			// TODO: All Internal 3D Audio Variables
+			// TODO: DopplerPitchScaler, OrientationAngle
 			INTERNAL_isPositional = true;
 		}
 
