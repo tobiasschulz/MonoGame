@@ -235,38 +235,31 @@ namespace Microsoft.Xna.Framework.Audio
 
         public void Apply3D(AudioListener listener, AudioEmitter emitter)
         {
-            Apply3D(new AudioListener[] { listener }, emitter);
-        }
-
-        public void Apply3D(AudioListener[] listeners, AudioEmitter emitter)
-        {
             if (INTERNAL_alSource == -1)
             {
                 return;
             }
 
-            // Get AL's listener position
-            for (int i = 0; i < listeners.Length; i++)
+            // Set up orientation matrix
+            Matrix orientation = Matrix.CreateWorld(Vector3.Zero, listener.Forward, listener.Up);
+
+            // Set up our final position according to orientation of listener
+            position = Vector3.Transform(emitter.Position - listener.Position, orientation);
+            if (position != Vector3.Zero)
             {
-                AudioListener listener = listeners[i];
-
-                // Set up orientation matrix
-                Matrix orientation = Matrix.CreateWorld(Vector3.Zero, listener.Forward, listener.Up);
-
-                // Set up our final position and velocity according to orientation of listener
-                position = Vector3.Transform(emitter.Position - listener.Position, orientation);
-                velocity = Vector3.Transform(emitter.Velocity - listener.Velocity, orientation);
-
-                // FIXME: This is totally arbitrary. I dunno the exact ratio here.
-                position /= 255.0f;
-                velocity /= 255.0f;
-
-                // Set the position based on relative positon
-                AL.Source(INTERNAL_alSource, ALSource3f.Position, position.X, position.Y, position.Z);
-                AL.Source(INTERNAL_alSource, ALSource3f.Velocity, velocity.X, velocity.Y, velocity.Z);
+                position.Normalize();
             }
 
+            // Set the position based on relative positon
+            AL.Source(INTERNAL_alSource, ALSource3f.Position, position.X, position.Y, position.Z);
+
+            // We positional now
             INTERNAL_positionalAudio = true;
+        }
+
+        public void Apply3D(AudioListener[] listeners, AudioEmitter emitter)
+        {
+            throw new NotSupportedException("OpenAL can only make use of one listener.");
         }
 
         #endregion
