@@ -10,7 +10,14 @@ namespace Microsoft.Xna.Framework.Audio
 	{
 		public static float CalculateVolume(byte binaryValue)
 		{
-			// FIXME: This calculation probably came from someone's TI-83.
+			/* FIXME: This calculation probably came from someone's TI-83.
+			 * I plotted out Codename Naddachance's bytes out, and
+			 * the closest formula I could come up with (hastily)
+			 * was this:
+			 * dBValue = 37.5 * Math.Log10(binaryValue * 2.0) - 96.0
+			 * But of course, volumes are still wrong. So I dunno.
+			 * -flibit
+			 */
 			double dBValue = (
 				(
 					(-96.0 - 67.7385212334047) /
