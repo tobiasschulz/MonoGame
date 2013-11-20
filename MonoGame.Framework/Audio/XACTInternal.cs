@@ -20,8 +20,7 @@ namespace Microsoft.Xna.Framework.Audio
 					))
 				) + 67.7385212334047
 			);
-			double powerValue = Math.Pow(10, dBValue / 10.0);
-			return (float) Math.Sqrt(powerValue);
+			return (float) Math.Pow(10, dBValue / 20.0);
 		}
 	}
 
