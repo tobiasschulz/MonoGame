@@ -200,8 +200,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
         static readonly float[] _posFixup = new float[4];
 
-        internal static readonly List<int> _enabledVertexAttributes = new List<int>();
-
 #elif PSM
 
         internal GraphicsContext _graphics;
@@ -277,30 +275,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 //if (OnDpiChanged != null)
                     //OnDpiChanged(this);
-            }
-        }
-
-#endif
-
-
-#if OPENGL
-
-        internal void SetVertexAttributeArray(bool[] attrs)
-        {
-            for(int x = 0; x < attrs.Length; x++)
-            {
-                if (attrs[x] && !_enabledVertexAttributes.Contains(x))
-                {
-                    _enabledVertexAttributes.Add(x);
-                    GL.EnableVertexAttribArray(x);
-                    GraphicsExtensions.CheckGLError();
-                }
-                else if (!attrs[x] && _enabledVertexAttributes.Contains(x))
-                {
-                    _enabledVertexAttributes.Remove(x);
-                    GL.DisableVertexAttribArray(x);
-                    GraphicsExtensions.CheckGLError();
-                }
             }
         }
 
@@ -523,11 +497,6 @@ namespace Microsoft.Xna.Framework.Graphics
             // Clear constant buffers
             _vertexConstantBuffers.Clear();
             _pixelConstantBuffers.Clear();
-
-#if OPENGL
-            // Ensure the vertex attributes are reset
-            _enabledVertexAttributes.Clear();
-#endif
 
             // Force set the buffers and shaders on next ApplyState() call
 #if DIRECTX
@@ -1884,16 +1853,11 @@ namespace Microsoft.Xna.Framework.Graphics
         void ClearBuffers()
         {
 #if OPENGL
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
             GraphicsExtensions.CheckGLError();
             _indexBufferDirty = true;
             _vertexBuffersAnyDirty = true;
-            for (int slot = 0; slot < _vertexBuffersDirty.Length; ++slot)
-            {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-                GraphicsExtensions.CheckGLError();
-                _vertexBuffersDirty[slot] = true;
-            }
 #endif
         }
 
@@ -2202,21 +2166,6 @@ namespace Microsoft.Xna.Framework.Graphics
                         _vertexBuffersDirty[slot] = false;
                     }
                 }
-#elif OPENGL
-                for (int slot = 0; slot < _vertexBuffers.Length; ++slot)
-                {
-                    if (_vertexBuffersDirty[slot])
-                    {
-                        if (_vertexBuffers[slot].VertexBuffer != null)
-                        {
-                            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffers[slot].VertexBuffer.vbo);
-                            GraphicsExtensions.CheckGLError();
-                            GL.EnableVertexAttribArray(slot);
-                            GraphicsExtensions.CheckGLError();
-                        }
-                        _vertexBuffersDirty[slot] = false;
-                    }
-                }
 #endif
                 _vertexBuffersAnyDirty = false;
             }
@@ -2263,6 +2212,14 @@ namespace Microsoft.Xna.Framework.Graphics
 
             Textures.SetTextures(this);
             SamplerStates.SetSamplers(this);
+
+#if OPENGL
+            // Disable all attributes. We'll re-enable as we need them.
+            for (int i = 0; i < MaxVertexAttributes; i++)
+            {
+                GL.DisableVertexAttribArray(i);
+            }
+#endif
         }
 
 #if DIRECTX
@@ -2419,7 +2376,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			var target = PrimitiveTypeGL(primitiveType);
 			var vertexOffset = (IntPtr)(_vertexBuffers[0].VertexBuffer.VertexDeclaration.VertexStride * baseVertex);
 
-			_vertexBuffers[0].VertexBuffer.VertexDeclaration.Apply(_vertexShader, vertexOffset);
+            foreach (VertexBufferBinding vertBuffer in _vertexBuffers)
+            {
+                if (vertBuffer.VertexBuffer != null)
+                {
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                    vertBuffer.VertexBuffer.VertexDeclaration.Apply(
+                        _vertexShader,
+                        vertexOffset,
+                        vertBuffer.InstanceFrequency
+                    );
+                }
+            }
 
             GL.DrawElements(target,
                                      indexElementCount,
@@ -2451,12 +2419,14 @@ namespace Microsoft.Xna.Framework.Graphics
             bool shortIndices = _indexBuffer.IndexElementSize == IndexElementSize.SixteenBits;
 
             // Set up the shared vertex buffer
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffers[0].VertexBuffer.vbo);
             _vertexBuffers[0].VertexBuffer.VertexDeclaration.Apply(
                 _vertexShader,
                 (IntPtr) (_vertexBuffers[0].VertexBuffer.VertexDeclaration.VertexStride * baseVertex)
             );
 
             // Set up the instance vertex buffer
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffers[1].VertexBuffer.vbo);
             _vertexBuffers[1].VertexBuffer.VertexDeclaration.Apply(
                 _vertexShader,
                 (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * startIndex),
@@ -2548,7 +2518,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
             ApplyState(true);
 
-            _vertexBuffers[0].VertexBuffer.VertexDeclaration.Apply(_vertexShader, IntPtr.Zero);
+            foreach (VertexBufferBinding vertBuffer in _vertexBuffers)
+            {
+                if (vertBuffer.VertexBuffer != null)
+                {
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                    vertBuffer.VertexBuffer.VertexDeclaration.Apply(
+                        _vertexShader,
+                        IntPtr.Zero,
+                        vertBuffer.InstanceFrequency
+                    );
+                }
+            }
 
 			GL.DrawArrays(PrimitiveTypeGL(primitiveType),
 			              vertexStart,

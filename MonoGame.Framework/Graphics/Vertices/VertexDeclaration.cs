@@ -161,6 +161,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // Apply the vertex attribute info
             foreach (var element in attrInfo.Elements)
             {
+                GL.EnableVertexAttribArray(element.AttributeLocation);
                 GL.VertexAttribPointer(element.AttributeLocation,
                     element.NumberOfElements,
                     element.VertexAttribPointerType,
@@ -170,7 +171,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 GraphicsExtensions.CheckGLError();
                 GL.VertexAttribDivisor(element.AttributeLocation, divisor);
             }
-            GraphicsDevice.SetVertexAttributeArray(attrInfo.EnabledAttributes);
 		}
 
 #endif // OPENGL
