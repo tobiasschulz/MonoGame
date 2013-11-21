@@ -72,7 +72,6 @@ namespace Microsoft.Xna.Framework.Audio
         #region Private Variables: 3D Audio
 
         private Vector3 position = new Vector3(0.0f, 0.0f, 0.1f);
-        private Vector3 velocity = new Vector3(0.0f, 0.0f, 0.0f);
 
         // Used to prevent outdated positional audio data from being used
         private bool INTERNAL_positionalAudio = false;
@@ -301,7 +300,6 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 INTERNAL_positionalAudio = false;
                 AL.Source(INTERNAL_alSource, ALSource3f.Position, position.X, position.Y, position.Z);
-                AL.Source(INTERNAL_alSource, ALSource3f.Velocity, velocity.X, velocity.Y, velocity.Z);
             }
             else
             {
