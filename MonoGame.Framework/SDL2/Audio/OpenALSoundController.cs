@@ -141,6 +141,9 @@ namespace Microsoft.Xna.Framework.Audio
             AL.Listener(ALListener3f.Velocity, 0.0f, 0.0f, 0.0f);
             AL.Listener(ALListenerf.Gain, 1.0f);
 
+            // We do NOT use automatic attenuation! XNA does not do this!
+            AL.DistanceModel(ALDistanceModel.None);
+
             return true;
         }
 
