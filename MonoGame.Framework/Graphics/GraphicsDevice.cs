@@ -2131,17 +2131,6 @@ namespace Microsoft.Xna.Framework.Graphics
                         _indexBuffer.IndexElementSize == IndexElementSize.SixteenBits ? 
                             SharpDX.DXGI.Format.R16_UInt : SharpDX.DXGI.Format.R32_UInt,
                         0);
-#elif OPENGL
-
-                    GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
-                    GraphicsExtensions.CheckGLError();
-#endif
-                }
-                else
-                {
-#if OPENGL
-                    GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-                    GraphicsExtensions.CheckGLError();
 #endif
                 }
                 _indexBufferDirty = false;
@@ -2389,6 +2378,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
+            if (_indexBuffer != null)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+            }
+
             GL.DrawElements(target,
                                      indexElementCount,
                                      indexElementType,
@@ -2432,6 +2426,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * startIndex),
                 _vertexBuffers[1].InstanceFrequency
             );
+
+            if (_indexBuffer != null)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+            }
 
             // Draw!
             GL.DrawElementsInstancedBaseVertex(
@@ -2530,6 +2529,9 @@ namespace Microsoft.Xna.Framework.Graphics
                     );
                 }
             }
+
+            // No IndexBuffer used for DrawArrays()
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 
 			GL.DrawArrays(PrimitiveTypeGL(primitiveType),
 			              vertexStart,
