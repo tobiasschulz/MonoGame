@@ -542,23 +542,17 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (eventType == 8)
 				{
-					/* So there's this weird event that
-					 * I've only ever seen once. It's tagged
-					 * 8 with _none_ of the data inside.
-					 * So, uh, screw it, here's a hack.
-					 * -flibit
-					 */
-					reader.ReadBytes(17);
-					INTERNAL_events[i] = new PlayWaveEvent(
-						new ushort[] { 72, 74 },
-						new byte[] { 0, 0 },
-						0,
-						0,
-						0.0f,
-						0.0f,
-						0,
-						0,
-						new byte[] { 93, 255 }
+					// Unknown values
+					reader.ReadBytes(5);
+
+					// Operand Constant
+					float constant = reader.ReadSingle();
+
+					// Unknown values
+					reader.ReadBytes(8);
+
+					INTERNAL_events[i] = new SetVolumeEvent(
+						constant
 					);
 				}
 				else
@@ -587,13 +581,24 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void GenerateInstances(List<SoundEffectInstance> result)
 		{
+			List<SoundEffectInstance> wavs = new List<SoundEffectInstance>();
+			float eventVolume = 1.0f;
 			foreach (XACTEvent curEvent in INTERNAL_events)
 			{
 				if (curEvent.Type == 1)
 				{
-					result.Add(((PlayWaveEvent) curEvent).GenerateInstance(INTERNAL_clipVolume));
+					wavs.Add(((PlayWaveEvent) curEvent).GenerateInstance(INTERNAL_clipVolume));
+				}
+				else if (curEvent.Type == 2)
+				{
+					eventVolume *= ((SetVolumeEvent) curEvent).GetVolume();
 				}
 			}
+			foreach (SoundEffectInstance wav in wavs)
+			{
+				wav.Volume *= eventVolume;
+			}
+			result.AddRange(wavs);
 		}
 	}
 
@@ -768,6 +773,23 @@ namespace Microsoft.Xna.Framework.Audio
 					INTERNAL_variationType
 				);
 			}
+		}
+	}
+
+	internal class SetVolumeEvent : XACTEvent
+	{
+		private float INTERNAL_constant;
+
+		public SetVolumeEvent(
+			float constant
+		) : base(2) {
+			INTERNAL_constant = constant;
+		}
+
+		public float GetVolume()
+		{
+			// FIXME: There's probably more that this event does...
+			return (float) Math.Pow(10, INTERNAL_constant / 20.0);
 		}
 	}
 }
