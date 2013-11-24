@@ -8,7 +8,7 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	internal class XACTCalculator
 	{
-		public static float CalculateVolume(byte binaryValue)
+		public static double ParseDecibel(byte binaryValue)
 		{
 			/* FIXME: This calculation probably came from someone's TI-83.
 			 * I plotted out Codename Naddachance's bytes out, and
@@ -18,16 +18,23 @@ namespace Microsoft.Xna.Framework.Audio
 			 * But of course, volumes are still wrong. So I dunno.
 			 * -flibit
 			 */
-			double dBValue = (
-				(
-					(-96.0 - 67.7385212334047) /
-					(1 + Math.Pow(
-						binaryValue / 80.1748600297963,
-						0.432254984608615
-					))
-				) + 67.7385212334047
-			);
-			return (float) Math.Pow(10, dBValue / 20.0);
+			return (
+				(-96.0 - 67.7385212334047) /
+				(1 + Math.Pow(
+					binaryValue / 80.1748600297963,
+					0.432254984608615
+				))
+			) + 67.7385212334047;
+		}
+
+		public static float CalculateAmplitudeRatio(double decibel)
+		{
+			return (float) Math.Pow(10, decibel / 20.0);
+		}
+
+		public static float CalculateVolume(byte binaryValue)
+		{
+			return CalculateAmplitudeRatio(ParseDecibel(binaryValue));
 		}
 	}
 

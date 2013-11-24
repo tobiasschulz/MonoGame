@@ -420,7 +420,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				if (curRPC.Parameter == RPCParameter.Volume)
 				{
-					rpcVolume *= 1.0f + (result / 10000.0f);
+					rpcVolume *= XACTCalculator.CalculateAmplitudeRatio(result / 100.0);
 				}
 				else
 				{

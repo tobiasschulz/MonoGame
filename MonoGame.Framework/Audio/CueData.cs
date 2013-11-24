@@ -100,7 +100,7 @@ namespace Microsoft.Xna.Framework.Audio
 	{
 		private XACTClip[] INTERNAL_clips;
 
-		public float Volume
+		public double Volume
 		{
 			get;
 			private set;
@@ -141,7 +141,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_clips = new XACTClip[1];
 			INTERNAL_clips[0] = new XACTClip(track, waveBank);
 			Category = 0;
-			Volume = 1.0f;
+			Volume = 0.0;
 			HasLoadedTracks = false;
 		}
 
@@ -155,7 +155,7 @@ namespace Microsoft.Xna.Framework.Audio
 			Category = reader.ReadUInt16();
 
 			// Sound Volume
-			Volume = XACTCalculator.CalculateVolume(reader.ReadByte());
+			Volume = XACTCalculator.ParseDecibel(reader.ReadByte());
 
 			// Sound Pitch
 			Pitch = (reader.ReadInt16() / 1000.0f);
@@ -220,7 +220,7 @@ namespace Microsoft.Xna.Framework.Audio
 				for (int i = 0; i < INTERNAL_clips.Length; i++)
 				{
 					// XACT Clip volume
-					float clipVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
+					double clipVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 
 					// XACT Clip Offset in Bank
 					uint offset = reader.ReadUInt32();
@@ -261,15 +261,12 @@ namespace Microsoft.Xna.Framework.Audio
 			// Get the SoundEffectInstance List
 			foreach (XACTClip curClip in INTERNAL_clips)
 			{
-				curClip.GenerateInstances(result);
+				curClip.GenerateInstances(result, Volume, Pitch);
 			}
 
-			// Apply authored volume, pitch
+			// Store completed authored volumes
 			foreach (SoundEffectInstance sfi in result)
 			{
-				// Respect volume/pitch variations!
-				sfi.Volume *= Volume;
-				sfi.Pitch *= Pitch;
 				volumeResult.Add(sfi.Volume);
 			}
 
@@ -281,11 +278,11 @@ namespace Microsoft.Xna.Framework.Audio
 	{
 		private XACTEvent[] INTERNAL_events;
 
-		private float INTERNAL_clipVolume;
+		private double INTERNAL_clipVolume;
 
 		public XACTClip(ushort track, byte waveBank)
 		{
-			INTERNAL_clipVolume = 1.0f;
+			INTERNAL_clipVolume = 0.0;
 			INTERNAL_events = new XACTEvent[1];
 			INTERNAL_events[0] = new PlayWaveEvent(
 				new ushort[] { track },
@@ -300,7 +297,7 @@ namespace Microsoft.Xna.Framework.Audio
 			);
 		}
 
-		public XACTClip(BinaryReader reader, float clipVolume)
+		public XACTClip(BinaryReader reader, double clipVolume)
 		{
 			INTERNAL_clipVolume = clipVolume;
 
@@ -347,8 +344,8 @@ namespace Microsoft.Xna.Framework.Audio
 						new byte[] { waveBank },
 						0,
 						0,
-						1.0f,
-						1.0f,
+						0.0,
+						0.0,
 						loopCount,
 						0,
 						new byte[] { 0xFF }
@@ -398,8 +395,8 @@ namespace Microsoft.Xna.Framework.Audio
 						waveBanks,
 						0,
 						0,
-						1.0f,
-						1.0f,
+						0.0,
+						0.0,
 						0,
 						variationType,
 						weights
@@ -435,8 +432,8 @@ namespace Microsoft.Xna.Framework.Audio
 					short maxPitch = reader.ReadInt16();
 					
 					// Volume Variation
-					float minVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
-					float maxVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
+					double minVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
+					double maxVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 
 					// Unknown values
 					reader.ReadSingle();
@@ -479,8 +476,8 @@ namespace Microsoft.Xna.Framework.Audio
 					short maxPitch = reader.ReadInt16();
 
 					// Volume variation
-					float minVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
-					float maxVolume = XACTCalculator.CalculateVolume(reader.ReadByte());
+					double minVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
+					double maxVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 
 					// Unknown values
 					reader.ReadSingle();
@@ -495,8 +492,8 @@ namespace Microsoft.Xna.Framework.Audio
 					if ((varFlags & 0x20) != 0x20)
 					{
 						// Throw out the volume variation.
-						minVolume = 1.0f;
-						maxVolume = 1.0f;
+						minVolume = 0.0;
+						maxVolume = 0.0;
 					}
 					if ((varFlags & 0x10) != 0x10)
 					{
@@ -579,15 +576,22 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
-		public void GenerateInstances(List<SoundEffectInstance> result)
-		{
+		public void GenerateInstances(
+			List<SoundEffectInstance> result,
+			double soundVolume,
+			float soundPitch
+		) {
 			List<SoundEffectInstance> wavs = new List<SoundEffectInstance>();
 			float eventVolume = 1.0f;
 			foreach (XACTEvent curEvent in INTERNAL_events)
 			{
 				if (curEvent.Type == 1)
 				{
-					wavs.Add(((PlayWaveEvent) curEvent).GenerateInstance(INTERNAL_clipVolume));
+					wavs.Add(((PlayWaveEvent) curEvent).GenerateInstance(
+						INTERNAL_clipVolume,
+						soundVolume,
+						soundPitch
+					));
 				}
 				else if (curEvent.Type == 2)
 				{
@@ -633,8 +637,8 @@ namespace Microsoft.Xna.Framework.Audio
 		private short INTERNAL_minPitch;
 		private short INTERNAL_maxPitch;
 
-		private float INTERNAL_minVolume;
-		private float INTERNAL_maxVolume;
+		private double INTERNAL_minVolume;
+		private double INTERNAL_maxVolume;
 
 		private byte INTERNAL_loopCount;
 
@@ -651,8 +655,8 @@ namespace Microsoft.Xna.Framework.Audio
 			byte[] waveBanks,
 			short minPitch,
 			short maxPitch,
-			float minVolume,
-			float maxVolume,
+			double minVolume,
+			double maxVolume,
 			byte loopCount,
 			ushort variationType,
 			byte[] weights
@@ -681,23 +685,25 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
-		public SoundEffectInstance GenerateInstance(float clipVolume)
-		{
+		public SoundEffectInstance GenerateInstance(
+			double clipVolume,
+			double soundVolume,
+			float soundPitch
+		) {
 			INTERNAL_getNextSound();
 			SoundEffectInstance result = INTERNAL_waves[INTERNAL_curWave].CreateInstance();
-			result.Volume = (
-				clipVolume * (float) (
-					(	random.NextDouble() *
-						(INTERNAL_maxVolume - INTERNAL_minVolume)
-					) + INTERNAL_minVolume
-				)
+			result.Volume = XACTCalculator.CalculateAmplitudeRatio(
+				soundVolume + clipVolume + (
+					random.NextDouble() *
+					(INTERNAL_maxVolume - INTERNAL_minVolume)
+				) + INTERNAL_minVolume
 			);
 			result.Pitch = (
 				random.Next(
 					INTERNAL_minPitch,
 					INTERNAL_maxPitch
 				) / 1000.0f
-			);
+			) + soundPitch;
 			// FIXME: Better looping!
 			result.IsLooped = (INTERNAL_loopCount == 255);
 			return result;
@@ -789,7 +795,7 @@ namespace Microsoft.Xna.Framework.Audio
 		public float GetVolume()
 		{
 			// FIXME: There's probably more that this event does...
-			return (float) Math.Pow(10, INTERNAL_constant / 20.0);
+			return XACTCalculator.CalculateAmplitudeRatio(INTERNAL_constant);
 		}
 	}
 }
