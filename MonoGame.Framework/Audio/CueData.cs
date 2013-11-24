@@ -292,8 +292,8 @@ namespace Microsoft.Xna.Framework.Audio
 				new byte[] { waveBank },
 				0,
 				0,
-				0.0f,
-				0.0f,
+				1.0f,
+				1.0f,
 				0,
 				0,
 				new byte[] { 0xFF }
@@ -347,8 +347,8 @@ namespace Microsoft.Xna.Framework.Audio
 						new byte[] { waveBank },
 						0,
 						0,
-						0.0f,
-						0.0f,
+						1.0f,
+						1.0f,
 						loopCount,
 						0,
 						new byte[] { 0xFF }
@@ -398,8 +398,8 @@ namespace Microsoft.Xna.Framework.Audio
 						waveBanks,
 						0,
 						0,
-						0.0f,
-						0.0f,
+						1.0f,
+						1.0f,
 						0,
 						variationType,
 						weights
@@ -495,8 +495,8 @@ namespace Microsoft.Xna.Framework.Audio
 					if ((varFlags & 0x20) != 0x20)
 					{
 						// Throw out the volume variation.
-						minVolume = 0.0f;
-						maxVolume = 0.0f;
+						minVolume = 1.0f;
+						maxVolume = 1.0f;
 					}
 					if ((varFlags & 0x10) != 0x10)
 					{
@@ -686,7 +686,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_getNextSound();
 			SoundEffectInstance result = INTERNAL_waves[INTERNAL_curWave].CreateInstance();
 			result.Volume = (
-				clipVolume + (float) (
+				clipVolume * (float) (
 					(	random.NextDouble() *
 						(INTERNAL_maxVolume - INTERNAL_minVolume)
 					) + INTERNAL_minVolume
