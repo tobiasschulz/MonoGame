@@ -694,27 +694,57 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #else
 
-			GL.BindTexture(TextureTarget.Texture2D, this.glTexture);
+            GL.BindTexture(TextureTarget.Texture2D, glTexture);
 
-			if (glFormat == (GLPixelFormat)All.CompressedTextureFormats) {
-				throw new NotImplementedException();
-			} else {
-				if (rect.HasValue) {
-					var temp = new T[this.width*this.height];
-					GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, temp);
-					int z = 0, w = 0;
+            if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
+            {
+                throw new NotImplementedException("GetData, CompressedTexture");
+            }
+            else if (rect == null)
+            {
+                // Just throw the whole texture into the user array.
+                GL.GetTexImage(
+                    TextureTarget.Texture2D,
+                    0,
+                    glFormat,
+                    glType,
+                    data
+                );
+            }
+            else
+            {
+                // Get the whole texture...
+                T[] texData = new T[width * height];
+                GL.GetTexImage(
+                    TextureTarget.Texture2D,
+                    0,
+                    glFormat,
+                    glType,
+                    texData
+                );
 
-					for(int y= rect.Value.Y; y < rect.Value.Y+ rect.Value.Height; y++) {
-						for(int x=rect.Value.X; x < rect.Value.X + rect.Value.Width; x++) {
-							data[z*rect.Value.Width+w] = temp[(y*width)+x];
-							w++;
-						}
-						z++;
-					}
-				} else {
-					GL.GetTexImage(TextureTarget.Texture2D, level, this.glFormat, this.glType, data);
-				}
-			}
+                // Now, blit the rect region into the user array.
+                Rectangle region = rect.Value;
+                int curPixel = -1;
+                for (int row = region.Y; row < region.Y + region.Height; row += 1)
+                {
+                    for (int col = region.X; col < region.X + region.Width; col += 1)
+                    {
+                        curPixel += 1;
+                        if (curPixel < startIndex)
+                        {
+                            // If we're not at the start yet, just keep going...
+                            continue;
+                        }
+                        if (curPixel > elementCount)
+                        {
+                            // If we're past the end, we're done!
+                            return;
+                        }
+                        data[curPixel - startIndex] = texData[(row * width) + col];
+                    }
+                }
+            }
 
 #endif
         }
