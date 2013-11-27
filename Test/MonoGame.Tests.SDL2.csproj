@@ -116,6 +116,8 @@
     <Compile Include="Framework\Visual\SpriteBatchTest.cs" />
     <Compile Include="Framework\Visual\SpriteFontTest.cs" />
     <Compile Include="Framework\Visual\ViewportTest.cs" />
+    <Compile Include="Framework\Visual\Texture2DTest.cs" />
+    <Compile Include="Framework\Visual\Texture3DTest.cs" />
     <Compile Include="Framework\Components\TexturedQuadComponent.cs" />
     <Compile Include="Framework\Components\SpaceshipModelDrawComponent.cs" />
   </ItemGroup>
