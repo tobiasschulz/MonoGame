@@ -2434,13 +2434,12 @@ namespace Microsoft.Xna.Framework.Graphics
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
 
             // Draw!
-            GL.DrawElementsInstancedBaseVertex(
+            GL.DrawElementsInstanced(
                 PrimitiveTypeGL(primitiveType),
                 GetElementCountArray(primitiveType, primitiveCount),
                 shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt,
                 (IntPtr) (startIndex * (shortIndices ? 2 : 4)),
-                instanceCount,
-                baseVertex
+                instanceCount
             );
 
             // Check for errors in the debug context
