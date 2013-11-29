@@ -60,6 +60,13 @@ namespace Microsoft.Xna.Framework.Audio
 
         private SoundEffect INTERNAL_parentEffect;
 
+        /* MonoGame XACT wraps around SoundEffect for audio output.
+         * Only problem: XACT pitch has no boundaries, SoundEffect does.
+         * So, we're going to use this to tell the pitch clamp to STFU.
+         * -flibit
+         */
+        internal bool INTERNAL_isXACTSource = false;
+
         #endregion
 
         #region Private Variables: OpenAL Source, EffectSlot
@@ -93,7 +100,7 @@ namespace Microsoft.Xna.Framework.Audio
              * To convert, we just plug XNA pitch into f(x).
              * -flibit
              */
-            if (xnaPitch < -1.0f || xnaPitch > 1.0f)
+            if (!INTERNAL_isXACTSource && (xnaPitch < -1.0f || xnaPitch > 1.0f))
             {
                 throw new Exception("XNA PITCH MUST BE WITHIN [-1.0f, 1.0f]!");
             }
