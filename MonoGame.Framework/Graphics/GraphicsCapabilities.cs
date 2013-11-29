@@ -98,6 +98,11 @@ namespace Microsoft.Xna.Framework.Graphics
         /// Gets the support for ATITC
         /// </summary>
         internal static bool SupportsAtitc { get; private set; }
+        
+        /// <summary>
+        /// Gets the support for hardware instancing (DrawInstancedPrimitives)
+        /// </summary>
+        internal static bool SupportsHardwareInstancing { get; private set; }
 
         internal static void Initialize(GraphicsDevice device)
         {
@@ -129,6 +134,10 @@ namespace Microsoft.Xna.Framework.Graphics
             SupportsEtc1 = device._extensions.Contains("GL_OES_compressed_ETC1_RGB8_texture");
             SupportsAtitc = device._extensions.Contains("GL_ATI_texture_compression_atitc") ||
                 device._extensions.Contains("GL_AMD_compressed_ATC_texture");
+            SupportsHardwareInstancing = (
+                device._extensions.Contains("GL_ARB_draw_instanced") &&
+                device._extensions.Contains("GL_ARB_instanced_arrays")
+            );
 #endif
         }
 

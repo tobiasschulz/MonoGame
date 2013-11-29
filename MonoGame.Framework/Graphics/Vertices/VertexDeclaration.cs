@@ -169,7 +169,10 @@ namespace Microsoft.Xna.Framework.Graphics
                     this.VertexStride,
                     (IntPtr)(offset.ToInt64() + element.Offset));
                 GraphicsExtensions.CheckGLError();
-                GL.VertexAttribDivisor(element.AttributeLocation, divisor);
+                if (GraphicsCapabilities.SupportsHardwareInstancing)
+                {
+                    GL.VertexAttribDivisor(element.AttributeLocation, divisor);
+                }
             }
 		}
 

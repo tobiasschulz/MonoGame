@@ -2354,17 +2354,13 @@ namespace Microsoft.Xna.Framework.Graphics
 			
 #elif OPENGL
 
+            // Flush the GL state before moving on!
             ApplyState(true);
 
-            var shortIndices = _indexBuffer.IndexElementSize == IndexElementSize.SixteenBits;
+            // Unsigned short or unsigned int?
+            bool shortIndices = _indexBuffer.IndexElementSize == IndexElementSize.SixteenBits;
 
-			var indexElementType = shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt;
-            var indexElementSize = shortIndices ? 2 : 4;
-			var indexOffsetInBytes = (IntPtr)(startIndex * indexElementSize);
-			var indexElementCount = GetElementCountArray(primitiveType, primitiveCount);
-			var target = PrimitiveTypeGL(primitiveType);
-			var vertexOffset = (IntPtr)(_vertexBuffers[0].VertexBuffer.VertexDeclaration.VertexStride * baseVertex);
-
+            // Set up the vertex buffers
             foreach (VertexBufferBinding vertBuffer in _vertexBuffers)
             {
                 if (vertBuffer.VertexBuffer != null)
@@ -2372,21 +2368,23 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         _vertexShader,
-                        vertexOffset,
-                        vertBuffer.InstanceFrequency
+                        (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex))
                     );
                 }
             }
 
-            if (_indexBuffer != null)
-            {
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
-            }
+            // Bind the index buffer
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
 
-            GL.DrawElements(target,
-                                     indexElementCount,
-                                     indexElementType,
-                                     indexOffsetInBytes);
+            // Draw!
+            GL.DrawElements(
+                PrimitiveTypeGL(primitiveType),
+                GetElementCountArray(primitiveType, primitiveCount),
+                shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt,
+                (IntPtr) (startIndex * (shortIndices ? 2 : 4))
+            );
+
+            // Check for errors in the debug context
             GraphicsExtensions.CheckGLError();
 #elif PSM
             BindVertexBuffer(true);
@@ -2406,31 +2404,34 @@ namespace Microsoft.Xna.Framework.Graphics
 #if OPENGL
             // Note that minVertexIndex and numVertices are NOT used!
 
+            // If this device doesn't have the support, just explode now before it's too late.
+            if (!GraphicsCapabilities.SupportsHardwareInstancing)
+            {
+                throw new Exception("Your hardware does not support hardware instancing!");
+            }
+
             // Flush the GL state before moving on!
             ApplyState(true);
 
             // Unsigned short or unsigned int?
             bool shortIndices = _indexBuffer.IndexElementSize == IndexElementSize.SixteenBits;
 
-            // Set up the shared vertex buffer
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffers[0].VertexBuffer.vbo);
-            _vertexBuffers[0].VertexBuffer.VertexDeclaration.Apply(
-                _vertexShader,
-                (IntPtr) (_vertexBuffers[0].VertexBuffer.VertexDeclaration.VertexStride * baseVertex)
-            );
-
-            // Set up the instance vertex buffer
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffers[1].VertexBuffer.vbo);
-            _vertexBuffers[1].VertexBuffer.VertexDeclaration.Apply(
-                _vertexShader,
-                (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * (_vertexBuffers[1].VertexOffset + baseVertex)),
-                _vertexBuffers[1].InstanceFrequency
-            );
-
-            if (_indexBuffer != null)
+            // Set up the vertex buffers
+            foreach (VertexBufferBinding vertBuffer in _vertexBuffers)
             {
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+                if (vertBuffer.VertexBuffer != null)
+                {
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                    vertBuffer.VertexBuffer.VertexDeclaration.Apply(
+                        _vertexShader,
+                        (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex)),
+                        vertBuffer.InstanceFrequency
+                    );
+                }
             }
+
+            // Bind the index buffer
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
 
             // Draw!
             GL.DrawElementsInstancedBaseVertex(
@@ -2515,8 +2516,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #elif OPENGL
 
+            // Flush the GL state before moving on!
             ApplyState(true);
 
+            // Set up the vertex buffers
             foreach (VertexBufferBinding vertBuffer in _vertexBuffers)
             {
                 if (vertBuffer.VertexBuffer != null)
@@ -2524,8 +2527,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         _vertexShader,
-                        IntPtr.Zero,
-                        vertBuffer.InstanceFrequency
+                        (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * vertBuffer.VertexOffset)
                     );
                 }
             }
@@ -2533,9 +2535,14 @@ namespace Microsoft.Xna.Framework.Graphics
             // No IndexBuffer used for DrawArrays()
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 
-			GL.DrawArrays(PrimitiveTypeGL(primitiveType),
-			              vertexStart,
-			              vertexCount);
+            // Draw!
+            GL.DrawArrays(
+                PrimitiveTypeGL(primitiveType),
+                vertexStart,
+                vertexCount
+            );
+
+            // Check for errors in the debug context
             GraphicsExtensions.CheckGLError();
 #elif PSM
             BindVertexBuffer(false);
