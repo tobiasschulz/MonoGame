@@ -2423,7 +2423,7 @@ namespace Microsoft.Xna.Framework.Graphics
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffers[1].VertexBuffer.vbo);
             _vertexBuffers[1].VertexBuffer.VertexDeclaration.Apply(
                 _vertexShader,
-                (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * startIndex),
+                (IntPtr) (_vertexBuffers[1].VertexBuffer.VertexDeclaration.VertexStride * (_vertexBuffers[1].VertexOffset + baseVertex)),
                 _vertexBuffers[1].InstanceFrequency
             );
 
