@@ -692,6 +692,7 @@ namespace Microsoft.Xna.Framework.Audio
 		) {
 			INTERNAL_getNextSound();
 			SoundEffectInstance result = INTERNAL_waves[INTERNAL_curWave].CreateInstance();
+			result.INTERNAL_isXACTSource = true;
 			result.Volume = XACTCalculator.CalculateAmplitudeRatio(
 				soundVolume + clipVolume + (
 					random.NextDouble() *
