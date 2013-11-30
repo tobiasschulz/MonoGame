@@ -245,8 +245,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private void GetBufferData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount, int vertexStride) where T : struct
         {
-            GL.BindBuffer (BufferTarget.ArrayBuffer, vbo);
-            GraphicsExtensions.CheckGLError();
+            if (GraphicsDevice.INTERNAL_curVertexBuffer != vbo)
+            {
+                GL.BindBuffer (BufferTarget.ArrayBuffer, vbo);
+                GraphicsExtensions.CheckGLError();
+                GraphicsDevice.INTERNAL_curVertexBuffer = vbo;
+            }
             var elementSizeInByte = Marshal.SizeOf(typeof(T));
             IntPtr ptr = GL.MapBuffer (BufferTarget.ArrayBuffer, BufferAccess.ReadOnly);
             GraphicsExtensions.CheckGLError();
@@ -398,8 +402,12 @@ namespace Microsoft.Xna.Framework.Graphics
             GenerateIfRequired();
             
             var sizeInBytes = elementSizeInBytes * elementCount;
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GraphicsExtensions.CheckGLError();
+            if (GraphicsDevice.INTERNAL_curVertexBuffer != vbo)
+            {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+                GraphicsExtensions.CheckGLError();
+                GraphicsDevice.INTERNAL_curVertexBuffer = vbo;
+            }
             
             if (options == SetDataOptions.Discard)
             {

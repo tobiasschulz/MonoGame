@@ -252,8 +252,12 @@ namespace Microsoft.Xna.Framework.Graphics
 #if OPENGL && !GLES
         private void GetBufferData<T>(int offsetInBytes, T[] data, int startIndex, int elementCount) where T : struct
         {
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-            GraphicsExtensions.CheckGLError();
+            if (GraphicsDevice.INTERNAL_curIndexBuffer != ibo)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+                GraphicsExtensions.CheckGLError();
+                GraphicsDevice.INTERNAL_curIndexBuffer = ibo;
+            }
             var elementSizeInByte = Marshal.SizeOf(typeof(T));
             IntPtr ptr = GL.MapBuffer(BufferTarget.ArrayBuffer, BufferAccess.ReadOnly);
             // Pointer to the start of data to read in the index buffer
@@ -397,8 +401,12 @@ namespace Microsoft.Xna.Framework.Graphics
             var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInByte);
             var bufferSize = IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4);
             
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-            GraphicsExtensions.CheckGLError();
+            if (GraphicsDevice.INTERNAL_curIndexBuffer != ibo)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+                GraphicsExtensions.CheckGLError();
+                GraphicsDevice.INTERNAL_curIndexBuffer = ibo;
+            }
             
             if (options == SetDataOptions.Discard)
             {

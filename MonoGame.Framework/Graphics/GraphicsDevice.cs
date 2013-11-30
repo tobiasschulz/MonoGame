@@ -200,6 +200,14 @@ namespace Microsoft.Xna.Framework.Graphics
 
         static readonly float[] _posFixup = new float[4];
 
+        // Initialized with MaxVertexAttributes
+        internal static bool[] INTERNAL_glAttributeEnabled;
+        private static bool[] INTERNAL_glPreviousAttribState;
+
+        // Prevents redundant BindBuffer calls
+        internal static uint INTERNAL_curVertexBuffer = 0;
+        internal static uint INTERNAL_curIndexBuffer = 0;
+
 #elif PSM
 
         internal GraphicsContext _graphics;
@@ -395,6 +403,15 @@ namespace Microsoft.Xna.Framework.Graphics
             
             GL.GetInteger(GetPName.MaxTextureSize, out _maxTextureSize);
             GraphicsExtensions.CheckGLError();
+
+            // Initialize vertex attribute state arrays
+            INTERNAL_glAttributeEnabled = new bool[MaxVertexAttributes];
+            INTERNAL_glPreviousAttribState = new bool[MaxVertexAttributes];
+            for (int i = 0; i < MaxVertexAttributes; i += 1)
+            {
+                INTERNAL_glAttributeEnabled[i] = false;
+                INTERNAL_glPreviousAttribState[i] = false;
+            }
 
 			// Initialize draw buffer attachment array
 			int maxDrawBuffers;
@@ -1847,20 +1864,6 @@ namespace Microsoft.Xna.Framework.Graphics
             return bindings;
 		}
 
-        /// <summary>
-        /// Unsets any index and vertex buffers.
-        /// </summary>
-        void ClearBuffers()
-        {
-#if OPENGL
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-            GraphicsExtensions.CheckGLError();
-            _indexBufferDirty = true;
-            _vertexBuffersAnyDirty = true;
-#endif
-        }
-
 #if OPENGL
 
         private static BeginMode PrimitiveTypeGL(PrimitiveType primitiveType)
@@ -2201,15 +2204,30 @@ namespace Microsoft.Xna.Framework.Graphics
 
             Textures.SetTextures(this);
             SamplerStates.SetSamplers(this);
+        }
 
 #if OPENGL
-            // Disable all attributes. We'll re-enable as we need them.
+        private void INTERNAL_FlushVertexAttributes()
+        {
             for (int i = 0; i < MaxVertexAttributes; i++)
             {
-                GL.DisableVertexAttribArray(i);
+                if (INTERNAL_glAttributeEnabled[i])
+                {
+                    INTERNAL_glAttributeEnabled[i] = false;
+                    if (!INTERNAL_glPreviousAttribState[i])
+                    {
+                        GL.EnableVertexAttribArray(i);
+                        INTERNAL_glPreviousAttribState[i] = true;
+                    }
+                }
+                else if (INTERNAL_glPreviousAttribState[i])
+                {
+                    GL.DisableVertexAttribArray(i);
+                    INTERNAL_glPreviousAttribState[i] = false;
+                }
             }
-#endif
         }
+#endif
 
 #if DIRECTX
 
@@ -2365,7 +2383,11 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (vertBuffer.VertexBuffer != null)
                 {
-                    GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                    if (INTERNAL_curVertexBuffer != vertBuffer.VertexBuffer.vbo)
+                    {
+                        GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                        INTERNAL_curVertexBuffer = vertBuffer.VertexBuffer.vbo;
+                    }
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         _vertexShader,
                         (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex))
@@ -2373,8 +2395,15 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
+            // Enable the appropriate vertex attributes.
+            INTERNAL_FlushVertexAttributes();
+
             // Bind the index buffer
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+            if (INTERNAL_curIndexBuffer != _indexBuffer.ibo)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+                INTERNAL_curIndexBuffer = _indexBuffer.ibo;
+            }
 
             // Draw!
             GL.DrawElements(
@@ -2421,7 +2450,11 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (vertBuffer.VertexBuffer != null)
                 {
-                    GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                    if (INTERNAL_curVertexBuffer != vertBuffer.VertexBuffer.vbo)
+                    {
+                        GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                        INTERNAL_curVertexBuffer = vertBuffer.VertexBuffer.vbo;
+                    }
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         _vertexShader,
                         (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex)),
@@ -2430,8 +2463,15 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
+            // Enable the appropriate vertex attributes.
+            INTERNAL_FlushVertexAttributes();
+
             // Bind the index buffer
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+            if (INTERNAL_curIndexBuffer != _indexBuffer.ibo)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.ibo);
+                INTERNAL_curIndexBuffer = _indexBuffer.ibo;
+            }
 
             // Draw!
             GL.DrawElementsInstanced(
@@ -2477,7 +2517,11 @@ namespace Microsoft.Xna.Framework.Graphics
             ApplyState(true);
 
             // Unbind current VBOs.
-            ClearBuffers();
+            if (INTERNAL_curVertexBuffer != 0)
+            {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                INTERNAL_curVertexBuffer = 0;
+            }
 
             // Pin the buffers.
             var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
@@ -2485,6 +2529,9 @@ namespace Microsoft.Xna.Framework.Graphics
             // Setup the vertex declaration to point at the VB data.
             vertexDeclaration.GraphicsDevice = this;
             vertexDeclaration.Apply(_vertexShader, vbHandle.AddrOfPinnedObject());
+
+            // Enable the appropriate vertex attributes.
+            INTERNAL_FlushVertexAttributes();
 
             //Draw
             GL.DrawArrays(PrimitiveTypeGL(primitiveType),
@@ -2523,7 +2570,11 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (vertBuffer.VertexBuffer != null)
                 {
-                    GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                    if (INTERNAL_curVertexBuffer != vertBuffer.VertexBuffer.vbo)
+                    {
+                        GL.BindBuffer(BufferTarget.ArrayBuffer, vertBuffer.VertexBuffer.vbo);
+                        INTERNAL_curVertexBuffer = vertBuffer.VertexBuffer.vbo;
+                    }
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         _vertexShader,
                         (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * vertBuffer.VertexOffset)
@@ -2531,8 +2582,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
-            // No IndexBuffer used for DrawArrays()
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+            // Enable the appropriate vertex attributes.
+            INTERNAL_FlushVertexAttributes();
 
             // Draw!
             GL.DrawArrays(
@@ -2577,8 +2628,17 @@ namespace Microsoft.Xna.Framework.Graphics
 
             ApplyState(true);
 
-            // Unbind current VBOs.
-            ClearBuffers();
+            // Unbind current buffer objects.
+            if (INTERNAL_curVertexBuffer != 0)
+            {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                INTERNAL_curVertexBuffer = 0;
+            }
+            if (INTERNAL_curIndexBuffer != 0)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+                INTERNAL_curIndexBuffer = 0;
+            }
 
             // Pin the buffers.
             var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
@@ -2589,6 +2649,9 @@ namespace Microsoft.Xna.Framework.Graphics
             // Setup the vertex declaration to point at the VB data.
             vertexDeclaration.GraphicsDevice = this;
             vertexDeclaration.Apply(_vertexShader, vertexAddr);
+
+            // Enable the appropriate vertex attributes.
+            INTERNAL_FlushVertexAttributes();
 
             //Draw
             GL.DrawElements(    PrimitiveTypeGL(primitiveType),
@@ -2633,8 +2696,17 @@ namespace Microsoft.Xna.Framework.Graphics
 
             ApplyState(true);
 
-            // Unbind current VBOs.
-            ClearBuffers();
+            // Unbind current buffer objects.
+            if (INTERNAL_curVertexBuffer != 0)
+            {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                INTERNAL_curVertexBuffer = 0;
+            }
+            if (INTERNAL_curIndexBuffer != 0)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+                INTERNAL_curIndexBuffer = 0;
+            }
 
             // Pin the buffers.
             var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
@@ -2645,6 +2717,9 @@ namespace Microsoft.Xna.Framework.Graphics
             // Setup the vertex declaration to point at the VB data.
             vertexDeclaration.GraphicsDevice = this;
             vertexDeclaration.Apply(_vertexShader, vertexAddr);
+
+            // Enable the appropriate vertex attributes.
+            INTERNAL_FlushVertexAttributes();
 
             //Draw
             GL.DrawElements(    PrimitiveTypeGL(primitiveType),
