@@ -118,6 +118,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 GraphicsExtensions.CheckGLError();
                 GL.BindBuffer(BufferTarget.ArrayBuffer, this.vbo);
                 GraphicsExtensions.CheckGLError();
+                GraphicsDevice.INTERNAL_curVertexBuffer = vbo;
                 GL.BufferData(BufferTarget.ArrayBuffer,
                               new IntPtr(VertexDeclaration.VertexStride * VertexCount), IntPtr.Zero,
                               _isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw);
