@@ -2406,8 +2406,10 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Draw!
-            GL.DrawElements(
+            GL.DrawRangeElements(
                 PrimitiveTypeGL(primitiveType),
+                minVertexIndex,
+                numVertices,
                 GetElementCountArray(primitiveType, primitiveCount),
                 shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt,
                 (IntPtr) (startIndex * (shortIndices ? 2 : 4))
@@ -2653,11 +2655,17 @@ namespace Microsoft.Xna.Framework.Graphics
             // Enable the appropriate vertex attributes.
             INTERNAL_FlushVertexAttributes();
 
-            //Draw
-            GL.DrawElements(    PrimitiveTypeGL(primitiveType),
-                                GetElementCountArray(primitiveType, primitiveCount),
-                                DrawElementsType.UnsignedShort,
-                                (IntPtr)(ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(short))));
+            // Draw!
+            GL.DrawRangeElements(
+                PrimitiveTypeGL(primitiveType),
+                0,
+                numVertices,
+                GetElementCountArray(primitiveType, primitiveCount),
+                DrawElementsType.UnsignedShort,
+                (IntPtr) (ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(short)))
+            );
+
+            // Check for errors in the debug context
             GraphicsExtensions.CheckGLError();
 
             // Release the handles.
@@ -2721,11 +2729,17 @@ namespace Microsoft.Xna.Framework.Graphics
             // Enable the appropriate vertex attributes.
             INTERNAL_FlushVertexAttributes();
 
-            //Draw
-            GL.DrawElements(    PrimitiveTypeGL(primitiveType),
-                                GetElementCountArray(primitiveType, primitiveCount),
-                                DrawElementsType.UnsignedInt,
-                                (IntPtr)(ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(int))));
+            // Draw!
+            GL.DrawRangeElements(
+                PrimitiveTypeGL(primitiveType),
+                0,
+                numVertices,
+                GetElementCountArray(primitiveType, primitiveCount),
+                DrawElementsType.UnsignedInt,
+                (IntPtr) (ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(int)))
+            );
+
+            // Check for errors in the debug context
             GraphicsExtensions.CheckGLError();
 
             // Release the handles.
