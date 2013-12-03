@@ -242,8 +242,6 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Fail)
 				{
-					// What we just did should be undone. Oops.
-					INTERNAL_category.INTERNAL_removeLatestCue();
 					return; // Just ignore us...
 				}
 				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Queue)
