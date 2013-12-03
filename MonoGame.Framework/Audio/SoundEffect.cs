@@ -573,7 +573,11 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (AL.Get(ALGetString.Extensions).Contains("AL_EXT_MSADPCM"))
                 {
-                    if (compressionAlign == 70)
+                    if (compressionAlign == 134)
+                    {
+                        format = (channels == 2) ? ALFormat.StereoMsadpcm256Ext : ALFormat.MonoMsadpcm256Ext;
+                    }
+                    else if (compressionAlign == 70)
                     {
                         format = (channels == 2) ? ALFormat.StereoMsadpcm128Ext : ALFormat.MonoMsadpcm128Ext;
                     }
