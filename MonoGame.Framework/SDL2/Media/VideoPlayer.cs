@@ -547,7 +547,10 @@ namespace Microsoft.Xna.Framework.Media
                     {
                         // Wait for the audio thread to end.
                         State = MediaState.Stopped;
-                        audioDecoderThread.Join();
+                        if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+                        {
+                            audioDecoderThread.Join();
+                        }
                         
                         // Now we pretend we're playing again.
                         State = MediaState.Playing;
@@ -596,7 +599,10 @@ namespace Microsoft.Xna.Framework.Media
                     {
                         // Stop everything, clean up. We out.
                         State = MediaState.Stopped;
-                        audioDecoderThread.Join();
+                        if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+                        {
+                            audioDecoderThread.Join();
+                        }
                         TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
                         Video.Dispose();
                         
@@ -835,14 +841,13 @@ namespace Microsoft.Xna.Framework.Media
             State = MediaState.Stopped;
             
             // Wait for the player to end if it's still going.
-            if (!audioDecoderThread.IsAlive)
-            {
-                return;
-            }
             System.Console.Write("Signaled Theora player to stop, waiting...");
             timer.Stop();
             timer.Reset();
-            audioDecoderThread.Join();
+            if (audioDecoderThread.ThreadState == System.Threading.ThreadState.Unstarted)
+            {
+                audioDecoderThread.Join();
+            }
             if (previousFrame != IntPtr.Zero)
             {
                 TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
