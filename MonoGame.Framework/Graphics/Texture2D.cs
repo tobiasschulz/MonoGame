@@ -300,9 +300,15 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     var startBytes = startIndex * elementSizeInByte;
                     var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startBytes);
-                    var dataLength = elementCount * elementSizeInByte;
-                    if (elementCount == 0)
+                    int dataLength;
+                    if (elementCount > 0)
+                    {
+                        dataLength = elementCount * elementSizeInByte;
+                    }
+                    else
+                    {
                         dataLength = data.Length - startBytes;
+                    }
 #endif
                     int x, y, w, h;
                     if (rect.HasValue)

@@ -135,7 +135,7 @@ namespace Microsoft.Xna.Framework.Content
 			for (int level=0; level<levelCount; level++)
 			{
 				int levelDataSizeInBytes = (reader.ReadInt32 ());
-				byte[] levelData = null; //reader.ReadBytes (levelDataSizeInBytes);
+				byte[] levelData = null; // Don't assign this quite yet...
                 int levelWidth = width >> level;
                 int levelHeight = height >> level;
 
@@ -193,7 +193,7 @@ namespace Microsoft.Xna.Framework.Content
 						break;
                     case SurfaceFormat.Bgra5551:
                         {
-			    levelData = reader.ReadBytes(levelDataSizeInBytes);
+                            levelData = reader.ReadBytes(levelDataSizeInBytes);
 #if OPENGL
                             // Shift the channels to suit OPENGL
                             int offset = 0;
@@ -213,7 +213,7 @@ namespace Microsoft.Xna.Framework.Content
                         break;
 					case SurfaceFormat.Bgra4444:
 						{
-						    levelData = reader.ReadBytes(levelDataSizeInBytes);
+							levelData = reader.ReadBytes(levelDataSizeInBytes);
 #if OPENGL
                             // Shift the channels to suit OPENGL
 							int offset = 0;
@@ -233,7 +233,7 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 					case SurfaceFormat.NormalizedByte4:
 						{
-						    levelData = reader.ReadBytes(levelDataSizeInBytes);
+							levelData = reader.ReadBytes(levelDataSizeInBytes);
 							int bytesPerPixel = surfaceFormat.Size();
 							int pitch = levelWidth * bytesPerPixel;
 							for (int y = 0; y < levelHeight; y++)
@@ -251,19 +251,39 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 				}
 				
-                                if (reader.BaseStream.GetType() != typeof(System.IO.MemoryStream))
-                                {
-                                        levelData = reader.ReadBytes(levelDataSizeInBytes);
-                                }
-                                if (levelData != null)
-                                {
-                                        texture.SetData(level, null, levelData, 0, levelData.Length);
-                                }
-                                else
-                                {
-                                        texture.SetData<byte>(level, null, (byte[])(((System.IO.MemoryStream)(reader.BaseStream)).GetBuffer()), (int)reader.BaseStream.Position, levelDataSizeInBytes);
-                                        reader.BaseStream.Seek(levelDataSizeInBytes, System.IO.SeekOrigin.Current);
-                                }
+				if (reader.BaseStream.GetType() != typeof(System.IO.MemoryStream))
+				{
+					/* Presumably a FileStream? Just get the data...
+					 * In that situation, levelData should be null.
+					 */
+					levelData = reader.ReadBytes(levelDataSizeInBytes);
+				}
+				if (levelData != null)
+				{
+					/* If we had to convert the data, or get the data from a
+					 * non-MemoryStream, we set the data with our levelData
+					 * reference.
+					 */
+					texture.SetData(level, null, levelData, 0, levelData.Length);
+				}
+				else
+				{
+					/* Ideally, we didn't have to perform any conversion or
+					 * unnecessary reading. Just throw the buffer directly
+					 * into SetData, skipping a redundant byte[] copy.
+					 */
+					texture.SetData<byte>(
+						level,
+						null,
+						(((System.IO.MemoryStream) (reader.BaseStream)).GetBuffer()),
+						(int) reader.BaseStream.Position,
+						levelDataSizeInBytes
+					);
+					reader.BaseStream.Seek(
+						levelDataSizeInBytes,
+						System.IO.SeekOrigin.Current
+					);
+				}
 
 			}
 
