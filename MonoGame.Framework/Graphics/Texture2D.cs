@@ -300,6 +300,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     var startBytes = startIndex * elementSizeInByte;
                     var dataPtr = (IntPtr)(dataHandle.AddrOfPinnedObject().ToInt64() + startBytes);
+                    var dataLength = elementCount * elementSizeInByte;
+                    if (elementCount == 0)
+                        dataLength = data.Length - startBytes;
 #endif
                     int x, y, w, h;
                     if (rect.HasValue)
@@ -376,12 +379,12 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
                                 glFormat,
 #endif
-                                data.Length - startBytes, dataPtr);
+                                dataLength, dataPtr);
                             GraphicsExtensions.CheckGLError();
                         }
                         else
                         {
-                            GL.CompressedTexImage2D(TextureTarget.Texture2D, level, glInternalFormat, w, h, 0, data.Length - startBytes, dataPtr);
+                            GL.CompressedTexImage2D(TextureTarget.Texture2D, level, glInternalFormat, w, h, 0, dataLength, dataPtr);
                             GraphicsExtensions.CheckGLError();
                         }
                     }
