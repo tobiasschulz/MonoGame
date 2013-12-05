@@ -135,7 +135,7 @@ namespace Microsoft.Xna.Framework.Content
 			for (int level=0; level<levelCount; level++)
 			{
 				int levelDataSizeInBytes = (reader.ReadInt32 ());
-				byte[] levelData = reader.ReadBytes (levelDataSizeInBytes);
+				byte[] levelData = null; //reader.ReadBytes (levelDataSizeInBytes);
                 int levelWidth = width >> level;
                 int levelHeight = height >> level;
 
@@ -151,19 +151,29 @@ namespace Microsoft.Xna.Framework.Content
 					case SurfaceFormat.Dxt1:
                     case SurfaceFormat.Dxt1a:
                         if (!GraphicsCapabilities.SupportsDxt1)
+						{
+						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 						    levelData = DxtUtil.DecompressDxt1(levelData, levelWidth, levelHeight);
+						}
 						break;
 					case SurfaceFormat.Dxt3:
                         if (!GraphicsCapabilities.SupportsS3tc)
+						{
+						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 						    levelData = DxtUtil.DecompressDxt3(levelData, levelWidth, levelHeight);
+						}
 						break;
 					case SurfaceFormat.Dxt5:
                         if (!GraphicsCapabilities.SupportsS3tc)
+						{
+						    levelData = reader.ReadBytes(levelDataSizeInBytes);
     						levelData = DxtUtil.DecompressDxt5(levelData, levelWidth, levelHeight);
+						}
 						break;
 #endif
 					case SurfaceFormat.Bgr565:
 						{
+						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 							/*
 							// BGR -> BGR
 							int offset = 0;
@@ -183,6 +193,7 @@ namespace Microsoft.Xna.Framework.Content
 						break;
                     case SurfaceFormat.Bgra5551:
                         {
+			    levelData = reader.ReadBytes(levelDataSizeInBytes);
 #if OPENGL
                             // Shift the channels to suit OPENGL
                             int offset = 0;
@@ -202,6 +213,7 @@ namespace Microsoft.Xna.Framework.Content
                         break;
 					case SurfaceFormat.Bgra4444:
 						{
+						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 #if OPENGL
                             // Shift the channels to suit OPENGL
 							int offset = 0;
@@ -221,6 +233,7 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 					case SurfaceFormat.NormalizedByte4:
 						{
+						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 							int bytesPerPixel = surfaceFormat.Size();
 							int pitch = levelWidth * bytesPerPixel;
 							for (int y = 0; y < levelHeight; y++)
@@ -238,7 +251,20 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 				}
 				
-				texture.SetData(level, null, levelData, 0, levelData.Length);	
+                                if (reader.BaseStream.GetType() != typeof(System.IO.MemoryStream))
+                                {
+                                        levelData = reader.ReadBytes(levelDataSizeInBytes);
+                                }
+                                if (levelData != null)
+                                {
+                                        texture.SetData(level, null, levelData, 0, levelData.Length);
+                                }
+                                else
+                                {
+                                        texture.SetData<byte>(level, null, (byte[])(((System.IO.MemoryStream)(reader.BaseStream)).GetBuffer()), (int)reader.BaseStream.Position, levelDataSizeInBytes);
+                                        reader.BaseStream.Seek(levelDataSizeInBytes, System.IO.SeekOrigin.Current);
+                                }
+
 			}
 
 			// FIXME: This may apply to more compressed formats!
