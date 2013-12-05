@@ -162,6 +162,7 @@ namespace Microsoft.Xna.Framework.Graphics
             foreach (var element in attrInfo.Elements)
             {
                 GraphicsDevice.INTERNAL_glAttributeEnabled[element.AttributeLocation] = true;
+                GraphicsDevice.INTERNAL_glAttributeDivisors[element.AttributeLocation] = divisor;
                 GL.VertexAttribPointer(element.AttributeLocation,
                     element.NumberOfElements,
                     element.VertexAttribPointerType,
@@ -169,10 +170,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     this.VertexStride,
                     (IntPtr)(offset.ToInt64() + element.Offset));
                 GraphicsExtensions.CheckGLError();
-                if (GraphicsCapabilities.SupportsHardwareInstancing)
-                {
-                    GL.VertexAttribDivisor(element.AttributeLocation, divisor);
-                }
             }
 		}
 

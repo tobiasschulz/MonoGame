@@ -211,6 +211,8 @@ namespace Microsoft.Xna.Framework.Graphics
         // Initialized with MaxVertexAttributes
         internal static bool[] INTERNAL_glAttributeEnabled;
         private static bool[] INTERNAL_glPreviousAttribState;
+        internal static int[] INTERNAL_glAttributeDivisors;
+        private static int[] INTERNAL_glPreviousAttribDivisors;
 
         // Prevents redundant BindBuffer calls
         internal static uint INTERNAL_curVertexBuffer = 0;
@@ -415,10 +417,14 @@ namespace Microsoft.Xna.Framework.Graphics
             // Initialize vertex attribute state arrays
             INTERNAL_glAttributeEnabled = new bool[MaxVertexAttributes];
             INTERNAL_glPreviousAttribState = new bool[MaxVertexAttributes];
+            INTERNAL_glAttributeDivisors = new int[MaxVertexAttributes];
+            INTERNAL_glPreviousAttribDivisors = new int[MaxVertexAttributes];
             for (int i = 0; i < MaxVertexAttributes; i += 1)
             {
                 INTERNAL_glAttributeEnabled[i] = false;
                 INTERNAL_glPreviousAttribState[i] = false;
+                INTERNAL_glAttributeDivisors[i] = 0;
+                INTERNAL_glPreviousAttribDivisors[i] = 0;
             }
 
 			// Initialize draw buffer attachment array
@@ -2219,6 +2225,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             for (int i = 0; i < MaxVertexAttributes; i++)
             {
+                // Is the attribute enabled or disabled?
                 if (INTERNAL_glAttributeEnabled[i])
                 {
                     INTERNAL_glAttributeEnabled[i] = false;
@@ -2232,6 +2239,13 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.DisableVertexAttribArray(i);
                     INTERNAL_glPreviousAttribState[i] = false;
+                }
+
+                // Does the attribute have a divisor?
+                if (INTERNAL_glAttributeDivisors[i] != INTERNAL_glPreviousAttribDivisors[i])
+                {
+                    GL.VertexAttribDivisor(i, INTERNAL_glAttributeDivisors[i]);
+                    INTERNAL_glPreviousAttribDivisors[i] = INTERNAL_glAttributeDivisors[i];
                 }
             }
         }
