@@ -251,10 +251,10 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 				}
 				
-				if (reader.BaseStream.GetType() != typeof(System.IO.MemoryStream))
+				if (levelData == null && reader.BaseStream.GetType() != typeof(System.IO.MemoryStream))
 				{
-					/* Presumably a FileStream? Just get the data...
-					 * In that situation, levelData should be null.
+					/* If the ContentReader is not backed by a
+					 * MemoryStream, we have to read the data in.
 					 */
 					levelData = reader.ReadBytes(levelDataSizeInBytes);
 				}
