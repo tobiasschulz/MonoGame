@@ -27,6 +27,7 @@ namespace Microsoft.Xna.Framework.Audio
 		private bool INTERNAL_isManaged;
 
 		private bool INTERNAL_queuedPlayback;
+		private bool INTERNAL_queuedPaused;
 
 		private static Random random = new Random();
 
@@ -142,6 +143,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_userControlledPlaying = false;
 			INTERNAL_isPositional = false;
 			INTERNAL_queuedPlayback = false;
+			INTERNAL_queuedPaused = false;
 
 			INTERNAL_instancePool = new List<SoundEffectInstance>();
 			INTERNAL_instanceVolumes = new List<float>();
@@ -221,6 +223,10 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			if (!IsPlaying)
 			{
+				if (INTERNAL_queuedPlayback)
+				{
+					INTERNAL_queuedPaused = true;
+				}
 				return;
 			}
 			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
@@ -348,6 +354,10 @@ namespace Microsoft.Xna.Framework.Audio
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					sfi.Play();
+					if (INTERNAL_queuedPaused)
+					{
+						sfi.Pause();
+					}
 				}
 			}
 
