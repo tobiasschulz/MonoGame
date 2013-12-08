@@ -330,6 +330,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_instancePool.Clear();
 			INTERNAL_instanceVolumes.Clear();
 			INTERNAL_userControlledPlaying = false;
+			INTERNAL_category.INTERNAL_removeActiveCue(this);
 
 			// If this is a managed Cue, we're done here.
 			if (INTERNAL_isManaged)
