@@ -68,8 +68,9 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Stop(AudioStopOptions options)
 		{
-			foreach (Cue curCue in activeCues)
+			while (activeCues.Count > 0)
 			{
+				Cue curCue = activeCues[0];
 				curCue.Stop(options);
 				curCue.SetVariable("NumCueInstances", 0);
 				cueInstanceCounts[curCue.Name] -= 1;
@@ -163,7 +164,6 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					cueInstanceCounts[name] -= 1;
 					activeCues[i].Stop(AudioStopOptions.AsAuthored);
-					activeCues.RemoveAt(i);
 					return;
 				}
 			}
@@ -188,7 +188,6 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				cueInstanceCounts[name] -= 1;
 				activeCues[lowestIndex].Stop(AudioStopOptions.AsAuthored);
-				activeCues.RemoveAt(lowestIndex);
 			}
 		}
 
