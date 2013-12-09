@@ -359,6 +359,7 @@ namespace Microsoft.Xna.Framework.Audio
 						sfi.Pause();
 					}
 				}
+				INTERNAL_queuedPaused = false;
 			}
 
 			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
