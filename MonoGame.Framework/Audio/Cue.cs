@@ -379,7 +379,13 @@ namespace Microsoft.Xna.Framework.Audio
 					INTERNAL_controlledValue != GetVariable(INTERNAL_data.UserControlVariable)	)
 				{
 					// TODO: Crossfading
-					Stop(AudioStopOptions.Immediate);
+					foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+					{
+						sfi.Stop();
+						sfi.Dispose();
+					}
+					INTERNAL_instancePool.Clear();
+					INTERNAL_instanceVolumes.Clear();
 					if (!INTERNAL_calculateNextSound())
 					{
 						// Nothing to play, bail.
