@@ -498,6 +498,8 @@ namespace Microsoft.Xna.Framework.Storage
                     return osConfigDir;
                 }
                 throw new Exception("StorageDevice: SDL2 platform not handled!");
+#elif PSM
+				return "/Documents/";
 #else
                 return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #endif
