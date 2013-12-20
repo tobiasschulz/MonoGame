@@ -162,7 +162,6 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (activeCues[i].Name.Equals(name))
 				{
-					cueInstanceCounts[name] -= 1;
 					activeCues[i].Stop(AudioStopOptions.AsAuthored);
 					return;
 				}

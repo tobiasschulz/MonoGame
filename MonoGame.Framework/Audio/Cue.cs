@@ -326,6 +326,7 @@ namespace Microsoft.Xna.Framework.Audio
 			if (INTERNAL_queuedPlayback)
 			{
 				INTERNAL_queuedPlayback = false;
+				INTERNAL_category.INTERNAL_removeActiveCue(this);
 				return;
 			}
 			foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
