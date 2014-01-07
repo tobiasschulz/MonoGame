@@ -1831,12 +1831,12 @@ namespace Microsoft.Xna.Framework
         {
             if (value is string)
             {
-                string[] v = ((string) value).Split(new char[] { ',' });
+                string[] v = ((string) value).Split(culture.NumberFormat.NumberGroupSeparator.ToCharArray());
                 return new Color(
-                    float.Parse(v[0]),
-                    float.Parse(v[1]),
-                    float.Parse(v[2]),
-                    float.Parse(v[3])
+                    float.Parse(v[0], culture),
+                    float.Parse(v[1], culture),
+                    float.Parse(v[2], culture),
+                    float.Parse(v[3], culture)
                 );
             }
             return base.ConvertFrom(context, culture, value);
