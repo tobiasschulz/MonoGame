@@ -773,7 +773,8 @@ namespace Microsoft.Xna.Framework
             if (destinationType == typeof(string))
             {
                 Vector3 src = (Vector3) value;
-                return src.X + "," + src.Y + "," + src.Z;
+                string sep = culture.NumberFormat.NumberGroupSeparator;
+                return src.X.ToString(culture) + sep + src.Y.ToString(culture) + sep + src.Z.ToString(culture);
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }

@@ -590,7 +590,7 @@ namespace Microsoft.Xna.Framework
             if (destinationType == typeof(string))
             {
                 Vector2 src = (Vector2) value;
-                return src.X + "," + src.Y;
+                return src.X.ToString(culture) + culture.NumberFormat.NumberGroupSeparator + src.Y.ToString(culture);
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }

@@ -720,7 +720,8 @@ namespace Microsoft.Xna.Framework
             if (destinationType == typeof(string))
             {
                 Vector4 src = (Vector4) value;
-                return src.X + "," + src.Y + "," + src.Z + "," + src.W;
+                string sep = culture.NumberFormat.NumberGroupSeparator;
+                return src.X.ToString(culture) + sep + src.Y.ToString(culture) + sep + src.Z.ToString(culture) + sep + src.W.ToString(culture);
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }
