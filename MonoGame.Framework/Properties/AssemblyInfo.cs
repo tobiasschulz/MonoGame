@@ -14,14 +14,14 @@ using System.Resources;
 [assembly: AssemblyDescription("MonoGame for Android")]
 #elif SDL2
 [assembly: AssemblyDescription("MonoGame for SDL2 Desktop")]
+#elif WINDOWS_STOREAPP
+[assembly: AssemblyDescription("MonoGame for Windows Store")]
 #elif WINDOWS
 [assembly: AssemblyDescription("MonoGame for Windows Desktop (DirectX)")]
 #elif PSM
 [assembly: AssemblyDescription("MonoGame for PlayStation Mobile")]
 #elif IOS
 [assembly: AssemblyDescription("MonoGame for iOS")]
-#elif WINDOWS_STOREAPP
-[assembly: AssemblyDescription("MonoGame for Windows Store")]
 #elif WINDOWS_PHONE
 [assembly: AssemblyDescription("MonoGame for Windows Phone 8")]
 #endif
@@ -53,6 +53,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyFileVersion("3.0.0.0")]
+[assembly: AssemblyVersion("3.1.2.0")]
+[assembly: AssemblyFileVersion("3.1.2.0")]
 [assembly: NeutralResourcesLanguageAttribute("en-US")]
