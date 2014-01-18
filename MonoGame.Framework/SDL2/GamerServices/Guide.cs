@@ -309,6 +309,61 @@ namespace Microsoft.Xna.Framework.GamerServices
 			return null;
 		}
 
+		public static void DelayNotifications(TimeSpan delay)
+		{
+			// No-op.
+		}
+
+		public static void ShowComposeMessage(PlayerIndex player, string text, IEnumerable<Gamer> recipients)
+		{
+			// No-op.
+		}
+
+		public static void ShowFriendRequest(PlayerIndex player, Gamer gamer)
+		{
+			// No-op.
+		}
+
+		public static void ShowFriends(PlayerIndex player)
+		{
+			// No-op.
+		}
+
+		public static void ShowGameInvite(PlayerIndex player, IEnumerable<Gamer> recipients)
+		{
+			// No-op.
+		}
+
+		public static void ShowGamerCard(PlayerIndex player, Gamer gamer)
+		{
+			// No-op.
+		}
+
+		public static void ShowMessages(PlayerIndex player)
+		{
+			// No-op.
+		}
+
+		public static void ShowParty(PlayerIndex player)
+		{
+			// No-op.
+		}
+
+		public static void ShowPartySessions(PlayerIndex player)
+		{
+			// No-op.
+		}
+
+		public static void ShowPlayerReview(PlayerIndex player, Gamer gamer)
+		{
+			// No-op.
+		}
+
+		public static void ShowPlayers(PlayerIndex player)
+		{
+			// No-op.
+		}
+
 		#region Properties
 		public static bool IsScreenSaverEnabled 
 		{ 
@@ -360,6 +415,12 @@ namespace Microsoft.Xna.Framework.GamerServices
 
 		public static GameWindow Window 
 		{ 
+			get;
+			set;
+		}
+
+		public static NotificationPosition NotificationPosition
+		{
 			get;
 			set;
 		}

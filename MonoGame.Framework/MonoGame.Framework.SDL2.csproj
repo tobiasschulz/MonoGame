@@ -401,6 +401,8 @@
     <Compile Include="Graphics\Vertices\VertexBufferBinding.cs" />
     <Compile Include="Audio\CueData.cs" />
     <Compile Include="Audio\XACTInternal.cs" />
+    <Compile Include="GamerServices\NotificationPosition.cs" />
+    <Compile Include="Graphics\DeviceLostException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">
