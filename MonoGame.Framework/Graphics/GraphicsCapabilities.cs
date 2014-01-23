@@ -138,6 +138,16 @@ namespace Microsoft.Xna.Framework.Graphics
                 device._extensions.Contains("GL_ARB_draw_instanced") &&
                 device._extensions.Contains("GL_ARB_instanced_arrays")
             );
+#if SDL2
+            /* So apparently OSX Lion likes to lie about hardware instancing support.
+             * This is incredibly stupid, but it works!
+             * -flibit
+             */
+            if (SupportsHardwareInstancing && SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+            {
+                SupportsHardwareInstancing = SDL2.SDL.SDL_GL_GetProcAddress("glVertexAttribDivisorARB") != IntPtr.Zero;
+            }
+#endif
 #endif
         }
 
