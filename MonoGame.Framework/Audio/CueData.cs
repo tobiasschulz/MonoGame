@@ -309,14 +309,19 @@ namespace Microsoft.Xna.Framework.Audio
 				// Full Event information
 				uint eventInfo = reader.ReadUInt32();
 
-				// XACT Event Type
+				// XACT Event Type, Timestamp
 				uint eventType = eventInfo & 0x0000001F;
+				uint eventTimestamp = (eventInfo >> 5) & 0x0000FFFF;
+				// uint eventUnknown = eventInfo >> 21;
+
+				// Random offset, unused
+				reader.ReadUInt16();
 
 				// Load the Event
 				if (eventType == 1)
 				{
-					// Unknown values
-					reader.ReadBytes(3);
+					// Unknown value
+					reader.ReadByte();
 
 					/* Event Flags
 					 * 0x01 = Break Loop
@@ -353,8 +358,8 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (eventType == 3)
 				{
-					// Unknown values
-					reader.ReadBytes(3);
+					// Unknown value
+					reader.ReadByte();
 
 					/* Event Flags
 					 * 0x01 = Break Loop
@@ -404,8 +409,8 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (eventType == 4)
 				{
-					// Unknown values
-					reader.ReadBytes(3);
+					// Unknown value
+					reader.ReadByte();
 
 					/* Event Flags
 					 * 0x01 = Break Loop
@@ -457,8 +462,8 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else if (eventType == 6)
 				{
-					// Unknown values
-					reader.ReadBytes(3);
+					// Unknown value
+					reader.ReadByte();
 
 					/* Event Flags
 					 * 0x01 = Break Loop
@@ -540,7 +545,7 @@ namespace Microsoft.Xna.Framework.Audio
 				else if (eventType == 8)
 				{
 					// Unknown values
-					reader.ReadBytes(5);
+					reader.ReadBytes(3);
 
 					// Operand Constant
 					float constant = reader.ReadSingle();
@@ -554,7 +559,14 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else
 				{
-					// TODO: All XACT Events
+					/* TODO: All XACT Events.
+					 * The following type information is based on
+					 * third-party contributions:
+					 * Type 0 - Stop Event
+					 * Type 7 - Pitch Event
+					 * Type 9 - Marker Event
+					 * -flibit
+					 */
 					throw new Exception(
 						"EVENT TYPE " + eventType + " NOT IMPLEMENTED!"
 					);
