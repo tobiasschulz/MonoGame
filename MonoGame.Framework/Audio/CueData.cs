@@ -311,7 +311,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 				// XACT Event Type, Timestamp
 				uint eventType = eventInfo & 0x0000001F;
-				uint eventTimestamp = (eventInfo >> 5) & 0x0000FFFF;
+				// uint eventTimestamp = (eventInfo >> 5) & 0x0000FFFF;
 				// uint eventUnknown = eventInfo >> 21;
 
 				// Random offset, unused
