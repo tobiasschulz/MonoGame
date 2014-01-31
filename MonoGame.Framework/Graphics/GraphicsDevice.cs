@@ -2472,7 +2472,7 @@ namespace Microsoft.Xna.Framework.Graphics
             GL.DrawRangeElements(
                 PrimitiveTypeGL(primitiveType),
                 minVertexIndex,
-                numVertices,
+                minVertexIndex + numVertices,
                 GetElementCountArray(primitiveType, primitiveCount),
                 shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt,
                 (IntPtr) (startIndex * (shortIndices ? 2 : 4))

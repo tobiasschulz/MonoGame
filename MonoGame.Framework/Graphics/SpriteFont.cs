@@ -84,6 +84,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		private readonly Dictionary<char, Glyph> _glyphs;
+		private readonly List<Rectangle> _glyphBounds;
+		private readonly List<Rectangle> _cropping;
+		private readonly List<Vector3> _kerning;
+		private readonly List<char> _characterMap;
 		
 		internal readonly Texture2D _texture;
 
@@ -93,6 +97,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			_characters = new ReadOnlyCollection<char> (characters.ToArray ());
 			_texture = texture;
+			_glyphBounds = glyphBounds;
+			_cropping = cropping;
+			_kerning = kerning;
+			_characterMap = characters;
 			LineSpacing = lineSpacing;
 			Spacing = spacing;
 			DefaultCharacter = defaultCharacter;
