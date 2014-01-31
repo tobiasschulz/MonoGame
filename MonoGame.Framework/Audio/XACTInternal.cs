@@ -414,6 +414,14 @@ namespace Microsoft.Xna.Framework.Audio
 					throw new NotImplementedException();
 #endif
 				}
+				else if (index == 18)
+				{
+					// TODO: Decay Time
+				}
+				else if (index == 19)
+				{
+					// TODO: Density
+				}
 				else
 				{
 					throw new Exception("DSP parameter unhandled: " + index);

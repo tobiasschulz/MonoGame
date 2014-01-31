@@ -47,6 +47,10 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
+				if (INTERNAL_queuedPaused)
+				{
+					return true;
+				}
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					if (sfi.State == SoundState.Paused)
@@ -62,6 +66,10 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
+				if (INTERNAL_queuedPlayback)
+				{
+					return true;
+				}
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					if (sfi.State != SoundState.Stopped)
