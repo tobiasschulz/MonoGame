@@ -296,6 +296,10 @@ namespace Microsoft.Xna.Framework
             
             // This platform uses VSyncEnabled rather than PresentationInterval.
             _game.Platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
+
+            // Notify DeviceReset EventHandlers
+            OnDeviceReset(null);
+            GraphicsDevice.OnDeviceReset();
 #else
 
 #if ANDROID
