@@ -485,9 +485,19 @@ namespace Microsoft.Xna.Framework.Audio
 			if (INTERNAL_data.IsUserControlled)
 			{
 				INTERNAL_userControlledPlaying = true;
-				INTERNAL_controlledValue = GetVariable(
-					INTERNAL_data.UserControlVariable
-				);
+				try
+				{
+					INTERNAL_controlledValue = GetVariable(
+						INTERNAL_data.UserControlVariable
+					);
+				}
+				catch
+				{
+					// It's a global variable we're looking for!
+					INTERNAL_controlledValue = INTERNAL_baseEngine.GetGlobalVariable(
+						INTERNAL_data.UserControlVariable
+					);
+				}
 				for (int i = 0; i < INTERNAL_data.Probabilities.Length / 2; i++)
 				{
 					if (	INTERNAL_controlledValue <= INTERNAL_data.Probabilities[i, 0] &&
