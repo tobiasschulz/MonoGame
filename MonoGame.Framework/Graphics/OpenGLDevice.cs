@@ -56,6 +56,7 @@ namespace Microsoft.Xna.Framework.Graphics
             public OpenGLState<TextureAddressMode> WrapT;
             public OpenGLState<TextureAddressMode> WrapR;
             public OpenGLState<TextureFilter> Filter;
+            public OpenGLState<TextureTarget> Target;
 
             public OpenGLSampler()
             {
@@ -64,6 +65,23 @@ namespace Microsoft.Xna.Framework.Graphics
                 WrapT = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 WrapR = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 Filter = new OpenGLState<TextureFilter>(TextureFilter.Linear);
+                Target = new OpenGLState<TextureTarget>(TextureTarget.Texture2D);
+            }
+        }
+
+        #endregion
+
+        #region OpenGL Vertex Attribute State Container Class
+
+        public class OpenGLVertexAttribute
+        {
+            public OpenGLState<bool> Enabled;
+            public OpenGLState<int> Divisor;
+
+            public OpenGLVertexAttribute()
+            {
+                Enabled = new OpenGLState<bool>(false);
+                Divisor = new OpenGLState<int>(0);
             }
         }
 
@@ -168,6 +186,23 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region Vertex Attribute State Variables
+
+        public OpenGLVertexAttribute[] Attributes
+        {
+            get;
+            private set;
+        }
+
+        #endregion
+
+        #region Buffer Binding Cache Variables
+
+        private int currentVertexBuffer = 0;
+        private int currentIndexBuffer = 0;
+
+        #endregion
+
         #region Constructor
 
         public OpenGLDevice()
@@ -182,6 +217,15 @@ namespace Microsoft.Xna.Framework.Graphics
             for (int i = 0; i < numSamplers; i += 1)
             {
                 Samplers[i] = new OpenGLSampler();
+            }
+
+            // Initialize vertex attribute state array
+            int numAttributes;
+            GL.GetInteger(GetPName.MaxVertexAttribs, out numAttributes);
+            Attributes = new OpenGLVertexAttribute[numAttributes];
+            for (int i = 0; i < numAttributes; i += 1)
+            {
+                Attributes[i] = new OpenGLVertexAttribute();
             }
 
             // Flush GL state to default state
@@ -206,7 +250,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Flush Method
+        #region Flush State Method
 
         public void FlushGLState(bool force = false)
         {
@@ -432,6 +476,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 OpenGLSampler sampler = Samplers[i];
                 if (    force ||
+                        sampler.Target.NeedsFlush() ||
                         sampler.Texture.NeedsFlush() ||
                         sampler.WrapS.NeedsFlush() ||
                         sampler.WrapT.NeedsFlush() ||
@@ -445,15 +490,24 @@ namespace Microsoft.Xna.Framework.Graphics
                 activeTexture = i;
                 GL.ActiveTexture(TextureUnit.Texture0 + i);
 
+                TextureTarget target = sampler.Target.GetCurrent();
+                bool targetForce = force;
+                if (force || sampler.Target.NeedsFlush())
+                {
+                    force = true; // Reset the ENTIRE state when we change target!
+                    GL.BindTexture(sampler.Target.GetCurrent(), 0);
+                    target = sampler.Target.Flush();
+                }
+
                 if (force || sampler.Texture.NeedsFlush())
                 {
-                    GL.BindTexture(TextureTarget.Texture2D, sampler.Texture.Flush());
+                    GL.BindTexture(target, sampler.Texture.Flush());
                 }
 
                 if (force || sampler.WrapS.NeedsFlush())
                 {
                     GL.TexParameter(
-                        TextureTarget.Texture2D,
+                        target,
                         TextureParameterName.TextureWrapT,
                         (int) GetWrap(sampler.WrapS.Flush())
                     );
@@ -462,7 +516,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (force || sampler.WrapT.NeedsFlush())
                 {
                     GL.TexParameter(
-                        TextureTarget.Texture2D,
+                        target,
                         TextureParameterName.TextureWrapT,
                         (int) GetWrap(sampler.WrapT.Flush())
                     );
@@ -471,7 +525,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (force || sampler.WrapR.NeedsFlush())
                 {
                     GL.TexParameter(
-                        TextureTarget.Texture2D,
+                        target,
                         TextureParameterName.TextureWrapT,
                         (int) GetWrap(sampler.WrapR.Flush())
                     );
@@ -529,21 +583,24 @@ namespace Microsoft.Xna.Framework.Graphics
                         throw new Exception("Unhandled TextureFilter!");
                     }
                     GL.TexParameter(
-                        TextureTarget.Texture2D,
+                        target,
                         TextureParameterName.TextureMagFilter,
                         (int) magFilter
                     );
                     GL.TexParameter(
-                        TextureTarget.Texture2D,
+                        target,
                         TextureParameterName.TextureMinFilter,
                         (int) minmipFilter
                     );
                     GL.TexParameter(
-                        TextureTarget.Texture2D,
+                        target,
                         (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
                         anistropicFilter
                     );
                 }
+
+                // You didn't see nothin'.
+                force = targetForce;
             }
             if (activeTexture != 0)
             {
@@ -555,6 +612,57 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Check for errors.
             GraphicsExtensions.CheckGLError();
+        }
+
+        #endregion
+
+        #region Flush Vertex Attribute Method
+
+        public void FlushGLVertexAttributes(bool force)
+        {
+            for (int i = 0; i < Attributes.Length; i += 1)
+            {
+                OpenGLVertexAttribute attrib = Attributes[i];
+
+                if (force || attrib.Enabled.NeedsFlush())
+                {
+                    if (attrib.Enabled.Flush())
+                    {
+                        GL.EnableVertexAttribArray(i);
+                    }
+                    else
+                    {
+                        GL.DisableVertexAttribArray(i);
+                    }
+                }
+
+                if (force || attrib.Divisor.NeedsFlush())
+                {
+                    GL.VertexAttribDivisor(i, attrib.Divisor.Flush());
+                }
+            }
+        }
+
+        #endregion
+
+        #region glBindBuffer Methods
+
+        public void BindVertexBuffer(int buffer)
+        {
+            if (buffer != currentVertexBuffer)
+            {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, buffer);
+                currentVertexBuffer = buffer;
+            }
+        }
+
+        public void BindIndexBuffer(int buffer)
+        {
+            if (buffer != currentIndexBuffer)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, buffer);
+                currentIndexBuffer = buffer;
+            }
         }
 
         #endregion
