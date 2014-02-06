@@ -280,8 +280,8 @@ namespace Microsoft.Xna.Framework.Graphics
                     DepthBias.NeedsFlush() ||
                     SlopeScaleDepthBias.NeedsFlush()    )
             {
-                float depthBias = DepthBias.NeedsFlush();
-                float slopeScaleDepthBias = SlopeScaleDepthBias.NeedsFlush();
+                float depthBias = DepthBias.Flush();
+                float slopeScaleDepthBias = SlopeScaleDepthBias.Flush();
                 if (depthBias == 0.0f && slopeScaleDepthBias == 0.0f)
                 {
                     ToggleGLState(EnableCap.PolygonOffsetFill, false);
@@ -427,12 +427,129 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // SAMPLER STATES
 
+            int activeTexture = 0;
             for (int i = 0; i < Samplers.Length; i += 1)
             {
                 OpenGLSampler sampler = Samplers[i];
-                // TODO
+                if (    force ||
+                        sampler.Texture.NeedsFlush() ||
+                        sampler.WrapS.NeedsFlush() ||
+                        sampler.WrapT.NeedsFlush() ||
+                        sampler.WrapR.NeedsFlush() ||
+                        sampler.Filter.NeedsFlush() )
+                {
+                    // Nothing changed in this sampler, skip it.
+                    continue;
+                }
+
+                activeTexture = i;
+                GL.ActiveTexture(TextureUnit.Texture0 + i);
+
+                if (force || sampler.Texture.NeedsFlush())
+                {
+                    GL.BindTexture(TextureTarget.Texture2D, sampler.Texture.Flush());
+                }
+
+                if (force || sampler.WrapS.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapT,
+                        (int) GetWrap(sampler.WrapS.Flush())
+                    );
+                }
+
+                if (force || sampler.WrapT.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapT,
+                        (int) GetWrap(sampler.WrapT.Flush())
+                    );
+                }
+
+                if (force || sampler.WrapR.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapT,
+                        (int) GetWrap(sampler.WrapR.Flush())
+                    );
+                }
+
+                if (force || sampler.Filter.NeedsFlush())
+                {
+                    TextureFilter filter = sampler.Filter.Flush();
+                    TextureMagFilter magFilter;
+                    TextureMinFilter minmipFilter;
+                    float anistropicFilter = 1.0f;
+                    if (filter == TextureFilter.Point)
+                    {
+                        magFilter = TextureMagFilter.Nearest;
+                        minmipFilter = TextureMinFilter.NearestMipmapNearest;
+                    }
+                    else if (filter == TextureFilter.Linear)
+                    {
+                        magFilter = TextureMagFilter.Linear;
+                        minmipFilter = TextureMinFilter.LinearMipmapLinear;
+                    }
+                    else if (filter == TextureFilter.Anisotropic)
+                    {
+                        anistropicFilter = 4.0f;
+                        magFilter = TextureMagFilter.Linear;
+                        minmipFilter = TextureMinFilter.LinearMipmapLinear;
+                    }
+                    else if (filter == TextureFilter.LinearMipPoint)
+                    {
+                        magFilter = TextureMagFilter.Linear;
+                        minmipFilter = TextureMinFilter.LinearMipmapNearest;
+                    }
+                    else if (filter == TextureFilter.MinPointMagLinearMipPoint)
+                    {
+                        magFilter = TextureMagFilter.Linear;
+                        minmipFilter = TextureMinFilter.NearestMipmapNearest;
+                    }
+                    else if (filter == TextureFilter.MinPointMagLinearMipLinear)
+                    {
+                        magFilter = TextureMagFilter.Linear;
+                        minmipFilter = TextureMinFilter.NearestMipmapLinear;
+                    }
+                    else if (filter == TextureFilter.MinLinearMagPointMipPoint)
+                    {
+                        magFilter = TextureMagFilter.Nearest;
+                        minmipFilter = TextureMinFilter.LinearMipmapNearest;
+                    }
+                    else if (filter == TextureFilter.MinLinearMagPointMipLinear)
+                    {
+                        magFilter = TextureMagFilter.Nearest;
+                        minmipFilter = TextureMinFilter.LinearMipmapLinear;
+                    }
+                    else
+                    {
+                        throw new Exception("Unhandled TextureFilter!");
+                    }
+                    GL.TexParameter(
+                        TextureTarget.Texture2D,
+                        TextureParameterName.TextureMagFilter,
+                        (int) magFilter
+                    );
+                    GL.TexParameter(
+                        TextureTarget.Texture2D,
+                        TextureParameterName.TextureMinFilter,
+                        (int) minmipFilter
+                    );
+                    GL.TexParameter(
+                        TextureTarget.Texture2D,
+                        (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
+                        anistropicFilter
+                    );
+                }
             }
-            GL.ActiveTexture(TextureUnit.Texture0); // Keep this state sane. -flibit
+            if (activeTexture != 0)
+            {
+                // Keep this state sane. -flibit
+                GL.ActiveTexture(TextureUnit.Texture0);
+            }
 
             // END SAMPLER STATES
 
@@ -490,6 +607,12 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             // TODO
             return PolygonMode.Fill;
+        }
+
+        private TextureWrapMode GetWrap(TextureAddressMode mode)
+        {
+            // TODO
+            return TextureWrapMode.Repeat;
         }
 
         #endregion
