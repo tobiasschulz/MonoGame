@@ -279,7 +279,7 @@ namespace Microsoft.Xna.Framework
 #elif SDL2
             // Notify DeviceResetting EventHandlers
             OnDeviceResetting(null);
-            GraphicsDevice.OnDeviceReset();
+            GraphicsDevice.OnDeviceResetting();
 
             // Apply the GraphicsDevice changes internally.
             GraphicsDevice.PresentationParameters.BackBufferFormat = PreferredBackBufferFormat;
