@@ -5,6 +5,12 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     internal class OpenGLDevice
     {
+        #region The OpenGL Device Instance
+
+        public static OpenGLDevice Instance;
+
+        #endregion
+
         #region OpenGL State Container Class
 
         public class OpenGLState<T>
@@ -75,13 +81,28 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public class OpenGLVertexAttribute
         {
+            // Checked in FlushVertexAttributes
             public OpenGLState<bool> Enabled;
             public OpenGLState<int> Divisor;
+
+            // Checked in VertexAttribPointer
+            public int CurrentBuffer;
+            public int CurrentSize;
+            public VertexAttribPointerType CurrentType;
+            public bool CurrentNormalized;
+            public int CurrentStride;
+            public IntPtr CurrentPointer;
 
             public OpenGLVertexAttribute()
             {
                 Enabled = new OpenGLState<bool>(false);
                 Divisor = new OpenGLState<int>(0);
+                CurrentBuffer = 0;
+                CurrentSize = 4;
+                CurrentType = VertexAttribPointerType.Float;
+                CurrentNormalized = false;
+                CurrentStride = 0;
+                CurrentPointer = IntPtr.Zero;
             }
         }
 
@@ -640,6 +661,42 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.VertexAttribDivisor(i, attrib.Divisor.Flush());
                 }
+            }
+        }
+
+        #endregion
+
+        #region glVertexAttribPointer Method
+
+        public void VertexAttribPointer(
+            int location,
+            int size,
+            VertexAttribPointerType type,
+            bool normalized,
+            int stride,
+            IntPtr pointer
+        ) {
+            if (    Attributes[location].CurrentBuffer != currentVertexBuffer ||
+                    Attributes[location].CurrentPointer != pointer ||
+                    Attributes[location].CurrentSize != size ||
+                    Attributes[location].CurrentType != type ||
+                    Attributes[location].CurrentNormalized != normalized ||
+                    Attributes[location].CurrentStride != stride    )
+            {
+                GL.VertexAttribPointer(
+                    location,
+                    size,
+                    type,
+                    normalized,
+                    stride,
+                    pointer
+                );
+                Attributes[location].CurrentBuffer = currentVertexBuffer;
+                Attributes[location].CurrentPointer = pointer;
+                Attributes[location].CurrentSize = size;
+                Attributes[location].CurrentType = type;
+                Attributes[location].CurrentNormalized = normalized;
+                Attributes[location].CurrentStride = stride;
             }
         }
 
