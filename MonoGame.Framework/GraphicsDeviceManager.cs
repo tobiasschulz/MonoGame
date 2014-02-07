@@ -277,6 +277,10 @@ namespace Microsoft.Xna.Framework
 
             _game.ResizeWindow(false);
 #elif SDL2
+            // Notify DeviceResetting EventHandlers
+            OnDeviceResetting(null);
+            GraphicsDevice.OnDeviceReset();
+
             // Apply the GraphicsDevice changes internally.
             GraphicsDevice.PresentationParameters.BackBufferFormat = PreferredBackBufferFormat;
             GraphicsDevice.PresentationParameters.BackBufferWidth = PreferredBackBufferWidth;
