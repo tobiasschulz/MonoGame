@@ -531,7 +531,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.TexParameter(
                         target,
-                        TextureParameterName.TextureWrapT,
+                        TextureParameterName.TextureWrapS,
                         (int) GetWrap(sampler.WrapS.Flush())
                     );
                 }
@@ -549,7 +549,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.TexParameter(
                         target,
-                        TextureParameterName.TextureWrapT,
+                        TextureParameterName.TextureWrapR,
                         (int) GetWrap(sampler.WrapR.Flush())
                     );
                 }
