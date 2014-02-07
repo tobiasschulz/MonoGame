@@ -124,7 +124,9 @@ namespace Microsoft.Xna.Framework.Graphics
             info.program = program;
             info.posFixupLoc = GL.GetUniformLocation(program, "posFixup");
 
-            _programCache.Add(vertexShader.HashKey | pixelShader.HashKey, info);             
+            _programCache.Add(vertexShader.HashKey | pixelShader.HashKey, info);
+
+            ConstantBuffer.FlushUniformLocationCache();
         }
 
 

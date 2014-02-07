@@ -263,6 +263,36 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #elif OPENGL || PSM
 
+#if OPENGL
+        private struct UniformLocationKey {
+            public readonly int Program;
+            public readonly string Name;
+
+            public UniformLocationKey (int program, string name) {
+                Program = program;
+                Name = name;
+            }
+        }
+
+        private static readonly Dictionary<UniformLocationKey, int> UniformLocationCache = new Dictionary<UniformLocationKey, int>();
+
+        internal static void FlushUniformLocationCache () {
+            UniformLocationCache.Clear();
+        }
+
+        internal static int GetUniformLocationCached (int program, string name) {
+            int result;
+
+            var key = new UniformLocationKey(program, name);
+            if (!UniformLocationCache.TryGetValue(key, out result)) {
+                result = UniformLocationCache[key] = GL.GetUniformLocation(program, name);
+                GraphicsExtensions.CheckGLError();
+            }
+
+            return result;
+        }
+#endif
+
         public unsafe void Apply(GraphicsDevice device, int program)
         {
 #if OPENGL
@@ -273,8 +303,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // uniform again and apply the state.
             if (_program != program)
             {
-                var location = GL.GetUniformLocation(program, _name);
-                GraphicsExtensions.CheckGLError();
+                var location = GetUniformLocationCached(program, _name);
                 if (location == -1)
                     return;
 
