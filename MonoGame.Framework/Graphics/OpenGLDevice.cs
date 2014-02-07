@@ -275,6 +275,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void FlushGLState(bool force = false)
         {
+            // ALPHA BLENDING STATES
+
             if (force || AlphaBlendEnable.NeedsFlush())
             {
                 ToggleGLState(EnableCap.Blend, AlphaBlendEnable.Flush());
@@ -358,7 +360,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
-            // END DEPTHS STATES
+            // END DEPTH STATES
 
             // STENCIL STATES
 
