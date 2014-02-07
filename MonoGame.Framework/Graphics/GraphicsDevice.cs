@@ -1551,7 +1551,10 @@ namespace Microsoft.Xna.Framework.Graphics
             if (DeviceResetting != null)
                 DeviceResetting(this, EventArgs.Empty);
 
+#if !SDL2
+            // FIXME: What, why, why -flibit
             GraphicsResource.DoGraphicsDeviceResetting();
+#endif
         }
 
         /// <summary>
@@ -1824,6 +1827,11 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 
                 // Test that the FBOs are attached and correct.
+#if DEBUG
+				/* This is only helpful in a DEBUG context.
+				 * If you trip over this in a Release setting, that GPU ain't havin' it.
+				 * -flibit
+				 */
 				var status = GL.CheckFramebufferStatus(GLFramebuffer);
 				if (status != GLFramebufferComplete)
 				{
@@ -1837,6 +1845,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					}
 					throw new InvalidOperationException(message);
 				}
+#endif
 #elif PSM
                 var renderTarget = (RenderTarget2D)_currentRenderTargetBindings[0].RenderTarget;
                 _graphics.SetFrameBuffer(renderTarget._frameBuffer);
