@@ -860,7 +860,8 @@ namespace Microsoft.Xna.Framework.Graphics
             // Update the depth/stencil attachment
             if (renderbuffer != currentRenderbuffer)
             {
-                if (depthFormat != currentDepthStencilFormat)
+                if (    depthFormat != currentDepthStencilFormat &&
+                        currentDepthStencilFormat != DepthFormat.None   )
                 {
                     // Changing formats, unbind the current renderbuffer first.
                     GL.FramebufferRenderbuffer(
@@ -871,12 +872,15 @@ namespace Microsoft.Xna.Framework.Graphics
                     );
                     currentDepthStencilFormat = depthFormat;
                 }
-                GL.FramebufferRenderbuffer(
-                    FramebufferTarget.Framebuffer,
-                    GetDepthStencilAttachment(currentDepthStencilFormat),
-                    RenderbufferTarget.Renderbuffer,
-                    renderbuffer
-                );
+                if (currentDepthStencilFormat != DepthFormat.None)
+                {
+                    GL.FramebufferRenderbuffer(
+                        FramebufferTarget.Framebuffer,
+                        GetDepthStencilAttachment(currentDepthStencilFormat),
+                        RenderbufferTarget.Renderbuffer,
+                        renderbuffer
+                    );
+                }
                 currentRenderbuffer = renderbuffer;
             }
         }
