@@ -16,7 +16,11 @@ namespace Microsoft.Xna.Framework.Graphics
     {
         #region The OpenGL Device Instance
 
-        public static OpenGLDevice Instance;
+        public static OpenGLDevice Instance
+        {
+            get;
+            private set;
+        }
 
         #endregion
 
@@ -258,6 +262,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLDevice()
         {
+            // We should only have one of these!
+            if (Instance != null)
+            {
+                throw new Exception("OpenGLDevice already created!");
+            }
+            Instance = this;
+
             // Load OpenGL entry points
             GL.LoadAll();
 
@@ -314,6 +325,8 @@ namespace Microsoft.Xna.Framework.Graphics
             targetFramebuffer = 0;
             Backbuffer.Dispose();
             Backbuffer = null;
+
+            Instance = null;
         }
 
         #endregion
