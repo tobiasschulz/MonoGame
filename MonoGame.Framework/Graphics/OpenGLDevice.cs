@@ -194,6 +194,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> ScissorTestEnable = new OpenGLState<bool>(false);
 
+        public OpenGLState<Rectangle> ScissorRectangle = new OpenGLState<Rectangle>(
+            new Rectangle(
+                0,
+                0,
+                GraphicsDeviceManager.DefaultBackBufferWidth,
+                GraphicsDeviceManager.DefaultBackBufferHeight
+            )
+        );
+
         public OpenGLState<CullMode> CullFrontFace = new OpenGLState<CullMode>(CullMode.None);
 
         public OpenGLState<FillMode> GLFillMode = new OpenGLState<FillMode>(FillMode.Solid);
@@ -259,6 +268,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region OpenGL Extensions List
+
+        public string Extensions
+        {
+            get;
+            private set;
+        }
+
+        #endregion
+
         #region Constructor
 
         public OpenGLDevice()
@@ -272,6 +291,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Load OpenGL entry points
             GL.LoadAll();
+
+            // Load the extension list, initialize extension-dependent components
+            Extensions = GL.GetString(StringName.Extensions);
+            Framebuffer.Initialize();
 
             // Initialize the faux-backbuffer
             Backbuffer = new FauxBackbuffer(
@@ -310,7 +333,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             currentRenderbuffer = 0;
             currentDepthStencilFormat = DepthFormat.None;
-            targetFramebuffer = GL.GenFramebuffer();
+            targetFramebuffer = Framebuffer.GenFramebuffer();
 
             // Flush GL state to default state
             FlushGLState(true);
@@ -322,7 +345,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void Dispose()
         {
-            GL.DeleteFramebuffer(targetFramebuffer);
+            Framebuffer.DeleteFramebuffer(targetFramebuffer);
             targetFramebuffer = 0;
             Backbuffer.Dispose();
             Backbuffer = null;
@@ -521,6 +544,17 @@ namespace Microsoft.Xna.Framework.Graphics
             if (force || ScissorTestEnable.NeedsFlush())
             {
                 ToggleGLState(EnableCap.ScissorTest, ScissorTestEnable.Flush());
+            }
+
+            if (force || ScissorRectangle.NeedsFlush())
+            {
+                Rectangle scissorRect = ScissorRectangle.Flush();
+                GL.Scissor(
+                    scissorRect.X,
+                    scissorRect.Y,
+                    scissorRect.Width,
+                    scissorRect.Height
+                );
             }
 
             if (force || CullFrontFace.NeedsFlush())
@@ -812,20 +846,14 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (Backbuffer.Handle != currentFramebuffer)
                 {
-                    GL.BindFramebuffer(
-                        FramebufferTarget.Framebuffer,
-                        Backbuffer.Handle
-                    );
+                    Framebuffer.BindFramebuffer(Backbuffer.Handle);
                     currentFramebuffer = Backbuffer.Handle;
                 }
                 return;
             }
             else if (targetFramebuffer != currentFramebuffer)
             {
-                GL.BindFramebuffer(
-                    FramebufferTarget.Framebuffer,
-                    targetFramebuffer
-                );
+                Framebuffer.BindFramebuffer(targetFramebuffer);
                 currentFramebuffer = targetFramebuffer;
             }
 
@@ -836,13 +864,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (attachments[i] != currentAttachments[i])
                 {
-                    GL.FramebufferTexture2D(
-                        FramebufferTarget.Framebuffer,
-                        FramebufferAttachment.ColorAttachment0 + i,
-                        TextureTarget.Texture2D,
-                        attachments[i],
-                        0
-                    );
+                    Framebuffer.AttachColor(attachments[i], i);
                     drawBuffersChanged = currentAttachments[i] == 0;
                     currentAttachments[i] = attachments[i];
                 }
@@ -865,21 +887,17 @@ namespace Microsoft.Xna.Framework.Graphics
                         currentDepthStencilFormat != DepthFormat.None   )
                 {
                     // Changing formats, unbind the current renderbuffer first.
-                    GL.FramebufferRenderbuffer(
-                        FramebufferTarget.Framebuffer,
-                        GetDepthStencilAttachment(currentDepthStencilFormat),
-                        RenderbufferTarget.Renderbuffer,
-                        0
+                    Framebuffer.AttachDepthRenderbuffer(
+                        0,
+                        GetDepthStencilAttachment(currentDepthStencilFormat)
                     );
                     currentDepthStencilFormat = depthFormat;
                 }
                 if (currentDepthStencilFormat != DepthFormat.None)
                 {
-                    GL.FramebufferRenderbuffer(
-                        FramebufferTarget.Framebuffer,
-                        GetDepthStencilAttachment(currentDepthStencilFormat),
-                        RenderbufferTarget.Renderbuffer,
-                        renderbuffer
+                    Framebuffer.AttachDepthRenderbuffer(
+                        renderbuffer,
+                        GetDepthStencilAttachment(currentDepthStencilFormat)
                     );
                 }
                 currentRenderbuffer = renderbuffer;
@@ -1204,11 +1222,11 @@ namespace Microsoft.Xna.Framework.Graphics
 #if DISABLE_FAUXBACKBUFFER
                 Handle = 0;
 #else
-                Handle = GL.GenFramebuffer();
+                Handle = Framebuffer.GenFramebuffer();
                 colorAttachment = GL.GenTexture();
                 depthStencilAttachment = GL.GenTexture();
 
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+                Framebuffer.BindFramebuffer(Handle);
                 GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
                 GL.TexImage2D(
                     TextureTarget.Texture2D,
@@ -1233,19 +1251,13 @@ namespace Microsoft.Xna.Framework.Graphics
                     PixelType.UnsignedByte,
                     IntPtr.Zero
                 );
-                GL.FramebufferTexture2D(
-                    FramebufferTarget.Framebuffer,
-                    FramebufferAttachment.ColorAttachment0,
-                    TextureTarget.Texture2D,
+                Framebuffer.AttachColor(
                     colorAttachment,
                     0
                 );
-                GL.FramebufferTexture2D(
-                    FramebufferTarget.Framebuffer,
-                    FramebufferAttachment.DepthAttachment,
-                    TextureTarget.Texture2D,
+                Framebuffer.AttachDepthTexture(
                     depthStencilAttachment,
-                    0
+                    FramebufferAttachment.DepthAttachment
                 );
                 GL.BindTexture(TextureTarget.Texture2D, 0);
 
@@ -1257,7 +1269,7 @@ namespace Microsoft.Xna.Framework.Graphics
             public void Dispose()
             {
 #if !DISABLE_FAUXBACKBUFFER
-                GL.DeleteFramebuffer(Handle);
+                Framebuffer.DeleteFramebuffer(Handle);
                 GL.DeleteTexture(colorAttachment);
                 GL.DeleteTexture(depthStencilAttachment);
                 Handle = 0;
@@ -1334,27 +1346,20 @@ namespace Microsoft.Xna.Framework.Graphics
                         attach = FramebufferAttachment.DepthAttachment;
                     }
 
-                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+                    Framebuffer.BindFramebuffer(Handle);
 
-                    GL.FramebufferTexture2D(
-                        FramebufferTarget.Framebuffer,
-                        attach,
-                        TextureTarget.Texture2D,
+                    Framebuffer.AttachDepthTexture(
                         0,
-                        0
+                        attach
                     );
-                    GL.FramebufferTexture2D(
-                        FramebufferTarget.Framebuffer,
-                        depthAttachmentType,
-                        TextureTarget.Texture2D,
+                    Framebuffer.AttachDepthTexture(
                         depthStencilAttachment,
-                        0
+                        depthAttachmentType
                     );
 
                     if (Game.Instance.GraphicsDevice.IsRenderTargetBound)
                     {
-                        GL.BindFramebuffer(
-                            FramebufferTarget.Framebuffer,
+                        Framebuffer.BindFramebuffer(
                             OpenGLDevice.Instance.targetFramebuffer
                         );
                     }
@@ -1370,6 +1375,191 @@ namespace Microsoft.Xna.Framework.Graphics
                 Width = width;
                 Height = height;
 #endif
+            }
+        }
+
+        #endregion
+
+        #region Framebuffer ARB/EXT Wrapper Class
+
+        public static class Framebuffer
+        {
+            private static bool hasARB = false;
+
+            public static void Initialize()
+            {
+                hasARB = OpenGLDevice.Instance.Extensions.Contains("ARB_framebuffer_object");
+            }
+
+            public static int GenFramebuffer()
+            {
+                int handle;
+                if (hasARB)
+                {
+                    GL.GenFramebuffers(1, out handle);
+                }
+                else
+                {
+                    GL.Ext.GenFramebuffers(1, out handle);
+                }
+                return handle;
+            }
+
+            public static void DeleteFramebuffer(int handle)
+            {
+                if (hasARB)
+                {
+                    GL.DeleteFramebuffers(1, ref handle);
+                }
+                else
+                {
+                    GL.Ext.DeleteFramebuffers(1, ref handle);
+                }
+            }
+
+            public static void BindFramebuffer(int handle)
+            {
+                if (hasARB)
+                {
+                    GL.BindFramebuffer(
+                        FramebufferTarget.Framebuffer,
+                        handle
+                    );
+                }
+                else
+                {
+                    GL.Ext.BindFramebuffer(
+                        FramebufferTarget.FramebufferExt,
+                        handle
+                    );
+                }
+            }
+
+            public static void AttachColor(int colorAttachment, int index)
+            {
+                if (hasARB)
+                {
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        FramebufferAttachment.ColorAttachment0 + index,
+                        TextureTarget.Texture2D,
+                        colorAttachment,
+                        0
+                    );
+                }
+                else
+                {
+                    GL.Ext.FramebufferTexture2D(
+                        FramebufferTarget.FramebufferExt,
+                        FramebufferAttachment.ColorAttachment0Ext + index,
+                        TextureTarget.Texture2D,
+                        colorAttachment,
+                        0
+                    );
+                }
+            }
+
+            public static void AttachDepthTexture(
+                int depthAttachment,
+                FramebufferAttachment depthFormat
+            ) {
+                if (hasARB)
+                {
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        depthFormat,
+                        TextureTarget.Texture2D,
+                        depthAttachment,
+                        0
+                    );
+                }
+                else
+                {
+                    GL.Ext.FramebufferTexture2D(
+                        FramebufferTarget.FramebufferExt,
+                        depthFormat,
+                        TextureTarget.Texture2D,
+                        depthAttachment,
+                        0
+                    );
+                }
+            }
+
+            public static void AttachDepthRenderbuffer(
+                int renderbuffer,
+                FramebufferAttachment depthFormat
+            ) {
+                if (hasARB)
+                {
+                    GL.FramebufferRenderbuffer(
+                        FramebufferTarget.Framebuffer,
+                        depthFormat,
+                        RenderbufferTarget.Renderbuffer,
+                        renderbuffer
+                    );
+                }
+                else
+                {
+                    GL.Ext.FramebufferRenderbuffer(
+                        FramebufferTarget.FramebufferExt,
+                        depthFormat,
+                        RenderbufferTarget.RenderbufferExt,
+                        renderbuffer
+                    );
+                }
+            }
+
+            public static void BlitToBackbuffer(
+                int srcWidth,
+                int srcHeight,
+                int dstWidth,
+                int dstHeight
+            ) {
+                bool scissorTest = OpenGLDevice.Instance.ScissorTestEnable.GetCurrent();
+                if (scissorTest)
+                {
+                    GL.Disable(EnableCap.ScissorTest);
+                }
+                if (hasARB)
+                {
+                    GL.BindFramebuffer(
+                        FramebufferTarget.ReadFramebuffer,
+                        OpenGLDevice.Instance.Backbuffer.Handle
+                    );
+                    GL.BindFramebuffer(
+                        FramebufferTarget.DrawFramebuffer,
+                        0
+                    );
+                    GL.BlitFramebuffer(
+                        0, 0, srcWidth, srcHeight,
+                        0, 0, dstWidth, dstHeight,
+                        ClearBufferMask.ColorBufferBit,
+                        BlitFramebufferFilter.Linear
+                    );
+                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+                }
+                else
+                {
+                    GL.Ext.BindFramebuffer(
+                        FramebufferTarget.ReadFramebuffer,
+                        OpenGLDevice.Instance.Backbuffer.Handle
+                    );
+                    GL.Ext.BindFramebuffer(
+                        FramebufferTarget.DrawFramebuffer,
+                        0
+                    );
+                    GL.Ext.BlitFramebuffer(
+                        0, 0, srcWidth, srcHeight,
+                        0, 0, dstWidth, dstHeight,
+                        ClearBufferMask.ColorBufferBit,
+                        (ExtFramebufferBlit) BlitFramebufferFilter.Linear
+                    );
+                    GL.Ext.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
+                }
+                if (scissorTest)
+                {
+                    GL.Enable(EnableCap.ScissorTest);
+                }
             }
         }
 
