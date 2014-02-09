@@ -248,7 +248,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Faux-backbuffer Variable
+        #region Faux-Backbuffer Variable
 
         public FauxBackbuffer Backbuffer
         {
@@ -679,7 +679,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     }
                     else
                     {
-                        throw new Exception("Unhandled TextureFilter!");
+                        throw new Exception("Unhandled TextureFilter: " + filter);
                     }
                     GL.TexParameter(
                         target,
