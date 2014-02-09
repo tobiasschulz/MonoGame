@@ -1,6 +1,7 @@
 #region DISABLE_FAUXBACKBUFFER Option
 // #define DISABLE_FAUXBACKBUFFER
 /* If you want to debug GL without the extra FBO in your way, you can use this.
+ * Note that this also affects SDL2/SDL2_GameWindow.cs!
  * -flibit
  */
 #endregion
