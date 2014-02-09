@@ -94,6 +94,13 @@ non-infringement.
  */
 #endregion
 
+#region DISABLE_FAUXBACKBUFFER Option
+#define DISABLE_FAUXBACKBUFFER
+/* If you want to debug GL without the extra FBO in your way, you can use this.
+ * -flibit
+ */
+#endregion
+
 #region WIIU_GAMEPAD Option
 // #define WIIU_GAMEPAD
 /* This is something I added for myself, because I am a complete goof.
@@ -401,8 +408,10 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_RunLoop()
         {
+#if !DISABLE_FAUXBACKBUFFER
             // Now that we're in the game loop, this should be safe.
             Game.GraphicsDevice.glFramebuffer = INTERNAL_glFramebuffer;
+#endif
             
             SDL.SDL_Event evt;
             
@@ -607,6 +616,9 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_SwapBuffers()
         {
+#if DISABLE_FAUXBACKBUFFER
+            SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
+#else
             Rectangle windowRect = ClientBounds;
             if (RasterizerState.INTERNAL_scissorTestEnable)
             {
@@ -649,6 +661,7 @@ namespace Microsoft.Xna.Framework
                 );
             }
 #endif
+#endif
         }
         
         public void INTERNAL_StopLoop()
@@ -658,9 +671,11 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_Destroy()
         {
+#if !DISABLE_FAUXBACKBUFFER
             GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
             GL.DeleteTexture(INTERNAL_glColorAttachment);
             GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
+#endif
 
             /* Some window managers might try to minimize the window as we're
              * destroying it. This looks pretty stupid and could cause problems,
@@ -777,6 +792,7 @@ namespace Microsoft.Xna.Framework
             SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
 #endif
             
+#if !DISABLE_FAUXBACKBUFFER
             // Create an FBO, use this as our "backbuffer".
             GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
             GL.GenTextures(1, out INTERNAL_glColorAttachment);
@@ -821,6 +837,7 @@ namespace Microsoft.Xna.Framework
                 0
             );
             GL.BindTexture(TextureTarget.Texture2D, 0);
+#endif
             INTERNAL_glFramebufferWidth = startWidth;
             INTERNAL_glFramebufferHeight = startHeight;
             Mouse.INTERNAL_BackbufferWidth = startWidth;
@@ -935,6 +952,7 @@ namespace Microsoft.Xna.Framework
                 clientHeight
             );
             
+#if !DISABLE_FAUXBACKBUFFER
             // Push the current GL texture state.
             int oldActiveTexture;
             int oldTextureBinding;
@@ -1041,6 +1059,7 @@ namespace Microsoft.Xna.Framework
             // Pop the GL texture state.
             GL.BindTexture(TextureTarget.Texture2D, oldTextureBinding);
             GL.ActiveTexture((TextureUnit) oldActiveTexture);
+#endif
             
             INTERNAL_glFramebufferWidth = clientWidth;
             INTERNAL_glFramebufferHeight = clientHeight;
