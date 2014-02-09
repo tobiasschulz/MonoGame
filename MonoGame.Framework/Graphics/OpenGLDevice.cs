@@ -1,5 +1,14 @@
+#region DISABLE_FAUXBACKBUFFER Option
+// #define DISABLE_FAUXBACKBUFFER
+/* If you want to debug GL without the extra FBO in your way, you can use this.
+ * -flibit
+ */
+#endregion
+
+#region Using Statements
 using System;
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -224,12 +233,40 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region Render Target State Variables
+
+        private int currentFramebuffer = 0;
+        private int targetFramebuffer = 0;
+        private int[] currentAttachments;
+        private DrawBuffersEnum[] currentDrawBuffers;
+        private int currentRenderbuffer;
+        private DepthFormat currentDepthStencilFormat;
+
+        #endregion
+
+        #region Faux-backbuffer Variable
+
+        public FauxBackbuffer Backbuffer
+        {
+            get;
+            private set;
+        }
+
+        #endregion
+
         #region Constructor
 
         public OpenGLDevice()
         {
             // Load OpenGL entry points
             GL.LoadAll();
+
+            // Initialize the faux-backbuffer
+            Backbuffer = new FauxBackbuffer(
+                GraphicsDeviceManager.DefaultBackBufferWidth,
+                GraphicsDeviceManager.DefaultBackBufferHeight,
+                DepthFormat.Depth16
+            );
 
             // Initialize sampler state array
             int numSamplers;
@@ -249,8 +286,34 @@ namespace Microsoft.Xna.Framework.Graphics
                 Attributes[i] = new OpenGLVertexAttribute();
             }
 
+            // Initialize render target FBO and state arrays
+            int numAttachments;
+            GL.GetInteger(GetPName.MaxDrawBuffers, out numAttachments);
+            currentAttachments = new int[numAttachments];
+            currentDrawBuffers = new DrawBuffersEnum[numAttachments];
+            for (int i = 0; i < numAttachments; i += 1)
+            {
+                currentAttachments[i] = 0;
+                currentDrawBuffers[i] = DrawBuffersEnum.None;
+            }
+            currentRenderbuffer = 0;
+            currentDepthStencilFormat = DepthFormat.None;
+            targetFramebuffer = GL.GenFramebuffer();
+
             // Flush GL state to default state
             FlushGLState(true);
+        }
+
+        #endregion
+
+        #region Dispose Method
+
+        public void Dispose()
+        {
+            GL.DeleteFramebuffer(targetFramebuffer);
+            targetFramebuffer = 0;
+            Backbuffer.Dispose();
+            Backbuffer = null;
         }
 
         #endregion
@@ -726,6 +789,87 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region SetRenderTargets Method
+
+        public void SetRenderTargets(int[] attachments, int renderbuffer, DepthFormat depthFormat)
+        {
+            // Bind the right framebuffer, if needed
+            if (attachments == null)
+            {
+                if (Backbuffer.Handle != currentFramebuffer)
+                {
+                    GL.BindFramebuffer(
+                        FramebufferTarget.Framebuffer,
+                        Backbuffer.Handle
+                    );
+                    currentFramebuffer = Backbuffer.Handle;
+                }
+                return;
+            }
+            else if (targetFramebuffer != currentFramebuffer)
+            {
+                GL.BindFramebuffer(
+                    FramebufferTarget.Framebuffer,
+                    targetFramebuffer
+                );
+                currentFramebuffer = targetFramebuffer;
+            }
+
+            // Update the color attachments, DrawBuffers state
+            bool drawBuffersChanged = false;
+            int i = 0;
+            for (i = 0; i < attachments.Length; i += 1)
+            {
+                if (attachments[i] != currentAttachments[i])
+                {
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        FramebufferAttachment.ColorAttachment0 + i,
+                        TextureTarget.Texture2D,
+                        attachments[i],
+                        0
+                    );
+                    drawBuffersChanged = currentAttachments[i] == 0;
+                    currentAttachments[i] = attachments[i];
+                }
+            }
+            while (i < currentDrawBuffers.Length)
+            {
+                drawBuffersChanged = currentDrawBuffers[i] != DrawBuffersEnum.None;
+                currentDrawBuffers[i] = DrawBuffersEnum.None;
+                i += 1;
+            }
+            if (drawBuffersChanged)
+            {
+                GL.DrawBuffers(currentDrawBuffers.Length, currentDrawBuffers);
+            }
+
+            // Update the depth/stencil attachment
+            if (renderbuffer != currentRenderbuffer)
+            {
+                if (depthFormat != currentDepthStencilFormat)
+                {
+                    // Changing formats, unbind the current renderbuffer first.
+                    GL.FramebufferRenderbuffer(
+                        FramebufferTarget.Framebuffer,
+                        GetDepthStencilAttachment(currentDepthStencilFormat),
+                        RenderbufferTarget.Renderbuffer,
+                        0
+                    );
+                    currentDepthStencilFormat = depthFormat;
+                }
+                GL.FramebufferRenderbuffer(
+                    FramebufferTarget.Framebuffer,
+                    GetDepthStencilAttachment(currentDepthStencilFormat),
+                    RenderbufferTarget.Renderbuffer,
+                    renderbuffer
+                );
+                currentRenderbuffer = renderbuffer;
+            }
+        }
+
+        #endregion
+
         #region Private XNA->GL Enum Conversion Methods
 
         private BlendingFactorSrc GetBlendModeSrc(Blend mode)
@@ -780,6 +924,214 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             // TODO
             return TextureWrapMode.Repeat;
+        }
+
+        private FramebufferAttachment GetDepthStencilAttachment(DepthFormat format)
+        {
+            // TODO
+            return FramebufferAttachment.DepthStencilAttachment;
+        }
+
+        #endregion
+
+        #region The Faux-Backbuffer
+
+        public class FauxBackbuffer
+        {
+            public int Handle
+            {
+                get;
+                private set;
+            }
+
+            public int Width
+            {
+                get;
+                private set;
+            }
+
+            public int Height
+            {
+                get;
+                private set;
+            }
+
+            private int colorAttachment;
+            private int depthStencilAttachment;
+            private DepthFormat depthStencilFormat;
+
+            public FauxBackbuffer(int width, int height, DepthFormat depthFormat)
+            {
+#if DISABLE_FAUXBACKBUFFER
+                Handle = 0;
+#else
+                Handle = GL.GenFramebuffer();
+                colorAttachment = GL.GenTexture();
+                depthStencilAttachment = GL.GenTexture();
+
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+                GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    PixelInternalFormat.Rgba,
+                    width,
+                    height,
+                    0,
+                    PixelFormat.Rgba,
+                    PixelType.UnsignedByte,
+                    IntPtr.Zero
+                );
+                GL.BindTexture(TextureTarget.Texture2D, depthStencilAttachment);
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    PixelInternalFormat.DepthComponent16,
+                    width,
+                    height,
+                    0,
+                    PixelFormat.DepthComponent,
+                    PixelType.UnsignedByte,
+                    IntPtr.Zero
+                );
+                GL.FramebufferTexture2D(
+                    FramebufferTarget.Framebuffer,
+                    FramebufferAttachment.ColorAttachment0,
+                    TextureTarget.Texture2D,
+                    colorAttachment,
+                    0
+                );
+                GL.FramebufferTexture2D(
+                    FramebufferTarget.Framebuffer,
+                    FramebufferAttachment.DepthAttachment,
+                    TextureTarget.Texture2D,
+                    depthStencilAttachment,
+                    0
+                );
+                GL.BindTexture(TextureTarget.Texture2D, 0);
+
+                Width = width;
+                Height = height;
+#endif
+            }
+
+            public void Dispose()
+            {
+#if !DISABLE_FAUXBACKBUFFER
+                GL.DeleteFramebuffer(Handle);
+                GL.DeleteTexture(colorAttachment);
+                GL.DeleteTexture(depthStencilAttachment);
+                Handle = 0;
+#endif
+            }
+
+            public void ResetFramebuffer(int width, int height, DepthFormat depthFormat)
+            {
+#if !DISABLE_FAUXBACKBUFFER
+                // Update our color attachment to the new resolution
+                GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    PixelInternalFormat.Rgba,
+                    width,
+                    height,
+                    0,
+                    PixelFormat.Rgba,
+                    PixelType.UnsignedByte,
+                    IntPtr.Zero
+                );
+
+                // Update the depth attachment based on the desired DepthFormat.
+                PixelFormat depthPixelFormat;
+                PixelInternalFormat depthPixelInternalFormat;
+                PixelType depthPixelType;
+                FramebufferAttachment depthAttachmentType;
+                if (depthFormat == DepthFormat.Depth16)
+                {
+                    depthPixelFormat = PixelFormat.DepthComponent;
+                    depthPixelInternalFormat = PixelInternalFormat.DepthComponent16;
+                    depthPixelType = PixelType.UnsignedByte;
+                    depthAttachmentType = FramebufferAttachment.DepthAttachment;
+                }
+                else if (depthFormat == DepthFormat.Depth24)
+                {
+                    depthPixelFormat = PixelFormat.DepthComponent;
+                    depthPixelInternalFormat = PixelInternalFormat.DepthComponent24;
+                    depthPixelType = PixelType.UnsignedByte;
+                    depthAttachmentType = FramebufferAttachment.DepthAttachment;
+                }
+                else
+                {
+                    depthPixelFormat = PixelFormat.DepthStencil;
+                    depthPixelInternalFormat = PixelInternalFormat.Depth24Stencil8;
+                    depthPixelType = PixelType.UnsignedInt248;
+                    depthAttachmentType = FramebufferAttachment.DepthStencilAttachment;
+                }
+
+                GL.BindTexture(TextureTarget.Texture2D, depthStencilAttachment);
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                    0,
+                    depthPixelInternalFormat,
+                    width,
+                    height,
+                    0,
+                    depthPixelFormat,
+                    depthPixelType,
+                    IntPtr.Zero
+                );
+
+                // If the depth format changes, detach before reattaching!
+                if (depthFormat != depthStencilFormat)
+                {
+                    FramebufferAttachment attach;
+                    if (depthStencilFormat == DepthFormat.Depth24Stencil8)
+                    {
+                        attach = FramebufferAttachment.DepthStencilAttachment;
+                    }
+                    else
+                    {
+                        attach = FramebufferAttachment.DepthAttachment;
+                    }
+
+                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        attach,
+                        TextureTarget.Texture2D,
+                        0,
+                        0
+                    );
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        depthAttachmentType,
+                        TextureTarget.Texture2D,
+                        depthStencilAttachment,
+                        0
+                    );
+
+                    if (Game.Instance.GraphicsDevice.IsRenderTargetBound)
+                    {
+                        GL.BindFramebuffer(
+                            FramebufferTarget.Framebuffer,
+                            OpenGLDevice.Instance.targetFramebuffer
+                        );
+                    }
+
+                    depthStencilFormat = depthFormat;
+                }
+
+                GL.BindTexture(
+                    TextureTarget.Texture2D,
+                    OpenGLDevice.Instance.Samplers[0].Texture.Get()
+                );
+
+                Width = width;
+                Height = height;
+#endif
+            }
         }
 
         #endregion
