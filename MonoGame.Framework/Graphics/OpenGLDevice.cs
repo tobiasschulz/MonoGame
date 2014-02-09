@@ -1515,6 +1515,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 int dstWidth,
                 int dstHeight
             ) {
+#if !DISABLE_FAUXBACKBUFFER
                 bool scissorTest = OpenGLDevice.Instance.ScissorTestEnable.GetCurrent();
                 if (scissorTest)
                 {
@@ -1560,6 +1561,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.Enable(EnableCap.ScissorTest);
                 }
+#endif
             }
         }
 
