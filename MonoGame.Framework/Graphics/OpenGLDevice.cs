@@ -891,62 +891,283 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private BlendingFactorSrc GetBlendModeSrc(Blend mode)
         {
-            // TODO
-            return BlendingFactorSrc.One;
+            if (mode == Blend.DestinationAlpha)
+            {
+                return BlendingFactorSrc.DstAlpha;
+            }
+            if (mode == Blend.DestinationColor)
+            {
+                return BlendingFactorSrc.DstColor;
+            }
+            if (mode == Blend.InverseDestinationAlpha)
+            {
+                return BlendingFactorSrc.OneMinusDstAlpha;
+            }
+            if (mode == Blend.InverseDestinationColor)
+            {
+                return BlendingFactorSrc.OneMinusDstColor;
+            }
+            if (mode == Blend.InverseSourceAlpha)
+            {
+                return BlendingFactorSrc.OneMinusSrcAlpha;
+            }
+            if (mode == Blend.InverseSourceColor)
+            {
+                // What, why -flibit
+                return (BlendingFactorSrc) All.OneMinusSrcColor;
+            }
+            if (mode == Blend.One)
+            {
+                return BlendingFactorSrc.One;
+            }
+            if (mode == Blend.SourceAlpha)
+            {
+                return BlendingFactorSrc.SrcAlpha;
+            }
+            if (mode == Blend.SourceAlphaSaturation)
+            {
+                return BlendingFactorSrc.SrcAlphaSaturate;
+            }
+            if (mode == Blend.SourceColor)
+            {
+                // What, why -flibit
+                return (BlendingFactorSrc) All.SrcColor;
+            }
+            if (mode == Blend.Zero)
+            {
+                return BlendingFactorSrc.Zero;
+            }
+            throw new Exception("Unhandled Blend: " + mode);
         }
 
         private BlendingFactorDest GetBlendModeDst(Blend mode)
         {
-            // TODO
-            return BlendingFactorDest.Zero;
+            if (mode == Blend.DestinationAlpha)
+            {
+                return BlendingFactorDest.DstAlpha;
+            }
+            if (mode == Blend.InverseDestinationAlpha)
+            {
+                return BlendingFactorDest.OneMinusDstAlpha;
+            }
+            if (mode == Blend.InverseSourceAlpha)
+            {
+                return BlendingFactorDest.OneMinusSrcAlpha;
+            }
+            if (mode == Blend.InverseSourceColor)
+            {
+                return BlendingFactorDest.OneMinusSrcColor;
+            }
+            if (mode == Blend.One)
+            {
+                return BlendingFactorDest.One;
+            }
+            if (mode == Blend.SourceAlpha)
+            {
+                return BlendingFactorDest.SrcAlpha;
+            }
+            if (mode == Blend.SourceColor)
+            {
+                return BlendingFactorDest.SrcColor;
+            }
+            if (mode == Blend.Zero)
+            {
+                return BlendingFactorDest.Zero;
+            }
+            throw new Exception("Unhandled Blend: " + mode);
         }
 
         private BlendEquationMode GetBlendEquation(BlendFunction func)
         {
-            // TODO
-            return BlendEquationMode.FuncAdd;
+            if (func == BlendFunction.Add)
+            {
+                return BlendEquationMode.FuncAdd;
+            }
+            if (func == BlendFunction.Max)
+            {
+                return BlendEquationMode.Max;
+            }
+            if (func == BlendFunction.Min)
+            {
+                return BlendEquationMode.Min;
+            }
+            if (func == BlendFunction.ReverseSubtract)
+            {
+                return BlendEquationMode.FuncReverseSubtract;
+            }
+            if (func == BlendFunction.Subtract)
+            {
+                return BlendEquationMode.FuncSubtract;
+            }
+            throw new Exception("Unhandled BlendFunction: " + func);
         }
 
         private DepthFunction GetDepthFunc(CompareFunction func)
         {
-            // TODO
-            return DepthFunction.Always;
+            if (func == CompareFunction.Always)
+            {
+                return DepthFunction.Always;
+            }
+            if (func == CompareFunction.Equal)
+            {
+                return DepthFunction.Equal;
+            }
+            if (func == CompareFunction.Greater)
+            {
+                return DepthFunction.Greater;
+            }
+            if (func == CompareFunction.GreaterEqual)
+            {
+                return DepthFunction.Less;
+            }
+            if (func == CompareFunction.Less)
+            {
+                return DepthFunction.Lequal;
+            }
+            if (func == CompareFunction.LessEqual)
+            {
+                return DepthFunction.Lequal;
+            }
+            if (func == CompareFunction.Never)
+            {
+                return DepthFunction.Never;
+            }
+            if (func == CompareFunction.NotEqual)
+            {
+                return DepthFunction.Notequal;
+            }
+            throw new Exception("Unhandled CompareFunction: " + func);
         }
 
         private StencilFunction GetStencilFunc(CompareFunction func)
         {
-            // TODO
-            return StencilFunction.Always;
+            if (func == CompareFunction.Always)
+            {
+                return StencilFunction.Always;
+            }
+            if (func == CompareFunction.Equal)
+            {
+                return StencilFunction.Equal;
+            }
+            if (func == CompareFunction.Greater)
+            {
+                return StencilFunction.Greater;
+            }
+            if (func == CompareFunction.GreaterEqual)
+            {
+                return StencilFunction.Less;
+            }
+            if (func == CompareFunction.Less)
+            {
+                return StencilFunction.Lequal;
+            }
+            if (func == CompareFunction.LessEqual)
+            {
+                return StencilFunction.Lequal;
+            }
+            if (func == CompareFunction.Never)
+            {
+                return StencilFunction.Never;
+            }
+            if (func == CompareFunction.NotEqual)
+            {
+                return StencilFunction.Notequal;
+            }
+            throw new Exception("Unhandled CompareFunction: " + func);
         }
 
         private StencilOp GetStencilOp(StencilOperation op)
         {
-            // TODO
-            return StencilOp.Keep;
+            if (op == StencilOperation.Decrement)
+            {
+                return StencilOp.DecrWrap;
+            }
+            if (op == StencilOperation.DecrementSaturation)
+            {
+                return StencilOp.Decr;
+            }
+            if (op == StencilOperation.Increment)
+            {
+                return StencilOp.IncrWrap;
+            }
+            if (op == StencilOperation.IncrementSaturation)
+            {
+                return StencilOp.Incr;
+            }
+            if (op == StencilOperation.Invert)
+            {
+                return StencilOp.Invert;
+            }
+            if (op == StencilOperation.Keep)
+            {
+                return StencilOp.Keep;
+            }
+            if (op == StencilOperation.Replace)
+            {
+                return StencilOp.Replace;
+            }
+            if (op == StencilOperation.Zero)
+            {
+                return StencilOp.Zero;
+            }
+            throw new Exception("Unhandled StencilOperation: " + op);
         }
 
         private FrontFaceDirection GetFrontFace(CullMode mode)
         {
-            // TODO
-            return FrontFaceDirection.Cw;
+            if (mode == CullMode.CullClockwiseFace)
+            {
+                return FrontFaceDirection.Cw;
+            }
+            if (mode == CullMode.CullCounterClockwiseFace)
+            {
+                return FrontFaceDirection.Ccw;
+            }
+            throw new Exception("Unhandled CullMode: " + mode);
         }
 
         private PolygonMode GetFillMode(FillMode mode)
         {
-            // TODO
-            return PolygonMode.Fill;
+            if (mode == FillMode.Solid)
+            {
+                return PolygonMode.Fill;
+            }
+            if (mode == FillMode.WireFrame)
+            {
+                return PolygonMode.Line;
+            }
+            throw new Exception("Unhandled FillMode: " + mode);
         }
 
         private TextureWrapMode GetWrap(TextureAddressMode mode)
         {
-            // TODO
-            return TextureWrapMode.Repeat;
+            if (mode == TextureAddressMode.Clamp)
+            {
+                return TextureWrapMode.ClampToEdge;
+            }
+            if (mode == TextureAddressMode.Mirror)
+            {
+                return TextureWrapMode.Repeat;
+            }
+            if (mode == TextureAddressMode.Wrap)
+            {
+                return TextureWrapMode.Repeat;
+            }
+            throw new Exception("Unhandled TextureAddressMode: " + mode);
         }
 
         private FramebufferAttachment GetDepthStencilAttachment(DepthFormat format)
         {
-            // TODO
-            return FramebufferAttachment.DepthStencilAttachment;
+            if (    format == DepthFormat.Depth16 ||
+                    format == DepthFormat.Depth24   )
+            {
+                return FramebufferAttachment.DepthAttachment;
+            }
+            if (format == DepthFormat.Depth24Stencil8)
+            {
+                return FramebufferAttachment.DepthStencilAttachment;
+            }
+            throw new Exception("Unhandled DepthFormat: " + format);
         }
 
         #endregion
