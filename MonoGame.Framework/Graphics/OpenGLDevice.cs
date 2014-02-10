@@ -293,6 +293,9 @@ namespace Microsoft.Xna.Framework.Graphics
             // Load OpenGL entry points
             GL.LoadAll();
 
+            // Initialize XNA->GL conversion Dictionaries
+            XNAToGL.Initialize();
+
             // Load the extension list, initialize extension-dependent components
             Extensions = GL.GetString(StringName.Extensions);
             Framebuffer.Initialize();
@@ -350,6 +353,8 @@ namespace Microsoft.Xna.Framework.Graphics
             targetFramebuffer = 0;
             Backbuffer.Dispose();
             Backbuffer = null;
+
+            XNAToGL.Clear();
 
             Instance = null;
         }
@@ -1041,6 +1046,34 @@ namespace Microsoft.Xna.Framework.Graphics
                 DepthStencilAttachment.Add(DepthFormat.Depth24,         FramebufferAttachment.DepthAttachment);
                 DepthStencilAttachment.Add(DepthFormat.Depth24Stencil8, FramebufferAttachment.DepthStencilAttachment);
             }
+
+            public void Clear()
+            {
+                BlendModeSrc.Clear();
+                BlendModeSrc = null;
+                BlendModeDst.Clear();
+                BlendModeDst = null;
+                BlendEquation.Clear();
+                BlendEquation = null;
+                DepthFunc.Clear();
+                DepthFunc = null;
+                StencilFunc.Clear();
+                StencilFunc = null;
+                GLStencilOp.Clear();
+                GLStencilOp = null;
+                FrontFace.Clear();
+                FrontFace = null;
+                GLFillMode.Clear();
+                GLFillMode = null;
+                Wrap.Clear();
+                Wrap = null;
+                MagFilter.Clear();
+                MagFilter = null;
+                MinMipFilter.Clear();
+                MinMipFilter = null;
+                DepthStencilAttachment.Clear();
+                DepthStencilAttachment = null;
+            }
         }
 
         #endregion
@@ -1262,6 +1295,8 @@ namespace Microsoft.Xna.Framework.Graphics
             {
 #if DISABLE_FAUXBACKBUFFER
                 Handle = 0;
+                Width = width;
+                Height = height;
 #else
                 Handle = Framebuffer.GenFramebuffer();
                 colorAttachment = GL.GenTexture();
