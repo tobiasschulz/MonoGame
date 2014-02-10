@@ -247,7 +247,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Render Target State Variables
+        #region Render Target Cache Variables
 
         private int currentFramebuffer = 0;
         private int targetFramebuffer = 0;
@@ -351,22 +351,6 @@ namespace Microsoft.Xna.Framework.Graphics
             Backbuffer = null;
 
             Instance = null;
-        }
-
-        #endregion
-
-        #region glEnable/glDisable Method
-
-        private void ToggleGLState(EnableCap feature, bool enable)
-        {
-            if (enable)
-            {
-                GL.Enable(feature);
-            }
-            else
-            {
-                GL.Disable(feature);
-            }
         }
 
         #endregion
@@ -750,7 +734,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Flush Vertex Attribute Method
+        #region Flush Vertex Attributes Method
 
         public void FlushGLVertexAttributes(bool force)
         {
@@ -832,6 +816,22 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, buffer);
                 currentIndexBuffer = buffer;
+            }
+        }
+
+        #endregion
+
+        #region glEnable/glDisable Method
+
+        private void ToggleGLState(EnableCap feature, bool enable)
+        {
+            if (enable)
+            {
+                GL.Enable(feature);
+            }
+            else
+            {
+                GL.Disable(feature);
             }
         }
 
@@ -1191,6 +1191,193 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region Framebuffer ARB/EXT Wrapper Class
+
+        public static class Framebuffer
+        {
+            private static bool hasARB = false;
+
+            public static void Initialize()
+            {
+                hasARB = OpenGLDevice.Instance.Extensions.Contains("ARB_framebuffer_object");
+            }
+
+            public static int GenFramebuffer()
+            {
+                int handle;
+                if (hasARB)
+                {
+                    GL.GenFramebuffers(1, out handle);
+                }
+                else
+                {
+                    GL.Ext.GenFramebuffers(1, out handle);
+                }
+                return handle;
+            }
+
+            public static void DeleteFramebuffer(int handle)
+            {
+                if (hasARB)
+                {
+                    GL.DeleteFramebuffers(1, ref handle);
+                }
+                else
+                {
+                    GL.Ext.DeleteFramebuffers(1, ref handle);
+                }
+            }
+
+            public static void BindFramebuffer(int handle)
+            {
+                if (hasARB)
+                {
+                    GL.BindFramebuffer(
+                        FramebufferTarget.Framebuffer,
+                        handle
+                    );
+                }
+                else
+                {
+                    GL.Ext.BindFramebuffer(
+                        FramebufferTarget.FramebufferExt,
+                        handle
+                    );
+                }
+            }
+
+            public static void AttachColor(int colorAttachment, int index)
+            {
+                if (hasARB)
+                {
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        FramebufferAttachment.ColorAttachment0 + index,
+                        TextureTarget.Texture2D,
+                        colorAttachment,
+                        0
+                    );
+                }
+                else
+                {
+                    GL.Ext.FramebufferTexture2D(
+                        FramebufferTarget.FramebufferExt,
+                        FramebufferAttachment.ColorAttachment0Ext + index,
+                        TextureTarget.Texture2D,
+                        colorAttachment,
+                        0
+                    );
+                }
+            }
+
+            public static void AttachDepthTexture(
+                int depthAttachment,
+                FramebufferAttachment depthFormat
+            ) {
+                if (hasARB)
+                {
+                    GL.FramebufferTexture2D(
+                        FramebufferTarget.Framebuffer,
+                        depthFormat,
+                        TextureTarget.Texture2D,
+                        depthAttachment,
+                        0
+                    );
+                }
+                else
+                {
+                    GL.Ext.FramebufferTexture2D(
+                        FramebufferTarget.FramebufferExt,
+                        depthFormat,
+                        TextureTarget.Texture2D,
+                        depthAttachment,
+                        0
+                    );
+                }
+            }
+
+            public static void AttachDepthRenderbuffer(
+                int renderbuffer,
+                FramebufferAttachment depthFormat
+            ) {
+                if (hasARB)
+                {
+                    GL.FramebufferRenderbuffer(
+                        FramebufferTarget.Framebuffer,
+                        depthFormat,
+                        RenderbufferTarget.Renderbuffer,
+                        renderbuffer
+                    );
+                }
+                else
+                {
+                    GL.Ext.FramebufferRenderbuffer(
+                        FramebufferTarget.FramebufferExt,
+                        depthFormat,
+                        RenderbufferTarget.RenderbufferExt,
+                        renderbuffer
+                    );
+                }
+            }
+
+            public static void BlitToBackbuffer(
+                int srcWidth,
+                int srcHeight,
+                int dstWidth,
+                int dstHeight
+            ) {
+#if !DISABLE_FAUXBACKBUFFER
+                bool scissorTest = OpenGLDevice.Instance.ScissorTestEnable.GetCurrent();
+                if (scissorTest)
+                {
+                    GL.Disable(EnableCap.ScissorTest);
+                }
+                if (hasARB)
+                {
+                    GL.BindFramebuffer(
+                        FramebufferTarget.ReadFramebuffer,
+                        OpenGLDevice.Instance.Backbuffer.Handle
+                    );
+                    GL.BindFramebuffer(
+                        FramebufferTarget.DrawFramebuffer,
+                        0
+                    );
+                    GL.BlitFramebuffer(
+                        0, 0, srcWidth, srcHeight,
+                        0, 0, dstWidth, dstHeight,
+                        ClearBufferMask.ColorBufferBit,
+                        BlitFramebufferFilter.Linear
+                    );
+                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+                }
+                else
+                {
+                    GL.Ext.BindFramebuffer(
+                        FramebufferTarget.ReadFramebuffer,
+                        OpenGLDevice.Instance.Backbuffer.Handle
+                    );
+                    GL.Ext.BindFramebuffer(
+                        FramebufferTarget.DrawFramebuffer,
+                        0
+                    );
+                    GL.Ext.BlitFramebuffer(
+                        0, 0, srcWidth, srcHeight,
+                        0, 0, dstWidth, dstHeight,
+                        ClearBufferMask.ColorBufferBit,
+                        (ExtFramebufferBlit) BlitFramebufferFilter.Linear
+                    );
+                    GL.Ext.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
+                }
+                if (scissorTest)
+                {
+                    GL.Enable(EnableCap.ScissorTest);
+                }
+#endif
+            }
+        }
+
+        #endregion
+
         #region The Faux-Backbuffer
 
         public class FauxBackbuffer
@@ -1374,193 +1561,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 Width = width;
                 Height = height;
-#endif
-            }
-        }
-
-        #endregion
-
-        #region Framebuffer ARB/EXT Wrapper Class
-
-        public static class Framebuffer
-        {
-            private static bool hasARB = false;
-
-            public static void Initialize()
-            {
-                hasARB = OpenGLDevice.Instance.Extensions.Contains("ARB_framebuffer_object");
-            }
-
-            public static int GenFramebuffer()
-            {
-                int handle;
-                if (hasARB)
-                {
-                    GL.GenFramebuffers(1, out handle);
-                }
-                else
-                {
-                    GL.Ext.GenFramebuffers(1, out handle);
-                }
-                return handle;
-            }
-
-            public static void DeleteFramebuffer(int handle)
-            {
-                if (hasARB)
-                {
-                    GL.DeleteFramebuffers(1, ref handle);
-                }
-                else
-                {
-                    GL.Ext.DeleteFramebuffers(1, ref handle);
-                }
-            }
-
-            public static void BindFramebuffer(int handle)
-            {
-                if (hasARB)
-                {
-                    GL.BindFramebuffer(
-                        FramebufferTarget.Framebuffer,
-                        handle
-                    );
-                }
-                else
-                {
-                    GL.Ext.BindFramebuffer(
-                        FramebufferTarget.FramebufferExt,
-                        handle
-                    );
-                }
-            }
-
-            public static void AttachColor(int colorAttachment, int index)
-            {
-                if (hasARB)
-                {
-                    GL.FramebufferTexture2D(
-                        FramebufferTarget.Framebuffer,
-                        FramebufferAttachment.ColorAttachment0 + index,
-                        TextureTarget.Texture2D,
-                        colorAttachment,
-                        0
-                    );
-                }
-                else
-                {
-                    GL.Ext.FramebufferTexture2D(
-                        FramebufferTarget.FramebufferExt,
-                        FramebufferAttachment.ColorAttachment0Ext + index,
-                        TextureTarget.Texture2D,
-                        colorAttachment,
-                        0
-                    );
-                }
-            }
-
-            public static void AttachDepthTexture(
-                int depthAttachment,
-                FramebufferAttachment depthFormat
-            ) {
-                if (hasARB)
-                {
-                    GL.FramebufferTexture2D(
-                        FramebufferTarget.Framebuffer,
-                        depthFormat,
-                        TextureTarget.Texture2D,
-                        depthAttachment,
-                        0
-                    );
-                }
-                else
-                {
-                    GL.Ext.FramebufferTexture2D(
-                        FramebufferTarget.FramebufferExt,
-                        depthFormat,
-                        TextureTarget.Texture2D,
-                        depthAttachment,
-                        0
-                    );
-                }
-            }
-
-            public static void AttachDepthRenderbuffer(
-                int renderbuffer,
-                FramebufferAttachment depthFormat
-            ) {
-                if (hasARB)
-                {
-                    GL.FramebufferRenderbuffer(
-                        FramebufferTarget.Framebuffer,
-                        depthFormat,
-                        RenderbufferTarget.Renderbuffer,
-                        renderbuffer
-                    );
-                }
-                else
-                {
-                    GL.Ext.FramebufferRenderbuffer(
-                        FramebufferTarget.FramebufferExt,
-                        depthFormat,
-                        RenderbufferTarget.RenderbufferExt,
-                        renderbuffer
-                    );
-                }
-            }
-
-            public static void BlitToBackbuffer(
-                int srcWidth,
-                int srcHeight,
-                int dstWidth,
-                int dstHeight
-            ) {
-#if !DISABLE_FAUXBACKBUFFER
-                bool scissorTest = OpenGLDevice.Instance.ScissorTestEnable.GetCurrent();
-                if (scissorTest)
-                {
-                    GL.Disable(EnableCap.ScissorTest);
-                }
-                if (hasARB)
-                {
-                    GL.BindFramebuffer(
-                        FramebufferTarget.ReadFramebuffer,
-                        OpenGLDevice.Instance.Backbuffer.Handle
-                    );
-                    GL.BindFramebuffer(
-                        FramebufferTarget.DrawFramebuffer,
-                        0
-                    );
-                    GL.BlitFramebuffer(
-                        0, 0, srcWidth, srcHeight,
-                        0, 0, dstWidth, dstHeight,
-                        ClearBufferMask.ColorBufferBit,
-                        BlitFramebufferFilter.Linear
-                    );
-                    GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-                }
-                else
-                {
-                    GL.Ext.BindFramebuffer(
-                        FramebufferTarget.ReadFramebuffer,
-                        OpenGLDevice.Instance.Backbuffer.Handle
-                    );
-                    GL.Ext.BindFramebuffer(
-                        FramebufferTarget.DrawFramebuffer,
-                        0
-                    );
-                    GL.Ext.BlitFramebuffer(
-                        0, 0, srcWidth, srcHeight,
-                        0, 0, dstWidth, dstHeight,
-                        ClearBufferMask.ColorBufferBit,
-                        (ExtFramebufferBlit) BlitFramebufferFilter.Linear
-                    );
-                    GL.Ext.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
-                }
-                if (scissorTest)
-                {
-                    GL.Enable(EnableCap.ScissorTest);
-                }
 #endif
             }
         }
