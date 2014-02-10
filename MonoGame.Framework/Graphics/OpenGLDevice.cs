@@ -859,7 +859,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Private XNA->GL Enum Conversion Class
+        #region XNA->GL Enum Conversion Class
 
         private static class XNAToGL
         {
