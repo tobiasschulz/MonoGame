@@ -1047,7 +1047,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 DepthStencilAttachment.Add(DepthFormat.Depth24Stencil8, FramebufferAttachment.DepthStencilAttachment);
             }
 
-            public void Clear()
+            public static void Clear()
             {
                 BlendModeSrc.Clear();
                 BlendModeSrc = null;
