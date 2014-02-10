@@ -8,6 +8,7 @@
 
 #region Using Statements
 using System;
+using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
 #endregion
 
@@ -381,17 +382,17 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (SeparateAlphaBlendEnable.Flush())
                 {
                     GL.BlendFuncSeparate(
-                        GetBlendModeSrc(SrcBlend.Flush()),
-                        GetBlendModeDst(DstBlend.Flush()),
-                        GetBlendModeSrc(SrcBlendAlpha.Flush()),
-                        GetBlendModeDst(DstBlendAlpha.Flush())
+                        XNAToGL.BlendModeSrc[SrcBlend.Flush()],
+                        XNAToGL.BlendModeDst[DstBlend.Flush()],
+                        XNAToGL.BlendModeSrc[SrcBlendAlpha.Flush()],
+                        XNAToGL.BlendModeDst[DstBlendAlpha.Flush()]
                     );
                 }
                 else
                 {
                     GL.BlendFunc(
-                        GetBlendModeSrc(SrcBlend.Flush()),
-                        GetBlendModeDst(DstBlend.Flush())
+                        XNAToGL.BlendModeSrc[SrcBlend.Flush()],
+                        XNAToGL.BlendModeDst[DstBlend.Flush()]
                     );
                     SrcBlendAlpha.Flush();
                     DstBlendAlpha.Flush();
@@ -401,8 +402,8 @@ namespace Microsoft.Xna.Framework.Graphics
             if (force || BlendOp.NeedsFlush() || BlendOpAlpha.NeedsFlush())
             {
                 GL.BlendEquationSeparate(
-                    GetBlendEquation(BlendOp.Flush()),
-                    GetBlendEquation(BlendOpAlpha.Flush())
+                    XNAToGL.BlendEquation[BlendOp.Flush()],
+                    XNAToGL.BlendEquation[BlendOpAlpha.Flush()]
                 );
             }
 
@@ -424,7 +425,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             if (force || DepthFunc.NeedsFlush())
             {
-                GL.DepthFunc(GetDepthFunc(DepthFunc.Flush()));
+                GL.DepthFunc(XNAToGL.DepthFunc[DepthFunc.Flush()]);
             }
 
             if (    force ||
@@ -466,13 +467,13 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.StencilFuncSeparate(
                         (Version20) CullFaceMode.Front,
-                        GetStencilFunc(StencilFunc.Flush()),
+                        XNAToGL.StencilFunc[StencilFunc.Flush()],
                         (int) StencilRef.Flush(),
                         StencilMask.Flush()
                     );
                     GL.StencilFuncSeparate(
                         (Version20) CullFaceMode.Back,
-                        GetStencilFunc(CCWStencilFunc.Flush()),
+                        XNAToGL.StencilFunc[CCWStencilFunc.Flush()],
                         (int) StencilRef.Flush(),
                         StencilMask.Flush()
                     );
@@ -480,7 +481,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 else
                 {
                     GL.StencilFunc(
-                        GetStencilFunc(StencilFunc.Flush()),
+                        XNAToGL.StencilFunc[StencilFunc.Flush()],
                         (int) StencilRef.Flush(),
                         StencilMask.Flush()
                     );
@@ -500,23 +501,23 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.StencilOpSeparate(
                         StencilFace.Front,
-                        GetStencilOp(StencilFail.Flush()),
-                        GetStencilOp(StencilZFail.Flush()),
-                        GetStencilOp(StencilPass.Flush())
+                        XNAToGL.GLStencilOp[StencilFail.Flush()],
+                        XNAToGL.GLStencilOp[StencilZFail.Flush()],
+                        XNAToGL.GLStencilOp[StencilPass.Flush()]
                     );
                     GL.StencilOpSeparate(
                         StencilFace.Back,
-                        GetStencilOp(CCWStencilFail.Flush()),
-                        GetStencilOp(CCWStencilZFail.Flush()),
-                        GetStencilOp(CCWStencilPass.Flush())
+                        XNAToGL.GLStencilOp[CCWStencilFail.Flush()],
+                        XNAToGL.GLStencilOp[CCWStencilZFail.Flush()],
+                        XNAToGL.GLStencilOp[CCWStencilPass.Flush()]
                     );
                 }
                 else
                 {
                     GL.StencilOp(
-                        GetStencilOp(StencilFail.Flush()),
-                        GetStencilOp(StencilZFail.Flush()),
-                        GetStencilOp(StencilPass.Flush())
+                        XNAToGL.GLStencilOp[StencilFail.Flush()],
+                        XNAToGL.GLStencilOp[StencilZFail.Flush()],
+                        XNAToGL.GLStencilOp[StencilPass.Flush()]
                     );
                 }
             }
@@ -551,7 +552,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
                 if (latched != CullMode.None)
                 {
-                    GL.FrontFace(GetFrontFace(latched));
+                    GL.FrontFace(XNAToGL.FrontFace[latched]);
                 }
             }
 
@@ -559,7 +560,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GL.PolygonMode(
                     MaterialFace.FrontAndBack,
-                    GetFillMode(GLFillMode.Flush())
+                    XNAToGL.GLFillMode[GLFillMode.Flush()]
                 );
             }
 
@@ -627,7 +628,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.TexParameter(
                         target,
                         TextureParameterName.TextureWrapS,
-                        (int) GetWrap(sampler.WrapS.Flush())
+                        (int) XNAToGL.Wrap[sampler.WrapS.Flush()]
                     );
                 }
 
@@ -636,7 +637,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.TexParameter(
                         target,
                         TextureParameterName.TextureWrapT,
-                        (int) GetWrap(sampler.WrapT.Flush())
+                        (int) XNAToGL.Wrap[sampler.WrapT.Flush()]
                     );
                 }
 
@@ -645,75 +646,27 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.TexParameter(
                         target,
                         TextureParameterName.TextureWrapR,
-                        (int) GetWrap(sampler.WrapR.Flush())
+                        (int) XNAToGL.Wrap[sampler.WrapR.Flush()]
                     );
                 }
 
                 if (force || sampler.Filter.NeedsFlush())
                 {
                     TextureFilter filter = sampler.Filter.Flush();
-                    TextureMagFilter magFilter;
-                    TextureMinFilter minmipFilter;
-                    float anistropicFilter = 1.0f;
-                    if (filter == TextureFilter.Point)
-                    {
-                        magFilter = TextureMagFilter.Nearest;
-                        minmipFilter = TextureMinFilter.NearestMipmapNearest;
-                    }
-                    else if (filter == TextureFilter.Linear)
-                    {
-                        magFilter = TextureMagFilter.Linear;
-                        minmipFilter = TextureMinFilter.LinearMipmapLinear;
-                    }
-                    else if (filter == TextureFilter.Anisotropic)
-                    {
-                        anistropicFilter = 4.0f;
-                        magFilter = TextureMagFilter.Linear;
-                        minmipFilter = TextureMinFilter.LinearMipmapLinear;
-                    }
-                    else if (filter == TextureFilter.LinearMipPoint)
-                    {
-                        magFilter = TextureMagFilter.Linear;
-                        minmipFilter = TextureMinFilter.LinearMipmapNearest;
-                    }
-                    else if (filter == TextureFilter.MinPointMagLinearMipPoint)
-                    {
-                        magFilter = TextureMagFilter.Linear;
-                        minmipFilter = TextureMinFilter.NearestMipmapNearest;
-                    }
-                    else if (filter == TextureFilter.MinPointMagLinearMipLinear)
-                    {
-                        magFilter = TextureMagFilter.Linear;
-                        minmipFilter = TextureMinFilter.NearestMipmapLinear;
-                    }
-                    else if (filter == TextureFilter.MinLinearMagPointMipPoint)
-                    {
-                        magFilter = TextureMagFilter.Nearest;
-                        minmipFilter = TextureMinFilter.LinearMipmapNearest;
-                    }
-                    else if (filter == TextureFilter.MinLinearMagPointMipLinear)
-                    {
-                        magFilter = TextureMagFilter.Nearest;
-                        minmipFilter = TextureMinFilter.LinearMipmapLinear;
-                    }
-                    else
-                    {
-                        throw new Exception("Unhandled TextureFilter: " + filter);
-                    }
                     GL.TexParameter(
                         target,
                         TextureParameterName.TextureMagFilter,
-                        (int) magFilter
+                        (int) XNAToGL.MagFilter[filter]
                     );
                     GL.TexParameter(
                         target,
                         TextureParameterName.TextureMinFilter,
-                        (int) minmipFilter
+                        (int) XNAToGL.MinMipFilter[filter]
                     );
                     GL.TexParameter(
                         target,
                         (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-                        anistropicFilter
+                        (filter == TextureFilter.Anisotropic) ? 4.0f : 1.0f
                     );
                 }
 
@@ -889,7 +842,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     // Changing formats, unbind the current renderbuffer first.
                     Framebuffer.AttachDepthRenderbuffer(
                         0,
-                        GetDepthStencilAttachment(currentDepthStencilFormat)
+                        XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
                     );
                     currentDepthStencilFormat = depthFormat;
                 }
@@ -897,7 +850,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     Framebuffer.AttachDepthRenderbuffer(
                         renderbuffer,
-                        GetDepthStencilAttachment(currentDepthStencilFormat)
+                        XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
                     );
                 }
                 currentRenderbuffer = renderbuffer;
@@ -906,287 +859,188 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Private XNA->GL Enum Conversion Methods
+        #region Private XNA->GL Enum Conversion Class
 
-        private BlendingFactorSrc GetBlendModeSrc(Blend mode)
+        private static class XNAToGL
         {
-            if (mode == Blend.DestinationAlpha)
+            public static Dictionary<Blend, BlendingFactorSrc> BlendModeSrc
             {
-                return BlendingFactorSrc.DstAlpha;
+                get;
+                private set;
             }
-            if (mode == Blend.DestinationColor)
-            {
-                return BlendingFactorSrc.DstColor;
-            }
-            if (mode == Blend.InverseDestinationAlpha)
-            {
-                return BlendingFactorSrc.OneMinusDstAlpha;
-            }
-            if (mode == Blend.InverseDestinationColor)
-            {
-                return BlendingFactorSrc.OneMinusDstColor;
-            }
-            if (mode == Blend.InverseSourceAlpha)
-            {
-                return BlendingFactorSrc.OneMinusSrcAlpha;
-            }
-            if (mode == Blend.InverseSourceColor)
-            {
-                // What, why -flibit
-                return (BlendingFactorSrc) All.OneMinusSrcColor;
-            }
-            if (mode == Blend.One)
-            {
-                return BlendingFactorSrc.One;
-            }
-            if (mode == Blend.SourceAlpha)
-            {
-                return BlendingFactorSrc.SrcAlpha;
-            }
-            if (mode == Blend.SourceAlphaSaturation)
-            {
-                return BlendingFactorSrc.SrcAlphaSaturate;
-            }
-            if (mode == Blend.SourceColor)
-            {
-                // What, why -flibit
-                return (BlendingFactorSrc) All.SrcColor;
-            }
-            if (mode == Blend.Zero)
-            {
-                return BlendingFactorSrc.Zero;
-            }
-            throw new Exception("Unhandled Blend: " + mode);
-        }
 
-        private BlendingFactorDest GetBlendModeDst(Blend mode)
-        {
-            if (mode == Blend.DestinationAlpha)
+            public static Dictionary<Blend, BlendingFactorDest> BlendModeDst
             {
-                return BlendingFactorDest.DstAlpha;
+                get;
+                private set;
             }
-            if (mode == Blend.InverseDestinationAlpha)
-            {
-                return BlendingFactorDest.OneMinusDstAlpha;
-            }
-            if (mode == Blend.InverseSourceAlpha)
-            {
-                return BlendingFactorDest.OneMinusSrcAlpha;
-            }
-            if (mode == Blend.InverseSourceColor)
-            {
-                return BlendingFactorDest.OneMinusSrcColor;
-            }
-            if (mode == Blend.One)
-            {
-                return BlendingFactorDest.One;
-            }
-            if (mode == Blend.SourceAlpha)
-            {
-                return BlendingFactorDest.SrcAlpha;
-            }
-            if (mode == Blend.SourceColor)
-            {
-                return BlendingFactorDest.SrcColor;
-            }
-            if (mode == Blend.Zero)
-            {
-                return BlendingFactorDest.Zero;
-            }
-            throw new Exception("Unhandled Blend: " + mode);
-        }
 
-        private BlendEquationMode GetBlendEquation(BlendFunction func)
-        {
-            if (func == BlendFunction.Add)
+            public static Dictionary<BlendFunction, BlendEquationMode> BlendEquation
             {
-                return BlendEquationMode.FuncAdd;
+                get;
+                private set;
             }
-            if (func == BlendFunction.Max)
-            {
-                return BlendEquationMode.Max;
-            }
-            if (func == BlendFunction.Min)
-            {
-                return BlendEquationMode.Min;
-            }
-            if (func == BlendFunction.ReverseSubtract)
-            {
-                return BlendEquationMode.FuncReverseSubtract;
-            }
-            if (func == BlendFunction.Subtract)
-            {
-                return BlendEquationMode.FuncSubtract;
-            }
-            throw new Exception("Unhandled BlendFunction: " + func);
-        }
 
-        private DepthFunction GetDepthFunc(CompareFunction func)
-        {
-            if (func == CompareFunction.Always)
+            public static Dictionary<CompareFunction, DepthFunction> DepthFunc
             {
-                return DepthFunction.Always;
+                get;
+                private set;
             }
-            if (func == CompareFunction.Equal)
-            {
-                return DepthFunction.Equal;
-            }
-            if (func == CompareFunction.Greater)
-            {
-                return DepthFunction.Greater;
-            }
-            if (func == CompareFunction.GreaterEqual)
-            {
-                return DepthFunction.Less;
-            }
-            if (func == CompareFunction.Less)
-            {
-                return DepthFunction.Lequal;
-            }
-            if (func == CompareFunction.LessEqual)
-            {
-                return DepthFunction.Lequal;
-            }
-            if (func == CompareFunction.Never)
-            {
-                return DepthFunction.Never;
-            }
-            if (func == CompareFunction.NotEqual)
-            {
-                return DepthFunction.Notequal;
-            }
-            throw new Exception("Unhandled CompareFunction: " + func);
-        }
 
-        private StencilFunction GetStencilFunc(CompareFunction func)
-        {
-            if (func == CompareFunction.Always)
+            public static Dictionary<CompareFunction, StencilFunction> StencilFunc
             {
-                return StencilFunction.Always;
+                get;
+                private set;
             }
-            if (func == CompareFunction.Equal)
-            {
-                return StencilFunction.Equal;
-            }
-            if (func == CompareFunction.Greater)
-            {
-                return StencilFunction.Greater;
-            }
-            if (func == CompareFunction.GreaterEqual)
-            {
-                return StencilFunction.Less;
-            }
-            if (func == CompareFunction.Less)
-            {
-                return StencilFunction.Lequal;
-            }
-            if (func == CompareFunction.LessEqual)
-            {
-                return StencilFunction.Lequal;
-            }
-            if (func == CompareFunction.Never)
-            {
-                return StencilFunction.Never;
-            }
-            if (func == CompareFunction.NotEqual)
-            {
-                return StencilFunction.Notequal;
-            }
-            throw new Exception("Unhandled CompareFunction: " + func);
-        }
 
-        private StencilOp GetStencilOp(StencilOperation op)
-        {
-            if (op == StencilOperation.Decrement)
+            public static Dictionary<StencilOperation, StencilOp> GLStencilOp
             {
-                return StencilOp.DecrWrap;
+                get;
+                private set;
             }
-            if (op == StencilOperation.DecrementSaturation)
-            {
-                return StencilOp.Decr;
-            }
-            if (op == StencilOperation.Increment)
-            {
-                return StencilOp.IncrWrap;
-            }
-            if (op == StencilOperation.IncrementSaturation)
-            {
-                return StencilOp.Incr;
-            }
-            if (op == StencilOperation.Invert)
-            {
-                return StencilOp.Invert;
-            }
-            if (op == StencilOperation.Keep)
-            {
-                return StencilOp.Keep;
-            }
-            if (op == StencilOperation.Replace)
-            {
-                return StencilOp.Replace;
-            }
-            if (op == StencilOperation.Zero)
-            {
-                return StencilOp.Zero;
-            }
-            throw new Exception("Unhandled StencilOperation: " + op);
-        }
 
-        private FrontFaceDirection GetFrontFace(CullMode mode)
-        {
-            if (mode == CullMode.CullClockwiseFace)
+            public static Dictionary<CullMode, FrontFaceDirection> FrontFace
             {
-                return FrontFaceDirection.Cw;
+                get;
+                private set;
             }
-            if (mode == CullMode.CullCounterClockwiseFace)
-            {
-                return FrontFaceDirection.Ccw;
-            }
-            throw new Exception("Unhandled CullMode: " + mode);
-        }
 
-        private PolygonMode GetFillMode(FillMode mode)
-        {
-            if (mode == FillMode.Solid)
+            public static Dictionary<FillMode, PolygonMode> GLFillMode
             {
-                return PolygonMode.Fill;
+                get;
+                private set;
             }
-            if (mode == FillMode.WireFrame)
-            {
-                return PolygonMode.Line;
-            }
-            throw new Exception("Unhandled FillMode: " + mode);
-        }
 
-        private TextureWrapMode GetWrap(TextureAddressMode mode)
-        {
-            if (mode == TextureAddressMode.Clamp)
+            public static Dictionary<TextureAddressMode, TextureWrapMode> Wrap
             {
-                return TextureWrapMode.ClampToEdge;
+                get;
+                private set;
             }
-            if (mode == TextureAddressMode.Mirror)
-            {
-                return TextureWrapMode.Repeat;
-            }
-            if (mode == TextureAddressMode.Wrap)
-            {
-                return TextureWrapMode.Repeat;
-            }
-            throw new Exception("Unhandled TextureAddressMode: " + mode);
-        }
 
-        private FramebufferAttachment GetDepthStencilAttachment(DepthFormat format)
-        {
-            if (    format == DepthFormat.Depth16 ||
-                    format == DepthFormat.Depth24   )
+            public static Dictionary<TextureFilter, TextureMagFilter> MagFilter
             {
-                return FramebufferAttachment.DepthAttachment;
+                get;
+                private set;
             }
-            if (format == DepthFormat.Depth24Stencil8)
+
+            public static Dictionary<TextureFilter, TextureMinFilter> MinMipFilter
             {
-                return FramebufferAttachment.DepthStencilAttachment;
+                get;
+                private set;
             }
-            throw new Exception("Unhandled DepthFormat: " + format);
+
+            public static Dictionary<DepthFormat, FramebufferAttachment> DepthStencilAttachment
+            {
+                get;
+                private set;
+            }
+
+            public static void Initialize()
+            {
+                /* Ideally we would be using arrays, rather than Dictionaries.
+                 * The problem is that we don't support every enum, and dealing
+                 * with gaps would be a headache. So whatever, Dictionaries!
+                 * -flibit
+                 */
+
+                BlendModeSrc = new Dictionary<Blend, BlendingFactorSrc>();
+                BlendModeSrc.Add(Blend.DestinationAlpha,        BlendingFactorSrc.DstAlpha);
+                BlendModeSrc.Add(Blend.DestinationColor,        BlendingFactorSrc.DstColor);
+                BlendModeSrc.Add(Blend.InverseDestinationAlpha, BlendingFactorSrc.OneMinusDstAlpha);
+                BlendModeSrc.Add(Blend.InverseDestinationColor, BlendingFactorSrc.OneMinusDstColor);
+                BlendModeSrc.Add(Blend.InverseSourceAlpha,      BlendingFactorSrc.OneMinusSrcAlpha);
+                BlendModeSrc.Add(Blend.InverseSourceColor,      (BlendingFactorSrc) All.OneMinusSrcColor); // Why -flibit
+                BlendModeSrc.Add(Blend.One,                     BlendingFactorSrc.One);
+                BlendModeSrc.Add(Blend.SourceAlpha,             BlendingFactorSrc.SrcAlpha);
+                BlendModeSrc.Add(Blend.SourceAlphaSaturation,   BlendingFactorSrc.SrcAlphaSaturate);
+                BlendModeSrc.Add(Blend.SourceColor,             (BlendingFactorSrc) All.SrcColor); // Why -flibit
+                BlendModeSrc.Add(Blend.Zero,                    BlendingFactorSrc.Zero);
+
+                BlendModeDst = new Dictionary<Blend, BlendingFactorDest>();
+                BlendModeDst.Add(Blend.DestinationAlpha,        BlendingFactorDest.DstAlpha);
+                BlendModeDst.Add(Blend.InverseDestinationAlpha, BlendingFactorDest.OneMinusDstAlpha);
+                BlendModeDst.Add(Blend.InverseSourceAlpha,      BlendingFactorDest.OneMinusSrcAlpha);
+                BlendModeDst.Add(Blend.InverseSourceColor,      BlendingFactorDest.OneMinusSrcColor);
+                BlendModeDst.Add(Blend.One,                     BlendingFactorDest.One);
+                BlendModeDst.Add(Blend.SourceAlpha,             BlendingFactorDest.SrcAlpha);
+                BlendModeDst.Add(Blend.SourceColor,             BlendingFactorDest.SrcColor);
+                BlendModeDst.Add(Blend.Zero,                    BlendingFactorDest.Zero);
+
+                BlendEquation = new Dictionary<BlendFunction, BlendEquationMode>();
+                BlendEquation.Add(BlendFunction.Add,                BlendEquationMode.FuncAdd);
+                BlendEquation.Add(BlendFunction.Max,                BlendEquationMode.Max);
+                BlendEquation.Add(BlendFunction.Min,                BlendEquationMode.Min);
+                BlendEquation.Add(BlendFunction.ReverseSubtract,    BlendEquationMode.FuncReverseSubtract);
+                BlendEquation.Add(BlendFunction.Subtract,           BlendEquationMode.FuncSubtract);
+
+                DepthFunc = new Dictionary<CompareFunction, DepthFunction>();
+                DepthFunc.Add(CompareFunction.Always,       DepthFunction.Always);
+                DepthFunc.Add(CompareFunction.Equal,        DepthFunction.Equal);
+                DepthFunc.Add(CompareFunction.Greater,      DepthFunction.Greater);
+                DepthFunc.Add(CompareFunction.GreaterEqual, DepthFunction.Gequal);
+                DepthFunc.Add(CompareFunction.Less,         DepthFunction.Less);
+                DepthFunc.Add(CompareFunction.LessEqual,    DepthFunction.Lequal);
+                DepthFunc.Add(CompareFunction.Never,        DepthFunction.Never);
+                DepthFunc.Add(CompareFunction.NotEqual,     DepthFunction.Notequal);
+
+                StencilFunc = new Dictionary<CompareFunction, StencilFunction>();
+                StencilFunc.Add(CompareFunction.Always,         StencilFunction.Always);
+                StencilFunc.Add(CompareFunction.Equal,          StencilFunction.Equal);
+                StencilFunc.Add(CompareFunction.Greater,        StencilFunction.Greater);
+                StencilFunc.Add(CompareFunction.GreaterEqual,   StencilFunction.Gequal);
+                StencilFunc.Add(CompareFunction.Less,           StencilFunction.Less);
+                StencilFunc.Add(CompareFunction.LessEqual,      StencilFunction.Lequal);
+                StencilFunc.Add(CompareFunction.Never,          StencilFunction.Never);
+                StencilFunc.Add(CompareFunction.NotEqual,       StencilFunction.Notequal);
+
+                GLStencilOp = new Dictionary<StencilOperation, StencilOp>();
+                GLStencilOp.Add(StencilOperation.Decrement,             StencilOp.DecrWrap);
+                GLStencilOp.Add(StencilOperation.DecrementSaturation,   StencilOp.Decr);
+                GLStencilOp.Add(StencilOperation.Increment,             StencilOp.IncrWrap);
+                GLStencilOp.Add(StencilOperation.IncrementSaturation,   StencilOp.Incr);
+                GLStencilOp.Add(StencilOperation.Invert,                StencilOp.Invert);
+                GLStencilOp.Add(StencilOperation.Keep,                  StencilOp.Keep);
+                GLStencilOp.Add(StencilOperation.Replace,               StencilOp.Replace);
+                GLStencilOp.Add(StencilOperation.Zero,                  StencilOp.Zero);
+
+                FrontFace = new Dictionary<CullMode, FrontFaceDirection>();
+                FrontFace.Add(CullMode.CullClockwiseFace,           FrontFaceDirection.Cw);
+                FrontFace.Add(CullMode.CullCounterClockwiseFace,    FrontFaceDirection.Ccw);
+
+                GLFillMode = new Dictionary<FillMode, PolygonMode>();
+                GLFillMode.Add(FillMode.Solid,      PolygonMode.Fill);
+                GLFillMode.Add(FillMode.WireFrame,  PolygonMode.Line);
+
+                Wrap = new Dictionary<TextureAddressMode, TextureWrapMode>();
+                Wrap.Add(TextureAddressMode.Clamp,  TextureWrapMode.ClampToEdge);
+                Wrap.Add(TextureAddressMode.Mirror, TextureWrapMode.MirroredRepeat);
+                Wrap.Add(TextureAddressMode.Wrap,   TextureWrapMode.Repeat);
+
+                MagFilter = new Dictionary<TextureFilter, TextureMagFilter>();
+                MagFilter.Add(TextureFilter.Point,                      TextureMagFilter.Nearest);
+                MagFilter.Add(TextureFilter.Linear,                     TextureMagFilter.Linear);
+                MagFilter.Add(TextureFilter.Anisotropic,                TextureMagFilter.Linear);
+                MagFilter.Add(TextureFilter.LinearMipPoint,             TextureMagFilter.Linear);
+                MagFilter.Add(TextureFilter.MinPointMagLinearMipPoint,  TextureMagFilter.Linear);
+                MagFilter.Add(TextureFilter.MinPointMagLinearMipLinear, TextureMagFilter.Linear);
+                MagFilter.Add(TextureFilter.MinLinearMagPointMipPoint,  TextureMagFilter.Nearest);
+                MagFilter.Add(TextureFilter.MinLinearMagPointMipLinear, TextureMagFilter.Nearest);
+
+                MinMipFilter = new Dictionary<TextureFilter, TextureMinFilter>();
+                MinMipFilter.Add(TextureFilter.Point,                       TextureMinFilter.NearestMipmapNearest);
+                MinMipFilter.Add(TextureFilter.Linear,                      TextureMinFilter.LinearMipmapLinear);
+                MinMipFilter.Add(TextureFilter.Anisotropic,                 TextureMinFilter.LinearMipmapLinear);
+                MinMipFilter.Add(TextureFilter.LinearMipPoint,              TextureMinFilter.LinearMipmapNearest);
+                MinMipFilter.Add(TextureFilter.MinPointMagLinearMipPoint,   TextureMinFilter.NearestMipmapNearest);
+                MinMipFilter.Add(TextureFilter.MinPointMagLinearMipLinear,  TextureMinFilter.NearestMipmapLinear);
+                MinMipFilter.Add(TextureFilter.MinLinearMagPointMipPoint,   TextureMinFilter.LinearMipmapNearest);
+                MinMipFilter.Add(TextureFilter.MinLinearMagPointMipLinear,  TextureMinFilter.LinearMipmapLinear);
+
+                DepthStencilAttachment = new Dictionary<DepthFormat, FramebufferAttachment>();
+                DepthStencilAttachment.Add(DepthFormat.Depth16,         FramebufferAttachment.DepthAttachment);
+                DepthStencilAttachment.Add(DepthFormat.Depth24,         FramebufferAttachment.DepthAttachment);
+                DepthStencilAttachment.Add(DepthFormat.Depth24Stencil8, FramebufferAttachment.DepthStencilAttachment);
+            }
         }
 
         #endregion
