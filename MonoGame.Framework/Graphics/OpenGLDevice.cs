@@ -706,6 +706,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     if (attrib.Enabled.Flush())
                     {
+                        attrib.Enabled.Set(false); // It'll be re-enabled next draw. -flibit
                         GL.EnableVertexAttribArray(i);
                     }
                     else
