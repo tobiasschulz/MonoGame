@@ -1,7 +1,6 @@
 #region DISABLE_FAUXBACKBUFFER Option
 // #define DISABLE_FAUXBACKBUFFER
 /* If you want to debug GL without the extra FBO in your way, you can use this.
- * Note that this also affects SDL2/SDL2_GameWindow.cs!
  * -flibit
  */
 #endregion
@@ -101,7 +100,7 @@ namespace Microsoft.Xna.Framework.Graphics
             public OpenGLState<int> Divisor;
 
             // Checked in VertexAttribPointer
-            public int CurrentBuffer;
+            public uint CurrentBuffer;
             public int CurrentSize;
             public VertexAttribPointerType CurrentType;
             public bool CurrentNormalized;
@@ -129,7 +128,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> AlphaTestEnable = new OpenGLState<bool>(false);
 
-        public OpenGLState<bool> SeparateAlphaBlendEnable = new OpenGLState<bool>(false);
+        public OpenGLState<Color> BlendColor = new OpenGLState<Color>(Color.TransparentBlack);
 
         public OpenGLState<Blend> SrcBlend = new OpenGLState<Blend>(Blend.One);
 
@@ -169,9 +168,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> SeparateStencilEnable = new OpenGLState<bool>(false);
 
-        public OpenGLState<uint> StencilRef = new OpenGLState<uint>(0);
+        public OpenGLState<int> StencilRef = new OpenGLState<int>(0);
 
-        public OpenGLState<uint> StencilMask = new OpenGLState<uint>(0xFFFFFFFF);
+        public OpenGLState<int> StencilMask = new OpenGLState<int>(-1); // AKA 0xFFFFFFFF, ugh -flibit
 
         public OpenGLState<CompareFunction> StencilFunc = new OpenGLState<CompareFunction>(CompareFunction.Always);
 
@@ -210,14 +209,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<ColorWriteChannels> ColorWriteEnable = new OpenGLState<ColorWriteChannels>(ColorWriteChannels.All);
 
-        public OpenGLState<Rectangle> GLViewport = new OpenGLState<Rectangle>(
-            new Rectangle(
+        public OpenGLState<Viewport> GLViewport = new OpenGLState<Viewport>(
+            new Viewport(
                 0,
                 0,
                 GraphicsDeviceManager.DefaultBackBufferWidth,
                 GraphicsDeviceManager.DefaultBackBufferHeight
             )
         );
+
+        public OpenGLState<float> DepthRangeMin = new OpenGLState<float>(0.0f);
+
+        public OpenGLState<float> DepthRangeMax = new OpenGLState<float>(0.0f);
 
         #endregion
 
@@ -243,8 +246,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Buffer Binding Cache Variables
 
-        private int currentVertexBuffer = 0;
-        private int currentIndexBuffer = 0;
+        private uint currentVertexBuffer = 0;
+        private uint currentIndexBuffer = 0;
 
         #endregion
 
@@ -254,7 +257,7 @@ namespace Microsoft.Xna.Framework.Graphics
         private int targetFramebuffer = 0;
         private int[] currentAttachments;
         private DrawBuffersEnum[] currentDrawBuffers;
-        private int currentRenderbuffer;
+        private uint currentRenderbuffer;
         private DepthFormat currentDepthStencilFormat;
 
         #endregion
@@ -309,7 +312,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Initialize sampler state array
             int numSamplers;
-            GL.GetInteger(GetPName.MaxTextureUnits, out numSamplers);
+            GL.GetInteger(GetPName.MaxTextureImageUnits, out numSamplers);
             Samplers = new OpenGLSampler[numSamplers];
             for (int i = 0; i < numSamplers; i += 1)
             {
@@ -377,31 +380,29 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.AlphaTest, AlphaTestEnable.Flush());
             }
 
+            if (force || BlendColor.NeedsFlush())
+            {
+                Color color = BlendColor.Flush();
+                GL.BlendColor(
+                    color.R / 255.0f,
+                    color.G / 255.0f,
+                    color.B / 255.0f,
+                    color.A / 255.0f
+                );
+            }
+
             if (    force ||
-                    SeparateAlphaBlendEnable.NeedsFlush() ||
                     SrcBlend.NeedsFlush() ||
                     DstBlend.NeedsFlush() ||
                     SrcBlendAlpha.NeedsFlush() ||
                     DstBlendAlpha.NeedsFlush()  )
             {
-                if (SeparateAlphaBlendEnable.Flush())
-                {
-                    GL.BlendFuncSeparate(
-                        XNAToGL.BlendModeSrc[SrcBlend.Flush()],
-                        XNAToGL.BlendModeDst[DstBlend.Flush()],
-                        XNAToGL.BlendModeSrc[SrcBlendAlpha.Flush()],
-                        XNAToGL.BlendModeDst[DstBlendAlpha.Flush()]
-                    );
-                }
-                else
-                {
-                    GL.BlendFunc(
-                        XNAToGL.BlendModeSrc[SrcBlend.Flush()],
-                        XNAToGL.BlendModeDst[DstBlend.Flush()]
-                    );
-                    SrcBlendAlpha.Flush();
-                    DstBlendAlpha.Flush();
-                }
+                GL.BlendFuncSeparate(
+                    XNAToGL.BlendModeSrc[SrcBlend.Flush()],
+                    XNAToGL.BlendModeDst[DstBlend.Flush()],
+                    XNAToGL.BlendModeSrc[SrcBlendAlpha.Flush()],
+                    XNAToGL.BlendModeDst[DstBlendAlpha.Flush()]
+                );
             }
 
             if (force || BlendOp.NeedsFlush() || BlendOpAlpha.NeedsFlush())
@@ -466,35 +467,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     StencilRef.NeedsFlush() ||
                     StencilMask.NeedsFlush() ||
                     StencilFunc.NeedsFlush() ||
-                    CCWStencilFunc.NeedsFlush() )
-            {
-                if (SeparateStencilEnable.Flush())
-                {
-                    GL.StencilFuncSeparate(
-                        (Version20) CullFaceMode.Front,
-                        XNAToGL.StencilFunc[StencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
-                        StencilMask.Flush()
-                    );
-                    GL.StencilFuncSeparate(
-                        (Version20) CullFaceMode.Back,
-                        XNAToGL.StencilFunc[CCWStencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
-                        StencilMask.Flush()
-                    );
-                }
-                else
-                {
-                    GL.StencilFunc(
-                        XNAToGL.StencilFunc[StencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
-                        StencilMask.Flush()
-                    );
-                }
-            }
-
-            if (    force ||
-                    SeparateStencilEnable.NeedsFlush() ||
+                    CCWStencilFunc.NeedsFlush() ||
                     StencilFail.NeedsFlush() ||
                     StencilZFail.NeedsFlush() ||
                     StencilPass.NeedsFlush() ||
@@ -502,8 +475,21 @@ namespace Microsoft.Xna.Framework.Graphics
                     CCWStencilZFail.NeedsFlush() ||
                     CCWStencilPass.NeedsFlush() )
             {
+                // TODO: Can we split StencilFunc/StencilOp up nicely? -flibit
                 if (SeparateStencilEnable.Flush())
                 {
+                    GL.StencilFuncSeparate(
+                        (Version20) CullFaceMode.Front,
+                        XNAToGL.StencilFunc[StencilFunc.Flush()],
+                        StencilRef.Flush(),
+                        StencilMask.Flush()
+                    );
+                    GL.StencilFuncSeparate(
+                        (Version20) CullFaceMode.Back,
+                        XNAToGL.StencilFunc[CCWStencilFunc.Flush()],
+                        StencilRef.Flush(),
+                        StencilMask.Flush()
+                    );
                     GL.StencilOpSeparate(
                         StencilFace.Front,
                         XNAToGL.GLStencilOp[StencilFail.Flush()],
@@ -519,6 +505,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
                 else
                 {
+                    GL.StencilFunc(
+                        XNAToGL.StencilFunc[StencilFunc.Flush()],
+                        (int) StencilRef.Flush(),
+                        StencilMask.Flush()
+                    );
                     GL.StencilOp(
                         XNAToGL.GLStencilOp[StencilFail.Flush()],
                         XNAToGL.GLStencilOp[StencilZFail.Flush()],
@@ -554,6 +545,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (force || (latched == CullMode.None) != (current == CullMode.None))
                 {
                     ToggleGLState(EnableCap.CullFace, latched != CullMode.None);
+                    if (latched != CullMode.None)
+                    {
+                        // FIXME: XNA/MonoGame-specific behavior? -flibit
+                        GL.CullFace(CullFaceMode.Back);
+                    }
                 }
                 if (latched != CullMode.None)
                 {
@@ -582,13 +578,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
             if (force || GLViewport.NeedsFlush())
             {
-                Rectangle viewport = GLViewport.Flush();
+                Viewport viewport = GLViewport.Flush();
                 GL.Viewport(
                     viewport.X,
                     viewport.Y,
                     viewport.Width,
                     viewport.Height
                 );
+            }
+
+            if (force || DepthRangeMin.NeedsFlush() || DepthRangeMax.NeedsFlush())
+            {
+                GL.DepthRange(DepthRangeMin.Flush(), DepthRangeMax.Flush());
             }
 
             // END MISCELLANEOUS WRITE STATES
@@ -599,13 +600,13 @@ namespace Microsoft.Xna.Framework.Graphics
             for (int i = 0; i < Samplers.Length; i += 1)
             {
                 OpenGLSampler sampler = Samplers[i];
-                if (    force ||
+                if (!(  force ||
                         sampler.Target.NeedsFlush() ||
                         sampler.Texture.NeedsFlush() ||
                         sampler.WrapS.NeedsFlush() ||
                         sampler.WrapT.NeedsFlush() ||
                         sampler.WrapR.NeedsFlush() ||
-                        sampler.Filter.NeedsFlush() )
+                        sampler.Filter.NeedsFlush() ))
                 {
                     // Nothing changed in this sampler, skip it.
                     continue;
@@ -668,6 +669,7 @@ namespace Microsoft.Xna.Framework.Graphics
                         TextureParameterName.TextureMinFilter,
                         (int) XNAToGL.MinMipFilter[filter]
                     );
+                    // TODO: We can use MaxTextureAnistropy here! -flibit
                     GL.TexParameter(
                         target,
                         (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
@@ -694,7 +696,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Flush Vertex Attributes Method
 
-        public void FlushGLVertexAttributes(bool force)
+        public void FlushGLVertexAttributes(bool force = false)
         {
             for (int i = 0; i < Attributes.Length; i += 1)
             {
@@ -759,7 +761,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region glBindBuffer Methods
 
-        public void BindVertexBuffer(int buffer)
+        public void BindVertexBuffer(uint buffer)
         {
             if (buffer != currentVertexBuffer)
             {
@@ -768,7 +770,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        public void BindIndexBuffer(int buffer)
+        public void BindIndexBuffer(uint buffer)
         {
             if (buffer != currentIndexBuffer)
             {
@@ -797,7 +799,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region SetRenderTargets Method
 
-        public void SetRenderTargets(int[] attachments, int renderbuffer, DepthFormat depthFormat)
+        public void SetRenderTargets(int[] attachments, uint renderbuffer, DepthFormat depthFormat)
         {
             // Bind the right framebuffer, if needed
             if (attachments == null)
@@ -1184,7 +1186,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             public static void AttachDepthRenderbuffer(
-                int renderbuffer,
+                uint renderbuffer,
                 FramebufferAttachment depthFormat
             ) {
                 if (hasARB)

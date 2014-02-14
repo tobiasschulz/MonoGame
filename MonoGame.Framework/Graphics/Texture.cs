@@ -67,8 +67,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #elif OPENGL
 		internal int glTexture = -1;
 		internal TextureTarget glTarget;
-        internal TextureUnit glTextureUnit = TextureUnit.Texture0;
-        internal SamplerState glLastSamplerState = null;
 #endif
 		
 		public SurfaceFormat Format
@@ -163,7 +161,6 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 #if OPENGL
             this.glTexture = -1;
-            this.glLastSamplerState = null;
 #endif
 
 #if DIRECTX
@@ -191,8 +188,6 @@ namespace Microsoft.Xna.Framework.Graphics
                         GraphicsExtensions.CheckGLError();
                         glTexture = -1;
                     });
-
-                glLastSamplerState = null;
 #endif
             }
             base.Dispose(disposing);

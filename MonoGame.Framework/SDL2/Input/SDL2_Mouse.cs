@@ -90,8 +90,8 @@ namespace Microsoft.Xna.Framework.Input
             int x, y;
             uint flags = SDL.SDL_GetMouseState(out x, out y);
   
-            x = (int)((double)x * INTERNAL_BackbufferWidth / INTERNAL_WindowWidth);
-            y = (int)((double)y * INTERNAL_BackbufferHeight / INTERNAL_WindowHeight);
+            x = (int)((double)x * Graphics.OpenGLDevice.Instance.Backbuffer.Width / INTERNAL_WindowWidth);
+            y = (int)((double)y * Graphics.OpenGLDevice.Instance.Backbuffer.Height / INTERNAL_WindowHeight);
 
             window.MouseState.X = x;
             window.MouseState.Y = y;
@@ -122,8 +122,8 @@ namespace Microsoft.Xna.Framework.Input
         /// <param name="y">Relative vertical position of the cursor.</param>
         public static void SetPosition(int x, int y)
         {
-            x = (int)((double)x * INTERNAL_WindowWidth / INTERNAL_BackbufferWidth);
-            y = (int)((double)y * INTERNAL_WindowHeight / INTERNAL_BackbufferHeight);
+            x = (int)((double)x * INTERNAL_WindowWidth / Graphics.OpenGLDevice.Instance.Backbuffer.Width);
+            y = (int)((double)y * INTERNAL_WindowHeight / Graphics.OpenGLDevice.Instance.Backbuffer.Height);
             PrimaryWindow.MouseState.X = x;
             PrimaryWindow.MouseState.Y = y;
             

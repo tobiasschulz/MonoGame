@@ -2,31 +2,16 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
-#if OPENGL
-#if SDL2
 using OpenTK.Graphics.OpenGL;
-#else
-using OpenTK.Graphics.ES20;
-#endif
-#elif PSM
-using Sce.PlayStation.Core.Graphics;
-#elif DIRECTX
-using System.Reflection;
-#endif
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public class VertexDeclaration : GraphicsResource
 	{
-#if PSM
-        private VertexFormat[] _vertexFormat;
-#endif
-
 		private VertexElement[] _elements;
         private int _vertexStride;
-#if OPENGL
+
         Dictionary<int, VertexDeclarationAttributeInfo> shaderAttributeInfo = new Dictionary<int, VertexDeclarationAttributeInfo>();
-#endif
 
         /// <summary>
         /// A hash value which can be used to compare declarations.
@@ -87,11 +72,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (vertexType == null)
 				throw new ArgumentNullException("vertexType", "Cannot be null");
 
-#if WINRT
-            if (!vertexType.GetTypeInfo().IsValueType)
-#else
             if (!vertexType.IsValueType)
-#endif
             {
 				throw new ArgumentException("vertexType", "Must be value type");
 			}
@@ -124,7 +105,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 		}
 
-#if OPENGL
 		internal void Apply(Shader shader, IntPtr offset, int divisor = 0)
 		{
             VertexDeclarationAttributeInfo attrInfo;
@@ -158,48 +138,19 @@ namespace Microsoft.Xna.Framework.Graphics
             // Apply the vertex attribute info
             foreach (var element in attrInfo.Elements)
             {
-                GraphicsDevice.INTERNAL_glAttributeEnabled[element.AttributeLocation] = true;
-                GraphicsDevice.INTERNAL_glAttributeDivisors[element.AttributeLocation] = divisor;
-                GL.VertexAttribPointer(element.AttributeLocation,
+                OpenGLDevice.Instance.Attributes[element.AttributeLocation].Enabled.Set(true);
+                OpenGLDevice.Instance.Attributes[element.AttributeLocation].Divisor.Set(divisor);
+                OpenGLDevice.Instance.VertexAttribPointer(
+                    element.AttributeLocation,
                     element.NumberOfElements,
                     element.VertexAttribPointerType,
                     element.Normalized,
-                    this.VertexStride,
-                    (IntPtr)(offset.ToInt64() + element.Offset));
-                GraphicsExtensions.CheckGLError();
+                    VertexStride,
+                    (IntPtr) (offset.ToInt64() + element.Offset)
+                );
             }
 		}
 
-#endif // OPENGL
-
-#if DIRECTX
-
-        internal SharpDX.Direct3D11.InputElement[] GetInputLayout()
-        {
-            var inputs = new SharpDX.Direct3D11.InputElement[_elements.Length];
-            for (var i = 0; i < _elements.Length; i++)
-                inputs[i] = _elements[i].GetInputElement();
-
-            return inputs;
-        }
-
-#endif
-        
-#if PSM
-        internal VertexFormat[] GetVertexFormat()
-        {
-            if (_vertexFormat == null)
-            {
-                _vertexFormat = new VertexFormat[_elements.Length];
-                for (int i = 0; i < _vertexFormat.Length; i++)
-                    _vertexFormat[i] = PSSHelper.ToVertexFormat(_elements[i].VertexElementFormat);
-            }
-            
-            return _vertexFormat;
-        }
-#endif
-
-#if OPENGL
         /// <summary>
         /// Vertex attribute information for a particular shader/vertex declaration combination.
         /// </summary>
@@ -212,11 +163,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 public int Offset;
                 public int AttributeLocation;
                 public int NumberOfElements;
-#if GLES
-                public All VertexAttribPointerType;
-#elif OPENGL
                 public VertexAttribPointerType VertexAttribPointerType;
-#endif
                 public bool Normalized;
             }
 
@@ -228,6 +175,5 @@ namespace Microsoft.Xna.Framework.Graphics
                 Elements = new List<Element>();
             }
         }
-#endif
     }
 }

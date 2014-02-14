@@ -40,71 +40,35 @@
 //
 // Author: Kenneth James Pouncey
 
- 
-using System;
-using System.Collections.Generic;
-
-using OpenTK.Graphics.OpenGL;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-
     public sealed class SamplerStateCollection
 	{
-        private SamplerState[] _samplers;
+        private SamplerState[] samplers;
 
-		internal SamplerStateCollection( int maxSamplers )
+		internal SamplerStateCollection(int maxSamplers)
         {
-            _samplers = new SamplerState[maxSamplers];
+            samplers = new SamplerState[maxSamplers];
 		    Clear();
         }
-		
+
 		public SamplerState this [int index] 
         {
 			get 
             { 
-                return _samplers[index]; 
+                return samplers[index];
             }
-
 			set 
             {
-                if (_samplers[index] == value)
-                    return;
-
-                _samplers[index] = value;
+                samplers[index] = value;
             }
 		}
 
         internal void Clear()
         {
-            for (var i = 0; i < _samplers.Length; i++)
-                _samplers[i] = SamplerState.LinearWrap;
-        }
-
-        internal void SetSamplers(GraphicsDevice device)
-        {
-            for (var i = 0; i < _samplers.Length; i++)
+            for (int i = 0; i < samplers.Length; i += 1)
             {
-                var sampler = _samplers[i];
-                var texture = device.Textures[i];
-
-                if (sampler != null && texture != null && sampler != texture.glLastSamplerState)
-                {
-                    // TODO: Avoid doing this redundantly (see TextureCollection.SetTextures())
-                    // However, I suspect that rendering from the same texture with different sampling modes
-                    // is a relatively rare occurrence...
-                    GL.ActiveTexture(TextureUnit.Texture0 + i);
-                    GraphicsExtensions.CheckGLError();
-
-                    // NOTE: We don't have to bind the texture here because it is already bound in
-                    // TextureCollection.SetTextures(). This, of course, assumes that SetTextures() is called
-                    // before this method is called. If that ever changes this code will misbehave.
-                    // GL.BindTexture(texture.glTarget, texture.glTexture);
-                    // GraphicsExtensions.CheckGLError();
-
-                    sampler.Activate(texture.glTarget, texture.LevelCount > 1);
-                    texture.glLastSamplerState = sampler;
-                }
+                samplers[i] = SamplerState.LinearWrap;
             }
         }
 	}
