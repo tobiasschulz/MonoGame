@@ -1,32 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 
-#if OPENGL
-#if SDL2
 using OpenTK.Graphics.OpenGL;
-#elif GLES
-using OpenTK.Graphics.ES20;
-using BlendEquationMode = OpenTK.Graphics.ES20.All;
-using BlendingFactorSrc = OpenTK.Graphics.ES20.All;
-using BlendingFactorDest = OpenTK.Graphics.ES20.All;
-using VertexAttribPointerType = OpenTK.Graphics.ES20.All;
-using PixelInternalFormat = OpenTK.Graphics.ES20.All;
-using PixelType = OpenTK.Graphics.ES20.All;
-using PixelFormat = OpenTK.Graphics.ES20.All;
-using VertexPointerType = OpenTK.Graphics.ES20.All;
-using ColorPointerType = OpenTK.Graphics.ES20.All;
-using NormalPointerType = OpenTK.Graphics.ES20.All;
-using TexCoordPointerType = OpenTK.Graphics.ES20.All;
-using GetPName = OpenTK.Graphics.ES20.All;
-#endif
-#endif
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	[CLSCompliant(false)]
     public static class GraphicsExtensions
     {
-#if OPENGL
         public static All OpenGL11(CullMode cull)
         {
             switch (cull)
@@ -161,14 +142,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 case VertexElementFormat.NormalizedShort4:
                     return VertexAttribPointerType.Short;
-                
-#if SDL2
-               case VertexElementFormat.HalfVector2:
+
+                case VertexElementFormat.HalfVector2:
                     return VertexAttribPointerType.HalfFloat;
 
                 case VertexElementFormat.HalfVector4:
                     return VertexAttribPointerType.HalfFloat;
-#endif
             }
 
             throw new ArgumentException();
@@ -231,14 +210,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 case VertexElementFormat.NormalizedShort4:
                     return ColorPointerType.UnsignedShort;
-				
-#if SDL2
+
                 case VertexElementFormat.HalfVector2:
                     return ColorPointerType.HalfFloat;
 
                 case VertexElementFormat.HalfVector4:
                     return ColorPointerType.HalfFloat;
-#endif
 			}
 
             throw new ArgumentException();
@@ -277,14 +254,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 case VertexElementFormat.NormalizedShort4:
                     return NormalPointerType.Short;
-				
-#if SDL2
+
                 case VertexElementFormat.HalfVector2:
                     return NormalPointerType.HalfFloat;
 
                 case VertexElementFormat.HalfVector4:
                     return NormalPointerType.HalfFloat;
-#endif
 			}
 
             throw new ArgumentException();
@@ -323,14 +298,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 case VertexElementFormat.NormalizedShort4:
                     return TexCoordPointerType.Short;
-				
-#if SDL2
+
                 case VertexElementFormat.HalfVector2:
                     return TexCoordPointerType.HalfFloat;
 
                 case VertexElementFormat.HalfVector4:
                     return TexCoordPointerType.HalfFloat;
-#endif
 			}
 
             throw new ArgumentException();
@@ -342,17 +315,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			switch (function) {
 			case BlendFunction.Add:
 				return BlendEquationMode.FuncAdd;
-#if IOS
-			case BlendFunction.Max:
-				return BlendEquationMode.MaxExt;
-			case BlendFunction.Min:
-				return BlendEquationMode.MinExt;
-#elif SDL2
 			case BlendFunction.Max:
 				return BlendEquationMode.Max;
 			case BlendFunction.Min:
 				return BlendEquationMode.Min;
-#endif
 			case BlendFunction.ReverseSubtract:
 				return BlendEquationMode.FuncReverseSubtract;
 			case BlendFunction.Subtract:
@@ -377,11 +343,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			case Blend.InverseSourceAlpha:
 				return BlendingFactorSrc.OneMinusSrcAlpha;
 			case Blend.InverseSourceColor:
-#if SDL2
 				return (BlendingFactorSrc)All.OneMinusSrcColor;
-#else
-				return BlendingFactorSrc.OneMinusSrcColor;
-#endif
 			case Blend.One:
 				return BlendingFactorSrc.One;
 			case Blend.SourceAlpha:
@@ -389,11 +351,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			case Blend.SourceAlphaSaturation:
 				return BlendingFactorSrc.SrcAlphaSaturate;
 			case Blend.SourceColor:
-#if SDL2
 				return (BlendingFactorSrc)All.SrcColor;
-#else
-				return BlendingFactorSrc.SrcColor;
-#endif
 			case Blend.Zero:
 				return BlendingFactorSrc.Zero;
 			default:
@@ -455,11 +413,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				glType = PixelType.UnsignedShort565;
 				break;
 			case SurfaceFormat.Bgra4444:
-#if IOS || ANDROID
-				glInternalFormat = PixelInternalFormat.Rgba;
-#else
 				glInternalFormat = PixelInternalFormat.Rgba4;
-#endif
 				glFormat = PixelFormat.Rgba;
 				glType = PixelType.UnsignedShort4444;
 				break;
@@ -473,7 +427,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				glFormat = PixelFormat.Luminance;
 				glType = PixelType.UnsignedByte;
 				break;
-#if !IOS && !ANDROID
 			case SurfaceFormat.Dxt1:
 				glInternalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
 				glFormat = (PixelFormat)All.CompressedTextureFormats;
@@ -558,55 +511,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 glFormat = PixelFormat.Rgba;
                 glType = PixelType.UnsignedInt1010102;
                 break;
-#endif
-				
-#if ANDROID
-			case SurfaceFormat.Dxt1:
-                // 0x83F0 is the RGB version, 0x83F1 is the RGBA version (1-bit alpha)
-                // XNA uses the RGB version.
-                glInternalFormat = (PixelInternalFormat)0x83F0; 
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-            case SurfaceFormat.Dxt1a:
-                // 0x83F0 is the RGB version, 0x83F1 is the RGBA version (1-bit alpha)
-                glInternalFormat = (PixelInternalFormat)0x83F1;
-                glFormat = (PixelFormat)All.CompressedTextureFormats;
-                break;
-            case SurfaceFormat.Dxt3:
-                glInternalFormat = (PixelInternalFormat)0x83F2;
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-			case SurfaceFormat.Dxt5:
-                glInternalFormat = (PixelInternalFormat)0x83F3;
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-#endif
-                    
 
-#if IOS || ANDROID
-			case SurfaceFormat.RgbPvrtc2Bpp:
-				glInternalFormat = PixelInternalFormat.CompressedRgbPvrtc2Bppv1Img;
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-			case SurfaceFormat.RgbPvrtc4Bpp:
-				glInternalFormat = PixelInternalFormat.CompressedRgbPvrtc4Bppv1Img;
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-			case SurfaceFormat.RgbaPvrtc2Bpp:
-				glInternalFormat = PixelInternalFormat.CompressedRgbaPvrtc2Bppv1Img;
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-			case SurfaceFormat.RgbaPvrtc4Bpp:
-				glInternalFormat = PixelInternalFormat.CompressedRgbaPvrtc4Bppv1Img;
-				glFormat = (PixelFormat)All.CompressedTextureFormats;
-				break;
-#endif
 			default:
 				throw new NotSupportedException();
 			}
 		}
-
-#endif // OPENGL
 
         public static int GetFrameLatency(this PresentInterval interval)
         {
@@ -709,16 +618,10 @@ namespace Microsoft.Xna.Framework.Graphics
             return 0;
         }
 
-#if OPENGL
-
         public static int GetBoundTexture2D()
         {
             var prevTexture = 0;
-#if GLES
-            GL.GetInteger(GetPName.TextureBinding2D, ref prevTexture);
-#else
             GL.GetInteger(GetPName.TextureBinding2D, out prevTexture);
-#endif
             GraphicsExtensions.LogGLError("GraphicsExtensions.GetBoundTexture2D() GL.GetInteger");
             return prevTexture;
         }
@@ -727,20 +630,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		[DebuggerHidden]
         public static void CheckGLError()
         {
-#if GLES
-            All error = GL.GetError();
-            if (error != All.False)
-                throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
-#elif OPENGL
             ErrorCode error = GL.GetError();
             if (error != ErrorCode.NoError)
                 throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
-#endif
-
         }
-#endif
 
-#if OPENGL
         [Conditional("DEBUG")]
         public static void LogGLError(string location)
         {
@@ -750,15 +644,9 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             catch (MonoGameGLException ex)
             {
-#if ANDROID
-                // Todo: Add generic MonoGame logging interface
-                Android.Util.Log.Debug("MonoGame", "MonoGameGLException at " + location + " - " + ex.Message);
-#else
                 Debug.WriteLine("MonoGameGLException at " + location + " - " + ex.Message);
-#endif
             }
         }
-#endif
     }
 
     public class MonoGameGLException : Exception

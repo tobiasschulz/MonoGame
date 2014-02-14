@@ -44,15 +44,7 @@
 using System;
 using System.Collections.Generic;
 
-#if OPENGL
-#if SDL2
 using OpenTK.Graphics.OpenGL;
-#elif GLES
-using OpenTK.Graphics.ES20;
-using TextureUnit = OpenTK.Graphics.ES20.All;
-using TextureTarget = OpenTK.Graphics.ES20.All;
-#endif
-#endif
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -60,10 +52,6 @@ namespace Microsoft.Xna.Framework.Graphics
     public sealed class SamplerStateCollection
 	{
         private SamplerState[] _samplers;
-
-#if DIRECTX
-        private int _d3dDirty;
-#endif
 
 		internal SamplerStateCollection( int maxSamplers )
         {
@@ -84,10 +72,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     return;
 
                 _samplers[index] = value;
-
-#if DIRECTX
-                _d3dDirty |= 1 << index;
-#endif
             }
 		}
 
@@ -95,55 +79,10 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             for (var i = 0; i < _samplers.Length; i++)
                 _samplers[i] = SamplerState.LinearWrap;
-            
-#if DIRECTX
-            _d3dDirty = int.MaxValue;
-#endif
-        }
-
-        /// <summary>
-        /// Mark all the sampler slots as dirty.
-        /// </summary>
-        internal void Dirty()
-        {
-#if DIRECTX
-            _d3dDirty = int.MaxValue;
-#endif
         }
 
         internal void SetSamplers(GraphicsDevice device)
         {
-#if DIRECTX
-            // Skip out if nothing has changed.
-            if (_d3dDirty == 0)
-                return;
-
-            // NOTE: We make the assumption here that the caller has
-            // locked the d3dContext for us to use.
-            var pixelShaderStage = device._d3dContext.PixelShader;
-
-            for (var i = 0; i < _samplers.Length; i++)
-            {
-                var mask = 1 << i;
-                if ((_d3dDirty & mask) == 0)
-                    continue;
-
-                var sampler = _samplers[i];
-                SharpDX.Direct3D11.SamplerState state = null;
-                if (sampler != null)
-                    state = sampler.GetState(device);
-
-                pixelShaderStage.SetSampler(i, state);
-
-                _d3dDirty &= ~mask;
-                if (_d3dDirty == 0)
-                    break;
-            }
-
-            _d3dDirty = 0;
-
-#elif OPENGL
-
             for (var i = 0; i < _samplers.Length; i++)
             {
                 var sampler = _samplers[i];
@@ -167,36 +106,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     texture.glLastSamplerState = sampler;
                 }
             }
-#elif PSM
-            for (var i = 0; i < _samplers.Length; i++)
-            {
-                var sampler = _samplers[i];
-                var texture = device.Textures[i] as Texture2D;
-                if (texture == null)
-                    continue;
-                
-                var psmTexture = texture._texture2D;
-                
-                // FIXME: Handle mip attributes
-                
-                // FIXME: Separable filters
-                psmTexture.SetFilter(
-                    sampler.Filter == TextureFilter.Point
-                        ? Sce.PlayStation.Core.Graphics.TextureFilterMode.Nearest
-                        : Sce.PlayStation.Core.Graphics.TextureFilterMode.Linear
-                );
-                // FIXME: The third address mode
-                psmTexture.SetWrap(
-                    sampler.AddressU == TextureAddressMode.Clamp
-                        ? Sce.PlayStation.Core.Graphics.TextureWrapMode.ClampToEdge
-                        : Sce.PlayStation.Core.Graphics.TextureWrapMode.Repeat,
-                    sampler.AddressV == TextureAddressMode.Clamp
-                        ? Sce.PlayStation.Core.Graphics.TextureWrapMode.ClampToEdge
-                        : Sce.PlayStation.Core.Graphics.TextureWrapMode.Repeat
-                );
-            
-            }            
-#endif
         }
 	}
 }
