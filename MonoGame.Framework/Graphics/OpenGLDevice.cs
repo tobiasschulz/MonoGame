@@ -650,6 +650,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 if (force || sampler.Texture.NeedsFlush())
                 {
+                    force = true; // FIXME: Needed for wraps/filters... why is this? -flibit
                     GL.BindTexture(target, sampler.Texture.Flush());
                 }
 
