@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private BlendState _blendState = BlendState.Opaque;
         private DepthStencilState _depthStencilState = DepthStencilState.Default;
-		private RasterizerState _rasterizerState = RasterizerState.CullCounterClockwise;
+        private RasterizerState _rasterizerState = RasterizerState.CullCounterClockwise;
   
         private VertexBufferBinding[] _vertexBuffers;
         private IndexBuffer _indexBuffer;
@@ -112,23 +112,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
         static readonly float[] _posFixup = new float[4];
 
-		const FramebufferTarget GLFramebuffer = FramebufferTarget.FramebufferExt;
-		const RenderbufferTarget GLRenderbuffer = RenderbufferTarget.RenderbufferExt;
-		const FramebufferAttachment GLDepthAttachment = FramebufferAttachment.DepthAttachmentExt;
-		const FramebufferAttachment GLStencilAttachment = FramebufferAttachment.StencilAttachment;
-		const FramebufferAttachment GLColorAttachment0 = FramebufferAttachment.ColorAttachment0;
-		const GetPName GLFramebufferBinding = GetPName.FramebufferBinding;
-		const RenderbufferStorage GLDepthComponent16 = RenderbufferStorage.DepthComponent16;
-		const RenderbufferStorage GLDepthComponent24 = RenderbufferStorage.DepthComponent24;
-		const RenderbufferStorage GLDepth24Stencil8 = RenderbufferStorage.Depth24Stencil8;
-		const FramebufferErrorCode GLFramebufferComplete = FramebufferErrorCode.FramebufferComplete;
-		
-		// TODO Graphics Device events need implementing
-		public event EventHandler<EventArgs> DeviceLost;
-		public event EventHandler<EventArgs> DeviceReset;
-		public event EventHandler<EventArgs> DeviceResetting;
-		public event EventHandler<ResourceCreatedEventArgs> ResourceCreated;
-		public event EventHandler<ResourceDestroyedEventArgs> ResourceDestroyed;
+        // TODO Graphics Device events need implementing
+        public event EventHandler<EventArgs> DeviceLost;
+        public event EventHandler<EventArgs> DeviceReset;
+        public event EventHandler<EventArgs> DeviceResetting;
+        public event EventHandler<ResourceCreatedEventArgs> ResourceCreated;
+        public event EventHandler<ResourceDestroyedEventArgs> ResourceDestroyed;
         public event EventHandler<EventArgs> Disposing;
 
         private bool SuppressEventHandlerWarningsUntilEventsAreProperlyImplemented()
@@ -153,16 +142,18 @@ namespace Microsoft.Xna.Framework.Graphics
                 return _isDisposed;
             }
         }
-		
-		public bool IsContentLost { 
-			get {
-				// We will just return IsDisposed for now
-				// as that is the only case I can see for now
-				return IsDisposed;
-			}
-		}
-	
-	/// <summary>
+
+        public bool IsContentLost
+        {
+            get
+            {
+                // We will just return IsDisposed for now
+                // as that is the only case I can see for now
+                return IsDisposed;
+            }
+        }
+
+        /// <summary>
         /// Returns a handle to internal device object. Valid only on DirectX platforms.
         /// For usage, convert this to SharpDX.Direct3D11.Device.
         /// </summary>
@@ -173,7 +164,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 return null;
             }
         }
-	
+
         internal bool IsRenderTargetBound
         {
             get
@@ -199,7 +190,7 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         internal GraphicsDevice ()
-		{
+        {
             SetupGL();
             PresentationParameters = new PresentationParameters();
             PresentationParameters.DepthStencilFormat = DepthFormat.Depth24;
@@ -228,9 +219,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private void SetupGL() 
         {
-			// Initialize the main viewport
-			_viewport = new Viewport (0, 0, DisplayMode.Width, DisplayMode.Height);
-			_viewport.MaxDepth = 1.0f;
+            // Initialize the main viewport
+            _viewport = new Viewport (0, 0, DisplayMode.Width, DisplayMode.Height);
+            _viewport.MaxDepth = 1.0f;
    
             MaxTextureSlots = 16;
 
@@ -246,7 +237,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _extensions = GetGLExtensions();
 
             Textures = new TextureCollection (MaxTextureSlots);
-			SamplerStates = new SamplerStateCollection (MaxTextureSlots);
+            SamplerStates = new SamplerStateCollection (MaxTextureSlots);
 
         }
 
@@ -323,15 +314,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public BlendState BlendState 
         {
-			get
+            get
             {
                 return _blendState;
             }
-			set 
+            set
             {
-				_blendState = value;
+                _blendState = value;
             }
-		}
+        }
 
         public DepthStencilState DepthStencilState
         {
@@ -347,7 +338,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void Clear(Color color)
         {
-			var options = ClearOptions.Target;
+            var options = ClearOptions.Target;
 
             // TODO: We need to figure out how to detect if
             // we have a depth stencil buffer or not!
@@ -362,11 +353,11 @@ namespace Microsoft.Xna.Framework.Graphics
             Clear (options, color.ToVector4 (), depth, stencil);
         }
 
-		public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
-		{
+        public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
+        {
             OpenGLDevice.Instance.Clear(options, color, depth, stencil);
         }
-		
+
         public void Dispose()
         {
             Dispose(true);
@@ -414,7 +405,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void Present()
         {
-			GL.Flush();
+            GL.Flush();
             GraphicsExtensions.CheckGLError();
 
             // Dispose of any GL resources that were disposed in another thread
@@ -570,14 +561,14 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-		public void SetRenderTarget(RenderTarget2D renderTarget)
-		{
-			if (renderTarget == null)
+        public void SetRenderTarget(RenderTarget2D renderTarget)
+        {
+            if (renderTarget == null)
                 SetRenderTargets(null);
-			else
-				SetRenderTargets(new RenderTargetBinding(renderTarget));
-		}
-		
+            else
+                SetRenderTargets(new RenderTargetBinding(renderTarget));
+        }
+
         public void SetRenderTarget(RenderTargetCube renderTarget, CubeMapFace cubeMapFace)
         {
             if (renderTarget == null)
@@ -586,8 +577,30 @@ namespace Microsoft.Xna.Framework.Graphics
                 SetRenderTargets(new RenderTargetBinding(renderTarget, cubeMapFace));
         }
 
-		public void SetRenderTargets(params RenderTargetBinding[] renderTargets) 
-		{
+        public void SetRenderTargets(params RenderTargetBinding[] renderTargets)
+        {
+            // Checking for redundant SetRenderTargets...
+            if (renderTargets == null && !IsRenderTargetBound)
+            {
+                return;
+            }
+            else if (renderTargets.Length == _currentRenderTargetCount)
+            {
+                bool isRedundant = true;
+                for (int i = 0; i < renderTargets.Length; i += 1)
+                {
+                    if (    renderTargets[i].RenderTarget != _currentRenderTargetBindings[i].RenderTarget ||
+                            renderTargets[i].ArraySlice != _currentRenderTargetBindings[i].ArraySlice  )
+                    {
+                        isRedundant = false;
+                    }
+                }
+                if (isRedundant)
+                {
+                    return;
+                }
+            }
+
             Array.Clear(_currentRenderTargetBindings, 0, _currentRenderTargetBindings.Length);
             if (renderTargets == null || renderTargets.Length == 0)
             {
@@ -603,13 +616,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 if (PresentationParameters.RenderTargetUsage == RenderTargetUsage.DiscardContents)
                 {
-                    // FIXME: WhyTF should this not clear color too?! -flibit
-                    Clear(
-                        ClearOptions.DepthBuffer | ClearOptions.Stencil,
-                        new Vector4(0,0,0,0),
-                        Viewport.MaxDepth,
-                        0
-                    );
+                    Clear(DiscardColor);
                 }
             }
             else
@@ -639,13 +646,13 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-		public RenderTargetBinding[] GetRenderTargets()
-		{
+        public RenderTargetBinding[] GetRenderTargets()
+        {
             // Return a correctly sized copy our internal array.
             var bindings = new RenderTargetBinding[_currentRenderTargetCount];
             Array.Copy(_currentRenderTargetBindings, bindings, _currentRenderTargetCount);
             return bindings;
-		}
+        }
 
         public void GetRenderTargets(RenderTargetBinding[] outTargets)
         {
