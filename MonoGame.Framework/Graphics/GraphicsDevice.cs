@@ -593,13 +593,13 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 OpenGLDevice.Instance.SetRenderTargets(null, 0, DepthFormat.None);
 
+                _currentRenderTargetCount = 0;
+
                 // Set the viewport to the size of the backbuffer.
                 Viewport = new Viewport(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
 
                 // Set the scissor rectangle to the size of the backbuffer.
                 ScissorRectangle = new Rectangle(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
-
-                _currentRenderTargetCount = 0;
             }
             else
             {
@@ -612,14 +612,14 @@ namespace Microsoft.Xna.Framework.Graphics
                 RenderTarget2D target = (RenderTarget2D) renderTargets[0].RenderTarget;
                 OpenGLDevice.Instance.SetRenderTargets(glTarget, target.glDepthBuffer, target.DepthStencilFormat);
 
+                Array.Copy(renderTargets, _currentRenderTargetBindings, renderTargets.Length);
+                _currentRenderTargetCount = renderTargets.Length;
+
                 // Set the viewport to the size of the first render target.
                 Viewport = new Viewport(0, 0, target.Width, target.Height);
 
                 // Set the scissor rectangle to the size of the first render target.
                 ScissorRectangle = new Rectangle(0, 0, target.Width, target.Height);
-
-                Array.Copy(renderTargets, _currentRenderTargetBindings, renderTargets.Length);
-                _currentRenderTargetCount = renderTargets.Length;
             }
 
             if (PresentationParameters.RenderTargetUsage == RenderTargetUsage.DiscardContents)
