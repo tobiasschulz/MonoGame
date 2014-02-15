@@ -539,7 +539,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
 
                 OpenGLDevice.Instance.DepthRangeMin.Set(value.MinDepth);
-                OpenGLDevice.Instance.DepthRangeMin.Set(value.MaxDepth);
+                OpenGLDevice.Instance.DepthRangeMax.Set(value.MaxDepth);
 
                 // In OpenGL we have to re-apply the special "posFixup"
                 // vertex shader uniform if the viewport changes.
