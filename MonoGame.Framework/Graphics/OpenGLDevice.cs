@@ -98,7 +98,6 @@ namespace Microsoft.Xna.Framework.Graphics
         public class OpenGLVertexAttribute
         {
             // Checked in FlushVertexAttributes
-            public OpenGLState<bool> Enabled;
             public OpenGLState<int> Divisor;
 
             // Checked in VertexAttribPointer
@@ -111,7 +110,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
             public OpenGLVertexAttribute()
             {
-                Enabled = new OpenGLState<bool>(false);
                 Divisor = new OpenGLState<int>(0);
                 CurrentBuffer = 0;
                 CurrentSize = 4;
@@ -244,6 +242,14 @@ namespace Microsoft.Xna.Framework.Graphics
             private set;
         }
 
+        public bool[] AttributeEnabled
+        {
+            get;
+            private set;
+        }
+
+        private bool[] previousAttributeEnabled;
+
         #endregion
 
         #region Buffer Binding Cache Variables
@@ -333,9 +339,13 @@ namespace Microsoft.Xna.Framework.Graphics
             int numAttributes;
             GL.GetInteger(GetPName.MaxVertexAttribs, out numAttributes);
             Attributes = new OpenGLVertexAttribute[numAttributes];
+            AttributeEnabled = new bool[numAttributes];
+            previousAttributeEnabled = new bool[numAttributes];
             for (int i = 0; i < numAttributes; i += 1)
             {
                 Attributes[i] = new OpenGLVertexAttribute();
+                AttributeEnabled[i] = false;
+                previousAttributeEnabled[i] = false;
             }
 
             // Initialize render target FBO and state arrays
@@ -714,24 +724,24 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             for (int i = 0; i < Attributes.Length; i += 1)
             {
-                OpenGLVertexAttribute attrib = Attributes[i];
-
-                if (force || attrib.Enabled.NeedsFlush())
+                if (AttributeEnabled[i])
                 {
-                    if (attrib.Enabled.Flush())
+                    AttributeEnabled[i] = false;
+                    if (!previousAttributeEnabled[i])
                     {
-                        attrib.Enabled.Set(false); // It'll be re-enabled next draw. -flibit
                         GL.EnableVertexAttribArray(i);
-                    }
-                    else
-                    {
-                        GL.DisableVertexAttribArray(i);
+                        previousAttributeEnabled[i] = true;
                     }
                 }
-
-                if (force || attrib.Divisor.NeedsFlush())
+                else if (previousAttributeEnabled[i])
                 {
-                    GL.VertexAttribDivisor(i, attrib.Divisor.Flush());
+                    GL.DisableVertexAttribArray(i);
+                    previousAttributeEnabled[i] = false;
+                }
+
+                if (force || Attributes[i].Divisor.NeedsFlush())
+                {
+                    GL.VertexAttribDivisor(i, Attributes[i].Divisor.Flush());
                 }
             }
         }

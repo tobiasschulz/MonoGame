@@ -915,8 +915,8 @@ namespace Microsoft.Xna.Framework.Graphics
                     OpenGLDevice.Instance.Samplers[i].Texture.Set(texture.glTexture);
                     OpenGLDevice.Instance.Samplers[i].Target.Set(texture.glTarget);
                     OpenGLDevice.Instance.Samplers[i].WrapS.Set(sampler.AddressU);
-                    OpenGLDevice.Instance.Samplers[i].WrapS.Set(sampler.AddressV);
-                    OpenGLDevice.Instance.Samplers[i].WrapS.Set(sampler.AddressW);
+                    OpenGLDevice.Instance.Samplers[i].WrapT.Set(sampler.AddressV);
+                    OpenGLDevice.Instance.Samplers[i].WrapR.Set(sampler.AddressW);
                     OpenGLDevice.Instance.Samplers[i].Filter.Set(sampler.Filter);
                     OpenGLDevice.Instance.Samplers[i].HasMipmaps.Set(texture.LevelCount > 1);
                 }
