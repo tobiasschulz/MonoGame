@@ -620,11 +620,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 // Set the scissor rectangle to the size of the first render target.
                 ScissorRectangle = new Rectangle(0, 0, target.Width, target.Height);
-            }
 
-            if (PresentationParameters.RenderTargetUsage == RenderTargetUsage.DiscardContents)
-            {
-                Clear(DiscardColor);
+                if (target.RenderTargetUsage == RenderTargetUsage.DiscardContents)
+                {
+                    Clear(DiscardColor);
+                }
             }
         }
 
