@@ -584,7 +584,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 return;
             }
-            else if (renderTargets.Length == _currentRenderTargetCount)
+            else if (renderTargets != null && renderTargets.Length == _currentRenderTargetCount)
             {
                 bool isRedundant = true;
                 for (int i = 0; i < renderTargets.Length; i += 1)
