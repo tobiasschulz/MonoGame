@@ -858,18 +858,18 @@ namespace Microsoft.Xna.Framework.Graphics
             
             // Apply RasterizerState
             OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
-            if (GetRenderTargets().Length > 0)
+            if (IsRenderTargetBound)
             {
-                // When rendering offscreen the faces change order.
+                OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
+            }
+            else
+            {
+                // When not rendering offscreen the faces change order.
                 OpenGLDevice.Instance.CullFrontFace.Set(
                     _rasterizerState.CullMode == CullMode.CullClockwiseFace ?
                         CullMode.CullCounterClockwiseFace :
                         CullMode.CullClockwiseFace
                 );
-            }
-            else
-            {
-                OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
             }
 
             OpenGLDevice.Instance.GLFillMode.Set(_rasterizerState.FillMode);
