@@ -77,6 +77,7 @@ namespace Microsoft.Xna.Framework.Graphics
             public OpenGLState<TextureAddressMode> WrapR;
             public OpenGLState<TextureFilter> Filter;
             public OpenGLState<TextureTarget> Target;
+            public OpenGLState<bool> HasMipmaps;
 
             public OpenGLSampler()
             {
@@ -86,6 +87,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 WrapR = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 Filter = new OpenGLState<TextureFilter>(TextureFilter.Linear);
                 Target = new OpenGLState<TextureTarget>(TextureTarget.Texture2D);
+                HasMipmaps = new OpenGLState<bool>(false);
             }
         }
 
@@ -538,7 +540,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.ScissorTest, ScissorTestEnable.Flush());
             }
 
-            if (force || ScissorRectangle.NeedsFlush())
+            if (ScissorTestEnable.GetCurrent() && (force || ScissorRectangle.NeedsFlush()))
             {
                 Rectangle scissorRect = ScissorRectangle.Flush();
                 GL.Scissor(
@@ -617,7 +619,8 @@ namespace Microsoft.Xna.Framework.Graphics
                         sampler.WrapS.NeedsFlush() ||
                         sampler.WrapT.NeedsFlush() ||
                         sampler.WrapR.NeedsFlush() ||
-                        sampler.Filter.NeedsFlush() ))
+                        sampler.Filter.NeedsFlush() ||
+                        sampler.HasMipmaps.NeedsFlush()   ))
                 {
                     // Nothing changed in this sampler, skip it.
                     continue;
@@ -667,7 +670,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     );
                 }
 
-                if (force || sampler.Filter.NeedsFlush())
+                if (force || sampler.Filter.NeedsFlush() || sampler.HasMipmaps.NeedsFlush())
                 {
                     TextureFilter filter = sampler.Filter.Flush();
                     GL.TexParameter(
@@ -678,7 +681,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.TexParameter(
                         target,
                         TextureParameterName.TextureMinFilter,
-                        (int) XNAToGL.MinMipFilter[filter]
+                        (int) (sampler.HasMipmaps.Flush() ? XNAToGL.MinMipFilter[filter] : XNAToGL.MinFilter[filter])
                     );
                     // TODO: We can use MaxTextureAnistropy here! -flibit
                     GL.TexParameter(
@@ -818,11 +821,11 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GL.Disable(EnableCap.ScissorTest);
             }
-            if (!ZEnable.GetCurrent())
+            if (currentRenderbuffer != 0 && !ZEnable.GetCurrent())
             {
                 GL.Enable(EnableCap.DepthTest);
             }
-            if (!ZWriteEnable.GetCurrent())
+            if (currentRenderbuffer != 0 && !ZWriteEnable.GetCurrent())
             {
                 GL.DepthMask(true);
             }
@@ -870,11 +873,11 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GL.Enable(EnableCap.ScissorTest);
             }
-            if (!ZEnable.Flush())
+            if (currentRenderbuffer != 0 && !ZEnable.Flush())
             {
                 GL.Disable(EnableCap.DepthTest);
             }
-            if (!ZWriteEnable.Flush())
+            if (currentRenderbuffer != 0 && !ZWriteEnable.Flush())
             {
                 GL.DepthMask(false);
             }
@@ -1028,6 +1031,12 @@ namespace Microsoft.Xna.Framework.Graphics
                 private set;
             }
 
+            public static Dictionary<TextureFilter, TextureMinFilter> MinFilter
+            {
+                get;
+                private set;
+            }
+
             public static Dictionary<DepthFormat, FramebufferAttachment> DepthStencilAttachment
             {
                 get;
@@ -1134,6 +1143,16 @@ namespace Microsoft.Xna.Framework.Graphics
                 MinMipFilter.Add(TextureFilter.MinPointMagLinearMipLinear,  TextureMinFilter.NearestMipmapLinear);
                 MinMipFilter.Add(TextureFilter.MinLinearMagPointMipPoint,   TextureMinFilter.LinearMipmapNearest);
                 MinMipFilter.Add(TextureFilter.MinLinearMagPointMipLinear,  TextureMinFilter.LinearMipmapLinear);
+
+                MinFilter = new Dictionary<TextureFilter, TextureMinFilter>();
+                MinFilter.Add(TextureFilter.Point,                      TextureMinFilter.Nearest);
+                MinFilter.Add(TextureFilter.Linear,                     TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.Anisotropic,                TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.LinearMipPoint,             TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.MinPointMagLinearMipPoint,  TextureMinFilter.Nearest);
+                MinFilter.Add(TextureFilter.MinPointMagLinearMipLinear, TextureMinFilter.Nearest);
+                MinFilter.Add(TextureFilter.MinLinearMagPointMipPoint,  TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.MinLinearMagPointMipLinear, TextureMinFilter.Linear);
 
                 DepthStencilAttachment = new Dictionary<DepthFormat, FramebufferAttachment>();
                 DepthStencilAttachment.Add(DepthFormat.Depth16,         FramebufferAttachment.DepthAttachment);

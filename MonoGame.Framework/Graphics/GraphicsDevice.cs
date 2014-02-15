@@ -918,6 +918,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     OpenGLDevice.Instance.Samplers[i].WrapS.Set(sampler.AddressV);
                     OpenGLDevice.Instance.Samplers[i].WrapS.Set(sampler.AddressW);
                     OpenGLDevice.Instance.Samplers[i].Filter.Set(sampler.Filter);
+                    OpenGLDevice.Instance.Samplers[i].HasMipmaps.Set(texture.LevelCount > 1);
                 }
                 else if (texture == null)
                 {
