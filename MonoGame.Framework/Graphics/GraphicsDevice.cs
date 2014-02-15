@@ -600,6 +600,17 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 // Set the scissor rectangle to the size of the backbuffer.
                 ScissorRectangle = new Rectangle(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
+
+                if (PresentationParameters.RenderTargetUsage == RenderTargetUsage.DiscardContents)
+                {
+                    // FIXME: WhyTF should this not clear color too?! -flibit
+                    Clear(
+                        ClearOptions.DepthBuffer | ClearOptions.Stencil,
+                        new Vector4(0,0,0,0),
+                        Viewport.MaxDepth,
+                        0
+                    );
+                }
             }
             else
             {
