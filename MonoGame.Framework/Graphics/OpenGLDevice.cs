@@ -910,14 +910,21 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (attachments[i] != currentAttachments[i])
                 {
                     Framebuffer.AttachColor(attachments[i], i);
-                    drawBuffersChanged = currentAttachments[i] == 0;
                     currentAttachments[i] = attachments[i];
+                    if (currentDrawBuffers[i] == DrawBuffersEnum.None)
+                    {
+                        drawBuffersChanged = true;
+                        currentDrawBuffers[i] = DrawBuffersEnum.ColorAttachment0 + i;
+                    }
                 }
             }
             while (i < currentDrawBuffers.Length)
             {
-                drawBuffersChanged = currentDrawBuffers[i] != DrawBuffersEnum.None;
-                currentDrawBuffers[i] = DrawBuffersEnum.None;
+                if (currentDrawBuffers[i] != DrawBuffersEnum.None)
+                {
+                    drawBuffersChanged = true;
+                    currentDrawBuffers[i] = DrawBuffersEnum.None;
+                }
                 i += 1;
             }
             if (drawBuffersChanged)
