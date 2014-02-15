@@ -164,7 +164,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> StencilEnable = new OpenGLState<bool>(false);
 
-        // TODO: glStencilMask(StencilWriteMask)? -flibit
+        public OpenGLState<int> StencilWriteMask = new OpenGLState<int>(-1); // AKA 0xFFFFFFFF, ugh -flibit
 
         public OpenGLState<bool> SeparateStencilEnable = new OpenGLState<bool>(false);
 
@@ -259,6 +259,14 @@ namespace Microsoft.Xna.Framework.Graphics
         private DrawBuffersEnum[] currentDrawBuffers;
         private uint currentRenderbuffer;
         private DepthFormat currentDepthStencilFormat;
+
+        #endregion
+
+        #region Clear Cache Variables
+
+        private Vector4 currentClearColor = new Vector4(0, 0, 0, 0);
+        private float currentClearDepth = 1.0f;
+        private int currentClearStencil = 0;
 
         #endregion
 
@@ -460,7 +468,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.StencilTest, StencilEnable.Flush());
             }
 
-            // TODO: glStencilMask? -flibit
+            if (force || StencilWriteMask.NeedsFlush())
+            {
+                GL.StencilMask(StencilWriteMask.Flush());
+            }
 
             if (    force ||
                     SeparateStencilEnable.NeedsFlush() ||
@@ -589,7 +600,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             if (force || DepthRangeMin.NeedsFlush() || DepthRangeMax.NeedsFlush())
             {
-                GL.DepthRange(DepthRangeMin.Flush(), DepthRangeMax.Flush());
+                GL.DepthRange((double) DepthRangeMin.Flush(), (double) DepthRangeMax.Flush());
             }
 
             // END MISCELLANEOUS WRITE STATES
@@ -793,6 +804,79 @@ namespace Microsoft.Xna.Framework.Graphics
             else
             {
                 GL.Disable(feature);
+            }
+        }
+
+        #endregion
+
+        #region glClear Method
+
+        public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
+        {
+            // Move some stuff around so the glClear works...
+            if (ScissorTestEnable.GetCurrent())
+            {
+                GL.Disable(EnableCap.ScissorTest);
+            }
+            if (!ZEnable.GetCurrent())
+            {
+                GL.Enable(EnableCap.DepthTest);
+            }
+            if (!ZWriteEnable.GetCurrent())
+            {
+                GL.DepthMask(true);
+            }
+
+            // Get the clear mask, set the clear properties if needed
+            ClearBufferMask clearMask = 0;
+            if ((options & ClearOptions.Target) == ClearOptions.Target)
+            {
+                clearMask |= ClearBufferMask.ColorBufferBit;
+                if (!color.Equals(currentClearColor))
+                {
+                    GL.ClearColor(
+                        color.X,
+                        color.Y,
+                        color.Z,
+                        color.W
+                    );
+                    currentClearColor = color;
+                }
+            }
+            if ((options & ClearOptions.DepthBuffer) == ClearOptions.DepthBuffer)
+            {
+                clearMask |= ClearBufferMask.DepthBufferBit;
+                if (depth != currentClearDepth)
+                {
+                    GL.ClearDepth((double) depth);
+                    currentClearDepth = depth;
+                }
+            }
+            if ((options & ClearOptions.Stencil) == ClearOptions.Stencil)
+            {
+                clearMask |= ClearBufferMask.StencilBufferBit;
+                if (stencil != currentClearStencil)
+                {
+                    GL.ClearStencil(stencil);
+                    currentClearStencil = stencil;
+                }
+            }
+
+            // CLEAR!
+            GL.Clear(clearMask);
+
+            // Clean up after ourselves.
+            if (ScissorTestEnable.Flush())
+            {
+                GL.Enable(EnableCap.ScissorTest);
+            }
+            if (!ZEnable.Flush())
+            {
+                GL.Disable(EnableCap.DepthTest);
+            }
+            if (!ZWriteEnable.Flush())
+            {
+                GL.DepthMask(false);
             }
         }
 

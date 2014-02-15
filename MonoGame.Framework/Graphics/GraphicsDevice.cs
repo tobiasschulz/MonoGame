@@ -140,8 +140,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 Disposing != null;
         }
 
-        internal int glFramebuffer = 0;
-        internal int glRenderTargetFrameBuffer;
         internal int MaxVertexAttributes;        
         internal List<string> _extensions = new List<string>();
         internal int _maxTextureSize = 0;
@@ -366,50 +364,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
 		{
-            // Unlike with XNA and DirectX...  GL.Clear() obeys several
-            // different render states:
-            //
-            //  - The color write flags.
-            //  - The scissor rectangle.
-            //  - The depth/stencil state.
-            //
-            // So overwrite these states with what is needed to perform
-            // the clear correctly and restore it afterwards.
-            //
-		    var prevScissorRect = ScissorRectangle;
-		    var prevDepthStencilState = DepthStencilState;
-            var prevBlendState = BlendState;
-            ScissorRectangle = _viewport.Bounds;
-            DepthStencilState = DepthStencilState.Default;
-		    BlendState = BlendState.Opaque;
-            ApplyState(false);
-
-            ClearBufferMask bufferMask = 0;
-            if ((options & ClearOptions.Target) == ClearOptions.Target)
-            {
-                GL.ClearColor(color.X, color.Y, color.Z, color.W);
-                GraphicsExtensions.CheckGLError();
-                bufferMask = bufferMask | ClearBufferMask.ColorBufferBit;
-            }
-			if ((options & ClearOptions.Stencil) == ClearOptions.Stencil)
-            {
-				GL.ClearStencil(stencil);
-                GraphicsExtensions.CheckGLError();
-                bufferMask = bufferMask | ClearBufferMask.StencilBufferBit;
-			}
-
-			if ((options & ClearOptions.DepthBuffer) == ClearOptions.DepthBuffer) 
-            {
-                GL.ClearDepth ((double)depth);
-				bufferMask = bufferMask | ClearBufferMask.DepthBufferBit;
-			}
-
-			GL.Clear(bufferMask);
-
-            // Restore the previous render state.
-		    ScissorRectangle = prevScissorRect;
-		    DepthStencilState = prevDepthStencilState;
-		    BlendState = prevBlendState;
+            OpenGLDevice.Instance.Clear(options, color, depth, stencil);
         }
 		
         public void Dispose()
@@ -429,15 +384,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
                     // Free all the cached shader programs.
                     _programCache.Dispose();
-
-                    GraphicsDevice.AddDisposeAction(() =>
-                                                    {
-                        if (this.glRenderTargetFrameBuffer > 0)
-                        {
-                            GL.DeleteFramebuffers(1, ref this.glRenderTargetFrameBuffer);
-                            GraphicsExtensions.CheckGLError();
-                        }
-                    });
                 }
 
                 _isDisposed = true;
@@ -897,6 +843,7 @@ namespace Microsoft.Xna.Framework.Graphics
             OpenGLDevice.Instance.ZWriteEnable.Set(_depthStencilState.DepthBufferWriteEnable);
             OpenGLDevice.Instance.DepthFunc.Set(_depthStencilState.DepthBufferFunction);
             OpenGLDevice.Instance.StencilEnable.Set(_depthStencilState.StencilEnable);
+            OpenGLDevice.Instance.StencilWriteMask.Set(_depthStencilState.StencilWriteMask);
             OpenGLDevice.Instance.SeparateStencilEnable.Set(_depthStencilState.TwoSidedStencilMode);
             OpenGLDevice.Instance.StencilRef.Set(_depthStencilState.ReferenceStencil);
             OpenGLDevice.Instance.StencilMask.Set(_depthStencilState.StencilMask);
@@ -1183,6 +1130,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
 
             ApplyState(true);
+            OpenGLDevice.Instance.FlushGLState();
 
             // Unbind current buffer objects.
             OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -1230,6 +1178,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Debug.Assert(indexData != null && indexData.Length > 0, "The indexData must not be null or zero length!");
 
             ApplyState(true);
+            OpenGLDevice.Instance.FlushGLState();
 
             // Unbind current buffer objects.
             OpenGLDevice.Instance.BindVertexBuffer(0);
