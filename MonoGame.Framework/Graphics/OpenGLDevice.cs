@@ -1365,7 +1365,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.GenRenderbuffers(1, out handle);
                     GL.RenderbufferStorage(
                         RenderbufferTarget.Renderbuffer,
-                        RenderbufferStorage.DepthComponent16,
+                        glFormat,
                         width,
                         height
                     );
@@ -1375,7 +1375,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.Ext.GenRenderbuffers(1, out handle);
                     GL.Ext.RenderbufferStorage(
                         RenderbufferTarget.RenderbufferExt,
-                        RenderbufferStorage.DepthComponent16,
+                        glFormat,
                         width,
                         height
                     );
