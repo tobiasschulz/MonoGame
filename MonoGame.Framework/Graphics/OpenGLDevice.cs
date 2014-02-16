@@ -288,9 +288,57 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region OpenGL Extensions List
+        #region OpenGL Extensions List, Device Capabilities Variables
 
         public string Extensions
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsDxt1
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsS3tc
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsPvrtc
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsEtc1
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsAtitc
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsHardwareInstancing
+        {
+            get;
+            private set;
+        }
+
+        public int MaxTextureSlots
+        {
+            get;
+            private set;
+        }
+
+        public int MaxVertexAttributes
         {
             get;
             private set;
@@ -318,6 +366,35 @@ namespace Microsoft.Xna.Framework.Graphics
             // Load the extension list, initialize extension-dependent components
             Extensions = GL.GetString(StringName.Extensions);
             Framebuffer.Initialize();
+            SupportsS3tc = (
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_s3tc") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_OES_texture_compression_S3TC") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt3") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt5")
+            );
+            SupportsDxt1 = (
+                SupportsS3tc ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt1")
+            );
+            SupportsPvrtc = OpenGLDevice.Instance.Extensions.Contains("GL_IMG_texture_compression_pvrtc");
+            SupportsEtc1 = OpenGLDevice.Instance.Extensions.Contains("GL_OES_compressed_ETC1_RGB8_texture");
+            SupportsAtitc = (
+                OpenGLDevice.Instance.Extensions.Contains("GL_ATI_texture_compression_atitc") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_AMD_compressed_ATC_texture")
+            );
+            SupportsHardwareInstancing = (
+                OpenGLDevice.Instance.Extensions.Contains("GL_ARB_draw_instanced") &&
+                OpenGLDevice.Instance.Extensions.Contains("GL_ARB_instanced_arrays")
+            );
+
+            /* So apparently OSX Lion likes to lie about hardware instancing support.
+             * This is incredibly stupid, but it works!
+             * -flibit
+             */
+            if (SupportsHardwareInstancing && SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+            {
+                SupportsHardwareInstancing = SDL2.SDL.SDL_GL_GetProcAddress("glVertexAttribDivisorARB") != IntPtr.Zero;
+            }
 
             // Initialize the faux-backbuffer
             Backbuffer = new FauxBackbuffer(
@@ -334,6 +411,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 Samplers[i] = new OpenGLSampler();
             }
+            MaxTextureSlots = numSamplers;
 
             // Initialize vertex attribute state array
             int numAttributes;
@@ -347,6 +425,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 AttributeEnabled[i] = false;
                 previousAttributeEnabled[i] = false;
             }
+            MaxVertexAttributes = numAttributes;
 
             // Initialize render target FBO and state arrays
             int numAttachments;

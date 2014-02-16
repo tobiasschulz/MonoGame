@@ -86,16 +86,6 @@ namespace Microsoft.Xna.Framework.Content
 			int levelCount = (reader.ReadInt32 ());
             int levelCountOutput = levelCount;
 
-            // If the system does not fully support Power of Two textures,
-            // skip any mip maps supplied with any non PoT textures.
-			if (levelCount > 1 && !GraphicsCapabilities.SupportsNonPowerOfTwo &&
-                (!MathHelper.IsPowerOfTwo(width) || !MathHelper.IsPowerOfTwo(height)))
-            {
-                levelCountOutput = 1;
-                System.Diagnostics.Debug.WriteLine(
-                    "Device does not support non Power of Two textures. Skipping mipmaps.");
-            }
-
 			SurfaceFormat convertedFormat = surfaceFormat;
 			switch (surfaceFormat)
 			{
@@ -113,12 +103,12 @@ namespace Microsoft.Xna.Framework.Content
 #else
 				case SurfaceFormat.Dxt1:
                 case SurfaceFormat.Dxt1a:
-                    if (!GraphicsCapabilities.SupportsDxt1)
+                    if (!OpenGLDevice.Instance.SupportsDxt1)
                         convertedFormat = SurfaceFormat.Color;
                     break;
 				case SurfaceFormat.Dxt3:
 				case SurfaceFormat.Dxt5:
-                    if (!GraphicsCapabilities.SupportsS3tc)
+                    if (!OpenGLDevice.Instance.SupportsS3tc)
 					    convertedFormat = SurfaceFormat.Color;
 					break;
 #endif
@@ -150,21 +140,21 @@ namespace Microsoft.Xna.Framework.Content
 #if !IOS
 					case SurfaceFormat.Dxt1:
                     case SurfaceFormat.Dxt1a:
-                        if (!GraphicsCapabilities.SupportsDxt1)
+                        if (!OpenGLDevice.Instance.SupportsDxt1)
 						{
 						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 						    levelData = DxtUtil.DecompressDxt1(levelData, levelWidth, levelHeight);
 						}
 						break;
 					case SurfaceFormat.Dxt3:
-                        if (!GraphicsCapabilities.SupportsS3tc)
+                        if (!OpenGLDevice.Instance.SupportsS3tc)
 						{
 						    levelData = reader.ReadBytes(levelDataSizeInBytes);
 						    levelData = DxtUtil.DecompressDxt3(levelData, levelWidth, levelHeight);
 						}
 						break;
 					case SurfaceFormat.Dxt5:
-                        if (!GraphicsCapabilities.SupportsS3tc)
+                        if (!OpenGLDevice.Instance.SupportsS3tc)
 						{
 						    levelData = reader.ReadBytes(levelDataSizeInBytes);
     						levelData = DxtUtil.DecompressDxt5(levelData, levelWidth, levelHeight);

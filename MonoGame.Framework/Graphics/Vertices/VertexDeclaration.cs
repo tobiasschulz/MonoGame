@@ -112,7 +112,7 @@ namespace Microsoft.Xna.Framework.Graphics
             if (!shaderAttributeInfo.TryGetValue(shaderHash, out attrInfo))
             {
                 // Get the vertex attribute info and cache it
-                attrInfo = new VertexDeclarationAttributeInfo(GraphicsDevice.MaxVertexAttributes);
+                attrInfo = new VertexDeclarationAttributeInfo(OpenGLDevice.Instance.MaxVertexAttributes);
 
                 foreach (var ve in _elements)
                 {

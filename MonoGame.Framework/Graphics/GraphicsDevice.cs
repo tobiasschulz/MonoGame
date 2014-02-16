@@ -129,12 +129,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 Disposing != null;
         }
 
-        internal int MaxVertexAttributes;        
-        internal List<string> _extensions = new List<string>();
-        internal int _maxTextureSize = 0;
-        
-        internal int MaxTextureSlots;
-
         public bool IsDisposed
         {
             get
@@ -220,25 +214,11 @@ namespace Microsoft.Xna.Framework.Graphics
         private void SetupGL() 
         {
             // Initialize the main viewport
-            _viewport = new Viewport (0, 0, DisplayMode.Width, DisplayMode.Height);
+            _viewport = new Viewport(0, 0, DisplayMode.Width, DisplayMode.Height);
             _viewport.MaxDepth = 1.0f;
-   
-            MaxTextureSlots = 16;
 
-            GL.GetInteger(GetPName.MaxTextureImageUnits, out MaxTextureSlots);
-            GraphicsExtensions.CheckGLError();
-
-            GL.GetInteger(GetPName.MaxVertexAttribs, out MaxVertexAttributes);
-            GraphicsExtensions.CheckGLError();
-            
-            GL.GetInteger(GetPName.MaxTextureSize, out _maxTextureSize);
-            GraphicsExtensions.CheckGLError();
-
-            _extensions = GetGLExtensions();
-
-            Textures = new TextureCollection (MaxTextureSlots);
-            SamplerStates = new SamplerStateCollection (MaxTextureSlots);
-
+            Textures = new TextureCollection(OpenGLDevice.Instance.MaxTextureSlots);
+            SamplerStates = new SamplerStateCollection(OpenGLDevice.Instance.MaxTextureSlots);
         }
 
         ~GraphicsDevice()
@@ -246,28 +226,8 @@ namespace Microsoft.Xna.Framework.Graphics
             Dispose(false);
         }
 
-        List<string> GetGLExtensions()
-        {
-            // Setup extensions.
-            List<string> extensions = new List<string>();
-
-            var extstring = GL.GetString(StringName.Extensions);
-            GraphicsExtensions.CheckGLError();
-            if (!string.IsNullOrEmpty(extstring))
-            {
-                extensions.AddRange(extstring.Split(' '));
-                System.Diagnostics.Debug.WriteLine("Supported extensions:");
-                foreach (string extension in extensions)
-                    System.Diagnostics.Debug.WriteLine(extension);
-            }
-
-            return extensions;
-        }
-
         internal void Initialize()
         {
-            GraphicsCapabilities.Initialize(this);
-
             _viewport = new Viewport(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
 
             // Force set the default render states.
@@ -285,8 +245,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _pixelConstantBuffers.Clear();
 
             // Force set the buffers and shaders on next ApplyState() call
-            int maxVertexBufferSlots = MaxVertexAttributes;
-            _vertexBuffers = new VertexBufferBinding[maxVertexBufferSlots];
+            _vertexBuffers = new VertexBufferBinding[OpenGLDevice.Instance.MaxVertexAttributes];
 
             _vertexShaderDirty = true;
             _pixelShaderDirty = true;
@@ -927,7 +886,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _pixelConstantBuffers.SetConstantBuffers(this, _shaderProgram);
 
             // Apply Textures/Samplers
-            for (int i = 0; i < MaxTextureSlots; i += 1)
+            for (int i = 0; i < OpenGLDevice.Instance.MaxTextureSlots; i += 1)
             {
                 SamplerState sampler = SamplerStates[i];
                 Texture texture = Textures[i];
@@ -1022,7 +981,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // Note that minVertexIndex and numVertices are NOT used!
 
             // If this device doesn't have the support, just explode now before it's too late.
-            if (!GraphicsCapabilities.SupportsHardwareInstancing)
+            if (!OpenGLDevice.Instance.SupportsHardwareInstancing)
             {
                 throw new Exception("Your hardware does not support hardware instancing!");
             }
@@ -1096,9 +1055,11 @@ namespace Microsoft.Xna.Framework.Graphics
             OpenGLDevice.Instance.FlushGLVertexAttributes();
 
             //Draw
-            GL.DrawArrays(PrimitiveTypeGL(primitiveType),
-                          vertexOffset,
-                          vertexCount);
+            GL.DrawArrays(
+                PrimitiveTypeGL(primitiveType),
+                vertexOffset,
+                vertexCount
+            );
             GraphicsExtensions.CheckGLError();
 
             // Release the handles.
