@@ -873,9 +873,8 @@ namespace Microsoft.Xna.Framework.Graphics
             OpenGLDevice.Instance.CCWStencilFail.Set(_depthStencilState.CounterClockwiseStencilFail);
             OpenGLDevice.Instance.CCWStencilZFail.Set(_depthStencilState.CounterClockwiseStencilDepthBufferFail);
             OpenGLDevice.Instance.CCWStencilPass.Set(_depthStencilState.CounterClockwiseStencilPass);
-            
+
             // Apply RasterizerState
-            OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
             if (IsRenderTargetBound)
             {
                 OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
@@ -883,22 +882,27 @@ namespace Microsoft.Xna.Framework.Graphics
             else
             {
                 // When not rendering offscreen the faces change order.
-                OpenGLDevice.Instance.CullFrontFace.Set(
-                    _rasterizerState.CullMode == CullMode.CullClockwiseFace ?
-                        CullMode.CullCounterClockwiseFace :
-                        CullMode.CullClockwiseFace
-                );
+                if (_rasterizerState.CullMode == CullMode.None)
+                {
+                    OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
+                }
+                else
+                {
+                    OpenGLDevice.Instance.CullFrontFace.Set(
+                        _rasterizerState.CullMode == CullMode.CullClockwiseFace ?
+                            CullMode.CullCounterClockwiseFace :
+                            CullMode.CullClockwiseFace
+                    );
+                }
             }
-
             OpenGLDevice.Instance.GLFillMode.Set(_rasterizerState.FillMode);
             OpenGLDevice.Instance.ScissorTestEnable.Set(_rasterizerState.ScissorTestEnable);
-
             OpenGLDevice.Instance.DepthBias.Set(_rasterizerState.DepthBias);
             OpenGLDevice.Instance.SlopeScaleDepthBias.Set(_rasterizerState.SlopeScaleDepthBias);
 
             // TODO: MSAA?
 
-            // If we're not applying shaders then early out now.
+            // If we're not applying shaders then drop out now.
             if (!applyShaders)
             {
                 return;
