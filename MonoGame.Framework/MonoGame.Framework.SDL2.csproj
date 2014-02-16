@@ -406,6 +406,7 @@
     <Compile Include="GamerServices\NotificationPosition.cs" />
     <Compile Include="Graphics\DeviceLostException.cs" />
     <Compile Include="Graphics\OpenGLDevice.cs" />
+    <Compile Include="Graphics\OcclusionQuery.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">
