@@ -1257,6 +1257,65 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
+            public static uint GenRenderbuffer(int width, int height, DepthFormat format)
+            {
+                uint handle;
+
+                // DepthFormat->RenderbufferStorage
+                RenderbufferStorage glFormat;
+                if (format == DepthFormat.Depth16)
+                {
+                    glFormat = RenderbufferStorage.DepthComponent16;
+                }
+                else if (format == DepthFormat.Depth24)
+                {
+                    glFormat = RenderbufferStorage.DepthComponent24;
+                }
+                else if (format == DepthFormat.Depth24Stencil8)
+                {
+                    glFormat = RenderbufferStorage.Depth24Stencil8;
+                }
+                else
+                {
+                    throw new Exception("Unhandled DepthFormat: " + format);
+                }
+
+                // Actual GL calls!
+                if (hasARB)
+                {
+                    GL.GenRenderbuffers(1, out handle);
+                    GL.RenderbufferStorage(
+                        RenderbufferTarget.Renderbuffer,
+                        RenderbufferStorage.DepthComponent16,
+                        width,
+                        height
+                    );
+                }
+                else
+                {
+                    GL.Ext.GenRenderbuffers(1, out handle);
+                    GL.Ext.RenderbufferStorage(
+                        RenderbufferTarget.RenderbufferExt,
+                        RenderbufferStorage.DepthComponent16,
+                        width,
+                        height
+                    );
+                }
+                return handle;
+            }
+
+            public static void DeleteRenderbuffer(uint handle)
+            {
+                if (hasARB)
+                {
+                    GL.DeleteRenderbuffers(1, ref handle);
+                }
+                else
+                {
+                    GL.Ext.DeleteRenderbuffers(1, ref handle);
+                }
+            }
+
             public static void AttachColor(int colorAttachment, int index)
             {
                 if (hasARB)
