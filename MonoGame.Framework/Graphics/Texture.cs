@@ -117,7 +117,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 GraphicsDevice.AddDisposeAction(() =>
                 {
                     texture.Dispose();
-                    texture = null;
                 });
             }
             base.Dispose(disposing);

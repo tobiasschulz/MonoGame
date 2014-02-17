@@ -116,6 +116,7 @@ namespace Microsoft.Xna.Framework.Graphics
             public void Dispose()
             {
                 GL.DeleteTexture(Handle);
+                Handle = 0;
             }
 
             public void Flush(bool force)

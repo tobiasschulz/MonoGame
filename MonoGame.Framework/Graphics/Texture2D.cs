@@ -505,7 +505,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private void GenerateGLTextureIfRequired()
         {
-            if (texture == null)
+            if (texture == null || texture.Handle == 0)
             {
                 texture = new OpenGLDevice.OpenGLTexture(
                     TextureTarget.Texture2D,
