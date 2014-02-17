@@ -236,7 +236,7 @@ namespace Microsoft.Xna.Framework.Media
                 FramebufferTarget.Framebuffer,
                 FramebufferAttachment.ColorAttachment0,
                 TextureTarget.Texture2D,
-                videoTexture.glTexture,
+                videoTexture.texture.Handle,
                 0
             );
             

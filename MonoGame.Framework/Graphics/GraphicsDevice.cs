@@ -584,7 +584,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 int[] glTarget = new int[renderTargets.Length];
                 for (int i = 0; i < renderTargets.Length; i += 1)
                 {
-                    glTarget[i] = renderTargets[i].RenderTarget.glTexture;
+                    glTarget[i] = renderTargets[i].RenderTarget.texture.Handle;
                 }
                 RenderTarget2D target = (RenderTarget2D) renderTargets[0].RenderTarget;
                 OpenGLDevice.Instance.SetRenderTargets(glTarget, target.glDepthStencilBuffer, target.DepthStencilFormat);
@@ -893,17 +893,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 if (sampler != null && texture != null)
                 {
-                    OpenGLDevice.Instance.Samplers[i].Texture.Set(texture.glTexture);
-                    OpenGLDevice.Instance.Samplers[i].Target.Set(texture.glTarget);
-                    OpenGLDevice.Instance.Samplers[i].WrapS.Set(sampler.AddressU);
-                    OpenGLDevice.Instance.Samplers[i].WrapT.Set(sampler.AddressV);
-                    OpenGLDevice.Instance.Samplers[i].WrapR.Set(sampler.AddressW);
-                    OpenGLDevice.Instance.Samplers[i].Filter.Set(sampler.Filter);
-                    OpenGLDevice.Instance.Samplers[i].HasMipmaps.Set(texture.LevelCount > 1);
+                    OpenGLDevice.Instance.Samplers[i].Texture.Set(texture.texture);
+                    OpenGLDevice.Instance.Samplers[i].Target.Set(texture.texture.Target);
+                    texture.texture.WrapS.Set(sampler.AddressU);
+                    texture.texture.WrapT.Set(sampler.AddressV);
+                    texture.texture.WrapR.Set(sampler.AddressW);
+                    texture.texture.Filter.Set(sampler.Filter);
                 }
                 else if (texture == null)
                 {
-                    OpenGLDevice.Instance.Samplers[i].Texture.Set(0);
+                    OpenGLDevice.Instance.Samplers[i].Texture.Set(OpenGLDevice.OpenGLTexture.NullTexture);
                 }
             }
         }

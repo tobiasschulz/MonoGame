@@ -623,7 +623,6 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException)
 			{
 				// Try to reload as a non-xnb file.
-                // Just textures supported for now.
 
                 assetName = TitleContainer.GetFilename(Path.Combine(RootDirectory, assetName));
 
@@ -635,14 +634,7 @@ namespace Microsoft.Xna.Framework.Content
 
         protected virtual void ReloadRawAsset<T>(T asset, string assetName, string originalAssetName)
         {
-            if (asset is Texture2D)
-            {
-                using (Stream assetStream = TitleContainer.OpenStream(assetName))
-                {
-                    var textureAsset = asset as Texture2D;
-                    textureAsset.Reload(assetStream);
-                }
-            }
+            // FIXME: Is this needed? -flibit
         }
 
 		public virtual void Unload()

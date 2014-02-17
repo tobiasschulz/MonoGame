@@ -67,27 +67,144 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region OpenGL Sampler State Container Class
+        #region OpenGL Texture Container Class
 
-        public class OpenGLSampler
+        public class OpenGLTexture
         {
-            public OpenGLState<int> Texture;
+            public int Handle
+            {
+                get;
+                private set;
+            }
+
+            public TextureTarget Target
+            {
+                get;
+                private set;
+            }
+
+            public SurfaceFormat Format
+            {
+                get;
+                private set;
+            }
+
+            public bool HasMipmaps
+            {
+                get;
+                private set;
+            }
+
             public OpenGLState<TextureAddressMode> WrapS;
             public OpenGLState<TextureAddressMode> WrapT;
             public OpenGLState<TextureAddressMode> WrapR;
             public OpenGLState<TextureFilter> Filter;
-            public OpenGLState<TextureTarget> Target;
-            public OpenGLState<bool> HasMipmaps;
 
-            public OpenGLSampler()
+            public OpenGLTexture(TextureTarget target, SurfaceFormat format, bool hasMipmaps)
             {
-                Texture = new OpenGLState<int>(0);
+                Handle = GL.GenTexture();
+                Target = target;
+                Format = format;
+                HasMipmaps = hasMipmaps;
+
                 WrapS = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 WrapT = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 WrapR = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 Filter = new OpenGLState<TextureFilter>(TextureFilter.Linear);
+            }
+
+            public void Dispose()
+            {
+                GL.DeleteTexture(Handle);
+            }
+
+            public void Flush(bool force)
+            {
+                if (Handle == 0)
+                {
+                    return; // Nothing to modify!
+                }
+
+                if (force || WrapS.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureWrapS,
+                        (int) XNAToGL.Wrap[WrapS.Flush()]
+                    );
+                }
+
+                if (force || WrapT.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureWrapT,
+                        (int) XNAToGL.Wrap[WrapT.Flush()]
+                    );
+                }
+
+                if (force || WrapR.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureWrapR,
+                        (int) XNAToGL.Wrap[WrapR.Flush()]
+                    );
+                }
+
+                if (force || Filter.NeedsFlush())
+                {
+                    TextureFilter filter = Filter.Flush();
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureMagFilter,
+                        (int) XNAToGL.MagFilter[filter]
+                    );
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureMinFilter,
+                        (int) (HasMipmaps ? XNAToGL.MinMipFilter[filter] : XNAToGL.MinFilter[filter])
+                    );
+                    // TODO: We can use MaxTextureAnistropy here! -flibit
+                    GL.TexParameter(
+                        Target,
+                        (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
+                        (filter == TextureFilter.Anisotropic) ? 4.0f : 1.0f
+                    );
+                }
+            }
+
+            public void Generate2DMipmaps()
+            {
+                GL.BindTexture(Target, Handle);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.BindTexture(
+                    OpenGLDevice.Instance.Samplers[0].Target.GetCurrent(),
+                    OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle
+                );
+            }
+
+            // We can't set a SamplerState Texture to null, so use this.
+            private OpenGLTexture()
+            {
+                Handle = 0;
+            }
+            public static readonly OpenGLTexture NullTexture = new OpenGLTexture();
+        }
+
+        #endregion
+
+        #region OpenGL Sampler State Container Class
+
+        public class OpenGLSampler
+        {
+            public OpenGLState<OpenGLTexture> Texture;
+            public OpenGLState<TextureTarget> Target;
+
+            public OpenGLSampler()
+            {
+                Texture = new OpenGLState<OpenGLTexture>(OpenGLTexture.NullTexture);
                 Target = new OpenGLState<TextureTarget>(TextureTarget.Texture2D);
-                HasMipmaps = new OpenGLState<bool>(false);
             }
         }
 
@@ -308,24 +425,6 @@ namespace Microsoft.Xna.Framework.Graphics
             private set;
         }
 
-        public bool SupportsPvrtc
-        {
-            get;
-            private set;
-        }
-
-        public bool SupportsEtc1
-        {
-            get;
-            private set;
-        }
-
-        public bool SupportsAtitc
-        {
-            get;
-            private set;
-        }
-
         public bool SupportsHardwareInstancing
         {
             get;
@@ -375,12 +474,6 @@ namespace Microsoft.Xna.Framework.Graphics
             SupportsDxt1 = (
                 SupportsS3tc ||
                 OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt1")
-            );
-            SupportsPvrtc = OpenGLDevice.Instance.Extensions.Contains("GL_IMG_texture_compression_pvrtc");
-            SupportsEtc1 = OpenGLDevice.Instance.Extensions.Contains("GL_OES_compressed_ETC1_RGB8_texture");
-            SupportsAtitc = (
-                OpenGLDevice.Instance.Extensions.Contains("GL_ATI_texture_compression_atitc") ||
-                OpenGLDevice.Instance.Extensions.Contains("GL_AMD_compressed_ATC_texture")
             );
             SupportsHardwareInstancing = (
                 OpenGLDevice.Instance.Extensions.Contains("GL_ARB_draw_instanced") &&
@@ -704,12 +797,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 OpenGLSampler sampler = Samplers[i];
                 if (!(  force ||
                         sampler.Target.NeedsFlush() ||
-                        sampler.Texture.NeedsFlush() ||
-                        sampler.WrapS.NeedsFlush() ||
-                        sampler.WrapT.NeedsFlush() ||
-                        sampler.WrapR.NeedsFlush() ||
-                        sampler.Filter.NeedsFlush() ||
-                        sampler.HasMipmaps.NeedsFlush()   ))
+                        sampler.Texture.NeedsFlush()    ))
                 {
                     // Nothing changed in this sampler, skip it.
                     continue;
@@ -718,67 +806,18 @@ namespace Microsoft.Xna.Framework.Graphics
                 activeTexture = i;
                 GL.ActiveTexture(TextureUnit.Texture0 + i);
 
-                TextureTarget target = sampler.Target.GetCurrent();
                 bool targetForce = force;
                 if (force || sampler.Target.NeedsFlush())
                 {
                     force = true; // Reset the ENTIRE state when we change target!
                     GL.BindTexture(sampler.Target.GetCurrent(), 0);
-                    target = sampler.Target.Flush();
                 }
 
                 if (force || sampler.Texture.NeedsFlush())
                 {
-                    force = true; // FIXME: Needed for wraps/filters... why is this? -flibit
-                    GL.BindTexture(target, sampler.Texture.Flush());
-                }
-
-                if (force || sampler.WrapS.NeedsFlush())
-                {
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureWrapS,
-                        (int) XNAToGL.Wrap[sampler.WrapS.Flush()]
-                    );
-                }
-
-                if (force || sampler.WrapT.NeedsFlush())
-                {
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureWrapT,
-                        (int) XNAToGL.Wrap[sampler.WrapT.Flush()]
-                    );
-                }
-
-                if (force || sampler.WrapR.NeedsFlush())
-                {
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureWrapR,
-                        (int) XNAToGL.Wrap[sampler.WrapR.Flush()]
-                    );
-                }
-
-                if (force || sampler.Filter.NeedsFlush() || sampler.HasMipmaps.NeedsFlush())
-                {
-                    TextureFilter filter = sampler.Filter.Flush();
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureMagFilter,
-                        (int) XNAToGL.MagFilter[filter]
-                    );
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureMinFilter,
-                        (int) (sampler.HasMipmaps.Flush() ? XNAToGL.MinMipFilter[filter] : XNAToGL.MinFilter[filter])
-                    );
-                    // TODO: We can use MaxTextureAnistropy here! -flibit
-                    GL.TexParameter(
-                        target,
-                        (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-                        (filter == TextureFilter.Anisotropic) ? 4.0f : 1.0f
-                    );
+                    OpenGLTexture texture = sampler.Texture.Flush();
+                    GL.BindTexture(sampler.Target.Flush(), texture.Handle);
+                    texture.Flush(force);
                 }
 
                 // You didn't see nothin'.
@@ -1707,7 +1746,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 GL.BindTexture(
                     TextureTarget.Texture2D,
-                    OpenGLDevice.Instance.Samplers[0].Texture.Get()
+                    OpenGLDevice.Instance.Samplers[0].Texture.Get().Handle
                 );
 
                 Width = width;

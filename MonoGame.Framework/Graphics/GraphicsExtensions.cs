@@ -442,16 +442,9 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 case SurfaceFormat.Dxt1:
                 case SurfaceFormat.Dxt1a:
-                case SurfaceFormat.RgbPvrtc2Bpp:
-                case SurfaceFormat.RgbaPvrtc2Bpp:
-                case SurfaceFormat.RgbEtc1:
-                    // One texel in DXT1, PVRTC 2bpp and ETC1 is a minimum 4x4 block, which is 8 bytes
                     return 8;
                 case SurfaceFormat.Dxt3:
                 case SurfaceFormat.Dxt5:
-                case SurfaceFormat.RgbPvrtc4Bpp:
-                case SurfaceFormat.RgbaPvrtc4Bpp:
-                    // One texel in DXT3, DXT5 and PVRTC 4bpp is a minimum 4x4 block, which is 16 bytes
                     return 16;
                 case SurfaceFormat.Alpha8:
                     return 1;
@@ -520,14 +513,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     return 8;
             }
             return 0;
-        }
-
-        public static int GetBoundTexture2D()
-        {
-            var prevTexture = 0;
-            GL.GetInteger(GetPName.TextureBinding2D, out prevTexture);
-            GraphicsExtensions.LogGLError("GraphicsExtensions.GetBoundTexture2D() GL.GetInteger");
-            return prevTexture;
         }
 
         [Conditional("DEBUG")]

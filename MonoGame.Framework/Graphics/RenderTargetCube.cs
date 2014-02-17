@@ -76,13 +76,13 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <inheritdoc/>
         int IRenderTarget.Width
         {
-            get { return size; }
+            get { return Size; }
         }
 
         /// <inheritdoc/>
         int IRenderTarget.Height
         {
-            get { return size; }
+            get { return Size; }
         }
 
         /// <summary>

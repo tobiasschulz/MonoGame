@@ -68,18 +68,6 @@ namespace Microsoft.Xna.Framework.Graphics
         // BGRA formats are required for compatibility with WPF D3DImage.
         Bgr32 = 20,     // B8G8R8X8
         Bgra32 = 21,    // B8G8R8A8
-        
-		// Good explanation of compressed formats for mobile devices (aimed at Android, but describes PVRTC)
-		// http://developer.motorola.com/docstools/library/understanding-texture-compression/
-
-		// PowerVR texture compression (iOS and Android)
-		RgbPvrtc2Bpp = 50,
-		RgbPvrtc4Bpp = 51,
-		RgbaPvrtc2Bpp = 52,
-		RgbaPvrtc4Bpp = 53,
-
-		// Ericcson Texture Compression (Android)
-		RgbEtc1 = 60,
 
         // DXT1 also has a 1-bit alpha form
         Dxt1a = 70,
