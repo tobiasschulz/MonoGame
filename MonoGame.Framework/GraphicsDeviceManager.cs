@@ -389,6 +389,11 @@ namespace Microsoft.Xna.Framework
                 PreparingDeviceSettingsEventArgs pe = new PreparingDeviceSettingsEventArgs(gdi);
                 PreparingDeviceSettings(this, pe);
                 presentationParameters = pe.GraphicsDeviceInformation.PresentationParameters;
+
+                // FIXME: PreparingDeviceSettings may change these parameters, update ours too? -flibit
+                PreferredBackBufferFormat = presentationParameters.BackBufferFormat;
+                PreferredDepthStencilFormat = presentationParameters.DepthStencilFormat;
+
                 GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
             }
 
