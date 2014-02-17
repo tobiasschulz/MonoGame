@@ -254,6 +254,21 @@ namespace Microsoft.Xna.Framework.Graphics
                     for (int i = 0; i < numModes; i++)
                     {
                         SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
+
+                        // FIXME: I'm about ready to remove refresh_rate. It breaks compatibility. -flibit
+                        bool dupe = false;
+                        foreach (DisplayMode mode in modes)
+                        {
+                            if (filler.w == mode.Width || filler.h == mode.Height)
+                            {
+                                dupe = true;
+                            }
+                        }
+                        if (dupe)
+                        {
+                            continue;
+                        }
+
                         modes.Add(
                             new DisplayMode(
                                 filler.w,
