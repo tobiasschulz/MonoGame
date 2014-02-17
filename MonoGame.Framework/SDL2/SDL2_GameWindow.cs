@@ -642,7 +642,9 @@ namespace Microsoft.Xna.Framework
                 "0",
                 SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
             );
-            
+
+            OpenGLDevice.Instance.Dispose();
+
 #if THREADED_GL
             SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
 #endif
