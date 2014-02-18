@@ -26,6 +26,8 @@
  */
 #endregion
 
+// TODO: Get this to use the OpenGLDevice instead of raw OpenGL -flibit
+
 #region VideoPlayer Graphics Define
 #if SDL2
 #define VIDEOPLAYER_OPENGL
@@ -631,6 +633,8 @@ namespace Microsoft.Xna.Framework.Media
             );
             
             // Set up the vertex pointers/arrays.
+            OpenGLDevice.Instance.Attributes[0].CurrentBuffer = uint.MaxValue;
+            OpenGLDevice.Instance.Attributes[1].CurrentBuffer = uint.MaxValue;
             GL.VertexAttribPointer(
                 0,
                 2,
