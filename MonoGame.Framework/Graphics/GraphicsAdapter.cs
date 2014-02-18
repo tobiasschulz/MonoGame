@@ -259,7 +259,7 @@ namespace Microsoft.Xna.Framework.Graphics
                         bool dupe = false;
                         foreach (DisplayMode mode in modes)
                         {
-                            if (filler.w == mode.Width || filler.h == mode.Height)
+                            if (filler.w == mode.Width && filler.h == mode.Height)
                             {
                                 dupe = true;
                             }
