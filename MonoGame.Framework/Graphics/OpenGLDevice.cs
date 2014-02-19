@@ -1403,22 +1403,26 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (hasARB)
                 {
                     GL.GenRenderbuffers(1, out handle);
+                    GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, handle);
                     GL.RenderbufferStorage(
                         RenderbufferTarget.Renderbuffer,
                         glFormat,
                         width,
                         height
                     );
+                    GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
                 }
                 else
                 {
                     GL.Ext.GenRenderbuffers(1, out handle);
+                    GL.Ext.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, handle);
                     GL.Ext.RenderbufferStorage(
                         RenderbufferTarget.RenderbufferExt,
                         glFormat,
                         width,
                         height
                     );
+                    GL.Ext.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, 0);
                 }
                 return handle;
             }

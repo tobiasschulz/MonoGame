@@ -85,6 +85,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     height,
                     preferredDepthFormat
                 );
+                GraphicsExtensions.CheckGLError();
             });
 
         }
