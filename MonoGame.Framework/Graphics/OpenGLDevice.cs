@@ -1076,8 +1076,8 @@ namespace Microsoft.Xna.Framework.Graphics
                         0,
                         XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
                     );
-                    currentDepthStencilFormat = depthFormat;
                 }
+                currentDepthStencilFormat = depthFormat;
                 if (currentDepthStencilFormat != DepthFormat.None)
                 {
                     Framebuffer.AttachDepthRenderbuffer(
