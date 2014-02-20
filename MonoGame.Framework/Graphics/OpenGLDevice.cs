@@ -951,13 +951,13 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GL.Disable(EnableCap.ScissorTest);
             }
-            if (currentRenderbuffer != 0 && !ZEnable.GetCurrent())
-            {
-                GL.Enable(EnableCap.DepthTest);
-            }
-            if (currentRenderbuffer != 0 && !ZWriteEnable.GetCurrent())
+            if (!ZWriteEnable.GetCurrent())
             {
                 GL.DepthMask(true);
+            }
+            if (StencilWriteMask.GetCurrent() != Int32.MaxValue)
+            {
+                GL.StencilMask(Int32.MaxValue);
             }
 
             // Get the clear mask, set the clear properties if needed
@@ -1003,13 +1003,13 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GL.Enable(EnableCap.ScissorTest);
             }
-            if (currentRenderbuffer != 0 && !ZEnable.Flush())
-            {
-                GL.Disable(EnableCap.DepthTest);
-            }
-            if (currentRenderbuffer != 0 && !ZWriteEnable.Flush())
+            if (!ZWriteEnable.Flush())
             {
                 GL.DepthMask(false);
+            }
+            if (StencilWriteMask.Flush() != Int32.MaxValue)
+            {
+                GL.StencilMask(StencilWriteMask.Flush());
             }
         }
 
