@@ -500,6 +500,11 @@ namespace Microsoft.Xna.Framework
                     {
                         Mouse.INTERNAL_MouseWheel += evt.wheel.y;
                     }
+
+                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
+                    {
+                        Mouse.INTERNAL_IsWarped = false;
+                    }
                     
                     // Controller device management
                     else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEADDED)
