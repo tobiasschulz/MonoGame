@@ -41,10 +41,6 @@ purpose and non-infringement.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Input.Touch;
-using System.Diagnostics;
 
 using OpenTK.Graphics.OpenGL;
 
@@ -669,7 +665,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void GetRenderTargets(RenderTargetBinding[] outTargets)
         {
-            Debug.Assert(outTargets.Length == RenderTargetCount, "Invalid outTargets array length!");
             Array.Copy(renderTargetBindings, outTargets, RenderTargetCount);
         }
 
