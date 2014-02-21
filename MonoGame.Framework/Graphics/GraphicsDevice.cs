@@ -38,11 +38,13 @@ purpose and non-infringement.
 */
 #endregion License
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
