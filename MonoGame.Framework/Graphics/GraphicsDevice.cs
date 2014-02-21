@@ -52,19 +52,12 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class GraphicsDevice : IDisposable
     {
-        private Viewport _viewport;
+        private Viewport INTERNAL_viewport;
 
-        private bool _isDisposed;
-
-        private BlendState _blendState = BlendState.Opaque;
-        private DepthStencilState _depthStencilState = DepthStencilState.Default;
-        private RasterizerState _rasterizerState = RasterizerState.CullCounterClockwise;
-  
         private VertexBufferBinding[] _vertexBuffers;
         private IndexBuffer _indexBuffer;
 
         private readonly RenderTargetBinding[] _currentRenderTargetBindings = new RenderTargetBinding[4];
-        private int _currentRenderTargetCount;
 
         public TextureCollection Textures { get; private set; }
 
@@ -120,42 +113,19 @@ namespace Microsoft.Xna.Framework.Graphics
         public event EventHandler<ResourceDestroyedEventArgs> ResourceDestroyed;
         public event EventHandler<EventArgs> Disposing;
 
-        private bool SuppressEventHandlerWarningsUntilEventsAreProperlyImplemented()
-        {
-            return
-                DeviceLost != null &&
-                ResourceCreated != null &&
-                ResourceDestroyed != null &&
-                Disposing != null;
-        }
-
         public bool IsDisposed
         {
-            get
-            {
-                return _isDisposed;
-            }
+            get;
+            private set;
         }
 
         public bool IsContentLost
         {
             get
             {
-                // We will just return IsDisposed for now
-                // as that is the only case I can see for now
+                // We will just return IsDisposed, as that
+                // is the only case I can see for now
                 return IsDisposed;
-            }
-        }
-
-        /// <summary>
-        /// Returns a handle to internal device object. Valid only on DirectX platforms.
-        /// For usage, convert this to SharpDX.Direct3D11.Device.
-        /// </summary>
-        public object Handle
-        {
-            get
-            {
-                return null;
             }
         }
 
@@ -163,7 +133,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-                return _currentRenderTargetCount > 0;
+                return RenderTargetCount > 0;
             }
         }
 
@@ -171,24 +141,6 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get;
             private set;
-        }
-
-        internal GraphicsDevice(GraphicsDeviceInformation gdi)
-        {
-            SetupGL();
-            if (gdi.PresentationParameters == null)
-                throw new ArgumentNullException("presentationParameters");
-            PresentationParameters = gdi.PresentationParameters;
-            GraphicsProfile = gdi.GraphicsProfile;
-            Initialize();
-        }
-
-        internal GraphicsDevice ()
-        {
-            SetupGL();
-            PresentationParameters = new PresentationParameters();
-            PresentationParameters.DepthStencilFormat = DepthFormat.Depth24;
-            Initialize();
         }
 
         /// <summary>
@@ -204,31 +156,11 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             Adapter = adapter;
             if (presentationParameters == null)
+            {
                 throw new ArgumentNullException("presentationParameters");
-            SetupGL();
+            }
             PresentationParameters = presentationParameters;
             GraphicsProfile = graphicsProfile;
-            Initialize();
-        }
-
-        private void SetupGL() 
-        {
-            // Initialize the main viewport
-            _viewport = new Viewport(0, 0, DisplayMode.Width, DisplayMode.Height);
-            _viewport.MaxDepth = 1.0f;
-
-            Textures = new TextureCollection(OpenGLDevice.Instance.MaxTextureSlots);
-            SamplerStates = new SamplerStateCollection(OpenGLDevice.Instance.MaxTextureSlots);
-        }
-
-        ~GraphicsDevice()
-        {
-            Dispose(false);
-        }
-
-        internal void Initialize()
-        {
-            _viewport = new Viewport(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
 
             // Force set the default render states.
             BlendState = BlendState.Opaque;
@@ -237,6 +169,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Clear the texture and sampler collections forcing
             // the state to be reapplied.
+            Textures = new TextureCollection(OpenGLDevice.Instance.MaxTextureSlots);
+            SamplerStates = new SamplerStateCollection(OpenGLDevice.Instance.MaxTextureSlots);
             Textures.Clear();
             SamplerStates.Clear();
 
@@ -251,70 +185,16 @@ namespace Microsoft.Xna.Framework.Graphics
             _pixelShaderDirty = true;
 
             // Set the default scissor rect.
-            ScissorRectangle = _viewport.Bounds;
+            ScissorRectangle = Viewport.Bounds;
 
             // Free all the cached shader programs. 
             _programCache.Clear();
             _shaderProgram = -1;
         }
 
-        public RasterizerState RasterizerState
+        ~GraphicsDevice()
         {
-            get
-            {
-                return _rasterizerState;
-            }
-
-            set
-            {
-                _rasterizerState = value;
-            }
-        }
-
-        public BlendState BlendState 
-        {
-            get
-            {
-                return _blendState;
-            }
-            set
-            {
-                _blendState = value;
-            }
-        }
-
-        public DepthStencilState DepthStencilState
-        {
-            get
-            {
-                return _depthStencilState;
-            }
-            set
-            {
-                _depthStencilState = value;
-            }
-        }
-
-        public void Clear(Color color)
-        {
-            var options = ClearOptions.Target;
-
-            // TODO: We need to figure out how to detect if
-            // we have a depth stencil buffer or not!
-            options |= ClearOptions.DepthBuffer;
-            options |= ClearOptions.Stencil;
-
-            Clear(options, color.ToVector4(), _viewport.MaxDepth, 0);
-        }
-
-        public void Clear(ClearOptions options, Color color, float depth, int stencil)
-        {
-            Clear (options, color.ToVector4 (), depth, stencil);
-        }
-
-        public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
-        {
-            OpenGLDevice.Instance.Clear(options, color, depth, stencil);
+            Dispose(false);
         }
 
         public void Dispose()
@@ -325,19 +205,67 @@ namespace Microsoft.Xna.Framework.Graphics
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
-                    // Dispose of all remaining graphics resources before disposing of the graphics device
+                    // Dispose of all remaining graphics resources before disposing of the GraphicsDevice
                     GraphicsResource.DisposeAll();
 
                     // Free all the cached shader programs.
                     _programCache.Dispose();
                 }
 
-                _isDisposed = true;
+                IsDisposed = true;
             }
+        }
+
+        public RasterizerState RasterizerState
+        {
+            get;
+            set;
+        }
+
+        public BlendState BlendState 
+        {
+            get;
+            set;
+        }
+
+        public DepthStencilState DepthStencilState
+        {
+            get;
+            set;
+        }
+
+        public void Clear(Color color)
+        {
+            Clear(
+                ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil,
+                color.ToVector4(),
+                Viewport.MaxDepth,
+                0
+            );
+        }
+
+        public void Clear(ClearOptions options, Color color, float depth, int stencil)
+        {
+            Clear(
+                options,
+                color.ToVector4(),
+                depth,
+                stencil
+            );
+        }
+
+        public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
+        {
+            OpenGLDevice.Instance.Clear(
+                options,
+                color,
+                depth,
+                stencil
+            );
         }
 
         /// <summary>
@@ -345,10 +273,12 @@ namespace Microsoft.Xna.Framework.Graphics
         /// This allows GL resources to be disposed from other threads, such as the finalizer.
         /// </summary>
         /// <param name="disposeAction">The action to execute for the dispose.</param>
-        static internal void AddDisposeAction(Action disposeAction)
+        internal static void AddDisposeAction(Action disposeAction)
         {
             if (disposeAction == null)
+            {
                 throw new ArgumentNullException("disposeAction");
+            }
             if (Threading.IsOnUIThread())
             {
                 disposeAction();
@@ -373,7 +303,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (disposeActions.Count > 0)
                 {
                     foreach (var action in disposeActions)
+                    {
                         action();
+                    }
                     disposeActions.Clear();
                 }
             }
@@ -409,7 +341,9 @@ namespace Microsoft.Xna.Framework.Graphics
         internal void OnDeviceResetting()
         {
             if (DeviceResetting != null)
+            {
                 DeviceResetting(this, EventArgs.Empty);
+            }
 
 #if !SDL2
             // FIXME: What, why, why -flibit
@@ -424,7 +358,9 @@ namespace Microsoft.Xna.Framework.Graphics
         internal void OnDeviceReset()
         {
             if (DeviceReset != null)
+            {
                 DeviceReset(this, EventArgs.Empty);
+            }
         }
 
         public DisplayMode DisplayMode
@@ -462,12 +398,12 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-                return _viewport;
+                return INTERNAL_viewport;
             }
 
             set
             {
-                _viewport = value;
+                INTERNAL_viewport = value;
 
                 if (IsRenderTargetBound)
                 {
@@ -514,10 +450,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public int RenderTargetCount
         {
-            get
-            {
-                return _currentRenderTargetCount;
-            }
+            get;
+            private set;
         }
 
         public void SetRenderTarget(RenderTarget2D renderTarget)
@@ -543,7 +477,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 return;
             }
-            else if (renderTargets != null && renderTargets.Length == _currentRenderTargetCount)
+            else if (renderTargets != null && renderTargets.Length == RenderTargetCount)
             {
                 bool isRedundant = true;
                 for (int i = 0; i < renderTargets.Length; i += 1)
@@ -565,7 +499,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 OpenGLDevice.Instance.SetRenderTargets(null, 0, DepthFormat.None);
 
-                _currentRenderTargetCount = 0;
+                RenderTargetCount = 0;
 
                 // Set the viewport to the size of the backbuffer.
                 Viewport = new Viewport(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
@@ -590,7 +524,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 OpenGLDevice.Instance.SetRenderTargets(glTarget, target.glDepthStencilBuffer, target.DepthStencilFormat);
 
                 Array.Copy(renderTargets, _currentRenderTargetBindings, renderTargets.Length);
-                _currentRenderTargetCount = renderTargets.Length;
+                RenderTargetCount = renderTargets.Length;
 
                 // Set the viewport to the size of the first render target.
                 Viewport = new Viewport(0, 0, target.Width, target.Height);
@@ -608,15 +542,15 @@ namespace Microsoft.Xna.Framework.Graphics
         public RenderTargetBinding[] GetRenderTargets()
         {
             // Return a correctly sized copy our internal array.
-            var bindings = new RenderTargetBinding[_currentRenderTargetCount];
-            Array.Copy(_currentRenderTargetBindings, bindings, _currentRenderTargetCount);
+            var bindings = new RenderTargetBinding[RenderTargetCount];
+            Array.Copy(_currentRenderTargetBindings, bindings, RenderTargetCount);
             return bindings;
         }
 
         public void GetRenderTargets(RenderTargetBinding[] outTargets)
         {
-            Debug.Assert(outTargets.Length == _currentRenderTargetCount, "Invalid outTargets array length!");
-            Array.Copy(_currentRenderTargetBindings, outTargets, _currentRenderTargetCount);
+            Debug.Assert(outTargets.Length == RenderTargetCount, "Invalid outTargets array length!");
+            Array.Copy(_currentRenderTargetBindings, outTargets, RenderTargetCount);
         }
 
 
@@ -801,63 +735,63 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             // Apply BlendState
             OpenGLDevice.Instance.AlphaBlendEnable.Set(
-                !(  _blendState.ColorSourceBlend == Blend.One && 
-                    _blendState.ColorDestinationBlend == Blend.Zero &&
-                    _blendState.AlphaSourceBlend == Blend.One &&
-                    _blendState.AlphaDestinationBlend == Blend.Zero    )
+                !(  BlendState.ColorSourceBlend == Blend.One && 
+                    BlendState.ColorDestinationBlend == Blend.Zero &&
+                    BlendState.AlphaSourceBlend == Blend.One &&
+                    BlendState.AlphaDestinationBlend == Blend.Zero  )
             );
-            OpenGLDevice.Instance.BlendColor.Set(_blendState.BlendFactor);
-            OpenGLDevice.Instance.BlendOp.Set(_blendState.ColorBlendFunction);
-            OpenGLDevice.Instance.BlendOpAlpha.Set(_blendState.AlphaBlendFunction);
-            OpenGLDevice.Instance.SrcBlend.Set(_blendState.ColorSourceBlend);
-            OpenGLDevice.Instance.DstBlend.Set(_blendState.ColorDestinationBlend);
-            OpenGLDevice.Instance.SrcBlendAlpha.Set(_blendState.AlphaSourceBlend);
-            OpenGLDevice.Instance.DstBlendAlpha.Set(_blendState.AlphaDestinationBlend);
-            OpenGLDevice.Instance.ColorWriteEnable.Set(_blendState.ColorWriteChannels);
+            OpenGLDevice.Instance.BlendColor.Set(BlendState.BlendFactor);
+            OpenGLDevice.Instance.BlendOp.Set(BlendState.ColorBlendFunction);
+            OpenGLDevice.Instance.BlendOpAlpha.Set(BlendState.AlphaBlendFunction);
+            OpenGLDevice.Instance.SrcBlend.Set(BlendState.ColorSourceBlend);
+            OpenGLDevice.Instance.DstBlend.Set(BlendState.ColorDestinationBlend);
+            OpenGLDevice.Instance.SrcBlendAlpha.Set(BlendState.AlphaSourceBlend);
+            OpenGLDevice.Instance.DstBlendAlpha.Set(BlendState.AlphaDestinationBlend);
+            OpenGLDevice.Instance.ColorWriteEnable.Set(BlendState.ColorWriteChannels);
             
             // Apply DepthStencilState
-            OpenGLDevice.Instance.ZEnable.Set(_depthStencilState.DepthBufferEnable);
-            OpenGLDevice.Instance.ZWriteEnable.Set(_depthStencilState.DepthBufferWriteEnable);
-            OpenGLDevice.Instance.DepthFunc.Set(_depthStencilState.DepthBufferFunction);
-            OpenGLDevice.Instance.StencilEnable.Set(_depthStencilState.StencilEnable);
-            OpenGLDevice.Instance.StencilWriteMask.Set(_depthStencilState.StencilWriteMask);
-            OpenGLDevice.Instance.SeparateStencilEnable.Set(_depthStencilState.TwoSidedStencilMode);
-            OpenGLDevice.Instance.StencilRef.Set(_depthStencilState.ReferenceStencil);
-            OpenGLDevice.Instance.StencilMask.Set(_depthStencilState.StencilMask);
-            OpenGLDevice.Instance.StencilFunc.Set(_depthStencilState.StencilFunction);
-            OpenGLDevice.Instance.CCWStencilFunc.Set(_depthStencilState.CounterClockwiseStencilFunction);
-            OpenGLDevice.Instance.StencilFail.Set(_depthStencilState.StencilFail);
-            OpenGLDevice.Instance.StencilZFail.Set(_depthStencilState.StencilDepthBufferFail);
-            OpenGLDevice.Instance.StencilPass.Set(_depthStencilState.StencilPass);
-            OpenGLDevice.Instance.CCWStencilFail.Set(_depthStencilState.CounterClockwiseStencilFail);
-            OpenGLDevice.Instance.CCWStencilZFail.Set(_depthStencilState.CounterClockwiseStencilDepthBufferFail);
-            OpenGLDevice.Instance.CCWStencilPass.Set(_depthStencilState.CounterClockwiseStencilPass);
+            OpenGLDevice.Instance.ZEnable.Set(DepthStencilState.DepthBufferEnable);
+            OpenGLDevice.Instance.ZWriteEnable.Set(DepthStencilState.DepthBufferWriteEnable);
+            OpenGLDevice.Instance.DepthFunc.Set(DepthStencilState.DepthBufferFunction);
+            OpenGLDevice.Instance.StencilEnable.Set(DepthStencilState.StencilEnable);
+            OpenGLDevice.Instance.StencilWriteMask.Set(DepthStencilState.StencilWriteMask);
+            OpenGLDevice.Instance.SeparateStencilEnable.Set(DepthStencilState.TwoSidedStencilMode);
+            OpenGLDevice.Instance.StencilRef.Set(DepthStencilState.ReferenceStencil);
+            OpenGLDevice.Instance.StencilMask.Set(DepthStencilState.StencilMask);
+            OpenGLDevice.Instance.StencilFunc.Set(DepthStencilState.StencilFunction);
+            OpenGLDevice.Instance.CCWStencilFunc.Set(DepthStencilState.CounterClockwiseStencilFunction);
+            OpenGLDevice.Instance.StencilFail.Set(DepthStencilState.StencilFail);
+            OpenGLDevice.Instance.StencilZFail.Set(DepthStencilState.StencilDepthBufferFail);
+            OpenGLDevice.Instance.StencilPass.Set(DepthStencilState.StencilPass);
+            OpenGLDevice.Instance.CCWStencilFail.Set(DepthStencilState.CounterClockwiseStencilFail);
+            OpenGLDevice.Instance.CCWStencilZFail.Set(DepthStencilState.CounterClockwiseStencilDepthBufferFail);
+            OpenGLDevice.Instance.CCWStencilPass.Set(DepthStencilState.CounterClockwiseStencilPass);
 
             // Apply RasterizerState
             if (IsRenderTargetBound)
             {
-                OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
+                OpenGLDevice.Instance.CullFrontFace.Set(RasterizerState.CullMode);
             }
             else
             {
                 // When not rendering offscreen the faces change order.
-                if (_rasterizerState.CullMode == CullMode.None)
+                if (RasterizerState.CullMode == CullMode.None)
                 {
-                    OpenGLDevice.Instance.CullFrontFace.Set(_rasterizerState.CullMode);
+                    OpenGLDevice.Instance.CullFrontFace.Set(RasterizerState.CullMode);
                 }
                 else
                 {
                     OpenGLDevice.Instance.CullFrontFace.Set(
-                        _rasterizerState.CullMode == CullMode.CullClockwiseFace ?
+                        RasterizerState.CullMode == CullMode.CullClockwiseFace ?
                             CullMode.CullCounterClockwiseFace :
                             CullMode.CullClockwiseFace
                     );
                 }
             }
-            OpenGLDevice.Instance.GLFillMode.Set(_rasterizerState.FillMode);
-            OpenGLDevice.Instance.ScissorTestEnable.Set(_rasterizerState.ScissorTestEnable);
-            OpenGLDevice.Instance.DepthBias.Set(_rasterizerState.DepthBias);
-            OpenGLDevice.Instance.SlopeScaleDepthBias.Set(_rasterizerState.SlopeScaleDepthBias);
+            OpenGLDevice.Instance.GLFillMode.Set(RasterizerState.FillMode);
+            OpenGLDevice.Instance.ScissorTestEnable.Set(RasterizerState.ScissorTestEnable);
+            OpenGLDevice.Instance.DepthBias.Set(RasterizerState.DepthBias);
+            OpenGLDevice.Instance.SlopeScaleDepthBias.Set(RasterizerState.SlopeScaleDepthBias);
 
             // TODO: MSAA?
 
