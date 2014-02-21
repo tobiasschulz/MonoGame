@@ -87,15 +87,16 @@ namespace Microsoft.Xna.Framework.Input
         /// presses for the provided window
         /// </summary>
         /// <returns>Current state of the mouse.</returns>
-        public static MouseState GetState (GameWindow window)
+        public static MouseState GetState(GameWindow window)
         {
             int x, y;
-            uint flags = SDL.SDL_GetMouseState (out x, out y);
+            uint flags = SDL.SDL_GetMouseState(out x, out y);
 
             x = (int)((double)x * INTERNAL_BackbufferWidth / INTERNAL_WindowWidth);
             y = (int)((double)y * INTERNAL_BackbufferHeight / INTERNAL_WindowHeight);
 
-            if (!INTERNAL_IsWarped) {
+            if (!INTERNAL_IsWarped)
+            {
                 window.MouseState.X = x;
                 window.MouseState.Y = y;
             }
