@@ -153,7 +153,6 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 return OpenGLDevice.Instance.ScissorRectangle.Get();
             }
-
             set
             {
                 OpenGLDevice.Instance.ScissorRectangle.Set(value);
@@ -171,7 +170,6 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 return INTERNAL_viewport;
             }
-
             set
             {
                 INTERNAL_viewport = value;
