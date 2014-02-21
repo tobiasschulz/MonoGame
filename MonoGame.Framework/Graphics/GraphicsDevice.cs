@@ -87,7 +87,7 @@ namespace Microsoft.Xna.Framework.Graphics
         public GraphicsProfile GraphicsProfile
         {
             get;
-            set;
+            private set;
         }
 
         public PresentationParameters PresentationParameters
