@@ -445,6 +445,12 @@ namespace Microsoft.Xna.Framework
                         }
                     }
 
+                    // Mouse Motion Event
+                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
+                    {
+                        Mouse.INTERNAL_IsWarped = false;
+                    }
+
                     // Various Window Events...
                     else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
                     {
@@ -499,11 +505,6 @@ namespace Microsoft.Xna.Framework
                     else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
                     {
                         Mouse.INTERNAL_MouseWheel += evt.wheel.y;
-                    }
-
-                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
-                    {
-                        Mouse.INTERNAL_IsWarped = false;
                     }
                     
                     // Controller device management
