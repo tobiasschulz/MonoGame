@@ -76,6 +76,8 @@ namespace Microsoft.Xna.Framework.Input
         internal static int INTERNAL_WindowWidth = 800;
         internal static int INTERNAL_WindowHeight = 600;
 
+        internal static bool INTERNAL_IsWarped = false;
+
         #endregion
 
         #region Public Interface
@@ -89,13 +91,16 @@ namespace Microsoft.Xna.Framework.Input
         {
             int x, y;
             uint flags = SDL.SDL_GetMouseState(out x, out y);
-  
+
             x = (int)((double)x * Graphics.OpenGLDevice.Instance.Backbuffer.Width / INTERNAL_WindowWidth);
             y = (int)((double)y * Graphics.OpenGLDevice.Instance.Backbuffer.Height / INTERNAL_WindowHeight);
 
-            window.MouseState.X = x;
-            window.MouseState.Y = y;
-            
+            if (!INTERNAL_IsWarped)
+            {
+                window.MouseState.X = x;
+                window.MouseState.Y = y;
+            }
+
             window.MouseState.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
             window.MouseState.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
             window.MouseState.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
@@ -128,6 +133,7 @@ namespace Microsoft.Xna.Framework.Input
             PrimaryWindow.MouseState.Y = y;
             
             SDL.SDL_WarpMouseInWindow(INTERNAL_sdlWindowHandle, x, y);
+            INTERNAL_IsWarped = true;
         }
 
         #endregion
