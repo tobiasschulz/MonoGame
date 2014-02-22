@@ -445,6 +445,12 @@ namespace Microsoft.Xna.Framework
                         }
                     }
 
+                    // Mouse Motion Event
+                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
+                    {
+                        Mouse.INTERNAL_IsWarped = false;
+                    }
+
                     // Various Window Events...
                     else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
                     {
