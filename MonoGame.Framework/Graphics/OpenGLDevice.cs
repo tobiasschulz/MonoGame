@@ -726,7 +726,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     GL.StencilFunc(
                         XNAToGL.StencilFunc[StencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
+                        StencilRef.Flush(),
                         StencilMask.Flush()
                     );
                     GL.StencilOp(
