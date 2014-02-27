@@ -405,7 +405,8 @@ namespace Microsoft.Xna.Framework.Graphics
         private int currentFramebuffer = 0;
         private int targetFramebuffer = 0;
         private int[] currentAttachments;
-        private DrawBuffersEnum[] currentDrawBuffers;
+        private int currentDrawBuffers;
+        private DrawBuffersEnum[] drawBuffersArray;
         private uint currentRenderbuffer;
         private DepthFormat currentDepthStencilFormat;
 
@@ -548,12 +549,13 @@ namespace Microsoft.Xna.Framework.Graphics
             int numAttachments;
             GL.GetInteger(GetPName.MaxDrawBuffers, out numAttachments);
             currentAttachments = new int[numAttachments];
-            currentDrawBuffers = new DrawBuffersEnum[numAttachments];
+            drawBuffersArray = new DrawBuffersEnum[numAttachments];
             for (int i = 0; i < numAttachments; i += 1)
             {
                 currentAttachments[i] = 0;
-                currentDrawBuffers[i] = DrawBuffersEnum.None;
+                drawBuffersArray[i] = DrawBuffersEnum.ColorAttachment0 + i;
             }
+            currentDrawBuffers = 0;
             currentRenderbuffer = 0;
             currentDepthStencilFormat = DepthFormat.None;
             targetFramebuffer = Framebuffer.GenFramebuffer();
@@ -1062,7 +1064,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Update the color attachments, DrawBuffers state
-            bool drawBuffersChanged = false;
             int i = 0;
             for (i = 0; i < attachments.Length; i += 1)
             {
@@ -1070,25 +1071,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     Framebuffer.AttachColor(attachments[i], i);
                     currentAttachments[i] = attachments[i];
-                    if (currentDrawBuffers[i] == DrawBuffersEnum.None)
-                    {
-                        drawBuffersChanged = true;
-                        currentDrawBuffers[i] = DrawBuffersEnum.ColorAttachment0 + i;
-                    }
                 }
             }
-            while (i < currentDrawBuffers.Length)
+            while (i < currentAttachments.Length)
             {
-                if (currentDrawBuffers[i] != DrawBuffersEnum.None)
+                if (currentAttachments[i] != 0)
                 {
-                    drawBuffersChanged = true;
-                    currentDrawBuffers[i] = DrawBuffersEnum.None;
+                    Framebuffer.AttachColor(0, i);
                 }
                 i += 1;
             }
-            if (drawBuffersChanged)
+            if (attachments.Length != currentDrawBuffers)
             {
-                GL.DrawBuffers(currentDrawBuffers.Length, currentDrawBuffers);
+                GL.DrawBuffers(attachments.Length, drawBuffersArray);
+                currentDrawBuffers = attachments.Length;
             }
 
             // Update the depth/stencil attachment
