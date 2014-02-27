@@ -1218,6 +1218,9 @@ namespace Microsoft.Xna.Framework.Graphics
                     texture.texture.WrapT.Set(sampler.AddressV);
                     texture.texture.WrapR.Set(sampler.AddressW);
                     texture.texture.Filter.Set(sampler.Filter);
+                    texture.texture.Anistropy.Set(sampler.MaxAnisotropy);
+                    texture.texture.MaxMipmapLevel.Set(sampler.MaxMipLevel);
+                    texture.texture.LODBias.Set(sampler.MipMapLevelOfDetailBias);
                 }
                 else if (texture == null)
                 {

@@ -99,6 +99,9 @@ namespace Microsoft.Xna.Framework.Graphics
             public OpenGLState<TextureAddressMode> WrapT;
             public OpenGLState<TextureAddressMode> WrapR;
             public OpenGLState<TextureFilter> Filter;
+            public OpenGLState<float> Anistropy;
+            public OpenGLState<int> MaxMipmapLevel;
+            public OpenGLState<float> LODBias;
 
             public OpenGLTexture(TextureTarget target, SurfaceFormat format, bool hasMipmaps)
             {
@@ -111,6 +114,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 WrapT = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 WrapR = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 Filter = new OpenGLState<TextureFilter>(TextureFilter.Linear);
+                Anistropy = new OpenGLState<float>(4.0f);
+                MaxMipmapLevel = new OpenGLState<int>(0);
+                LODBias = new OpenGLState<float>(0.0f);
             }
 
             public void Dispose()
@@ -153,7 +159,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     );
                 }
 
-                if (force || Filter.NeedsFlush())
+                if (force || Filter.NeedsFlush() || Anistropy.NeedsFlush())
                 {
                     TextureFilter filter = Filter.Flush();
                     GL.TexParameter(
@@ -166,11 +172,28 @@ namespace Microsoft.Xna.Framework.Graphics
                         TextureParameterName.TextureMinFilter,
                         (int) (HasMipmaps ? XNAToGL.MinMipFilter[filter] : XNAToGL.MinFilter[filter])
                     );
-                    // TODO: We can use MaxTextureAnistropy here! -flibit
                     GL.TexParameter(
                         Target,
                         (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-                        (filter == TextureFilter.Anisotropic) ? 4.0f : 1.0f
+                        (filter == TextureFilter.Anisotropic) ? Anistropy.Flush() : 1.0f
+                    );
+                }
+
+                if (force || MaxMipmapLevel.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureBaseLevel,
+                        MaxMipmapLevel.Flush()
+                    );
+                }
+
+                if (force || LODBias.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureLodBias,
+                        LODBias.Flush()
                     );
                 }
             }
@@ -1660,7 +1683,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             public void ResetFramebuffer(int width, int height, DepthFormat depthFormat)
             {
-#if !DISABLE_FAUXBACKBUFFER
+#if DISABLE_FAUXBACKBUFFER
+                Width = width;
+                Height = height;
+#else
                 // Update our color attachment to the new resolution
                 GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
                 GL.TexImage2D(
