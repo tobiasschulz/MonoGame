@@ -267,7 +267,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> AlphaBlendEnable = new OpenGLState<bool>(false);
 
-        public OpenGLState<bool> AlphaTestEnable = new OpenGLState<bool>(false);
+        // TODO: AlphaTestEnable? -flibit
 
         public OpenGLState<Color> BlendColor = new OpenGLState<Color>(Color.TransparentBlack);
 
@@ -591,12 +591,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.Blend, AlphaBlendEnable.Flush());
             }
 
-            if (force || AlphaTestEnable.NeedsFlush())
-            {
-                ToggleGLState(EnableCap.AlphaTest, AlphaTestEnable.Flush());
-            }
+            // TODO: AlphaTestEnable? -flibit
 
-            if (force || BlendColor.NeedsFlush())
+            if (AlphaBlendEnable.GetCurrent() && (force || BlendColor.NeedsFlush()))
             {
                 Color color = BlendColor.Flush();
                 GL.BlendColor(
@@ -607,11 +604,12 @@ namespace Microsoft.Xna.Framework.Graphics
                 );
             }
 
-            if (    force ||
-                    SrcBlend.NeedsFlush() ||
-                    DstBlend.NeedsFlush() ||
-                    SrcBlendAlpha.NeedsFlush() ||
-                    DstBlendAlpha.NeedsFlush()  )
+            if (    AlphaBlendEnable.GetCurrent() &&
+                    (   force ||
+                        SrcBlend.NeedsFlush() ||
+                        DstBlend.NeedsFlush() ||
+                        SrcBlendAlpha.NeedsFlush() ||
+                        DstBlendAlpha.NeedsFlush()  )   )
             {
                 GL.BlendFuncSeparate(
                     XNAToGL.BlendModeSrc[SrcBlend.Flush()],
@@ -621,7 +619,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 );
             }
 
-            if (force || BlendOp.NeedsFlush() || BlendOpAlpha.NeedsFlush())
+            if (    AlphaBlendEnable.GetCurrent() &&
+                    (   force ||
+                        BlendOp.NeedsFlush() ||
+                        BlendOpAlpha.NeedsFlush()   )   )
             {
                 GL.BlendEquationSeparate(
                     XNAToGL.BlendEquation[BlendOp.Flush()],
@@ -640,19 +641,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.DepthTest, ZEnable.Flush());
             }
 
-            if (force || ZWriteEnable.NeedsFlush())
+            if (ZEnable.GetCurrent() && (force || ZWriteEnable.NeedsFlush()))
             {
                 GL.DepthMask(ZWriteEnable.Flush());
             }
 
-            if (force || DepthFunc.NeedsFlush())
+            if (ZEnable.GetCurrent() && (force || DepthFunc.NeedsFlush()))
             {
                 GL.DepthFunc(XNAToGL.DepthFunc[DepthFunc.Flush()]);
             }
 
-            if (    force ||
-                    DepthBias.NeedsFlush() ||
-                    SlopeScaleDepthBias.NeedsFlush()    )
+            if (    ZEnable.GetCurrent() &&
+                    (   force ||
+                        DepthBias.NeedsFlush() ||
+                        SlopeScaleDepthBias.NeedsFlush()    )   )
             {
                 float depthBias = DepthBias.Flush();
                 float slopeScaleDepthBias = SlopeScaleDepthBias.Flush();
@@ -676,23 +678,24 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.StencilTest, StencilEnable.Flush());
             }
 
-            if (force || StencilWriteMask.NeedsFlush())
+            if (StencilEnable.GetCurrent() && (force || StencilWriteMask.NeedsFlush()))
             {
                 GL.StencilMask(StencilWriteMask.Flush());
             }
 
-            if (    force ||
-                    SeparateStencilEnable.NeedsFlush() ||
-                    StencilRef.NeedsFlush() ||
-                    StencilMask.NeedsFlush() ||
-                    StencilFunc.NeedsFlush() ||
-                    CCWStencilFunc.NeedsFlush() ||
-                    StencilFail.NeedsFlush() ||
-                    StencilZFail.NeedsFlush() ||
-                    StencilPass.NeedsFlush() ||
-                    CCWStencilFail.NeedsFlush() ||
-                    CCWStencilZFail.NeedsFlush() ||
-                    CCWStencilPass.NeedsFlush() )
+            if (    StencilEnable.GetCurrent() &&
+                    (   force ||
+                        SeparateStencilEnable.NeedsFlush() ||
+                        StencilRef.NeedsFlush() ||
+                        StencilMask.NeedsFlush() ||
+                        StencilFunc.NeedsFlush() ||
+                        CCWStencilFunc.NeedsFlush() ||
+                        StencilFail.NeedsFlush() ||
+                        StencilZFail.NeedsFlush() ||
+                        StencilPass.NeedsFlush() ||
+                        CCWStencilFail.NeedsFlush() ||
+                        CCWStencilZFail.NeedsFlush() ||
+                        CCWStencilPass.NeedsFlush() )   )
             {
                 // TODO: Can we split StencilFunc/StencilOp up nicely? -flibit
                 if (SeparateStencilEnable.Flush())
