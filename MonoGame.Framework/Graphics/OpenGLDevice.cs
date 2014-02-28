@@ -1088,6 +1088,12 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Update the depth/stencil attachment
+            /* FIXME: Notice that we do separate attach calls for the stencil.
+             * We _should_ be able to do a single attach for depthstencil, but
+             * some drivers (like Mesa) cannot into GL_DEPTH_STENCIL_ATTACHMENT.
+             * Use XNAToGL.DepthStencilAttachment when this isn't a problem.
+             * -flibit
+             */
             if (renderbuffer != currentRenderbuffer)
             {
                 if (    depthFormat != currentDepthStencilFormat &&
@@ -1096,16 +1102,30 @@ namespace Microsoft.Xna.Framework.Graphics
                     // Changing formats, unbind the current renderbuffer first.
                     Framebuffer.AttachDepthRenderbuffer(
                         0,
-                        XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
+                        FramebufferAttachment.DepthAttachment
                     );
+                    if (currentDepthStencilFormat == DepthFormat.Depth24Stencil8)
+                    {
+                        Framebuffer.AttachDepthRenderbuffer(
+                            0,
+                            FramebufferAttachment.StencilAttachment
+                        );
+                    }
                 }
                 currentDepthStencilFormat = depthFormat;
                 if (currentDepthStencilFormat != DepthFormat.None)
                 {
                     Framebuffer.AttachDepthRenderbuffer(
                         renderbuffer,
-                        XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
+                        FramebufferAttachment.DepthAttachment
                     );
+                    if (currentDepthStencilFormat == DepthFormat.Depth24Stencil8)
+                    {
+                        Framebuffer.AttachDepthRenderbuffer(
+                            renderbuffer,
+                            FramebufferAttachment.StencilAttachment
+                        );
+                    }
                 }
                 currentRenderbuffer = renderbuffer;
             }
