@@ -350,8 +350,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<ColorWriteChannels> ColorWriteEnable = new OpenGLState<ColorWriteChannels>(ColorWriteChannels.All);
 
-        public OpenGLState<Viewport> GLViewport = new OpenGLState<Viewport>(
-            new Viewport(
+        public OpenGLState<Rectangle> GLViewport = new OpenGLState<Rectangle>(
+            new Rectangle(
                 0,
                 0,
                 GraphicsDeviceManager.DefaultBackBufferWidth,
@@ -802,7 +802,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             if (force || GLViewport.NeedsFlush())
             {
-                Viewport viewport = GLViewport.Flush();
+                Rectangle viewport = GLViewport.Flush();
                 GL.Viewport(
                     viewport.X,
                     viewport.Y,

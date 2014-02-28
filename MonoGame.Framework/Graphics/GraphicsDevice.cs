@@ -145,14 +145,26 @@ namespace Microsoft.Xna.Framework.Graphics
             set;
         }
 
+        /* We have to store this internally because we flip the Rectangle for
+         * when we aren't rendering to a target. I'd love to remove this.
+         * -flibit
+         */
+        private Rectangle INTERNAL_scissorRectangle;
         public Rectangle ScissorRectangle
         {
             get
             {
-                return OpenGLDevice.Instance.ScissorRectangle.Get();
+                return INTERNAL_scissorRectangle;
             }
             set
             {
+                INTERNAL_scissorRectangle = value;
+
+                if (RenderTargetCount == 0)
+                {
+                    value.Y = Viewport.Height - ScissorRectangle.Y - ScissorRectangle.Height;
+                }
+
                 OpenGLDevice.Instance.ScissorRectangle.Set(value);
             }
         }
@@ -172,25 +184,12 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 INTERNAL_viewport = value;
 
-                if (RenderTargetCount > 0)
+                if (RenderTargetCount == 0)
                 {
-                    OpenGLDevice.Instance.GLViewport.Set(new Viewport(
-                        value.X,
-                        value.Y,
-                        value.Width,
-                        value.Height
-                    ));
-                }
-                else
-                {
-                    OpenGLDevice.Instance.GLViewport.Set(new Viewport(
-                        value.X,
-                        PresentationParameters.BackBufferHeight - value.Y - value.Height,
-                        value.Width,
-                        value.Height
-                    ));
+                    value.Y = PresentationParameters.BackBufferHeight - value.Y - value.Height;
                 }
 
+                OpenGLDevice.Instance.GLViewport.Set(value.Bounds);
                 OpenGLDevice.Instance.DepthRangeMin.Set(value.MinDepth);
                 OpenGLDevice.Instance.DepthRangeMax.Set(value.MaxDepth);
 
