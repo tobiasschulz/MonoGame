@@ -573,7 +573,11 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (AL.Get(ALGetString.Extensions).Contains("AL_EXT_MSADPCM"))
                 {
-                    if (compressionAlign == 134)
+                    if (compressionAlign == 262)
+                    {
+                        format = (channels == 2) ? ALFormat.StereoMsadpcm512Ext : ALFormat.MonoMsadpcm512Ext;
+                    }
+                    else if (compressionAlign == 134)
                     {
                         format = (channels == 2) ? ALFormat.StereoMsadpcm256Ext : ALFormat.MonoMsadpcm256Ext;
                     }
@@ -584,6 +588,10 @@ namespace Microsoft.Xna.Framework.Audio
                     else if (compressionAlign == 38)
                     {
                         format = (channels == 2) ? ALFormat.StereoMsadpcm64Ext : ALFormat.MonoMsadpcm64Ext;
+                    }
+                    else if (compressionAlign == 22)
+                    {
+                        format = (channels == 2) ? ALFormat.StereoMsadpcm32Ext : ALFormat.MonoMsadpcm32Ext;
                     }
                     else
                     {
