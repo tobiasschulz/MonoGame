@@ -323,7 +323,7 @@ namespace Microsoft.Xna.Framework.Audio
                 instance.Dispose();
                 return false;
             }
-            OpenALSoundController.GetInstance.instancePool.Add(instance);
+            OpenALDevice.Instance.instancePool.Add(instance);
             return true;
 #else
             if ( MasterVolume > 0.0f )
