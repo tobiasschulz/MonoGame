@@ -54,8 +54,6 @@ namespace Microsoft.Xna.Framework.Audio
 {
     public sealed class SoundEffect : IDisposable
     {
-        private bool isDisposed = false;
-
         #region Internal Audio Data
 
         internal int INTERNAL_buffer;
