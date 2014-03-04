@@ -187,12 +187,21 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region Static Members
 
+        // FIXME: This should affect all sounds! alListener? -flibit
+        private static float INTERNAL_masterVolume = 1.0f;
         public static float MasterVolume 
         { 
-            get;
-            set;
+            get
+            {
+                return INTERNAL_masterVolume;
+            }
+            set
+            {
+                INTERNAL_masterVolume = value;
+            }
         }
 
+        // FIXME: How does this affect OpenAL? -flibit
         private static float INTERNAL_distanceScale = 1.0f;
         public static float DistanceScale
         {
@@ -210,6 +219,7 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
+        // FIXME: How does this affect OpenAL? -flibit
         private static float INTERNAL_dopplerScale = 1.0f;
         public static float DopplerScale
         {
@@ -227,10 +237,18 @@ namespace Microsoft.Xna.Framework.Audio
             }
         }
 
+        // FIXME: How does this affect OpenAL? -flibit
+        private static float INTERNAL_speedOfSound = 343.5f;
         public static float SpeedOfSound
         {
-            get;
-            set;
+            get
+            {
+                return INTERNAL_speedOfSound;
+            }
+            set
+            {
+                INTERNAL_speedOfSound = value;
+            }
         }
 
         #endregion
