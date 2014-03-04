@@ -384,9 +384,9 @@
     <Compile Include="GamerServices\LeaderboardReader.cs" />
     <Compile Include="GamerServices\LeaderboardWriter.cs" />
     <Compile Include="GamerServices\PropertyDictionary.cs" />
-    <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
+    <Compile Include="Audio\OpenALDevice.cs" />
     <Compile Include="Audio\SoundEffect.cs" />
-    <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
+    <Compile Include="Audio\SoundEffectInstance.cs" />
     <Compile Include="SDL2\Input\SDL2_GamePad.cs" />
     <Compile Include="SDL2\SDL2_GamePlatform.cs" />
     <Compile Include="SDL2\SDL2_GameWindow.cs" />
@@ -407,6 +407,7 @@
     <Compile Include="Graphics\DeviceLostException.cs" />
     <Compile Include="Graphics\OpenGLDevice.cs" />
     <Compile Include="Input\Touch\TouchPanelState.cs" />
+    <Compile Include="Audio\DynamicSoundEffectInstance.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">
