@@ -52,24 +52,45 @@ using OpenTK.Audio.OpenAL;
 
 namespace Microsoft.Xna.Framework.Audio
 {
-    internal sealed class OpenALSoundController : IDisposable
+    internal sealed class OpenALDevice
     {
-        // Stores the controller instance and if if there is a working context in it.
-        private static OpenALSoundController INTERNAL_instance = null;
-        private bool INTERNAL_soundAvailable = false;
+        #region The OpenAL Device Instance
 
-        // OpenAL Device/Context Handles
-        private IntPtr INTERNAL_alDevice;
-        private ContextHandle INTERNAL_alContext;
+        public static OpenALDevice Instance
+        {
+            get;
+            private set;
+        }
 
-        // Used to store SoundEffectInstances generated internally.
-        internal List<SoundEffectInstance> instancePool;
+        #endregion
+
+        #region Public EFX Entry Points
 
         public EffectsExtension EFX
         {
             get;
             private set;
         }
+
+        #endregion
+
+        #region Private ALC Variables
+
+        // OpenAL Device/Context Handles
+        private IntPtr alDevice;
+        private ContextHandle alContext;
+
+        #endregion
+
+        #region Private SoundEffect Management Variables
+
+        // Used to store SoundEffectInstances generated internally.
+        internal List<SoundEffectInstance> instancePool;
+
+        // Used to store all DynamicSoundEffectInstances, to check buffer counts.
+        internal List<DynamicSoundEffectInstance> dynamicInstancePool;
+
+        #endregion
 
         private void CheckALError()
         {
@@ -85,49 +106,44 @@ namespace Microsoft.Xna.Framework.Audio
 
         private bool CheckALCError(string message)
         {
-            AlcError err = Alc.GetError(INTERNAL_alDevice);
+            AlcError err = Alc.GetError(alDevice);
 
             if (err == AlcError.NoError)
             {
                 return false;
             }
 
-            System.Console.WriteLine(message + " - OpenAL Device Error: " + err);
-
-            return true;
+            throw new Exception(message + " - OpenAL Device Error: " + err);
         }
 
-        private bool INTERNAL_initSoundController()
+        public OpenALDevice()
         {
+            if (Instance != null)
+            {
+                throw new Exception("OpenALDevice already created!");
+            }
 #if IOS
             alcMacOSXMixerOutputRate(44100);
 #endif
-            try
+            alDevice = Alc.OpenDevice(string.Empty);
+            if (CheckALCError("Could not open AL device") || alDevice == IntPtr.Zero)
             {
-                INTERNAL_alDevice = Alc.OpenDevice(string.Empty);
-            }
-            catch
-            {
-                return false;
-            }
-            if (CheckALCError("Could not open AL device") || INTERNAL_alDevice == IntPtr.Zero)
-            {
-                return false;
+                throw new Exception("Could not open AL device!");
             }
 
             int[] attribute = new int[0];
-            INTERNAL_alContext = Alc.CreateContext(INTERNAL_alDevice, attribute);
-            if (CheckALCError("Could not create OpenAL context") || INTERNAL_alContext == ContextHandle.Zero)
+            alContext = Alc.CreateContext(alDevice, attribute);
+            if (CheckALCError("Could not create OpenAL context") || alContext == ContextHandle.Zero)
             {
-                Dispose(true);
-                return false;
+                Dispose();
+                throw new Exception("Could not create OpenAL context");
             }
 
-            Alc.MakeContextCurrent(INTERNAL_alContext);
+            Alc.MakeContextCurrent(alContext);
             if (CheckALCError("Could not make OpenAL context current"))
             {
-                Dispose(true);
-                return false;
+                Dispose();
+                throw new Exception("Could not make OpenAL context current");
             }
 
             EFX = new EffectsExtension();
@@ -144,57 +160,30 @@ namespace Microsoft.Xna.Framework.Audio
             // We do NOT use automatic attenuation! XNA does not do this!
             AL.DistanceModel(ALDistanceModel.None);
 
-            return true;
-        }
-
-        private OpenALSoundController()
-        {
-            INTERNAL_soundAvailable = INTERNAL_initSoundController();
             instancePool = new List<SoundEffectInstance>();
+            dynamicInstancePool = new List<DynamicSoundEffectInstance>();
+
+            Instance = this;
         }
 
         public void Dispose()
         {
-            Dispose(false);
-        }
-
-        private void Dispose(bool force)
-        {
-            if (INTERNAL_soundAvailable || force)
+            Alc.MakeContextCurrent(ContextHandle.Zero);
+            if (alContext != ContextHandle.Zero)
             {
-                Alc.MakeContextCurrent(ContextHandle.Zero);
-                if (INTERNAL_alContext != ContextHandle.Zero)
-                {
-                    Alc.DestroyContext (INTERNAL_alContext);
-                    INTERNAL_alContext = ContextHandle.Zero;
-                }
-                if (INTERNAL_alDevice != IntPtr.Zero)
-                {
-                    Alc.CloseDevice (INTERNAL_alDevice);
-                    INTERNAL_alDevice = IntPtr.Zero;
-                }
-                INTERNAL_soundAvailable = false;
+                Alc.DestroyContext(alContext);
+                alContext = ContextHandle.Zero;
             }
-        }
-
-        public static OpenALSoundController GetInstance
-        {
-            get
+            if (alDevice != IntPtr.Zero)
             {
-                if (INTERNAL_instance == null)
-                {
-                    INTERNAL_instance = new OpenALSoundController();
-                }
-                return INTERNAL_instance;
+                Alc.CloseDevice(alDevice);
+                alDevice = IntPtr.Zero;
             }
+            Instance = null;
         }
 
         public void Update()
         {
-            if (!INTERNAL_soundAvailable)
-            {
-                return;
-            }
 #if DEBUG
             CheckALError();
 #endif
@@ -205,6 +194,15 @@ namespace Microsoft.Xna.Framework.Audio
                     instancePool[i].Dispose();
                     instancePool.RemoveAt(i);
                     i--;
+                }
+            }
+
+            for (int i = 0; i < dynamicInstancePool.Count; i++)
+            {
+                if (!dynamicInstancePool[i].Update())
+                {
+                    dynamicInstancePool.Remove(dynamicInstancePool[i]);
+                    i -= 1;
                 }
             }
         }

@@ -355,7 +355,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 #if SDL2
 				// Obtain EFX entry points
-				EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+				EffectsExtension EFX = OpenALDevice.Instance.EFX;
 
 				// Generate the EffectSlot and Effect
 				Handle = EFX.GenAuxiliaryEffectSlot();
@@ -382,7 +382,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 #if SDL2
 			// Obtain EFX entry points
-			EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+			EffectsExtension EFX = OpenALDevice.Instance.EFX;
 
 			// Delete EFX data
 			EFX.DeleteAuxiliaryEffectSlot(Handle);
@@ -398,7 +398,7 @@ namespace Microsoft.Xna.Framework.Audio
 			if (Name.Equals("Reverb"))
 			{
 				// Obtain EFX entry points
-				EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+				EffectsExtension EFX = OpenALDevice.Instance.EFX;
 	
 				// Apply the value to the parameter
 				if (index == 17)

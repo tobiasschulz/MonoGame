@@ -71,17 +71,17 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region Private Variables: OpenAL Source, EffectSlot
 
-        private int INTERNAL_alSource = -1;
+        protected int INTERNAL_alSource = -1;
         private int INTERNAL_alEffectSlot = -1;
 
         #endregion
   
         #region Private Variables: 3D Audio
 
-        private Vector3 position = new Vector3(0.0f, 0.0f, 0.1f);
+        protected Vector3 position = new Vector3(0.0f, 0.0f, 0.1f);
 
         // Used to prevent outdated positional audio data from being used
-        private bool INTERNAL_positionalAudio = false;
+        protected bool INTERNAL_positionalAudio = false;
 
         #endregion
 
@@ -121,7 +121,7 @@ namespace Microsoft.Xna.Framework.Audio
             Dispose();
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (!IsDisposed)
             {
@@ -137,7 +137,7 @@ namespace Microsoft.Xna.Framework.Audio
         public bool IsDisposed
         {
             get;
-            private set;
+            protected set;
         }
 
         private bool INTERNAL_looped = false;
@@ -272,7 +272,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         #region Public Playback Methods
 
-        public void Play()
+        public virtual void Play()
         {
             if (State != SoundState.Stopped)
             {
@@ -333,7 +333,7 @@ namespace Microsoft.Xna.Framework.Audio
             AL.SourcePlay(INTERNAL_alSource);
         }
 
-        public void Pause ()
+        public void Pause()
         {
             if (INTERNAL_alSource != -1 && State == SoundState.Playing)
             {
