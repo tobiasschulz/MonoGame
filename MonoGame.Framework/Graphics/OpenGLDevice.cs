@@ -242,7 +242,7 @@ namespace Microsoft.Xna.Framework.Graphics
             public OpenGLState<int> Divisor;
 
             // Checked in VertexAttribPointer
-            public uint CurrentBuffer;
+            public int CurrentBuffer;
             public int CurrentSize;
             public VertexAttribPointerType CurrentType;
             public bool CurrentNormalized;
@@ -395,8 +395,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Buffer Binding Cache Variables
 
-        private uint currentVertexBuffer = 0;
-        private uint currentIndexBuffer = 0;
+        private int currentVertexBuffer = 0;
+        private int currentIndexBuffer = 0;
 
         #endregion
 
@@ -934,7 +934,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region glBindBuffer Methods
 
-        public void BindVertexBuffer(uint buffer)
+        public void BindVertexBuffer(int buffer)
         {
             if (buffer != currentVertexBuffer)
             {
@@ -943,7 +943,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-        public void BindIndexBuffer(uint buffer)
+        public void BindIndexBuffer(int buffer)
         {
             if (buffer != currentIndexBuffer)
             {

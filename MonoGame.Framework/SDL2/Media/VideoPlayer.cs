@@ -633,8 +633,8 @@ namespace Microsoft.Xna.Framework.Media
             );
             
             // Set up the vertex pointers/arrays.
-            OpenGLDevice.Instance.Attributes[0].CurrentBuffer = uint.MaxValue;
-            OpenGLDevice.Instance.Attributes[1].CurrentBuffer = uint.MaxValue;
+            OpenGLDevice.Instance.Attributes[0].CurrentBuffer = int.MaxValue;
+            OpenGLDevice.Instance.Attributes[1].CurrentBuffer = int.MaxValue;
             GL.VertexAttribPointer(
                 0,
                 2,

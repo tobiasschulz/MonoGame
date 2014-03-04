@@ -754,7 +754,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (vertBuffer.VertexBuffer != null)
                 {
-                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.vbo);
+                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.Handle);
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         VertexShader,
                         (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex))
@@ -766,7 +766,7 @@ namespace Microsoft.Xna.Framework.Graphics
             OpenGLDevice.Instance.FlushGLVertexAttributes();
 
             // Bind the index buffer
-            OpenGLDevice.Instance.BindIndexBuffer(Indices.ibo);
+            OpenGLDevice.Instance.BindIndexBuffer(Indices.Handle);
 
             // Draw!
             GL.DrawRangeElements(
@@ -810,7 +810,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (vertBuffer.VertexBuffer != null)
                 {
-                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.vbo);
+                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.Handle);
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         VertexShader,
                         (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex)),
@@ -823,7 +823,7 @@ namespace Microsoft.Xna.Framework.Graphics
             OpenGLDevice.Instance.FlushGLVertexAttributes();
 
             // Bind the index buffer
-            OpenGLDevice.Instance.BindIndexBuffer(Indices.ibo);
+            OpenGLDevice.Instance.BindIndexBuffer(Indices.Handle);
 
             // Draw!
             GL.DrawElementsInstanced(
@@ -907,7 +907,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 if (vertBuffer.VertexBuffer != null)
                 {
-                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.vbo);
+                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.Handle);
                     vertBuffer.VertexBuffer.VertexDeclaration.Apply(
                         VertexShader,
                         (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * vertBuffer.VertexOffset)
