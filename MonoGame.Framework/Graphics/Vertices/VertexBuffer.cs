@@ -185,7 +185,9 @@ namespace Microsoft.Xna.Framework.Graphics
             var bufferSize = VertexCount * VertexDeclaration.VertexStride;
             if ((vertexStride > bufferSize) || (vertexStride < VertexDeclaration.VertexStride))
                 throw new ArgumentOutOfRangeException("One of the following conditions is true:\nThe vertex stride is larger than the vertex buffer.\nThe vertex stride is too small for the type of data requested.");
-   
+
+            if (VertexCount < elementCount) throw new ArgumentOutOfRangeException("Buffer is too small.");
+
             var elementSizeInBytes = Marshal.SizeOf(typeof(T));
 
             if (Threading.IsOnUIThread())
