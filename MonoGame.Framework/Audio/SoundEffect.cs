@@ -231,7 +231,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 if (value <= 0.0f)
                 {
-                    throw new ArgumentOutOfRangeException("value of DistanceScale");
+                    throw new ArgumentOutOfRangeException("value of DopplerScale");
                 }
                 INTERNAL_dopplerScale = value;
             }
