@@ -177,6 +177,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new ArgumentNullException("data is null");
             if (data.Length < (startIndex + elementCount))
                 throw new InvalidOperationException("The array specified in the data parameter is not the correct size for the amount of data requested.");
+            if (IndexCount < elementCount) throw new ArgumentOutOfRangeException("Buffer is too small.");
 
             if (Threading.IsOnUIThread())
             {
