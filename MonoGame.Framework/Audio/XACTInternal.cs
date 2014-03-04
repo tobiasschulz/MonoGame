@@ -1,8 +1,6 @@
 using System;
 
-#if SDL2
 using OpenTK.Audio.OpenAL;
-#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {
@@ -353,7 +351,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 			if (Name.Equals("Reverb"))
 			{
-#if SDL2
 				// Obtain EFX entry points
 				EffectsExtension EFX = OpenALDevice.Instance.EFX;
 
@@ -368,9 +365,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 				// Bind the Effect to the EffectSlot. XACT will use the EffectSlot.
 				EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
-#else
-				throw new NotImplementedException();
-#endif
 			}
 			else
 			{
@@ -380,16 +374,12 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Dispose()
 		{
-#if SDL2
 			// Obtain EFX entry points
 			EffectsExtension EFX = OpenALDevice.Instance.EFX;
 
 			// Delete EFX data
 			EFX.DeleteAuxiliaryEffectSlot(Handle);
 			EFX.DeleteEffect(effectHandle);
-#else
-			throw new NotImplementedException();
-#endif
 		}
 
 		public void SetParameter(int index, float value)
@@ -403,16 +393,12 @@ namespace Microsoft.Xna.Framework.Audio
 				// Apply the value to the parameter
 				if (index == 17)
 				{
-#if SDL2
 					EFX.Effect(
 						effectHandle,
 						EfxEffectf.EaxReverbGain,
 						Parameters[index].Value
 					);
 					EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
-#else
-					throw new NotImplementedException();
-#endif
 				}
 				else if (index == 18)
 				{
