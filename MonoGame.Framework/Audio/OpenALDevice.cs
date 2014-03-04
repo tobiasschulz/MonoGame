@@ -42,10 +42,6 @@
 using System;
 using System.Collections.Generic;
 
-#if IOS
-using System.Runtime.InteropServices;
-#endif
-
 using OpenTK;
 using OpenTK.Audio.OpenAL;
 #endregion
@@ -122,9 +118,7 @@ namespace Microsoft.Xna.Framework.Audio
             {
                 throw new Exception("OpenALDevice already created!");
             }
-#if IOS
-            alcMacOSXMixerOutputRate(44100);
-#endif
+
             alDevice = Alc.OpenDevice(string.Empty);
             if (CheckALCError("Could not open AL device") || alDevice == IntPtr.Zero)
             {
@@ -206,11 +200,5 @@ namespace Microsoft.Xna.Framework.Audio
                 }
             }
         }
-
-#if IOS
-        [DllImport("/System/Library/Frameworks/OpenAL.framework/OpenAL", EntryPoint = "alcMacOSXMixerOutputRate")]
-        static extern void alcMacOSXMixerOutputRate(double rate);
-#endif
-
     }
 }
