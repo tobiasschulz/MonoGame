@@ -333,62 +333,21 @@ namespace Microsoft.Xna.Framework.Audio
 			// FIXME: MSADPCM Duration
 			Duration = TimeSpan.FromSeconds(data.Length / 2 / channels / ((double) sampleRate));
 
+			// Generate the buffer now, in case we need to perform alBuffer ops.
+			INTERNAL_buffer = AL.GenBuffer();
+
 			ALFormat format;
 			if (compressionAlign > 0)
 			{
-				if (AL.Get(ALGetString.Extensions).Contains("AL_EXT_MSADPCM"))
-				{
-					if (compressionAlign == 262)
-					{
-						format = (channels == 2) ? ALFormat.StereoMsadpcm512Ext : ALFormat.MonoMsadpcm512Ext;
-					}
-					else if (compressionAlign == 134)
-					{
-						format = (channels == 2) ? ALFormat.StereoMsadpcm256Ext : ALFormat.MonoMsadpcm256Ext;
-					}
-					else if (compressionAlign == 70)
-					{
-						format = (channels == 2) ? ALFormat.StereoMsadpcm128Ext : ALFormat.MonoMsadpcm128Ext;
-					}
-					else if (compressionAlign == 38)
-					{
-						format = (channels == 2) ? ALFormat.StereoMsadpcm64Ext : ALFormat.MonoMsadpcm64Ext;
-					}
-					else if (compressionAlign == 22)
-					{
-						format = (channels == 2) ? ALFormat.StereoMsadpcm32Ext : ALFormat.MonoMsadpcm32Ext;
-					}
-					else
-					{
-						throw new Exception("MSADPCM blockAlign unsupported in AL_EXT_MSADPCM!");
-					}
-				}
-				else
-				{
-					byte[] newData;
-					using (MemoryStream stream = new MemoryStream(data))
-					{
-						using (BinaryReader reader = new BinaryReader(stream))
-						{
-							newData = MSADPCMToPCM.MSADPCM_TO_PCM(
-								reader,
-								(short) channels,
-								(short) (compressionAlign - 22)
-							);
-						}
-					}
-					data = newData;
-					compressionAlign = 0;
-					format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
-				}
+				format = (channels == 2) ? ALFormat.StereoMsadpcmSoft : ALFormat.MonoMsadpcmSoft;
+				AL.Buffer(INTERNAL_buffer, ALBufferi.UnpackBlockAlignmentSoft, compressionAlign);
 			}
 			else
 			{
 				format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
 			}
 
-			// Create the buffer and load it!
-			INTERNAL_buffer = AL.GenBuffer();
+			// Load it!
 			AL.BufferData(
 				INTERNAL_buffer,
 				format,

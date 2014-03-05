@@ -131,7 +131,7 @@ namespace Microsoft.Xna.Framework.Audio
 			string streamingWaveBankFilename,
 			int offset,
 			short packetsize
-		) : this(audioEngine, streamingWaveBankFilename) {
+		) {
 			/* Note that offset and packetsize go unused,
 			 * because we're frauds and aren't actually streaming.
 			 * -flibit
@@ -418,7 +418,7 @@ namespace Microsoft.Xna.Framework.Audio
 					entry.Channels,
 					entry.LoopOffset,
 					entry.LoopLength,
-					entry.Alignment + 22
+					(entry.Alignment + 16) * 2
 				);
 			}
 			else if (entry.Codec == 0x3) // WMA
