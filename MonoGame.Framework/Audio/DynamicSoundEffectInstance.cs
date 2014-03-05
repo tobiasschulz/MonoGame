@@ -16,244 +16,245 @@ using OpenTK.Audio.OpenAL;
 
 namespace Microsoft.Xna.Framework.Audio
 {
-    public sealed class DynamicSoundEffectInstance : SoundEffectInstance
-    {
-        #region Public Properties
+	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.dynamicsoundeffectinstance.aspx
+	public sealed class DynamicSoundEffectInstance : SoundEffectInstance
+	{
+		#region Public Properties
 
-        public int PendingBufferCount
-        {
-            get;
-            private set;
-        }
+		public int PendingBufferCount
+		{
+			get;
+			private set;
+		}
 
-        #endregion
+		#endregion
 
-        #region Private XNA Variables
+		#region Private XNA Variables
 
-        private int sampleRate;
+		private int sampleRate;
 
-        #endregion
+		#endregion
 
-        #region Private OpenAL Variables
+		#region Private OpenAL Variables
 
-        private ALFormat alFormat;
-        private Queue<int> queuedBuffers;
-        private Queue<int> buffersToQueue;
-        private Queue<int> availableBuffers;
+		private ALFormat alFormat;
+		private Queue<int> queuedBuffers;
+		private Queue<int> buffersToQueue;
+		private Queue<int> availableBuffers;
 
-        #endregion
+		#endregion
 
-        #region BufferNeeded Event
+		#region BufferNeeded Event
 
-        public event EventHandler<EventArgs> BufferNeeded;
+		public event EventHandler<EventArgs> BufferNeeded;
 
-        #endregion
+		#endregion
 
-        #region Constructor, Deconstructor, Dispose Method
+		#region Constructor, Deconstructor, Dispose Method
 
-        public DynamicSoundEffectInstance(int sampleRate, AudioChannels channels) : base(null)
-        {
-            this.sampleRate = sampleRate;
+		public DynamicSoundEffectInstance(int sampleRate, AudioChannels channels) : base(null)
+		{
+			this.sampleRate = sampleRate;
 
-            PendingBufferCount = 0;
+			PendingBufferCount = 0;
 
-            alFormat = channels == AudioChannels.Mono ? ALFormat.Mono16 : ALFormat.Stereo16;
-            queuedBuffers = new Queue<int>();
-            buffersToQueue = new Queue<int>();
-            availableBuffers = new Queue<int>();
-        }
+			alFormat = channels == AudioChannels.Mono ? ALFormat.Mono16 : ALFormat.Stereo16;
+			queuedBuffers = new Queue<int>();
+			buffersToQueue = new Queue<int>();
+			availableBuffers = new Queue<int>();
+		}
 
-        ~DynamicSoundEffectInstance()
-        {
-            Dispose();
-        }
+		~DynamicSoundEffectInstance()
+		{
+			Dispose();
+		}
 
-        public override void Dispose()
-        {
-            if (!IsDisposed)
-            {
-                Stop();
-                while (availableBuffers.Count > 0)
-                {
-                    AL.DeleteBuffer(availableBuffers.Dequeue());
-                }
-                IsDisposed = true;
-            }
-        }
+		public override void Dispose()
+		{
+			if (!IsDisposed)
+			{
+				Stop();
+				while (availableBuffers.Count > 0)
+				{
+					AL.DeleteBuffer(availableBuffers.Dequeue());
+				}
+				IsDisposed = true;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Time/Sample Information Methods
+		#region Public Time/Sample Information Methods
 
-        public TimeSpan GetSampleDuration(int sizeInBytes)
-        {
-            int ms = (int) (sizeInBytes / (sampleRate / 1000.0f));
-            return new TimeSpan(0, 0, 0, 0, ms);
-        }
+		public TimeSpan GetSampleDuration(int sizeInBytes)
+		{
+			int ms = (int) (sizeInBytes / (sampleRate / 1000.0f));
+			return new TimeSpan(0, 0, 0, 0, ms);
+		}
 
-        public int GetSampleSizeInBytes(TimeSpan duration)
-        {
-            return (int) (duration.TotalSeconds * sampleRate);
-        }
+		public int GetSampleSizeInBytes(TimeSpan duration)
+		{
+			return (int) (duration.TotalSeconds * sampleRate);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public SubmitBuffer Methods
+		#region Public SubmitBuffer Methods
 
-        public void SubmitBuffer(byte[] buffer)
-        {
-            this.SubmitBuffer(buffer, 0, buffer.Length);
-        }
+		public void SubmitBuffer(byte[] buffer)
+		{
+			this.SubmitBuffer(buffer, 0, buffer.Length);
+		}
 
-        public void SubmitBuffer(byte[] buffer, int offset, int count)
-        {
-            // Generate a buffer if we don't have any to use.
-            if (availableBuffers.Count == 0)
-            {
-                availableBuffers.Enqueue(AL.GenBuffer());
-            }
+		public void SubmitBuffer(byte[] buffer, int offset, int count)
+		{
+			// Generate a buffer if we don't have any to use.
+			if (availableBuffers.Count == 0)
+			{
+				availableBuffers.Enqueue(AL.GenBuffer());
+			}
 
-            // Push the data to OpenAL.
-            int newBuf = availableBuffers.Dequeue();
-            AL.BufferData(
-                newBuf,
-                alFormat,
-                buffer, // TODO: offset -flibit
-                count,
-                sampleRate
-            );
+			// Push the data to OpenAL.
+			int newBuf = availableBuffers.Dequeue();
+			AL.BufferData(
+				newBuf,
+				alFormat,
+				buffer, // TODO: offset -flibit
+				count,
+				sampleRate
+			);
 
-            // If we're already playing, queue immediately.
-            if (State == SoundState.Playing)
-            {
-                AL.SourceQueueBuffer(INTERNAL_alSource, newBuf);
-                queuedBuffers.Enqueue(newBuf);
-            }
-            else
-            {
-                buffersToQueue.Enqueue(newBuf);
-            }
+			// If we're already playing, queue immediately.
+			if (State == SoundState.Playing)
+			{
+				AL.SourceQueueBuffer(INTERNAL_alSource, newBuf);
+				queuedBuffers.Enqueue(newBuf);
+			}
+			else
+			{
+				buffersToQueue.Enqueue(newBuf);
+			}
 
-            PendingBufferCount += 1;
-        }
+			PendingBufferCount += 1;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Play Method
+		#region Public Play Method
 
-        public override void Play()
-        {
-            if (State != SoundState.Stopped)
-            {
-                return; // No-op if we're already playing.
-            }
+		public override void Play()
+		{
+			if (State != SoundState.Stopped)
+			{
+				return; // No-op if we're already playing.
+			}
 
-            if (INTERNAL_alSource != -1)
-            {
-                // The sound has stopped, but hasn't cleaned up yet...
-                AL.SourceStop(INTERNAL_alSource);
-                AL.DeleteSource(INTERNAL_alSource);
-                INTERNAL_alSource = -1;
-                while (queuedBuffers.Count > 0)
-                {
-                    availableBuffers.Enqueue(queuedBuffers.Dequeue());
-                }
-            }
+			if (INTERNAL_alSource != -1)
+			{
+				// The sound has stopped, but hasn't cleaned up yet...
+				AL.SourceStop(INTERNAL_alSource);
+				AL.DeleteSource(INTERNAL_alSource);
+				INTERNAL_alSource = -1;
+				while (queuedBuffers.Count > 0)
+				{
+					availableBuffers.Enqueue(queuedBuffers.Dequeue());
+				}
+			}
 
-            INTERNAL_alSource = AL.GenSource();
-            if (INTERNAL_alSource == 0)
-            {
-                System.Console.WriteLine("WARNING: AL SOURCE WAS NOT AVAILABLE. SKIPPING.");
-                return;
-            }
+			INTERNAL_alSource = AL.GenSource();
+			if (INTERNAL_alSource == 0)
+			{
+				System.Console.WriteLine("WARNING: AL SOURCE WAS NOT AVAILABLE. SKIPPING.");
+				return;
+			}
 
-            // Queue the buffers to this source
-            while (buffersToQueue.Count > 0)
-            {
-                int nextBuf = buffersToQueue.Dequeue();
-                queuedBuffers.Enqueue(nextBuf);
-                AL.SourceQueueBuffer(INTERNAL_alSource, nextBuf);
-            }
+			// Queue the buffers to this source
+			while (buffersToQueue.Count > 0)
+			{
+				int nextBuf = buffersToQueue.Dequeue();
+				queuedBuffers.Enqueue(nextBuf);
+				AL.SourceQueueBuffer(INTERNAL_alSource, nextBuf);
+			}
 
-            // Apply Pan/Position
-            if (INTERNAL_positionalAudio)
-            {
-                INTERNAL_positionalAudio = false;
-                AL.Source(INTERNAL_alSource, ALSource3f.Position, position.X, position.Y, position.Z);
-            }
-            else
-            {
-                Pan = Pan;
-            }
+			// Apply Pan/Position
+			if (INTERNAL_positionalAudio)
+			{
+				INTERNAL_positionalAudio = false;
+				AL.Source(INTERNAL_alSource, ALSource3f.Position, position.X, position.Y, position.Z);
+			}
+			else
+			{
+				Pan = Pan;
+			}
 
-            // Reassign Properties, in case the AL properties need to be applied.
-            Volume = Volume;
-            IsLooped = IsLooped;
-            Pitch = Pitch;
+			// Reassign Properties, in case the AL properties need to be applied.
+			Volume = Volume;
+			IsLooped = IsLooped;
+			Pitch = Pitch;
 
-            // Finally.
-            AL.SourcePlay(INTERNAL_alSource);
-            OpenALDevice.Instance.dynamicInstancePool.Add(this);
+			// Finally.
+			AL.SourcePlay(INTERNAL_alSource);
+			OpenALDevice.Instance.dynamicInstancePool.Add(this);
 
-            // ... but wait! What if we need moar buffers?
-            if (PendingBufferCount <= 2 && BufferNeeded != null)
-            {
-                BufferNeeded(this, null);
-            }
-        }
+			// ... but wait! What if we need moar buffers?
+			if (PendingBufferCount <= 2 && BufferNeeded != null)
+			{
+				BufferNeeded(this, null);
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal Update Method
+		#region Internal Update Method
 
-        internal bool Update()
-        {
-            if (State == SoundState.Stopped)
-            {
-                /* If we've stopped, remove ourselves from the list.
-                 * Do NOT do anything else, Play/Stop/Dispose do this!
-                 * -flibit
-                 */
-                return false;
-            }
+		internal bool Update()
+		{
+			if (State == SoundState.Stopped)
+			{
+				/* If we've stopped, remove ourselves from the list.
+				 * Do NOT do anything else, Play/Stop/Dispose do this!
+				 * -flibit
+				 */
+				return false;
+			}
 
-            // Get the processed buffers.
-            int finishedBuffers;
-            AL.GetSource(INTERNAL_alSource, ALGetSourcei.BuffersProcessed, out finishedBuffers);
-            if (finishedBuffers == 0)
-            {
-                // Nothing to do... yet.
-                return true;
-            }
+			// Get the processed buffers.
+			int finishedBuffers;
+			AL.GetSource(INTERNAL_alSource, ALGetSourcei.BuffersProcessed, out finishedBuffers);
+			if (finishedBuffers == 0)
+			{
+				// Nothing to do... yet.
+				return true;
+			}
 
-            int[] bufs = AL.SourceUnqueueBuffers(INTERNAL_alSource, finishedBuffers);
-            PendingBufferCount -= finishedBuffers;
-            if (BufferNeeded != null)
-            {
-                // PendingBufferCount changed during playback, trigger now!
-                BufferNeeded(this, null);
-            }
+			int[] bufs = AL.SourceUnqueueBuffers(INTERNAL_alSource, finishedBuffers);
+			PendingBufferCount -= finishedBuffers;
+			if (BufferNeeded != null)
+			{
+				// PendingBufferCount changed during playback, trigger now!
+				BufferNeeded(this, null);
+			}
 
-            // Error check our queuedBuffers list.
-            for (int i = 0; i < finishedBuffers; i += 1)
-            {
-                int newBuf = queuedBuffers.Dequeue();
-                if (newBuf != bufs[i])
-                {
-                    throw new Exception("Buffer desync!");
-                }
-                availableBuffers.Enqueue(newBuf);
-            }
+			// Error check our queuedBuffers list.
+			for (int i = 0; i < finishedBuffers; i += 1)
+			{
+				int newBuf = queuedBuffers.Dequeue();
+				if (newBuf != bufs[i])
+				{
+					throw new Exception("Buffer desync!");
+				}
+				availableBuffers.Enqueue(newBuf);
+			}
 
-            // Notify the application that we need moar buffers!
-            if (PendingBufferCount <= 2 && BufferNeeded != null)
-            {
-                BufferNeeded(this, null);
-            }
+			// Notify the application that we need moar buffers!
+			if (PendingBufferCount <= 2 && BufferNeeded != null)
+			{
+				BufferNeeded(this, null);
+			}
 
-            return true;
-        }
+			return true;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
