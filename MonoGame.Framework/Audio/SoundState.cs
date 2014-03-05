@@ -7,15 +7,13 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Audio
 {
-    public enum SoundState
-    {
-        Playing,
-        Paused,
-        Stopped
-    }
+	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.soundstate.aspx
+	public enum SoundState
+	{
+		Playing,
+		Paused,
+		Stopped
+	}
 }
-

@@ -16,401 +16,402 @@ using OpenTK.Audio.OpenAL;
 
 namespace Microsoft.Xna.Framework.Audio
 {
-    public sealed class SoundEffect : IDisposable
-    {
-        #region Internal Audio Data
+	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.soundeffect.aspx
+	public sealed class SoundEffect : IDisposable
+	{
+		#region Internal Audio Data
 
-        internal int INTERNAL_buffer;
+		internal int INTERNAL_buffer;
 
-        #endregion
+		#endregion
 
-        #region Internal Constructors
+		#region Internal Constructors
 
-        internal SoundEffect(string fileName)
-        {
-            if (fileName == string.Empty)
-            {
-                throw new FileNotFoundException("Supported Sound Effect formats are wav, mp3, acc, aiff");
-            }
+		internal SoundEffect(string fileName)
+		{
+			if (fileName == string.Empty)
+			{
+				throw new FileNotFoundException("Supported Sound Effect formats are wav, mp3, acc, aiff");
+			}
 
-            Name = Path.GetFileNameWithoutExtension(fileName);
+			Name = Path.GetFileNameWithoutExtension(fileName);
 
-            Stream s;
-            try
-            {
-                s = File.OpenRead(fileName);
-            }
-            catch (IOException e)
-            {
-                throw new Content.ContentLoadException("Could not load audio data", e);
-            }
+			Stream s;
+			try
+			{
+				s = File.OpenRead(fileName);
+			}
+			catch (IOException e)
+			{
+				throw new Content.ContentLoadException("Could not load audio data", e);
+			}
 
-            INTERNAL_loadAudioStream(s);
-            s.Close();
-        }
+			INTERNAL_loadAudioStream(s);
+			s.Close();
+		}
 
-        internal SoundEffect(Stream s)
-        {
-            INTERNAL_loadAudioStream(s);
-        }
+		internal SoundEffect(Stream s)
+		{
+			INTERNAL_loadAudioStream(s);
+		}
 
-        internal SoundEffect(
-            string name,
-            byte[] buffer,
-            uint sampleRate,
-            uint channels,
-            uint loopStart,
-            uint loopLength,
-            uint compressionAlign
-        ) {
-            Name = name;
-            INTERNAL_bufferData(
-                buffer,
-                sampleRate,
-                channels,
-                loopStart,
-                loopStart + loopLength,
-                compressionAlign
-            );
-        }
+		internal SoundEffect(
+			string name,
+			byte[] buffer,
+			uint sampleRate,
+			uint channels,
+			uint loopStart,
+			uint loopLength,
+			uint compressionAlign
+		) {
+			Name = name;
+			INTERNAL_bufferData(
+				buffer,
+				sampleRate,
+				channels,
+				loopStart,
+				loopStart + loopLength,
+				compressionAlign
+			);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
-        {
-            INTERNAL_bufferData(
-                buffer,
-                (uint) sampleRate,
-                (uint) channels,
-                0,
-                0,
-                0
-            );
-        }
+		public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
+		{
+			INTERNAL_bufferData(
+				buffer,
+				(uint) sampleRate,
+				(uint) channels,
+				0,
+				0,
+				0
+			);
+		}
 
-        public SoundEffect(byte[] buffer, int offset, int count, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
-        {
-            throw new NotImplementedException();
-        }
+		public SoundEffect(byte[] buffer, int offset, int count, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
+		{
+			throw new NotImplementedException();
+		}
 
-        #endregion
+		#endregion
 
-        #region Additional SoundEffect/SoundEffectInstance Creation Methods
+		#region Additional SoundEffect/SoundEffectInstance Creation Methods
 
-        public SoundEffectInstance CreateInstance()
-        {
-            return new SoundEffectInstance(this);
-        }
+		public SoundEffectInstance CreateInstance()
+		{
+			return new SoundEffectInstance(this);
+		}
 
-        public static SoundEffect FromStream(Stream stream)
-        {            
-            return new SoundEffect(stream);
-        }
+		public static SoundEffect FromStream(Stream stream)
+		{
+			return new SoundEffect(stream);
+		}
 
-        #endregion
+		#endregion
 
-        #region Play
+		#region Play
 
-        public bool Play()
-        {
-            // FIXME: Perhaps MasterVolume should be applied to alListener? -flibit
-            return Play(MasterVolume, 0.0f, 0.0f);
-        }
+		public bool Play()
+		{
+			// FIXME: Perhaps MasterVolume should be applied to alListener? -flibit
+			return Play(MasterVolume, 0.0f, 0.0f);
+		}
 
-        public bool Play(float volume, float pitch, float pan)
-        {
-            SoundEffectInstance instance = CreateInstance();
-            instance.Volume = volume;
-            instance.Pitch = pitch;
-            instance.Pan = pan;
-            instance.Play();
-            if (instance.State != SoundState.Playing)
-            {
-                // Ran out of AL sources, probably.
-                instance.Dispose();
-                return false;
-            }
-            OpenALDevice.Instance.instancePool.Add(instance);
-            return true;
-        }
+		public bool Play(float volume, float pitch, float pan)
+		{
+			SoundEffectInstance instance = CreateInstance();
+			instance.Volume = volume;
+			instance.Pitch = pitch;
+			instance.Pan = pan;
+			instance.Play();
+			if (instance.State != SoundState.Playing)
+			{
+				// Ran out of AL sources, probably.
+				instance.Dispose();
+				return false;
+			}
+			OpenALDevice.Instance.instancePool.Add(instance);
+			return true;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Properties
+		#region Public Properties
 
-        public TimeSpan Duration
-        {
-            get;
-            private set;
-        }
+		public TimeSpan Duration
+		{
+			get;
+			private set;
+		}
 
-        public string Name
-        {
-            get;
-            set;
-        }
+		public string Name
+		{
+			get;
+			set;
+		}
 
-        #endregion
+		#endregion
 
-        #region Static Members
+		#region Static Members
 
-        // FIXME: This should affect all sounds! alListener? -flibit
-        private static float INTERNAL_masterVolume = 1.0f;
-        public static float MasterVolume 
-        { 
-            get
-            {
-                return INTERNAL_masterVolume;
-            }
-            set
-            {
-                INTERNAL_masterVolume = value;
-            }
-        }
+		// FIXME: This should affect all sounds! alListener? -flibit
+		private static float INTERNAL_masterVolume = 1.0f;
+		public static float MasterVolume
+		{
+			get
+			{
+				return INTERNAL_masterVolume;
+			}
+			set
+			{
+				INTERNAL_masterVolume = value;
+			}
+		}
 
-        // FIXME: How does this affect OpenAL? -flibit
-        private static float INTERNAL_distanceScale = 1.0f;
-        public static float DistanceScale
-        {
-            get
-            {
-                return INTERNAL_distanceScale;
-            }
-            set
-            {
-                if (value <= 0.0f)
-                {
-                    throw new ArgumentOutOfRangeException("value of DistanceScale");
-                }
-                INTERNAL_distanceScale = value;
-            }
-        }
+		// FIXME: How does this affect OpenAL? -flibit
+		private static float INTERNAL_distanceScale = 1.0f;
+		public static float DistanceScale
+		{
+			get
+			{
+				return INTERNAL_distanceScale;
+			}
+			set
+			{
+				if (value <= 0.0f)
+				{
+					throw new ArgumentOutOfRangeException("value of DistanceScale");
+				}
+				INTERNAL_distanceScale = value;
+			}
+		}
 
-        // FIXME: How does this affect OpenAL? -flibit
-        private static float INTERNAL_dopplerScale = 1.0f;
-        public static float DopplerScale
-        {
-            get
-            {
-                return INTERNAL_dopplerScale;
-            }
-            set
-            {
-                if (value <= 0.0f)
-                {
-                    throw new ArgumentOutOfRangeException("value of DopplerScale");
-                }
-                INTERNAL_dopplerScale = value;
-            }
-        }
+		// FIXME: How does this affect OpenAL? -flibit
+		private static float INTERNAL_dopplerScale = 1.0f;
+		public static float DopplerScale
+		{
+			get
+			{
+				return INTERNAL_dopplerScale;
+			}
+			set
+			{
+				if (value <= 0.0f)
+				{
+					throw new ArgumentOutOfRangeException("value of DopplerScale");
+				}
+				INTERNAL_dopplerScale = value;
+			}
+		}
 
-        // FIXME: How does this affect OpenAL? -flibit
-        private static float INTERNAL_speedOfSound = 343.5f;
-        public static float SpeedOfSound
-        {
-            get
-            {
-                return INTERNAL_speedOfSound;
-            }
-            set
-            {
-                INTERNAL_speedOfSound = value;
-            }
-        }
+		// FIXME: How does this affect OpenAL? -flibit
+		private static float INTERNAL_speedOfSound = 343.5f;
+		public static float SpeedOfSound
+		{
+			get
+			{
+				return INTERNAL_speedOfSound;
+			}
+			set
+			{
+				INTERNAL_speedOfSound = value;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region IDisposable Members
+		#region IDisposable Members
 
-        public bool IsDisposed
-        {
-            get;
-            private set;
-        }
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
 
-        public void Dispose()
-        {
-            if (!IsDisposed)
-            {
-                AL.DeleteBuffer(INTERNAL_buffer);
-                IsDisposed = true;
-            }
-        }
+		public void Dispose()
+		{
+			if (!IsDisposed)
+			{
+				AL.DeleteBuffer(INTERNAL_buffer);
+				IsDisposed = true;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Additional OpenAL SoundEffect Code
+		#region Additional OpenAL SoundEffect Code
 
-        private void INTERNAL_loadAudioStream(Stream s)
-        {
-            byte[] data;
-            uint sampleRate = 0;
-            uint numChannels = 0;
+		private void INTERNAL_loadAudioStream(Stream s)
+		{
+			byte[] data;
+			uint sampleRate = 0;
+			uint numChannels = 0;
 
-            using (BinaryReader reader = new BinaryReader(s))
-            {
-                // RIFF Signature
-                string signature = new string(reader.ReadChars(4));
-                if (signature != "RIFF")
-                {
-                    throw new NotSupportedException("Specified stream is not a wave file.");
-                }
+			using (BinaryReader reader = new BinaryReader(s))
+			{
+				// RIFF Signature
+				string signature = new string(reader.ReadChars(4));
+				if (signature != "RIFF")
+				{
+					throw new NotSupportedException("Specified stream is not a wave file.");
+				}
 
-                reader.ReadUInt32(); // Riff Chunk Size
+				reader.ReadUInt32(); // Riff Chunk Size
 
-                string wformat = new string(reader.ReadChars(4));
-                if (wformat != "WAVE")
-                {
-                    throw new NotSupportedException("Specified stream is not a wave file.");
-                }
+				string wformat = new string(reader.ReadChars(4));
+				if (wformat != "WAVE")
+				{
+					throw new NotSupportedException("Specified stream is not a wave file.");
+				}
 
-                // WAVE Header
-                string format_signature = new string(reader.ReadChars(4));
-                while (format_signature != "fmt ")
-                {
-                    reader.ReadBytes(reader.ReadInt32());
-                    format_signature = new string(reader.ReadChars(4));
-                }
+				// WAVE Header
+				string format_signature = new string(reader.ReadChars(4));
+				while (format_signature != "fmt ")
+				{
+					reader.ReadBytes(reader.ReadInt32());
+					format_signature = new string(reader.ReadChars(4));
+				}
 
-                int format_chunk_size = reader.ReadInt32();
+				int format_chunk_size = reader.ReadInt32();
 
-                // Header Information
-                uint audio_format = reader.ReadUInt16(); // 2
-                numChannels = reader.ReadUInt16();      // 4
-                sampleRate = reader.ReadUInt32();       // 8
-                reader.ReadUInt32();                    // 12, Byte Rate
-                reader.ReadUInt16();                    // 14, Block Align
-                reader.ReadUInt16();                    // 16, Bits Per Sample
+				// Header Information
+				uint audio_format = reader.ReadUInt16();	// 2
+				numChannels = reader.ReadUInt16();		// 4
+				sampleRate = reader.ReadUInt32();		// 8
+				reader.ReadUInt32();				// 12, Byte Rate
+				reader.ReadUInt16();				// 14, Block Align
+				reader.ReadUInt16();				// 16, Bits Per Sample
 
-                if (audio_format != 1)
-                {
-                    throw new NotSupportedException("Wave compression is not supported.");
-                }
+				if (audio_format != 1)
+				{
+					throw new NotSupportedException("Wave compression is not supported.");
+				}
 
-                // Reads residual bytes
-                if (format_chunk_size > 16)
-                {
-                    reader.ReadBytes(format_chunk_size - 16);
-                }
+				// Reads residual bytes
+				if (format_chunk_size > 16)
+				{
+					reader.ReadBytes(format_chunk_size - 16);
+				}
 
-                // data Signature
-                string data_signature = new string(reader.ReadChars(4));
-                while (data_signature.ToLower() != "data")
-                {
-                    reader.ReadBytes(reader.ReadInt32());
-                    data_signature = new string(reader.ReadChars(4));
-                }
-                if (data_signature != "data")
-                {
-                    throw new NotSupportedException("Specified wave file is not supported.");
-                }
+				// data Signature
+				string data_signature = new string(reader.ReadChars(4));
+				while (data_signature.ToLower() != "data")
+				{
+					reader.ReadBytes(reader.ReadInt32());
+					data_signature = new string(reader.ReadChars(4));
+				}
+				if (data_signature != "data")
+				{
+					throw new NotSupportedException("Specified wave file is not supported.");
+				}
 
-                int waveDataLength = reader.ReadInt32();
-                data = reader.ReadBytes(waveDataLength);
-            }
+				int waveDataLength = reader.ReadInt32();
+				data = reader.ReadBytes(waveDataLength);
+			}
 
-            INTERNAL_bufferData(
-                data,
-                sampleRate,
-                numChannels,
-                0,
-                0,
-                0
-            );
-        }
+			INTERNAL_bufferData(
+				data,
+				sampleRate,
+				numChannels,
+				0,
+				0,
+				0
+			);
+		}
 
-        private void INTERNAL_bufferData(
-            byte[] data,
-            uint sampleRate,
-            uint channels,
-            uint loopStart,
-            uint loopEnd,
-            uint compressionAlign
-        ) {
-            // FIXME: MSADPCM Duration
-            Duration = TimeSpan.FromSeconds(data.Length / 2 / channels / ((double) sampleRate));
+		private void INTERNAL_bufferData(
+			byte[] data,
+			uint sampleRate,
+			uint channels,
+			uint loopStart,
+			uint loopEnd,
+			uint compressionAlign
+		) {
+			// FIXME: MSADPCM Duration
+			Duration = TimeSpan.FromSeconds(data.Length / 2 / channels / ((double) sampleRate));
 
-            ALFormat format;
-            if (compressionAlign > 0)
-            {
-                if (AL.Get(ALGetString.Extensions).Contains("AL_EXT_MSADPCM"))
-                {
-                    if (compressionAlign == 262)
-                    {
-                        format = (channels == 2) ? ALFormat.StereoMsadpcm512Ext : ALFormat.MonoMsadpcm512Ext;
-                    }
-                    else if (compressionAlign == 134)
-                    {
-                        format = (channels == 2) ? ALFormat.StereoMsadpcm256Ext : ALFormat.MonoMsadpcm256Ext;
-                    }
-                    else if (compressionAlign == 70)
-                    {
-                        format = (channels == 2) ? ALFormat.StereoMsadpcm128Ext : ALFormat.MonoMsadpcm128Ext;
-                    }
-                    else if (compressionAlign == 38)
-                    {
-                        format = (channels == 2) ? ALFormat.StereoMsadpcm64Ext : ALFormat.MonoMsadpcm64Ext;
-                    }
-                    else if (compressionAlign == 22)
-                    {
-                        format = (channels == 2) ? ALFormat.StereoMsadpcm32Ext : ALFormat.MonoMsadpcm32Ext;
-                    }
-                    else
-                    {
-                        throw new Exception("MSADPCM blockAlign unsupported in AL_EXT_MSADPCM!");
-                    }
-                }
-                else
-                {
-                    byte[] newData;
-                    using (MemoryStream stream = new MemoryStream(data))
-                    {
-                        using (BinaryReader reader = new BinaryReader(stream))
-                        {
-                            newData = MSADPCMToPCM.MSADPCM_TO_PCM(
-                                reader,
-                                (short) channels,
-                                (short) (compressionAlign - 22)
-                            );
-                        }
-                    }
-                    data = newData;
-                    compressionAlign = 0;
-                    format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
-                }
-            }
-            else
-            {
-                format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
-            }
+			ALFormat format;
+			if (compressionAlign > 0)
+			{
+				if (AL.Get(ALGetString.Extensions).Contains("AL_EXT_MSADPCM"))
+				{
+					if (compressionAlign == 262)
+					{
+						format = (channels == 2) ? ALFormat.StereoMsadpcm512Ext : ALFormat.MonoMsadpcm512Ext;
+					}
+					else if (compressionAlign == 134)
+					{
+						format = (channels == 2) ? ALFormat.StereoMsadpcm256Ext : ALFormat.MonoMsadpcm256Ext;
+					}
+					else if (compressionAlign == 70)
+					{
+						format = (channels == 2) ? ALFormat.StereoMsadpcm128Ext : ALFormat.MonoMsadpcm128Ext;
+					}
+					else if (compressionAlign == 38)
+					{
+						format = (channels == 2) ? ALFormat.StereoMsadpcm64Ext : ALFormat.MonoMsadpcm64Ext;
+					}
+					else if (compressionAlign == 22)
+					{
+						format = (channels == 2) ? ALFormat.StereoMsadpcm32Ext : ALFormat.MonoMsadpcm32Ext;
+					}
+					else
+					{
+						throw new Exception("MSADPCM blockAlign unsupported in AL_EXT_MSADPCM!");
+					}
+				}
+				else
+				{
+					byte[] newData;
+					using (MemoryStream stream = new MemoryStream(data))
+					{
+						using (BinaryReader reader = new BinaryReader(stream))
+						{
+							newData = MSADPCMToPCM.MSADPCM_TO_PCM(
+								reader,
+								(short) channels,
+								(short) (compressionAlign - 22)
+							);
+						}
+					}
+					data = newData;
+					compressionAlign = 0;
+					format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+				}
+			}
+			else
+			{
+				format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+			}
 
-            // Create the buffer and load it!
-            INTERNAL_buffer = AL.GenBuffer();
-            AL.BufferData(
-                INTERNAL_buffer,
-                format,
-                data,
-                data.Length,
-                (int) sampleRate
-            );
+			// Create the buffer and load it!
+			INTERNAL_buffer = AL.GenBuffer();
+			AL.BufferData(
+				INTERNAL_buffer,
+				format,
+				data,
+				data.Length,
+				(int) sampleRate
+			);
 
-            // Set the loop points, if applicable
-            if (loopStart > 0 || loopEnd > 0)
-            {
-                AL.Buffer(
-                    INTERNAL_buffer,
-                    ALBufferiv.LoopPointsSoft,
-                    new uint[]
-                    {
-                        loopStart,
-                        loopEnd
-                    }
-                );
-            }
-        }
+			// Set the loop points, if applicable
+			if (loopStart > 0 || loopEnd > 0)
+			{
+				AL.Buffer(
+					INTERNAL_buffer,
+					ALBufferiv.LoopPointsSoft,
+					new uint[]
+					{
+						loopStart,
+						loopEnd
+					}
+				);
+			}
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
