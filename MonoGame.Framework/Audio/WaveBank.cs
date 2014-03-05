@@ -172,7 +172,10 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				foreach (SoundEffect se in INTERNAL_sounds)
 				{
-					se.Dispose();
+					if (se != null)
+					{
+						se.Dispose();
+					}
 				}
 				INTERNAL_baseEngine.INTERNAL_removeWaveBank(INTERNAL_name);
 				INTERNAL_sounds = null;
