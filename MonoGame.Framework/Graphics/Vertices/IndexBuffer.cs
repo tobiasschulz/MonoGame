@@ -400,7 +400,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// </summary>
         internal protected override void GraphicsDeviceResetting()
         {
-            Handle = 0;
+            // FIXME: Do we even want to bother with DeviceResetting for GL? -flibit
         }
 
         #endregion
