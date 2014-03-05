@@ -6,7 +6,7 @@
  * See LICENSE.txt for details.
  */
 #endregion
-﻿
+
 #region Using Statements
 using System;
 using System.IO;
