@@ -58,11 +58,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             Format = format;
-            format.GetGLFormat(
-                out glInternalFormat,
-                out glFormat,
-                out glType
-            );
+            GetGLSurfaceFormat();
 
             texture = new OpenGLDevice.OpenGLTexture(
                 TextureTarget.Texture3D,

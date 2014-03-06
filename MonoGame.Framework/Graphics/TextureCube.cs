@@ -59,11 +59,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Size = size;
             LevelCount = mipMap ? CalculateMipLevels(size) : 1;
             Format = format;
-            format.GetGLFormat(
-                out glInternalFormat,
-                out glFormat,
-                out glType
-            );
+            GetGLSurfaceFormat();
 
             texture = new OpenGLDevice.OpenGLTexture(
                 TextureTarget.TextureCubeMap,

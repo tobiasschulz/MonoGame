@@ -102,63 +102,16 @@ namespace Microsoft.Xna.Framework.Graphics
         public RenderTarget2D(
             GraphicsDevice graphicsDevice,
             int width,
-            int height,
-            bool mipMap,
-            SurfaceFormat preferredFormat,
-            DepthFormat preferredDepthFormat,
-            int preferredMultiSampleCount,
-            RenderTargetUsage usage,
-            bool shared
-        ) : base(
-            graphicsDevice,
-            width,
-            height,
-            mipMap,
-            preferredFormat,
-            SurfaceType.RenderTarget,
-            shared
-        ) {
-            DepthStencilFormat = preferredDepthFormat;
-            MultiSampleCount = preferredMultiSampleCount;
-            RenderTargetUsage = usage;
-
-            // If we don't need a depth buffer then we're done.
-            if (preferredDepthFormat == DepthFormat.None)
-            {
-                return;
-            }
-
-            Threading.BlockOnUIThread(() =>
-            {
-                this.glDepthStencilBuffer = OpenGLDevice.Framebuffer.GenRenderbuffer(
-                    width,
-                    height,
-                    preferredDepthFormat
-                );
-                GraphicsExtensions.CheckGLError();
-            });
-
-        }
-
-        public RenderTarget2D(
-            GraphicsDevice graphicsDevice,
-            int width,
-            int height,
-            bool mipMap,
-            SurfaceFormat preferredFormat,
-            DepthFormat preferredDepthFormat,
-            int preferredMultiSampleCount,
-            RenderTargetUsage usage
+            int height
         ) : this(
             graphicsDevice,
             width,
             height,
-            mipMap,
-            preferredFormat,
-            preferredDepthFormat,
-            preferredMultiSampleCount,
-            usage,
-            false
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.DiscardContents
         ) {
         }
 
@@ -184,47 +137,40 @@ namespace Microsoft.Xna.Framework.Graphics
         public RenderTarget2D(
             GraphicsDevice graphicsDevice,
             int width,
-            int height
-        ) : this(
-            graphicsDevice,
-            width,
-            height,
-            false,
-            SurfaceFormat.Color,
-            DepthFormat.None,
-            0,
-            RenderTargetUsage.DiscardContents
-        ) {
-        }
-
-        #endregion
-
-        #region Protected Constructors
-
-        /// <summary>
-        /// Allows child class to specify the surface type, eg: a swap chain.
-        /// </summary>        
-        protected RenderTarget2D(
-            GraphicsDevice graphicsDevice,
-            int width,
             int height,
             bool mipMap,
-            SurfaceFormat format,
-            DepthFormat depthFormat,
+            SurfaceFormat preferredFormat,
+            DepthFormat preferredDepthFormat,
             int preferredMultiSampleCount,
-            RenderTargetUsage usage,
-            SurfaceType surfaceType
+            RenderTargetUsage usage
         ) : base(
             graphicsDevice,
             width,
             height,
             mipMap,
-            format,
-            surfaceType
+            preferredFormat,
+            true
         ) {
-            DepthStencilFormat = depthFormat;
+            DepthStencilFormat = preferredDepthFormat;
             MultiSampleCount = preferredMultiSampleCount;
             RenderTargetUsage = usage;
+
+            // If we don't need a depth buffer then we're done.
+            if (preferredDepthFormat == DepthFormat.None)
+            {
+                return;
+            }
+
+            Threading.BlockOnUIThread(() =>
+            {
+                this.glDepthStencilBuffer = OpenGLDevice.Framebuffer.GenRenderbuffer(
+                    width,
+                    height,
+                    preferredDepthFormat
+                );
+                GraphicsExtensions.CheckGLError();
+            });
+
         }
 
         #endregion
