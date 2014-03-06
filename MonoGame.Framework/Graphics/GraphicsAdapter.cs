@@ -86,7 +86,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 return new DisplayMode(
                     mode.w,
                     mode.h,
-                    mode.refresh_rate,
                     SurfaceFormat.Color
                 );
 #elif IOS
@@ -255,7 +254,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     {
                         SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
 
-                        // FIXME: I'm about ready to remove refresh_rate. It breaks compatibility. -flibit
+                        // Check for dupes caused by varying refresh rates.
                         bool dupe = false;
                         foreach (DisplayMode mode in modes)
                         {
@@ -273,7 +272,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             new DisplayMode(
                                 filler.w,
                                 filler.h,
-                                filler.refresh_rate,
                                 SurfaceFormat.Color // FIXME: Assumption!
                             )
                         );

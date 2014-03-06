@@ -105,7 +105,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 return new DisplayMode(
                     OpenGLDevice.Instance.Backbuffer.Width,
                     OpenGLDevice.Instance.Backbuffer.Height,
-                    60, // FIXME: Assumption!
                     SurfaceFormat.Color
                 );
             }
