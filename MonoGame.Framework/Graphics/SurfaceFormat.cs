@@ -40,8 +40,6 @@ purpose and non-infringement.
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    using System;
-
     public enum SurfaceFormat
     {
         Color = 0,
@@ -64,13 +62,6 @@ namespace Microsoft.Xna.Framework.Graphics
         HalfVector2 = 17,
         HalfVector4 = 18,
         HdrBlendable = 19,
-
-        // BGRA formats are required for compatibility with WPF D3DImage.
-        Bgr32 = 20,     // B8G8R8X8
-        Bgra32 = 21,    // B8G8R8A8
-
-        // DXT1 also has a 1-bit alpha form
-        Dxt1a = 70,
     }
     
     public enum SurfaceFormat_Legacy

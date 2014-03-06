@@ -335,10 +335,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				glInternalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
 				glFormat = (PixelFormat)All.CompressedTextureFormats;
 				break;
-            case SurfaceFormat.Dxt1a:
-                glInternalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
-                glFormat = (PixelFormat)All.CompressedTextureFormats;
-                break;
             case SurfaceFormat.Dxt3:
 				glInternalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
 				glFormat = (PixelFormat)All.CompressedTextureFormats;
@@ -441,7 +437,6 @@ namespace Microsoft.Xna.Framework.Graphics
             switch (surfaceFormat)
             {
                 case SurfaceFormat.Dxt1:
-                case SurfaceFormat.Dxt1a:
                     return 8;
                 case SurfaceFormat.Dxt3:
                 case SurfaceFormat.Dxt5:

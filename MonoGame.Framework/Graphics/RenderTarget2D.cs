@@ -36,47 +36,97 @@
 // permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular
 // purpose and non-infringement.
 // */
-#endregion License
+#endregion
 
+#region Using Statements
 using System;
 
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
     public class RenderTarget2D : Texture2D, IRenderTarget
     {
+        #region Public Properties
+
+        public DepthFormat DepthStencilFormat
+        {
+            get;
+            private set;
+        }
+
+        public int MultiSampleCount
+        {
+            get;
+            private set;
+        }
+
+        public RenderTargetUsage RenderTargetUsage
+        {
+            get;
+            private set;
+        }
+
+        public bool IsContentLost
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Internal OpenGL Properties
+
         internal uint glDepthStencilBuffer
         {
             get;
             private set;
         }
 
-        public DepthFormat DepthStencilFormat { get; private set; }
+        #endregion
 
-        public int MultiSampleCount { get; private set; }
+        #region ContentLost Event
 
-        public RenderTargetUsage RenderTargetUsage { get; private set; }
-
-        public bool IsContentLost { get { return false; } }
-
+#pragma warning disable 0067
+        // We never lose data, but lol XNA4 compliance -flibit
         public event EventHandler<EventArgs> ContentLost;
+#pragma warning restore 0067
 
-        private bool SuppressEventHandlerWarningsUntilEventsAreProperlyImplemented()
-        {
-            return ContentLost != null;
-        }
+        #endregion
 
-        public RenderTarget2D (GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage, bool shared)
-            :base (graphicsDevice, width, height, mipMap, preferredFormat, SurfaceType.RenderTarget, shared)
-        {
+        #region Public Constructors
+
+        public RenderTarget2D(
+            GraphicsDevice graphicsDevice,
+            int width,
+            int height,
+            bool mipMap,
+            SurfaceFormat preferredFormat,
+            DepthFormat preferredDepthFormat,
+            int preferredMultiSampleCount,
+            RenderTargetUsage usage,
+            bool shared
+        ) : base(
+            graphicsDevice,
+            width,
+            height,
+            mipMap,
+            preferredFormat,
+            SurfaceType.RenderTarget,
+            shared
+        ) {
             DepthStencilFormat = preferredDepthFormat;
             MultiSampleCount = preferredMultiSampleCount;
             RenderTargetUsage = usage;
 
             // If we don't need a depth buffer then we're done.
             if (preferredDepthFormat == DepthFormat.None)
+            {
                 return;
+            }
 
             Threading.BlockOnUIThread(() =>
             {
@@ -90,41 +140,96 @@ namespace Microsoft.Xna.Framework.Graphics
 
         }
 
-        public RenderTarget2D (GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage)
-            :this (graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, preferredMultiSampleCount, usage, false)
-        {}
+        public RenderTarget2D(
+            GraphicsDevice graphicsDevice,
+            int width,
+            int height,
+            bool mipMap,
+            SurfaceFormat preferredFormat,
+            DepthFormat preferredDepthFormat,
+            int preferredMultiSampleCount,
+            RenderTargetUsage usage
+        ) : this(
+            graphicsDevice,
+            width,
+            height,
+            mipMap,
+            preferredFormat,
+            preferredDepthFormat,
+            preferredMultiSampleCount,
+            usage,
+            false
+        ) {
+        }
 
-        public RenderTarget2D(GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat)
-            :this (graphicsDevice, width, height, mipMap, preferredFormat, preferredDepthFormat, 0, RenderTargetUsage.DiscardContents) 
-        {}
+        public RenderTarget2D(
+            GraphicsDevice graphicsDevice,
+            int width,
+            int height,
+            bool mipMap,
+            SurfaceFormat preferredFormat,
+            DepthFormat preferredDepthFormat
+        ) : this(
+            graphicsDevice,
+            width,
+            height,
+            mipMap,
+            preferredFormat,
+            preferredDepthFormat,
+            0,
+            RenderTargetUsage.DiscardContents
+        ) {
+        }
 
-        public RenderTarget2D(GraphicsDevice graphicsDevice, int width, int height)
-            : this(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.DiscardContents) 
-        {}
+        public RenderTarget2D(
+            GraphicsDevice graphicsDevice,
+            int width,
+            int height
+        ) : this(
+            graphicsDevice,
+            width,
+            height,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None,
+            0,
+            RenderTargetUsage.DiscardContents
+        ) {
+        }
+
+        #endregion
+
+        #region Protected Constructors
 
         /// <summary>
         /// Allows child class to specify the surface type, eg: a swap chain.
         /// </summary>        
-        protected RenderTarget2D(GraphicsDevice graphicsDevice,
-                        int width,
-                        int height,
-                        bool mipMap,
-                        SurfaceFormat format,
-                        DepthFormat depthFormat,
-                        int preferredMultiSampleCount,
-                        RenderTargetUsage usage,
-                        SurfaceType surfaceType)
-            : base(graphicsDevice, width, height, mipMap, format, surfaceType)
-        {
+        protected RenderTarget2D(
+            GraphicsDevice graphicsDevice,
+            int width,
+            int height,
+            bool mipMap,
+            SurfaceFormat format,
+            DepthFormat depthFormat,
+            int preferredMultiSampleCount,
+            RenderTargetUsage usage,
+            SurfaceType surfaceType
+        ) : base(
+            graphicsDevice,
+            width,
+            height,
+            mipMap,
+            format,
+            surfaceType
+        ) {
             DepthStencilFormat = depthFormat;
             MultiSampleCount = preferredMultiSampleCount;
             RenderTargetUsage = usage;
         }
 
-        protected internal override void GraphicsDeviceResetting()
-        {
-            base.GraphicsDeviceResetting();
-        }
+        #endregion
+
+        #region Protected Dispose Method
 
         protected override void Dispose(bool disposing)
         {
@@ -140,5 +245,16 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             base.Dispose(disposing);
         }
+
+        #endregion
+
+        #region Internal Context Reset Method
+
+        protected internal override void GraphicsDeviceResetting()
+        {
+            base.GraphicsDeviceResetting();
+        }
+
+        #endregion
     }
 }

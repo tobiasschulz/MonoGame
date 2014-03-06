@@ -1,17 +1,23 @@
-﻿using OpenTK.Graphics.OpenGL;
-
-namespace Microsoft.Xna.Framework.Graphics
+﻿namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class TextureCollection
     {
+        #region Private Variables
+
         private readonly Texture[] textures;
-        private readonly TextureTarget[] targets;
+
+        #endregion
+
+        #region Internal Constructor
 
         internal TextureCollection(int maxTextures)
         {
             textures = new Texture[maxTextures];
-            targets = new TextureTarget[maxTextures];
         }
+
+        #endregion
+
+        #region Public Array Access Method
 
         public Texture this[int index]
         {
@@ -25,13 +31,18 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        #endregion
+
+        #region Internal Array Clear Method
+
         internal void Clear()
         {
             for (int i = 0; i < textures.Length; i += 1)
             {
                 textures[i] = null;
-                targets[i] = 0;
             }
         }
+
+        #endregion
     }
 }

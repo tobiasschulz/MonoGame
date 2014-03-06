@@ -102,7 +102,6 @@ namespace Microsoft.Xna.Framework.Content
 					break;
 #else
 				case SurfaceFormat.Dxt1:
-                case SurfaceFormat.Dxt1a:
                     if (!OpenGLDevice.Instance.SupportsDxt1)
                         convertedFormat = SurfaceFormat.Color;
                     break;
@@ -139,7 +138,6 @@ namespace Microsoft.Xna.Framework.Content
 				{
 #if !IOS
 					case SurfaceFormat.Dxt1:
-                    case SurfaceFormat.Dxt1a:
                         if (!OpenGLDevice.Instance.SupportsDxt1)
 						{
 						    levelData = reader.ReadBytes(levelDataSizeInBytes);
