@@ -338,11 +338,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 );
             }
 
-            if (VertexCount < elementCount)
-            {
-                throw new ArgumentOutOfRangeException("Buffer is too small.");
-            }
-
             int elementSizeInBytes = Marshal.SizeOf(typeof(T));
 
             if (Threading.IsOnUIThread())
