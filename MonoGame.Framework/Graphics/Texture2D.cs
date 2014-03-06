@@ -386,7 +386,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void GetData<T>(T[] data) where T : struct
         {
-            this.GetData(0, null, data, 0, data.Length);
+            this.GetData(
+                0,
+                null,
+                data,
+                0,
+                data.Length
+            );
         }
 
         public void GetData<T>(
