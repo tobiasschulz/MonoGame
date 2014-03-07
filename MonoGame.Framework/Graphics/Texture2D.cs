@@ -628,7 +628,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 #pragma warning disable 0169
             UInt32 flags;
-            public IntPtr format;
+            IntPtr format;
             public Int32 w;
             public Int32 h;
             Int32 pitch;
