@@ -1,7 +1,6 @@
 #region DISABLE_FAUXBACKBUFFER Option
 // #define DISABLE_FAUXBACKBUFFER
 /* If you want to debug GL without the extra FBO in your way, you can use this.
- * Note that this also affects SDL2/SDL2_GameWindow.cs!
  * -flibit
  */
 #endregion
@@ -68,24 +67,167 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region OpenGL Sampler State Container Class
+        #region OpenGL Texture Container Class
 
-        public class OpenGLSampler
+        public class OpenGLTexture
         {
-            public OpenGLState<int> Texture;
+            public int Handle
+            {
+                get;
+                private set;
+            }
+
+            public TextureTarget Target
+            {
+                get;
+                private set;
+            }
+
+            public SurfaceFormat Format
+            {
+                get;
+                private set;
+            }
+
+            public bool HasMipmaps
+            {
+                get;
+                private set;
+            }
+
             public OpenGLState<TextureAddressMode> WrapS;
             public OpenGLState<TextureAddressMode> WrapT;
             public OpenGLState<TextureAddressMode> WrapR;
             public OpenGLState<TextureFilter> Filter;
-            public OpenGLState<TextureTarget> Target;
+            public OpenGLState<float> Anistropy;
+            public OpenGLState<int> MaxMipmapLevel;
+            public OpenGLState<float> LODBias;
 
-            public OpenGLSampler()
+            public OpenGLTexture(TextureTarget target, SurfaceFormat format, bool hasMipmaps)
             {
-                Texture = new OpenGLState<int>(0);
+                Handle = GL.GenTexture();
+                Target = target;
+                Format = format;
+                HasMipmaps = hasMipmaps;
+
                 WrapS = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 WrapT = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 WrapR = new OpenGLState<TextureAddressMode>(TextureAddressMode.Wrap);
                 Filter = new OpenGLState<TextureFilter>(TextureFilter.Linear);
+                Anistropy = new OpenGLState<float>(4.0f);
+                MaxMipmapLevel = new OpenGLState<int>(0);
+                LODBias = new OpenGLState<float>(0.0f);
+            }
+
+            public void Dispose()
+            {
+                GL.DeleteTexture(Handle);
+                Handle = 0;
+            }
+
+            public void Flush(bool force)
+            {
+                if (Handle == 0)
+                {
+                    return; // Nothing to modify!
+                }
+
+                if (force || WrapS.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureWrapS,
+                        (int) XNAToGL.Wrap[WrapS.Flush()]
+                    );
+                }
+
+                if (force || WrapT.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureWrapT,
+                        (int) XNAToGL.Wrap[WrapT.Flush()]
+                    );
+                }
+
+                if (force || WrapR.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureWrapR,
+                        (int) XNAToGL.Wrap[WrapR.Flush()]
+                    );
+                }
+
+                if (force || Filter.NeedsFlush() || Anistropy.NeedsFlush())
+                {
+                    TextureFilter filter = Filter.Flush();
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureMagFilter,
+                        (int) XNAToGL.MagFilter[filter]
+                    );
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureMinFilter,
+                        (int) (HasMipmaps ? XNAToGL.MinMipFilter[filter] : XNAToGL.MinFilter[filter])
+                    );
+                    GL.TexParameter(
+                        Target,
+                        (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
+                        (filter == TextureFilter.Anisotropic) ? Anistropy.Flush() : 1.0f
+                    );
+                }
+
+                if (force || MaxMipmapLevel.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureBaseLevel,
+                        MaxMipmapLevel.Flush()
+                    );
+                }
+
+                if (force || LODBias.NeedsFlush())
+                {
+                    GL.TexParameter(
+                        Target,
+                        TextureParameterName.TextureLodBias,
+                        LODBias.Flush()
+                    );
+                }
+            }
+
+            public void Generate2DMipmaps()
+            {
+                GL.BindTexture(Target, Handle);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                GL.BindTexture(
+                    OpenGLDevice.Instance.Samplers[0].Target.GetCurrent(),
+                    OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle
+                );
+            }
+
+            // We can't set a SamplerState Texture to null, so use this.
+            private OpenGLTexture()
+            {
+                Handle = 0;
+            }
+            public static readonly OpenGLTexture NullTexture = new OpenGLTexture();
+        }
+
+        #endregion
+
+        #region OpenGL Sampler State Container Class
+
+        public class OpenGLSampler
+        {
+            public OpenGLState<OpenGLTexture> Texture;
+            public OpenGLState<TextureTarget> Target;
+
+            public OpenGLSampler()
+            {
+                Texture = new OpenGLState<OpenGLTexture>(OpenGLTexture.NullTexture);
                 Target = new OpenGLState<TextureTarget>(TextureTarget.Texture2D);
             }
         }
@@ -97,7 +239,6 @@ namespace Microsoft.Xna.Framework.Graphics
         public class OpenGLVertexAttribute
         {
             // Checked in FlushVertexAttributes
-            public OpenGLState<bool> Enabled;
             public OpenGLState<int> Divisor;
 
             // Checked in VertexAttribPointer
@@ -110,7 +251,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
             public OpenGLVertexAttribute()
             {
-                Enabled = new OpenGLState<bool>(false);
                 Divisor = new OpenGLState<int>(0);
                 CurrentBuffer = 0;
                 CurrentSize = 4;
@@ -127,9 +267,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> AlphaBlendEnable = new OpenGLState<bool>(false);
 
-        public OpenGLState<bool> AlphaTestEnable = new OpenGLState<bool>(false);
+        // TODO: AlphaTestEnable? -flibit
 
-        public OpenGLState<bool> SeparateAlphaBlendEnable = new OpenGLState<bool>(false);
+        public OpenGLState<Color> BlendColor = new OpenGLState<Color>(Color.TransparentBlack);
 
         public OpenGLState<Blend> SrcBlend = new OpenGLState<Blend>(Blend.One);
 
@@ -165,13 +305,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public OpenGLState<bool> StencilEnable = new OpenGLState<bool>(false);
 
-        // TODO: glStencilMask(StencilWriteMask)? -flibit
+        public OpenGLState<int> StencilWriteMask = new OpenGLState<int>(-1); // AKA 0xFFFFFFFF, ugh -flibit
 
         public OpenGLState<bool> SeparateStencilEnable = new OpenGLState<bool>(false);
 
-        public OpenGLState<uint> StencilRef = new OpenGLState<uint>(0);
+        public OpenGLState<int> StencilRef = new OpenGLState<int>(0);
 
-        public OpenGLState<uint> StencilMask = new OpenGLState<uint>(0xFFFFFFFF);
+        public OpenGLState<int> StencilMask = new OpenGLState<int>(-1); // AKA 0xFFFFFFFF, ugh -flibit
 
         public OpenGLState<CompareFunction> StencilFunc = new OpenGLState<CompareFunction>(CompareFunction.Always);
 
@@ -219,6 +359,10 @@ namespace Microsoft.Xna.Framework.Graphics
             )
         );
 
+        public OpenGLState<float> DepthRangeMin = new OpenGLState<float>(0.0f);
+
+        public OpenGLState<float> DepthRangeMax = new OpenGLState<float>(0.0f);
+
         #endregion
 
         #region Sampler State Variables
@@ -239,6 +383,14 @@ namespace Microsoft.Xna.Framework.Graphics
             private set;
         }
 
+        public bool[] AttributeEnabled
+        {
+            get;
+            private set;
+        }
+
+        private bool[] previousAttributeEnabled;
+
         #endregion
 
         #region Buffer Binding Cache Variables
@@ -253,9 +405,18 @@ namespace Microsoft.Xna.Framework.Graphics
         private int currentFramebuffer = 0;
         private int targetFramebuffer = 0;
         private int[] currentAttachments;
-        private DrawBuffersEnum[] currentDrawBuffers;
-        private int currentRenderbuffer;
+        private int currentDrawBuffers;
+        private DrawBuffersEnum[] drawBuffersArray;
+        private uint currentRenderbuffer;
         private DepthFormat currentDepthStencilFormat;
+
+        #endregion
+
+        #region Clear Cache Variables
+
+        private Vector4 currentClearColor = new Vector4(0, 0, 0, 0);
+        private float currentClearDepth = 1.0f;
+        private int currentClearStencil = 0;
 
         #endregion
 
@@ -269,9 +430,39 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region OpenGL Extensions List
+        #region OpenGL Extensions List, Device Capabilities Variables
 
         public string Extensions
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsDxt1
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsS3tc
+        {
+            get;
+            private set;
+        }
+
+        public bool SupportsHardwareInstancing
+        {
+            get;
+            private set;
+        }
+
+        public int MaxTextureSlots
+        {
+            get;
+            private set;
+        }
+
+        public int MaxVertexAttributes
         {
             get;
             private set;
@@ -299,6 +490,29 @@ namespace Microsoft.Xna.Framework.Graphics
             // Load the extension list, initialize extension-dependent components
             Extensions = GL.GetString(StringName.Extensions);
             Framebuffer.Initialize();
+            SupportsS3tc = (
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_s3tc") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_OES_texture_compression_S3TC") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt3") ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt5")
+            );
+            SupportsDxt1 = (
+                SupportsS3tc ||
+                OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt1")
+            );
+            SupportsHardwareInstancing = (
+                OpenGLDevice.Instance.Extensions.Contains("GL_ARB_draw_instanced") &&
+                OpenGLDevice.Instance.Extensions.Contains("GL_ARB_instanced_arrays")
+            );
+
+            /* So apparently OSX Lion likes to lie about hardware instancing support.
+             * This is incredibly stupid, but it works!
+             * -flibit
+             */
+            if (SupportsHardwareInstancing && SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+            {
+                SupportsHardwareInstancing = SDL2.SDL.SDL_GL_GetProcAddress("glVertexAttribDivisorARB") != IntPtr.Zero;
+            }
 
             // Initialize the faux-backbuffer
             Backbuffer = new FauxBackbuffer(
@@ -309,32 +523,39 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Initialize sampler state array
             int numSamplers;
-            GL.GetInteger(GetPName.MaxTextureUnits, out numSamplers);
+            GL.GetInteger(GetPName.MaxTextureImageUnits, out numSamplers);
             Samplers = new OpenGLSampler[numSamplers];
             for (int i = 0; i < numSamplers; i += 1)
             {
                 Samplers[i] = new OpenGLSampler();
             }
+            MaxTextureSlots = numSamplers;
 
             // Initialize vertex attribute state array
             int numAttributes;
             GL.GetInteger(GetPName.MaxVertexAttribs, out numAttributes);
             Attributes = new OpenGLVertexAttribute[numAttributes];
+            AttributeEnabled = new bool[numAttributes];
+            previousAttributeEnabled = new bool[numAttributes];
             for (int i = 0; i < numAttributes; i += 1)
             {
                 Attributes[i] = new OpenGLVertexAttribute();
+                AttributeEnabled[i] = false;
+                previousAttributeEnabled[i] = false;
             }
+            MaxVertexAttributes = numAttributes;
 
             // Initialize render target FBO and state arrays
             int numAttachments;
             GL.GetInteger(GetPName.MaxDrawBuffers, out numAttachments);
             currentAttachments = new int[numAttachments];
-            currentDrawBuffers = new DrawBuffersEnum[numAttachments];
+            drawBuffersArray = new DrawBuffersEnum[numAttachments];
             for (int i = 0; i < numAttachments; i += 1)
             {
                 currentAttachments[i] = 0;
-                currentDrawBuffers[i] = DrawBuffersEnum.None;
+                drawBuffersArray[i] = DrawBuffersEnum.ColorAttachment0 + i;
             }
+            currentDrawBuffers = 0;
             currentRenderbuffer = 0;
             currentDepthStencilFormat = DepthFormat.None;
             targetFramebuffer = Framebuffer.GenFramebuffer();
@@ -372,39 +593,38 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.Blend, AlphaBlendEnable.Flush());
             }
 
-            if (force || AlphaTestEnable.NeedsFlush())
+            // TODO: AlphaTestEnable? -flibit
+
+            if (AlphaBlendEnable.GetCurrent() && (force || BlendColor.NeedsFlush()))
             {
-                ToggleGLState(EnableCap.AlphaTest, AlphaTestEnable.Flush());
+                Color color = BlendColor.Flush();
+                GL.BlendColor(
+                    color.R / 255.0f,
+                    color.G / 255.0f,
+                    color.B / 255.0f,
+                    color.A / 255.0f
+                );
             }
 
-            if (    force ||
-                    SeparateAlphaBlendEnable.NeedsFlush() ||
-                    SrcBlend.NeedsFlush() ||
-                    DstBlend.NeedsFlush() ||
-                    SrcBlendAlpha.NeedsFlush() ||
-                    DstBlendAlpha.NeedsFlush()  )
+            if (    AlphaBlendEnable.GetCurrent() &&
+                    (   force ||
+                        SrcBlend.NeedsFlush() ||
+                        DstBlend.NeedsFlush() ||
+                        SrcBlendAlpha.NeedsFlush() ||
+                        DstBlendAlpha.NeedsFlush()  )   )
             {
-                if (SeparateAlphaBlendEnable.Flush())
-                {
-                    GL.BlendFuncSeparate(
-                        XNAToGL.BlendModeSrc[SrcBlend.Flush()],
-                        XNAToGL.BlendModeDst[DstBlend.Flush()],
-                        XNAToGL.BlendModeSrc[SrcBlendAlpha.Flush()],
-                        XNAToGL.BlendModeDst[DstBlendAlpha.Flush()]
-                    );
-                }
-                else
-                {
-                    GL.BlendFunc(
-                        XNAToGL.BlendModeSrc[SrcBlend.Flush()],
-                        XNAToGL.BlendModeDst[DstBlend.Flush()]
-                    );
-                    SrcBlendAlpha.Flush();
-                    DstBlendAlpha.Flush();
-                }
+                GL.BlendFuncSeparate(
+                    XNAToGL.BlendModeSrc[SrcBlend.Flush()],
+                    XNAToGL.BlendModeDst[DstBlend.Flush()],
+                    XNAToGL.BlendModeSrc[SrcBlendAlpha.Flush()],
+                    XNAToGL.BlendModeDst[DstBlendAlpha.Flush()]
+                );
             }
 
-            if (force || BlendOp.NeedsFlush() || BlendOpAlpha.NeedsFlush())
+            if (    AlphaBlendEnable.GetCurrent() &&
+                    (   force ||
+                        BlendOp.NeedsFlush() ||
+                        BlendOpAlpha.NeedsFlush()   )   )
             {
                 GL.BlendEquationSeparate(
                     XNAToGL.BlendEquation[BlendOp.Flush()],
@@ -423,19 +643,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.DepthTest, ZEnable.Flush());
             }
 
-            if (force || ZWriteEnable.NeedsFlush())
+            if (ZEnable.GetCurrent() && (force || ZWriteEnable.NeedsFlush()))
             {
                 GL.DepthMask(ZWriteEnable.Flush());
             }
 
-            if (force || DepthFunc.NeedsFlush())
+            if (ZEnable.GetCurrent() && (force || DepthFunc.NeedsFlush()))
             {
                 GL.DepthFunc(XNAToGL.DepthFunc[DepthFunc.Flush()]);
             }
 
-            if (    force ||
-                    DepthBias.NeedsFlush() ||
-                    SlopeScaleDepthBias.NeedsFlush()    )
+            if (    ZEnable.GetCurrent() &&
+                    (   force ||
+                        DepthBias.NeedsFlush() ||
+                        SlopeScaleDepthBias.NeedsFlush()    )   )
             {
                 float depthBias = DepthBias.Flush();
                 float slopeScaleDepthBias = SlopeScaleDepthBias.Flush();
@@ -459,51 +680,40 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.StencilTest, StencilEnable.Flush());
             }
 
-            // TODO: glStencilMask? -flibit
-
-            if (    force ||
-                    SeparateStencilEnable.NeedsFlush() ||
-                    StencilRef.NeedsFlush() ||
-                    StencilMask.NeedsFlush() ||
-                    StencilFunc.NeedsFlush() ||
-                    CCWStencilFunc.NeedsFlush() )
+            if (StencilEnable.GetCurrent() && (force || StencilWriteMask.NeedsFlush()))
             {
+                GL.StencilMask(StencilWriteMask.Flush());
+            }
+
+            if (    StencilEnable.GetCurrent() &&
+                    (   force ||
+                        SeparateStencilEnable.NeedsFlush() ||
+                        StencilRef.NeedsFlush() ||
+                        StencilMask.NeedsFlush() ||
+                        StencilFunc.NeedsFlush() ||
+                        CCWStencilFunc.NeedsFlush() ||
+                        StencilFail.NeedsFlush() ||
+                        StencilZFail.NeedsFlush() ||
+                        StencilPass.NeedsFlush() ||
+                        CCWStencilFail.NeedsFlush() ||
+                        CCWStencilZFail.NeedsFlush() ||
+                        CCWStencilPass.NeedsFlush() )   )
+            {
+                // TODO: Can we split StencilFunc/StencilOp up nicely? -flibit
                 if (SeparateStencilEnable.Flush())
                 {
                     GL.StencilFuncSeparate(
                         (Version20) CullFaceMode.Front,
                         XNAToGL.StencilFunc[StencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
+                        StencilRef.Flush(),
                         StencilMask.Flush()
                     );
                     GL.StencilFuncSeparate(
                         (Version20) CullFaceMode.Back,
                         XNAToGL.StencilFunc[CCWStencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
+                        StencilRef.Flush(),
                         StencilMask.Flush()
                     );
-                }
-                else
-                {
-                    GL.StencilFunc(
-                        XNAToGL.StencilFunc[StencilFunc.Flush()],
-                        (int) StencilRef.Flush(),
-                        StencilMask.Flush()
-                    );
-                }
-            }
-
-            if (    force ||
-                    SeparateStencilEnable.NeedsFlush() ||
-                    StencilFail.NeedsFlush() ||
-                    StencilZFail.NeedsFlush() ||
-                    StencilPass.NeedsFlush() ||
-                    CCWStencilFail.NeedsFlush() ||
-                    CCWStencilZFail.NeedsFlush() ||
-                    CCWStencilPass.NeedsFlush() )
-            {
-                if (SeparateStencilEnable.Flush())
-                {
                     GL.StencilOpSeparate(
                         StencilFace.Front,
                         XNAToGL.GLStencilOp[StencilFail.Flush()],
@@ -519,6 +729,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
                 else
                 {
+                    GL.StencilFunc(
+                        XNAToGL.StencilFunc[StencilFunc.Flush()],
+                        StencilRef.Flush(),
+                        StencilMask.Flush()
+                    );
                     GL.StencilOp(
                         XNAToGL.GLStencilOp[StencilFail.Flush()],
                         XNAToGL.GLStencilOp[StencilZFail.Flush()],
@@ -536,7 +751,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 ToggleGLState(EnableCap.ScissorTest, ScissorTestEnable.Flush());
             }
 
-            if (force || ScissorRectangle.NeedsFlush())
+            if (ScissorTestEnable.GetCurrent() && (force || ScissorRectangle.NeedsFlush()))
             {
                 Rectangle scissorRect = ScissorRectangle.Flush();
                 GL.Scissor(
@@ -554,6 +769,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (force || (latched == CullMode.None) != (current == CullMode.None))
                 {
                     ToggleGLState(EnableCap.CullFace, latched != CullMode.None);
+                    if (latched != CullMode.None)
+                    {
+                        // FIXME: XNA/MonoGame-specific behavior? -flibit
+                        GL.CullFace(CullFaceMode.Back);
+                    }
                 }
                 if (latched != CullMode.None)
                 {
@@ -591,6 +811,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 );
             }
 
+            if (force || DepthRangeMin.NeedsFlush() || DepthRangeMax.NeedsFlush())
+            {
+                GL.DepthRange((double) DepthRangeMin.Flush(), (double) DepthRangeMax.Flush());
+            }
+
             // END MISCELLANEOUS WRITE STATES
 
             // SAMPLER STATES
@@ -599,13 +824,9 @@ namespace Microsoft.Xna.Framework.Graphics
             for (int i = 0; i < Samplers.Length; i += 1)
             {
                 OpenGLSampler sampler = Samplers[i];
-                if (    force ||
+                if (!(  force ||
                         sampler.Target.NeedsFlush() ||
-                        sampler.Texture.NeedsFlush() ||
-                        sampler.WrapS.NeedsFlush() ||
-                        sampler.WrapT.NeedsFlush() ||
-                        sampler.WrapR.NeedsFlush() ||
-                        sampler.Filter.NeedsFlush() )
+                        sampler.Texture.NeedsFlush()    ))
                 {
                     // Nothing changed in this sampler, skip it.
                     continue;
@@ -614,65 +835,18 @@ namespace Microsoft.Xna.Framework.Graphics
                 activeTexture = i;
                 GL.ActiveTexture(TextureUnit.Texture0 + i);
 
-                TextureTarget target = sampler.Target.GetCurrent();
                 bool targetForce = force;
                 if (force || sampler.Target.NeedsFlush())
                 {
                     force = true; // Reset the ENTIRE state when we change target!
                     GL.BindTexture(sampler.Target.GetCurrent(), 0);
-                    target = sampler.Target.Flush();
                 }
 
                 if (force || sampler.Texture.NeedsFlush())
                 {
-                    GL.BindTexture(target, sampler.Texture.Flush());
-                }
-
-                if (force || sampler.WrapS.NeedsFlush())
-                {
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureWrapS,
-                        (int) XNAToGL.Wrap[sampler.WrapS.Flush()]
-                    );
-                }
-
-                if (force || sampler.WrapT.NeedsFlush())
-                {
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureWrapT,
-                        (int) XNAToGL.Wrap[sampler.WrapT.Flush()]
-                    );
-                }
-
-                if (force || sampler.WrapR.NeedsFlush())
-                {
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureWrapR,
-                        (int) XNAToGL.Wrap[sampler.WrapR.Flush()]
-                    );
-                }
-
-                if (force || sampler.Filter.NeedsFlush())
-                {
-                    TextureFilter filter = sampler.Filter.Flush();
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureMagFilter,
-                        (int) XNAToGL.MagFilter[filter]
-                    );
-                    GL.TexParameter(
-                        target,
-                        TextureParameterName.TextureMinFilter,
-                        (int) XNAToGL.MinMipFilter[filter]
-                    );
-                    GL.TexParameter(
-                        target,
-                        (TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-                        (filter == TextureFilter.Anisotropic) ? 4.0f : 1.0f
-                    );
+                    OpenGLTexture texture = sampler.Texture.Flush();
+                    GL.BindTexture(sampler.Target.Flush(), texture.Handle);
+                    texture.Flush(force);
                 }
 
                 // You didn't see nothin'.
@@ -694,27 +868,28 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Flush Vertex Attributes Method
 
-        public void FlushGLVertexAttributes(bool force)
+        public void FlushGLVertexAttributes(bool force = false)
         {
             for (int i = 0; i < Attributes.Length; i += 1)
             {
-                OpenGLVertexAttribute attrib = Attributes[i];
-
-                if (force || attrib.Enabled.NeedsFlush())
+                if (AttributeEnabled[i])
                 {
-                    if (attrib.Enabled.Flush())
+                    AttributeEnabled[i] = false;
+                    if (!previousAttributeEnabled[i])
                     {
                         GL.EnableVertexAttribArray(i);
-                    }
-                    else
-                    {
-                        GL.DisableVertexAttribArray(i);
+                        previousAttributeEnabled[i] = true;
                     }
                 }
-
-                if (force || attrib.Divisor.NeedsFlush())
+                else if (previousAttributeEnabled[i])
                 {
-                    GL.VertexAttribDivisor(i, attrib.Divisor.Flush());
+                    GL.DisableVertexAttribArray(i);
+                    previousAttributeEnabled[i] = false;
+                }
+
+                if (force || Attributes[i].Divisor.NeedsFlush())
+                {
+                    GL.VertexAttribDivisor(i, Attributes[i].Divisor.Flush());
                 }
             }
         }
@@ -795,9 +970,82 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region glClear Method
+
+        public void Clear(ClearOptions options, Vector4 color, float depth, int stencil)
+        {
+            // Move some stuff around so the glClear works...
+            if (ScissorTestEnable.GetCurrent())
+            {
+                GL.Disable(EnableCap.ScissorTest);
+            }
+            if (!ZWriteEnable.GetCurrent())
+            {
+                GL.DepthMask(true);
+            }
+            if (StencilWriteMask.GetCurrent() != Int32.MaxValue)
+            {
+                GL.StencilMask(Int32.MaxValue);
+            }
+
+            // Get the clear mask, set the clear properties if needed
+            ClearBufferMask clearMask = 0;
+            if ((options & ClearOptions.Target) == ClearOptions.Target)
+            {
+                clearMask |= ClearBufferMask.ColorBufferBit;
+                if (!color.Equals(currentClearColor))
+                {
+                    GL.ClearColor(
+                        color.X,
+                        color.Y,
+                        color.Z,
+                        color.W
+                    );
+                    currentClearColor = color;
+                }
+            }
+            if ((options & ClearOptions.DepthBuffer) == ClearOptions.DepthBuffer)
+            {
+                clearMask |= ClearBufferMask.DepthBufferBit;
+                if (depth != currentClearDepth)
+                {
+                    GL.ClearDepth((double) depth);
+                    currentClearDepth = depth;
+                }
+            }
+            if ((options & ClearOptions.Stencil) == ClearOptions.Stencil)
+            {
+                clearMask |= ClearBufferMask.StencilBufferBit;
+                if (stencil != currentClearStencil)
+                {
+                    GL.ClearStencil(stencil);
+                    currentClearStencil = stencil;
+                }
+            }
+
+            // CLEAR!
+            GL.Clear(clearMask);
+
+            // Clean up after ourselves.
+            if (ScissorTestEnable.Flush())
+            {
+                GL.Enable(EnableCap.ScissorTest);
+            }
+            if (!ZWriteEnable.Flush())
+            {
+                GL.DepthMask(false);
+            }
+            if (StencilWriteMask.Flush() != Int32.MaxValue)
+            {
+                GL.StencilMask(StencilWriteMask.Flush());
+            }
+        }
+
+        #endregion
+
         #region SetRenderTargets Method
 
-        public void SetRenderTargets(int[] attachments, int renderbuffer, DepthFormat depthFormat)
+        public void SetRenderTargets(int[] attachments, uint renderbuffer, DepthFormat depthFormat)
         {
             // Bind the right framebuffer, if needed
             if (attachments == null)
@@ -816,29 +1064,36 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             // Update the color attachments, DrawBuffers state
-            bool drawBuffersChanged = false;
             int i = 0;
             for (i = 0; i < attachments.Length; i += 1)
             {
                 if (attachments[i] != currentAttachments[i])
                 {
                     Framebuffer.AttachColor(attachments[i], i);
-                    drawBuffersChanged = currentAttachments[i] == 0;
                     currentAttachments[i] = attachments[i];
                 }
             }
-            while (i < currentDrawBuffers.Length)
+            while (i < currentAttachments.Length)
             {
-                drawBuffersChanged = currentDrawBuffers[i] != DrawBuffersEnum.None;
-                currentDrawBuffers[i] = DrawBuffersEnum.None;
+                if (currentAttachments[i] != 0)
+                {
+                    Framebuffer.AttachColor(0, i);
+                }
                 i += 1;
             }
-            if (drawBuffersChanged)
+            if (attachments.Length != currentDrawBuffers)
             {
-                GL.DrawBuffers(currentDrawBuffers.Length, currentDrawBuffers);
+                GL.DrawBuffers(attachments.Length, drawBuffersArray);
+                currentDrawBuffers = attachments.Length;
             }
 
             // Update the depth/stencil attachment
+            /* FIXME: Notice that we do separate attach calls for the stencil.
+             * We _should_ be able to do a single attach for depthstencil, but
+             * some drivers (like Mesa) cannot into GL_DEPTH_STENCIL_ATTACHMENT.
+             * Use XNAToGL.DepthStencilAttachment when this isn't a problem.
+             * -flibit
+             */
             if (renderbuffer != currentRenderbuffer)
             {
                 if (    depthFormat != currentDepthStencilFormat &&
@@ -847,16 +1102,30 @@ namespace Microsoft.Xna.Framework.Graphics
                     // Changing formats, unbind the current renderbuffer first.
                     Framebuffer.AttachDepthRenderbuffer(
                         0,
-                        XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
+                        FramebufferAttachment.DepthAttachment
                     );
-                    currentDepthStencilFormat = depthFormat;
+                    if (currentDepthStencilFormat == DepthFormat.Depth24Stencil8)
+                    {
+                        Framebuffer.AttachDepthRenderbuffer(
+                            0,
+                            FramebufferAttachment.StencilAttachment
+                        );
+                    }
                 }
+                currentDepthStencilFormat = depthFormat;
                 if (currentDepthStencilFormat != DepthFormat.None)
                 {
                     Framebuffer.AttachDepthRenderbuffer(
                         renderbuffer,
-                        XNAToGL.DepthStencilAttachment[currentDepthStencilFormat]
+                        FramebufferAttachment.DepthAttachment
                     );
+                    if (currentDepthStencilFormat == DepthFormat.Depth24Stencil8)
+                    {
+                        Framebuffer.AttachDepthRenderbuffer(
+                            renderbuffer,
+                            FramebufferAttachment.StencilAttachment
+                        );
+                    }
                 }
                 currentRenderbuffer = renderbuffer;
             }
@@ -929,6 +1198,12 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             public static Dictionary<TextureFilter, TextureMinFilter> MinMipFilter
+            {
+                get;
+                private set;
+            }
+
+            public static Dictionary<TextureFilter, TextureMinFilter> MinFilter
             {
                 get;
                 private set;
@@ -1041,6 +1316,16 @@ namespace Microsoft.Xna.Framework.Graphics
                 MinMipFilter.Add(TextureFilter.MinLinearMagPointMipPoint,   TextureMinFilter.LinearMipmapNearest);
                 MinMipFilter.Add(TextureFilter.MinLinearMagPointMipLinear,  TextureMinFilter.LinearMipmapLinear);
 
+                MinFilter = new Dictionary<TextureFilter, TextureMinFilter>();
+                MinFilter.Add(TextureFilter.Point,                      TextureMinFilter.Nearest);
+                MinFilter.Add(TextureFilter.Linear,                     TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.Anisotropic,                TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.LinearMipPoint,             TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.MinPointMagLinearMipPoint,  TextureMinFilter.Nearest);
+                MinFilter.Add(TextureFilter.MinPointMagLinearMipLinear, TextureMinFilter.Nearest);
+                MinFilter.Add(TextureFilter.MinLinearMagPointMipPoint,  TextureMinFilter.Linear);
+                MinFilter.Add(TextureFilter.MinLinearMagPointMipLinear, TextureMinFilter.Linear);
+
                 DepthStencilAttachment = new Dictionary<DepthFormat, FramebufferAttachment>();
                 DepthStencilAttachment.Add(DepthFormat.Depth16,         FramebufferAttachment.DepthAttachment);
                 DepthStencilAttachment.Add(DepthFormat.Depth24,         FramebufferAttachment.DepthAttachment);
@@ -1133,6 +1418,69 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
+            public static uint GenRenderbuffer(int width, int height, DepthFormat format)
+            {
+                uint handle;
+
+                // DepthFormat->RenderbufferStorage
+                RenderbufferStorage glFormat;
+                if (format == DepthFormat.Depth16)
+                {
+                    glFormat = RenderbufferStorage.DepthComponent16;
+                }
+                else if (format == DepthFormat.Depth24)
+                {
+                    glFormat = RenderbufferStorage.DepthComponent24;
+                }
+                else if (format == DepthFormat.Depth24Stencil8)
+                {
+                    glFormat = RenderbufferStorage.Depth24Stencil8;
+                }
+                else
+                {
+                    throw new Exception("Unhandled DepthFormat: " + format);
+                }
+
+                // Actual GL calls!
+                if (hasARB)
+                {
+                    GL.GenRenderbuffers(1, out handle);
+                    GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, handle);
+                    GL.RenderbufferStorage(
+                        RenderbufferTarget.Renderbuffer,
+                        glFormat,
+                        width,
+                        height
+                    );
+                    GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
+                }
+                else
+                {
+                    GL.Ext.GenRenderbuffers(1, out handle);
+                    GL.Ext.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, handle);
+                    GL.Ext.RenderbufferStorage(
+                        RenderbufferTarget.RenderbufferExt,
+                        glFormat,
+                        width,
+                        height
+                    );
+                    GL.Ext.BindRenderbuffer(RenderbufferTarget.RenderbufferExt, 0);
+                }
+                return handle;
+            }
+
+            public static void DeleteRenderbuffer(uint handle)
+            {
+                if (hasARB)
+                {
+                    GL.DeleteRenderbuffers(1, ref handle);
+                }
+                else
+                {
+                    GL.Ext.DeleteRenderbuffers(1, ref handle);
+                }
+            }
+
             public static void AttachColor(int colorAttachment, int index)
             {
                 if (hasARB)
@@ -1184,7 +1532,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             public static void AttachDepthRenderbuffer(
-                int renderbuffer,
+                uint renderbuffer,
                 FramebufferAttachment depthFormat
             ) {
                 if (hasARB)
@@ -1354,7 +1702,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             public void ResetFramebuffer(int width, int height, DepthFormat depthFormat)
             {
-#if !DISABLE_FAUXBACKBUFFER
+#if DISABLE_FAUXBACKBUFFER
+                Width = width;
+                Height = height;
+#else
                 // Update our color attachment to the new resolution
                 GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
                 GL.TexImage2D(
@@ -1433,7 +1784,7 @@ namespace Microsoft.Xna.Framework.Graphics
                         depthAttachmentType
                     );
 
-                    if (Game.Instance.GraphicsDevice.IsRenderTargetBound)
+                    if (Game.Instance.GraphicsDevice.RenderTargetCount > 0)
                     {
                         Framebuffer.BindFramebuffer(
                             OpenGLDevice.Instance.targetFramebuffer
@@ -1445,7 +1796,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 GL.BindTexture(
                     TextureTarget.Texture2D,
-                    OpenGLDevice.Instance.Samplers[0].Texture.Get()
+                    OpenGLDevice.Instance.Samplers[0].Texture.Get().Handle
                 );
 
                 Width = width;

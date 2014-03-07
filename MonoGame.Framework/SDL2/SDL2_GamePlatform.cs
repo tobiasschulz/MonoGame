@@ -177,8 +177,8 @@ namespace Microsoft.Xna.Framework
             BeginScreenDeviceChange(true);
             EndScreenDeviceChange(
                 "SDL2",
-                INTERNAL_window.INTERNAL_glFramebufferWidth,
-                INTERNAL_window.INTERNAL_glFramebufferHeight
+                Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+                Graphics.OpenGLDevice.Instance.Backbuffer.Height
             );
         }
 
@@ -187,8 +187,8 @@ namespace Microsoft.Xna.Framework
             BeginScreenDeviceChange(false);
             EndScreenDeviceChange(
                 "SDL2",
-                INTERNAL_window.INTERNAL_glFramebufferWidth,
-                INTERNAL_window.INTERNAL_glFramebufferHeight
+                Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+                Graphics.OpenGLDevice.Instance.Backbuffer.Height
             );
         }
 

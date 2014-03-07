@@ -41,7 +41,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private SurfaceFormat format;
         private int height;
-        private int refreshRate;
         private int width;
 
         #endregion Fields
@@ -60,10 +59,6 @@ namespace Microsoft.Xna.Framework.Graphics
             get { return this.height; }
         }
 
-        public int RefreshRate {
-            get { return this.refreshRate; }
-        }
-
         public int Width {
             get { return this.width; }
         }
@@ -76,11 +71,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Constructors
         
-        internal DisplayMode(int width, int height, int refreshRate, SurfaceFormat format)
+        internal DisplayMode(int width, int height, SurfaceFormat format)
         {
             this.width = width;
             this.height = height;
-            this.refreshRate = refreshRate;
             this.format = format;
         }
 
@@ -103,7 +97,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             return !((left.format == right.format) &&
                 (left.height == right.height) &&
-                (left.refreshRate == right.refreshRate) &&
                 (left.width == right.width));
         }
 
@@ -119,7 +112,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             return (left.format == right.format) &&
                 (left.height == right.height) &&
-                (left.refreshRate == right.refreshRate) &&
                 (left.width == right.width);
         }
 
@@ -134,12 +126,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public override int GetHashCode()
         {
-            return (this.width.GetHashCode() ^ this.height.GetHashCode() ^ this.refreshRate.GetHashCode() ^ this.format.GetHashCode());
+            return (this.width.GetHashCode() ^ this.height.GetHashCode() ^ this.format.GetHashCode());
         }
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentCulture, "{{Width:{0} Height:{1} Format:{2} RefreshRate{3}}}", new object[] { this.width, this.height, this.Format, this.refreshRate });
+            return string.Format(CultureInfo.CurrentCulture, "{{Width:{0} Height:{1} Format:{2}}}", new object[] { this.width, this.height, this.Format });
         }
 
         #endregion Public Methods
