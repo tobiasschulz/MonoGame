@@ -487,7 +487,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
         {
-            // TODO: SDL2.SDL_image.IMG_Load(); -flibit
+            // TODO: SDL2.SDL_image.IMG_Load_RW(); -flibit
             using (Bitmap image = (Bitmap) Bitmap.FromStream(stream))
             {
                 // Fix up the Image to match the expected format
@@ -531,7 +531,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SaveAsPng(Stream stream, int width, int height)
         {
-            // FIXME: SDL2.SDL_image.IMG_SavePNG(); -flibit
+            // FIXME: SDL2.SDL_image.IMG_SavePNG_RW(); -flibit
             SaveAsImage(stream, width, height, ImageFormat.Png);
         }
 
