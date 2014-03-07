@@ -550,8 +550,8 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 IntPtr scaledSurface = SDL.SDL_CreateRGBSurface(
                     0,
-                    Width,
-                    Height,
+                    width,
+                    height,
                     32,
                     0x000000FF,
                     0x0000FF00,
