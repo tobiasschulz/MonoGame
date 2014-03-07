@@ -482,7 +482,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
-        #region Public Texture2D Load Methods
+        #region Public Texture2D Load Method
 
         public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
         {
@@ -546,7 +546,7 @@ namespace Microsoft.Xna.Framework.Graphics
             data = null; // We're done with the original pixel data.
 
             // Blit to a scaled surface of the size we want, if needed.
-            if (width != Width && height != Height)
+            if (width != Width || height != Height)
             {
                 IntPtr scaledSurface = SDL.SDL_CreateRGBSurface(
                     0,
@@ -572,7 +572,7 @@ namespace Microsoft.Xna.Framework.Graphics
             byte[] pngOut = new byte[Width * Height * 4]; // Max image size
             IntPtr dst = SDL.SDL_RWFromMem(pngOut, pngOut.Length);
             SDL_image.IMG_SavePNG_RW(surface, dst, 1);
-            SDL.SDL_FreeSurface(surface); // We're done with the scaled surface.
+            SDL.SDL_FreeSurface(surface); // We're done with the surface.
 
             // Get PNG size, write to Stream
             int size = (
