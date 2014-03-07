@@ -41,11 +41,10 @@ purpose and non-infringement.
 #region Using Statements
 using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 
+using SDL2;
 using OpenTK.Graphics.OpenGL;
 using GLPixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 #endregion
@@ -487,36 +486,26 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
         {
-            // TODO: SDL2.SDL_image.IMG_Load_RW(); -flibit
-            using (Bitmap image = (Bitmap) Bitmap.FromStream(stream))
-            {
-                // Fix up the Image to match the expected format
-                image.RGBToBGR();
+            // Load the Stream into an SDL_RWops*
+            byte[] mem = new byte[stream.Length];
+            stream.Read(mem, 0, mem.Length);
+            IntPtr rwops = SDL.SDL_RWFromMem(mem, mem.Length);
 
-                byte[] data = new byte[image.Width * image.Height * 4];
+            // Load the SDL_Surface* from RWops, get the image data
+            IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
+            int width = INTERNAL_getSurfaceWidth(surface);
+            int height = INTERNAL_getSurfaceHeight(surface);
+            byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
+            Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
 
-                BitmapData bitmapData = image.LockBits(
-                    new System.Drawing.Rectangle(0, 0, image.Width, image.Height),
-                    ImageLockMode.ReadOnly,
-                    System.Drawing.Imaging.PixelFormat.Format32bppArgb
-                );
-                if (bitmapData.Stride != image.Width * 4)
-                {
-                    throw new NotImplementedException();
-                }
-                Marshal.Copy(bitmapData.Scan0, data, 0, data.Length);
-                image.UnlockBits(bitmapData);
-
-                Texture2D texture = new Texture2D(graphicsDevice, image.Width, image.Height);
-                texture.SetData(data);
-                return texture;
-            }
-        }
-
-        // THIS IS AN EXTENSION OF THE XNA4 API! USE AS A LAST RESORT! -flibit
-        public static Texture2D FromFile(GraphicsDevice device, string filePath)
-        {
-            throw new NotImplementedException("flibit put this here.");
+            // Create the Texture2D from the SDL_Surface
+            Texture2D result = new Texture2D(
+                graphicsDevice,
+                width,
+                height
+            );
+            result.SetData(pixels);
+            return result;
         }
 
         #endregion
@@ -525,96 +514,74 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public void SaveAsJpeg(Stream stream, int width, int height)
         {
-            // FIXME: throw new NotSupportedException("It's 2014. Time to move on."); -flibit
-            SaveAsImage(stream, width, height, ImageFormat.Jpeg);
+            // dealwithit.png -flibit
+            throw new NotSupportedException("It's 2014. Time to move on.");
         }
 
         public void SaveAsPng(Stream stream, int width, int height)
         {
-            // FIXME: SDL2.SDL_image.IMG_SavePNG_RW(); -flibit
-            SaveAsImage(stream, width, height, ImageFormat.Png);
-        }
+            // Get the Texture2D pixels
+            byte[] data = new byte[Width * Height * 4];
+            GetData(data);
 
-        #endregion
+            // Create an SDL_Surface*, write the pixel data
+            IntPtr surface = SDL.SDL_CreateRGBSurface(
+                0,
+                Width,
+                Height,
+                32,
+                0x000000FF,
+                0x0000FF00,
+                0x00FF0000,
+                0xFF000000
+            );
+            SDL.SDL_LockSurface(surface);
+            Marshal.Copy(
+                data,
+                0,
+                INTERNAL_getSurfacePixels(surface),
+                data.Length
+            );
+            SDL.SDL_UnlockSurface(surface);
+            data = null; // We're done with the original pixel data.
 
-        #region Private Master Image Save Method
-
-        private void SaveAsImage(Stream stream, int width, int height, ImageFormat format)
-        {
-            // FIXME: This method needs to die ASAP. -flibit
-            if (stream == null)
+            // Blit to a scaled surface of the size we want, if needed.
+            if (width != Width && height != Height)
             {
-                throw new ArgumentNullException(
-                    "stream",
-                    "'stream' cannot be null"
+                IntPtr scaledSurface = SDL.SDL_CreateRGBSurface(
+                    0,
+                    Width,
+                    Height,
+                    32,
+                    0x000000FF,
+                    0x0000FF00,
+                    0x00FF0000,
+                    0xFF000000
                 );
-            }
-            if (width <= 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    "width",
-                    width,
-                    "'width' cannot be less than or equal to zero"
+                SDL.SDL_BlitScaled(
+                    surface,
+                    IntPtr.Zero,
+                    scaledSurface,
+                    IntPtr.Zero
                 );
-            }
-            if (height <= 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    "height",
-                    height,
-                    "'height' cannot be less than or equal to zero"
-                );
-            }
-            if (format == null)
-            {
-                throw new ArgumentNullException(
-                    "format",
-                    "'format' cannot be null"
-                );
+                SDL.SDL_FreeSurface(surface);
+                surface = scaledSurface;
             }
 
-            byte[] data = null;
-            GCHandle? handle = null;
-            Bitmap bitmap = null;
-            try
-            {
-                data = new byte[width * height * 4];
-                handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-                GetData(data);
+            // Create an SDL_RWops*, save PNG to RWops
+            byte[] pngOut = new byte[Width * Height * 4]; // Max image size
+            IntPtr dst = SDL.SDL_RWFromMem(pngOut, pngOut.Length);
+            SDL_image.IMG_SavePNG_RW(surface, dst, 1);
+            SDL.SDL_FreeSurface(surface); // We're done with the scaled surface.
 
-                // internal structure is BGR while bitmap expects RGB
-                for(int i = 0; i < data.Length; i += 4)
-                {
-                    byte temp = data[i + 0];
-                    data[i + 0] = data[i + 2];
-                    data[i + 2] = temp;
-                }
-
-                bitmap = new Bitmap(
-                    width,
-                    height,
-                    width * 4,
-                    System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                    handle.Value.AddrOfPinnedObject()
-                );
-
-                bitmap.Save(stream, format);
-            }
-            finally
-            {
-                if (bitmap != null)
-                {
-                    bitmap.Dispose();
-                }
-                if (handle.HasValue)
-                {
-                    handle.Value.Free();
-                }
-                if (data != null)
-                {
-                    data = null;
-                }
-            }
+            // Get PNG size, write to Stream
+            int size = (
+                (pngOut[33] << 24) |
+                (pngOut[34] << 16) |
+                (pngOut[35] << 8) |
+                (pngOut[36])
+            ) + 41 + 57; // 41 - header, 57 - footer
+            stream.Write(pngOut, 0, size);
         }
 
         #endregion
@@ -650,6 +617,62 @@ namespace Microsoft.Xna.Framework.Graphics
                     texture.WrapT.Set(TextureAddressMode.Clamp);
                 }
             }
+        }
+
+        #endregion
+
+        #region Private SDL_Surface Interop
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SDL_Surface
+        {
+#pragma warning disable 0169
+            UInt32 flags;
+            public IntPtr format;
+            public Int32 w;
+            public Int32 h;
+            Int32 pitch;
+            public IntPtr pixels;
+            IntPtr userdata;
+            Int32 locked;
+            IntPtr lock_data;
+            SDL.SDL_Rect clip_rect;
+            IntPtr map;
+            Int32 refcount;
+#pragma warning restore 0169
+        }
+
+        private static unsafe IntPtr INTERNAL_getSurfacePixels(IntPtr surface)
+        {
+            IntPtr result;
+            unsafe
+            {
+                SDL_Surface* surPtr = (SDL_Surface*) surface;
+                result = surPtr->pixels;
+            }
+            return result;
+        }
+
+        private static unsafe int INTERNAL_getSurfaceWidth(IntPtr surface)
+        {
+            int result;
+            unsafe
+            {
+                SDL_Surface* surPtr = (SDL_Surface*) surface;
+                result = surPtr->w;
+            }
+            return result;
+        }
+
+        private static unsafe int INTERNAL_getSurfaceHeight(IntPtr surface)
+        {
+            int result;
+            unsafe
+            {
+                SDL_Surface* surPtr = (SDL_Surface*) surface;
+                result = surPtr->h;
+            }
+            return result;
         }
 
         #endregion

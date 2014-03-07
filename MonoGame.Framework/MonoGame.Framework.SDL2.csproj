@@ -36,7 +36,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -342,7 +341,6 @@
     <Compile Include="Graphics\GraphicsAdapter.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
     <Compile Include="Graphics\GraphicsExtensions.cs" />
-    <Compile Include="Graphics\ImageEx.cs" />
     <Compile Include="Graphics\Model.cs" />
     <Compile Include="Graphics\ModelBone.cs" />
     <Compile Include="Graphics\ModelBoneCollection.cs" />
