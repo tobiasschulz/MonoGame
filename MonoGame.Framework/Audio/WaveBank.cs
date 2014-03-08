@@ -1,3 +1,12 @@
+#region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE.txt for details.
+ */
+#endregion
+
 using System;
 using System.IO;
 
@@ -6,10 +15,87 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.wavebank.aspx
 	public class WaveBank : IDisposable
 	{
+		// Used to store sound entry data, mainly for streaming WaveBanks
+		private class SoundStreamEntry
+		{
+			public uint PlayOffset
+			{
+				get;
+				private set;
+			}
+
+			public uint PlayLength
+			{
+				get;
+				private set;
+			}
+
+			public uint Codec
+			{
+				get;
+				private set;
+			}
+
+			public uint Frequency
+			{
+				get;
+				private set;
+			}
+
+			public uint Channels
+			{
+				get;
+				private set;
+			}
+
+			public uint LoopOffset
+			{
+				get;
+				private set;
+			}
+
+			public uint LoopLength
+			{
+				get;
+				private set;
+			}
+
+			public uint Alignment
+			{
+				get;
+				private set;
+			}
+
+			public SoundStreamEntry(
+				uint playOffset,
+				uint playLength,
+				uint codec,
+				uint frequency,
+				uint channels,
+				uint loopOffset,
+				uint loopLength,
+				uint alignment
+			) {
+				PlayOffset = playOffset;
+				PlayLength = playLength;
+				Codec = codec;
+				Frequency = frequency;
+				Channels = channels;
+				LoopOffset = loopOffset;
+				LoopLength = loopLength;
+				Alignment = alignment;
+			}
+		}
+
 		// We keep this in order to Dispose ourselves later.
 		private AudioEngine INTERNAL_baseEngine;
 		private string INTERNAL_name;
 
+		// These are only used for streaming WaveBanks
+		private BinaryReader INTERNAL_waveBankReader;
+		private SoundStreamEntry[] INTERNAL_soundStreamEntries;
+
+		// Stores the actual wavedata
 		private SoundEffect[] INTERNAL_sounds;
 
 		public bool IsDisposed
@@ -33,217 +119,11 @@ namespace Microsoft.Xna.Framework.Audio
 				throw new ArgumentNullException("nonStreamingWaveBankFilename");
 			}
 
-			INTERNAL_baseEngine = audioEngine;
-
-#if ANDROID
-			using (MemoryStream stream = new MemoryStream())
-			{
-				using (Stream s = Game.Activity.Assets.Open(nonStreamingWaveBankFilename))
-				{
-					s.CopyTo(stream);
-				}
-				stream.Position = 0;
-#else
 			using (Stream stream = TitleContainer.OpenStream(nonStreamingWaveBankFilename))
+			using (BinaryReader reader = new BinaryReader(stream))
 			{
-#endif
-				using (BinaryReader reader = new BinaryReader(stream))
-				{
-					// Check the file header. Should be 'WBND'
-					if (reader.ReadUInt32() != 0x444E4257)
-					{
-						throw new ArgumentException("WBND format not recognized!");
-					}
-
-					// Check the content version. Assuming XNA4 Refresh.
-					if (reader.ReadUInt32() != AudioEngine.ContentVersion)
-					{
-						throw new ArgumentException("WBND Content version!");
-					}
-
-					// Check the tool version. Assuming XNA4 Refresh.
-					if (reader.ReadUInt32() != 44)
-					{
-						throw new ArgumentException("WBND Tool version!");
-					}
-
-					// Obtain WaveBank chunk offsets/lengths
-					uint[] offsets = new uint[5];
-					uint[] lengths = new uint[5];
-					for (int i = 0; i < 5; i++)
-					{
-						offsets[i] = reader.ReadUInt32();
-						lengths[i] = reader.ReadUInt32();
-					}
-
-					// Seek to the first offset, obtain WaveBank info
-					reader.BaseStream.Seek(offsets[0], SeekOrigin.Begin);
-
-					// Unknown value
-					reader.ReadUInt16();
-
-					// WaveBank Flags
-					ushort wavebankFlags = reader.ReadUInt16();
-					// bool containsEntryNames =	(wavebankFlags & 0x00010000) != 0;
-					bool compact =			(wavebankFlags & 0x00020000) != 0;
-					// bool syncDisabled =		(wavebankFlags & 0x00040000) != 0;
-					// bool containsSeekTables =	(wavebankFlags & 0x00080000) != 0;
-
-					// WaveBank Entry Count
-					uint numEntries = reader.ReadUInt32();
-
-					// WaveBank Name
-					INTERNAL_name = System.Text.Encoding.UTF8.GetString(
-						reader.ReadBytes(64), 0, 64
-					).Replace("\0", "");
-
-					// WaveBank entry information
-					uint metadataElementSize = reader.ReadUInt32();
-					reader.ReadUInt32(); // nameElementSize
-					uint alignment = reader.ReadUInt32();
-
-					// Determine the generic play region offset
-					uint playRegionOffset = offsets[4];
-					if (playRegionOffset == 0)
-					{
-						playRegionOffset = offsets[1] + (numEntries * metadataElementSize);
-					}
-
-					// Entry format. Read early for Compact data
-					uint entryFormat = 0;
-					if (compact)
-					{
-						entryFormat = reader.ReadUInt32();
-					}
-
-					// Read in the wavedata
-					INTERNAL_sounds = new SoundEffect[numEntries];
-					uint curOffset = offsets[1];
-					for (int curEntry = 0; curEntry < numEntries; curEntry++)
-					{
-						// Seek to the current entry
-						reader.BaseStream.Seek(curOffset, SeekOrigin.Begin);
-
-						// Entry Information
-						uint entryPlayOffset = 0;
-						uint entryPlayLength = 0;
-						uint entryLoopOffset = 0;
-						uint entryLoopLength = 0;
-
-						// Obtain Entry Information
-						if (compact)
-						{
-							uint entryLength = reader.ReadUInt32();
-
-							entryPlayOffset =
-								(entryLength & ((1 << 21) - 1)) *
-								alignment;
-							entryPlayLength =
-								(entryLength >> 21) & ((1 << 11) - 1);
-
-							// FIXME: Deviation Length
-							reader.BaseStream.Seek(
-								curOffset + metadataElementSize,
-								SeekOrigin.Begin
-							);
-
-							if (curEntry == (numEntries - 1))
-							{
-								// Last track, last length.
-								entryLength = lengths[4];
-							}
-							else
-							{
-								entryLength = (
-									(
-										reader.ReadUInt32() &
-										((1 << 21) - 1)
-									) * alignment
-								);
-							}
-							entryPlayLength = entryLength - entryPlayOffset;
-						}
-						else
-						{
-							if (metadataElementSize >= 4)
-								reader.ReadUInt32(); // Flags/Duration, unused
-							if (metadataElementSize >= 8)
-								entryFormat = reader.ReadUInt32();
-							if (metadataElementSize >= 12)
-								entryPlayOffset = reader.ReadUInt32();
-							if (metadataElementSize >= 16)
-								entryPlayLength = reader.ReadUInt32();
-							if (metadataElementSize >= 20)
-								entryLoopOffset = reader.ReadUInt32();
-							if (metadataElementSize >= 24)
-								entryLoopLength = reader.ReadUInt32();
-							else
-							{
-								// FIXME: This is a bit hacky.
-								if (entryPlayLength != 0)
-								{
-									entryPlayLength = lengths[4];
-								}
-							}
-						}
-
-						// Update seek offsets
-						curOffset += metadataElementSize;
-						entryPlayOffset += playRegionOffset;
-
-						// Parse Format for Wavedata information
-						uint entryCodec =	(entryFormat >> 0)		& ((1 << 2) - 1);
-						uint entryChannels =	(entryFormat >> 2)		& ((1 << 3) - 1);
-						uint entryFrequency =	(entryFormat >> (2 + 3))	& ((1 << 18) - 1);
-						uint entryAlignment =	(entryFormat >> (2 + 3 + 18))	& ((1 << 8) - 1);
-
-						// Read Wavedata
-						reader.BaseStream.Seek(entryPlayOffset, SeekOrigin.Begin);
-						byte[] entryData = reader.ReadBytes((int) entryPlayLength);
-
-						// Load SoundEffect based on codec
-						if (entryCodec == 0x0) // PCM
-						{
-							INTERNAL_sounds[curEntry] = new SoundEffect(
-								"WaveBank Sound",
-								entryData,
-								entryFrequency,
-								entryChannels,
-								entryLoopOffset,
-								entryLoopLength,
-								0
-							);
-						}
-						else if (entryCodec == 0x2) // ADPCM
-						{
-							INTERNAL_sounds[curEntry] = new SoundEffect(
-								"WaveBank Sound",
-								entryData,
-								entryFrequency,
-								entryChannels,
-								entryLoopOffset,
-								entryLoopLength,
-								entryAlignment + 22
-							);
-						}
-						else if (entryCodec == 0x3) // WMA
-						{
-							// TODO: WMA Codec
-							throw new NotSupportedException();
-						}
-						else // Includes 0x1, XMA
-						{
-							throw new NotSupportedException();
-						}
-					}
-
-					// Add this WaveBank to the AudioEngine Dictionary
-					audioEngine.INTERNAL_addWaveBank(INTERNAL_name, this);
-				}
+				LoadWaveBank(audioEngine, reader, false);
 			}
-
-			// Finally.
-			IsDisposed = false;
 		}
 
 		public WaveBank(
@@ -251,7 +131,12 @@ namespace Microsoft.Xna.Framework.Audio
 			string streamingWaveBankFilename,
 			int offset,
 			short packetsize
-		) : this(audioEngine, streamingWaveBankFilename) {
+		) {
+			/* Note that offset and packetsize go unused,
+			 * because we're frauds and aren't actually streaming.
+			 * -flibit
+			 */
+
 			if (audioEngine == null)
 			{
 				throw new ArgumentNullException("audioEngine");
@@ -260,11 +145,11 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				throw new ArgumentNullException("streamingWaveBankFilename");
 			}
-			// HACK: We're attempting to load this as non-streaming!
-			if (offset != 0)
-			{
-				throw new NotSupportedException("Is your MonoGame title on a DVD?!");
-			}
+
+			INTERNAL_waveBankReader = new BinaryReader(
+				TitleContainer.OpenStream(streamingWaveBankFilename)
+			);
+			LoadWaveBank(audioEngine, INTERNAL_waveBankReader, true);
 		}
 
 		~WaveBank()
@@ -287,17 +172,267 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				foreach (SoundEffect se in INTERNAL_sounds)
 				{
-					se.Dispose();
+					if (se != null)
+					{
+						se.Dispose();
+					}
 				}
 				INTERNAL_baseEngine.INTERNAL_removeWaveBank(INTERNAL_name);
 				INTERNAL_sounds = null;
+				if (INTERNAL_waveBankReader != null)
+				{
+					INTERNAL_waveBankReader.Close();
+					INTERNAL_waveBankReader = null;
+				}
 				IsDisposed = true;
 			}
 		}
 
 		internal SoundEffect INTERNAL_getTrack(ushort track)
 		{
+			if (INTERNAL_sounds[track] == null)
+			{
+				LoadWaveEntry(
+					INTERNAL_soundStreamEntries[track],
+					track,
+					INTERNAL_waveBankReader
+				);
+			}
 			return INTERNAL_sounds[track];
+		}
+
+		private void LoadWaveBank(AudioEngine audioEngine, BinaryReader reader, bool streaming)
+		{
+			INTERNAL_baseEngine = audioEngine;
+
+			// Check the file header. Should be 'WBND'
+			if (reader.ReadUInt32() != 0x444E4257)
+			{
+				throw new ArgumentException("WBND format not recognized!");
+			}
+
+			// Check the content version. Assuming XNA4 Refresh.
+			if (reader.ReadUInt32() != AudioEngine.ContentVersion)
+			{
+				throw new ArgumentException("WBND Content version!");
+			}
+
+			// Check the tool version. Assuming XNA4 Refresh.
+			if (reader.ReadUInt32() != 44)
+			{
+				throw new ArgumentException("WBND Tool version!");
+			}
+
+			// Obtain WaveBank chunk offsets/lengths
+			uint[] offsets = new uint[5];
+			uint[] lengths = new uint[5];
+			for (int i = 0; i < 5; i++)
+			{
+				offsets[i] = reader.ReadUInt32();
+				lengths[i] = reader.ReadUInt32();
+			}
+
+			// Seek to the first offset, obtain WaveBank info
+			reader.BaseStream.Seek(offsets[0], SeekOrigin.Begin);
+
+			// Unknown value
+			reader.ReadUInt16();
+
+			// WaveBank Flags
+			ushort wavebankFlags = reader.ReadUInt16();
+			// bool containsEntryNames =	(wavebankFlags & 0x00010000) != 0;
+			bool compact =			(wavebankFlags & 0x00020000) != 0;
+			// bool syncDisabled =		(wavebankFlags & 0x00040000) != 0;
+			// bool containsSeekTables =	(wavebankFlags & 0x00080000) != 0;
+
+			// WaveBank Entry Count
+			uint numEntries = reader.ReadUInt32();
+
+			// WaveBank Name
+			INTERNAL_name = System.Text.Encoding.UTF8.GetString(
+				reader.ReadBytes(64), 0, 64
+			).Replace("\0", "");
+
+			// WaveBank entry information
+			uint metadataElementSize = reader.ReadUInt32();
+			reader.ReadUInt32(); // nameElementSize
+			uint alignment = reader.ReadUInt32();
+
+			// Determine the generic play region offset
+			uint playRegionOffset = offsets[4];
+			if (playRegionOffset == 0)
+			{
+				playRegionOffset = offsets[1] + (numEntries * metadataElementSize);
+			}
+
+			// Entry format. Read early for Compact data
+			uint entryFormat = 0;
+			if (compact)
+			{
+				entryFormat = reader.ReadUInt32();
+			}
+
+			// Read in the wavedata
+			INTERNAL_sounds = new SoundEffect[numEntries];
+			if (streaming)
+			{
+				INTERNAL_soundStreamEntries = new SoundStreamEntry[numEntries];
+			}
+			uint curOffset = offsets[1];
+			for (int curEntry = 0; curEntry < numEntries; curEntry++)
+			{
+				// Seek to the current entry
+				reader.BaseStream.Seek(curOffset, SeekOrigin.Begin);
+
+				// Entry Information
+				uint entryPlayOffset = 0;
+				uint entryPlayLength = 0;
+				uint entryLoopOffset = 0;
+				uint entryLoopLength = 0;
+
+				// Obtain Entry Information
+				if (compact)
+				{
+					uint entryLength = reader.ReadUInt32();
+
+					entryPlayOffset =
+						(entryLength & ((1 << 21) - 1)) *
+						alignment;
+					entryPlayLength =
+						(entryLength >> 21) & ((1 << 11) - 1);
+
+					// FIXME: Deviation Length
+					reader.BaseStream.Seek(
+						curOffset + metadataElementSize,
+						SeekOrigin.Begin
+					);
+
+					if (curEntry == (numEntries - 1))
+					{
+						// Last track, last length.
+						entryLength = lengths[4];
+					}
+					else
+					{
+						entryLength = (
+							(
+							reader.ReadUInt32() &
+							((1 << 21) - 1)
+							) * alignment
+						);
+					}
+					entryPlayLength = entryLength - entryPlayOffset;
+				}
+				else
+				{
+					if (metadataElementSize >= 4)
+						reader.ReadUInt32(); // Flags/Duration, unused
+					if (metadataElementSize >= 8)
+						entryFormat = reader.ReadUInt32();
+					if (metadataElementSize >= 12)
+						entryPlayOffset = reader.ReadUInt32();
+					if (metadataElementSize >= 16)
+						entryPlayLength = reader.ReadUInt32();
+					if (metadataElementSize >= 20)
+						entryLoopOffset = reader.ReadUInt32();
+					if (metadataElementSize >= 24)
+						entryLoopLength = reader.ReadUInt32();
+					else
+					{
+						// FIXME: This is a bit hacky.
+						if (entryPlayLength != 0)
+						{
+							entryPlayLength = lengths[4];
+						}
+					}
+				}
+
+				// Update seek offsets
+				curOffset += metadataElementSize;
+				entryPlayOffset += playRegionOffset;
+
+				// Parse Format for Wavedata information
+				uint entryCodec =	(entryFormat >> 0)		& ((1 << 2) - 1);
+				uint entryChannels =	(entryFormat >> 2)		& ((1 << 3) - 1);
+				uint entryFrequency =	(entryFormat >> (2 + 3))	& ((1 << 18) - 1);
+				uint entryAlignment =	(entryFormat >> (2 + 3 + 18))	& ((1 << 8) - 1);
+
+				if (streaming)
+				{
+					INTERNAL_soundStreamEntries[curEntry] = new SoundStreamEntry(
+						entryPlayOffset,
+						entryPlayLength,
+						entryCodec,
+						entryFrequency,
+						entryChannels,
+						entryLoopOffset,
+						entryLoopLength,
+						entryAlignment
+					);
+				}
+				else
+				{
+					SoundStreamEntry filler = new SoundStreamEntry(
+						entryPlayOffset,
+						entryPlayLength,
+						entryCodec,
+						entryFrequency,
+						entryChannels,
+						entryLoopOffset,
+						entryLoopLength,
+						entryAlignment
+					);
+					LoadWaveEntry(filler, (ushort) curEntry, reader);
+				}
+			}
+
+			// Add this WaveBank to the AudioEngine Dictionary
+			audioEngine.INTERNAL_addWaveBank(INTERNAL_name, this);
+
+			// Finally.
+			IsDisposed = false;
+		}
+
+		private void LoadWaveEntry(SoundStreamEntry entry, ushort track, BinaryReader reader)
+		{
+			// Read Wavedata
+			reader.BaseStream.Seek(entry.PlayOffset, SeekOrigin.Begin);
+			byte[] entryData = reader.ReadBytes((int) entry.PlayLength);
+
+			// Load SoundEffect based on codec
+			if (entry.Codec == 0x0) // PCM
+			{
+				INTERNAL_sounds[track] = new SoundEffect(
+					"WaveBank Sound",
+					entryData,
+					entry.Frequency,
+					entry.Channels,
+					entry.LoopOffset,
+					entry.LoopLength,
+					0
+				);
+			}
+			else if (entry.Codec == 0x2) // ADPCM
+			{
+				INTERNAL_sounds[track] = new SoundEffect(
+					"WaveBank Sound",
+					entryData,
+					entry.Frequency,
+					entry.Channels,
+					entry.LoopOffset,
+					entry.LoopLength,
+					(entry.Alignment + 16) * 2
+				);
+			}
+			else if (entry.Codec == 0x3) // WMA
+			{
+				// TODO: WMA Codec
+				throw new NotSupportedException();
+			}
+			else // Includes 0x1, XMA
+			{
+				throw new NotSupportedException();
+			}
 		}
 	}
 }

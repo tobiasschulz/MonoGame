@@ -1,8 +1,15 @@
+#region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE.txt for details.
+ */
+#endregion
+
 using System;
 
-#if SDL2
 using OpenTK.Audio.OpenAL;
-#endif
 
 namespace Microsoft.Xna.Framework.Audio
 {
@@ -353,9 +360,8 @@ namespace Microsoft.Xna.Framework.Audio
 
 			if (Name.Equals("Reverb"))
 			{
-#if SDL2
 				// Obtain EFX entry points
-				EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+				EffectsExtension EFX = OpenALDevice.Instance.EFX;
 
 				// Generate the EffectSlot and Effect
 				Handle = EFX.GenAuxiliaryEffectSlot();
@@ -368,9 +374,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 				// Bind the Effect to the EffectSlot. XACT will use the EffectSlot.
 				EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
-#else
-				throw new NotImplementedException();
-#endif
 			}
 			else
 			{
@@ -380,16 +383,12 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Dispose()
 		{
-#if SDL2
 			// Obtain EFX entry points
-			EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+			EffectsExtension EFX = OpenALDevice.Instance.EFX;
 
 			// Delete EFX data
 			EFX.DeleteAuxiliaryEffectSlot(Handle);
 			EFX.DeleteEffect(effectHandle);
-#else
-			throw new NotImplementedException();
-#endif
 		}
 
 		public void SetParameter(int index, float value)
@@ -398,21 +397,17 @@ namespace Microsoft.Xna.Framework.Audio
 			if (Name.Equals("Reverb"))
 			{
 				// Obtain EFX entry points
-				EffectsExtension EFX = OpenALSoundController.GetInstance.EFX;
+				EffectsExtension EFX = OpenALDevice.Instance.EFX;
 	
 				// Apply the value to the parameter
 				if (index == 17)
 				{
-#if SDL2
 					EFX.Effect(
 						effectHandle,
 						EfxEffectf.EaxReverbGain,
 						Parameters[index].Value
 					);
 					EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
-#else
-					throw new NotImplementedException();
-#endif
 				}
 				else if (index == 18)
 				{

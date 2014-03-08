@@ -90,12 +90,6 @@ namespace Microsoft.Xna.Framework
         
         #endregion
         
-        #region Internal Sound Controller
-        
-        private OpenALSoundController soundControllerInstance = null;
-        
-        #endregion
-        
         #region SDL2 OS String
         
         public static readonly string OSVersion = SDL.SDL_GetPlatform();
@@ -133,8 +127,8 @@ namespace Microsoft.Xna.Framework
             INTERNAL_window.Game = game;
             this.Window = INTERNAL_window;
 
-            // Get our OpenALSoundController to handle the SoundBuffer pools
-            soundControllerInstance = OpenALSoundController.GetInstance;
+            // Create the OpenAL device
+            new OpenALDevice();
         }
 
 
@@ -168,7 +162,7 @@ namespace Microsoft.Xna.Framework
             }
             
             // Update our OpenAL sound buffer pools
-            soundControllerInstance.Update();
+            OpenALDevice.Instance.Update();
 
             return true;
         }
@@ -183,8 +177,8 @@ namespace Microsoft.Xna.Framework
             BeginScreenDeviceChange(true);
             EndScreenDeviceChange(
                 "SDL2",
-                INTERNAL_window.INTERNAL_glFramebufferWidth,
-                INTERNAL_window.INTERNAL_glFramebufferHeight
+                Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+                Graphics.OpenGLDevice.Instance.Backbuffer.Height
             );
         }
 
@@ -193,8 +187,8 @@ namespace Microsoft.Xna.Framework
             BeginScreenDeviceChange(false);
             EndScreenDeviceChange(
                 "SDL2",
-                INTERNAL_window.INTERNAL_glFramebufferWidth,
-                INTERNAL_window.INTERNAL_glFramebufferHeight
+                Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+                Graphics.OpenGLDevice.Instance.Backbuffer.Height
             );
         }
 
@@ -242,10 +236,9 @@ namespace Microsoft.Xna.Framework
                     INTERNAL_window = null;
                 }
                 
-                if (soundControllerInstance != null)
+                if (OpenALDevice.Instance != null)
                 {
-                    soundControllerInstance.Dispose();
-                    soundControllerInstance = null;
+                    OpenALDevice.Instance.Dispose();
                 }
             }
 

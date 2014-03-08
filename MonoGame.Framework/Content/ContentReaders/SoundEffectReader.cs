@@ -109,7 +109,7 @@ namespace Microsoft.Xna.Framework.Content
 				channels,
 				loopStart,
 				loopLength,
-				(uint) ((format == 2) ? (blockAlign / channels) : (ushort) 0)
+				(uint) ((format == 2) ? (((blockAlign / channels) - 6) * 2) : (ushort) 0)
 			);
 		}
 	}

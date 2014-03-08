@@ -94,14 +94,6 @@ non-infringement.
  */
 #endregion
 
-#region DISABLE_FAUXBACKBUFFER Option
-// #define DISABLE_FAUXBACKBUFFER
-/* If you want to debug GL without the extra FBO in your way, you can use this.
- * Note that this also affects Graphics/OpenGLDevice.cs!
- * -flibit
- */
-#endregion
-
 #region WIIU_GAMEPAD Option
 // #define WIIU_GAMEPAD
 /* This is something I added for myself, because I am a complete goof.
@@ -124,7 +116,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using SDL2;
-using OpenTK.Graphics.OpenGL;
 #endregion
 
 namespace Microsoft.Xna.Framework
@@ -211,21 +202,7 @@ namespace Microsoft.Xna.Framework
         private string INTERNAL_deviceName;
         
         #endregion
-        
-        #region Internal OpenGL Framebuffer
-        
-        private int INTERNAL_glFramebuffer;
-        private int INTERNAL_glColorAttachment;
-        private int INTERNAL_glDepthStencilAttachment;
 
-        // These are internal for the SDL2_GamePlatform and GraphicsDevice.
-        internal int INTERNAL_glFramebufferWidth;
-        internal int INTERNAL_glFramebufferHeight;
-        
-        private DepthFormat INTERNAL_depthFormat;
-        
-        #endregion
-        
         #region Internal Loop Sentinel
         
         private bool INTERNAL_runApplication;
@@ -409,11 +386,6 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_RunLoop()
         {
-#if !DISABLE_FAUXBACKBUFFER
-            // Now that we're in the game loop, this should be safe.
-            Game.GraphicsDevice.glFramebuffer = INTERNAL_glFramebuffer;
-#endif
-            
             SDL.SDL_Event evt;
             
             while (INTERNAL_runApplication)
@@ -623,36 +595,25 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_SwapBuffers()
         {
-#if DISABLE_FAUXBACKBUFFER
-            SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
-#else
-            Rectangle windowRect = ClientBounds;
-            if (RasterizerState.INTERNAL_scissorTestEnable)
-            {
-                // If we don't disable this, you may not get your whole backbuffer back...
-                GL.Disable(EnableCap.ScissorTest);
-                RasterizerState.INTERNAL_scissorTestEnable = false;
-            }
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, INTERNAL_glFramebuffer);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-            GL.BlitFramebuffer(
-                0, 0, INTERNAL_glFramebufferWidth, INTERNAL_glFramebufferHeight,
-                0, 0, windowRect.Width, windowRect.Height,
-                ClearBufferMask.ColorBufferBit,
-                BlitFramebufferFilter.Linear
+            int windowWidth, windowHeight;
+            SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, out windowWidth, out windowHeight);
+            OpenGLDevice.Framebuffer.BlitToBackbuffer(
+                OpenGLDevice.Instance.Backbuffer.Width,
+                OpenGLDevice.Instance.Backbuffer.Height,
+                windowWidth,
+                windowHeight
             );
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
+            OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
 
 #if WIIU_GAMEPAD
             if (wiiuStream != IntPtr.Zero)
             {
-                GL.ReadPixels(
+                OpenTK.Graphics.OpenGL.GL.ReadPixels(
                     0,
                     0,
-                    INTERNAL_glFramebufferWidth,
-                    INTERNAL_glFramebufferHeight,
+                    OpenGLDevice.Instance.Backbuffer.Width,
+                    OpenGLDevice.Instance.Backbuffer.Height,
                     PixelFormat.Rgba,
                     PixelType.UnsignedByte,
                     wiiuPixelData
@@ -661,13 +622,12 @@ namespace Microsoft.Xna.Framework
                     wiiuStream,
                     wiiuPixelData,
                     (uint) wiiuPixelData.Length,
-                    (ushort) INTERNAL_glFramebufferWidth,
-                    (ushort) INTERNAL_glFramebufferHeight,
+                    (ushort) Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+                    (ushort) Graphics.OpenGLDevice.Instance.Backbuffer.Height,
                     DRC.drc_pixel_format.DRC_RGBA,
                     DRC.drc_flipping_mode.DRC_FLIP_VERTICALLY
                 );
             }
-#endif
 #endif
         }
         
@@ -678,12 +638,6 @@ namespace Microsoft.Xna.Framework
         
         public void INTERNAL_Destroy()
         {
-#if !DISABLE_FAUXBACKBUFFER
-            GL.DeleteFramebuffer(INTERNAL_glFramebuffer);
-            GL.DeleteTexture(INTERNAL_glColorAttachment);
-            GL.DeleteTexture(INTERNAL_glDepthStencilAttachment);
-#endif
-
             /* Some window managers might try to minimize the window as we're
              * destroying it. This looks pretty stupid and could cause problems,
              * so set this hint right before we destroy everything.
@@ -694,7 +648,9 @@ namespace Microsoft.Xna.Framework
                 "0",
                 SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
             );
-            
+
+            OpenGLDevice.Instance.Dispose();
+
 #if THREADED_GL
             SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
 #endif
@@ -781,7 +737,6 @@ namespace Microsoft.Xna.Framework
             // Initialize OpenGL
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
-            OpenTK.Graphics.OpenGL.GL.LoadAll();
             
             // Assume we will have focus.
             IsActive = true;
@@ -798,59 +753,9 @@ namespace Microsoft.Xna.Framework
             // Make the foreground context current.
             SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
 #endif
-            
-#if !DISABLE_FAUXBACKBUFFER
-            // Create an FBO, use this as our "backbuffer".
-            GL.GenFramebuffers(1, out INTERNAL_glFramebuffer);
-            GL.GenTextures(1, out INTERNAL_glColorAttachment);
-            GL.GenTextures(1, out INTERNAL_glDepthStencilAttachment);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
-            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glColorAttachment);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.Rgba,
-                startWidth,
-                startHeight,
-                0,
-                PixelFormat.Rgba,
-                PixelType.UnsignedByte,
-                IntPtr.Zero
-            );
-            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.DepthComponent16,
-                startWidth,
-                startHeight,
-                0,
-                PixelFormat.DepthComponent,
-                PixelType.UnsignedByte,
-                IntPtr.Zero
-            );
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                INTERNAL_glColorAttachment,
-                0
-            );
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.DepthAttachment,
-                TextureTarget.Texture2D,
-                INTERNAL_glDepthStencilAttachment,
-                0
-            );
-            GL.BindTexture(TextureTarget.Texture2D, 0);
-#endif
-            INTERNAL_glFramebufferWidth = startWidth;
-            INTERNAL_glFramebufferHeight = startHeight;
-            Mouse.INTERNAL_BackbufferWidth = startWidth;
-            Mouse.INTERNAL_BackbufferHeight = startHeight;
-            
-            INTERNAL_depthFormat = DepthFormat.Depth16;
+
+            // Set up the OpenGL Device. Loads entry points.
+            new OpenGLDevice();
 
             // Setup Text Input Control Character Arrays (Only 4 control keys supported at this time)
             INTERNAL_TextInputControlDown = new bool[4];
@@ -935,8 +840,8 @@ namespace Microsoft.Xna.Framework
                 SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
                 SDL.SDL_SetWindowPosition(
                     INTERNAL_sdlWindow,
-                    x + ((INTERNAL_glFramebufferWidth - clientWidth) / 2),
-                    y + ((INTERNAL_glFramebufferHeight - clientHeight) / 2)
+                    x + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
+                    y + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
                 );
             }
             
@@ -959,119 +864,11 @@ namespace Microsoft.Xna.Framework
                 clientHeight
             );
             
-#if !DISABLE_FAUXBACKBUFFER
-            // Push the current GL texture state.
-            int oldActiveTexture;
-            int oldTextureBinding;
-            GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.GetInteger(GetPName.TextureBinding2D, out oldTextureBinding);
-            
-            // Update our color attachment to the new resolution
-            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glColorAttachment);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                PixelInternalFormat.Rgba,
+            OpenGLDevice.Instance.Backbuffer.ResetFramebuffer(
                 clientWidth,
                 clientHeight,
-                0,
-                PixelFormat.Rgba,
-                PixelType.UnsignedByte,
-                IntPtr.Zero
+                Game.GraphicsDevice.PresentationParameters.DepthStencilFormat
             );
-            
-            // Get our desired depth format directly from the GraphicsDevice.
-            DepthFormat backbufferFormat = Game.GraphicsDevice.PresentationParameters.DepthStencilFormat;
-            
-            // Update the depth attachment based on the desired DepthFormat.
-            PixelFormat depthPixelFormat;
-            PixelInternalFormat depthPixelInternalFormat;
-            PixelType depthPixelType;
-            FramebufferAttachment depthAttachmentType;
-            if (backbufferFormat == DepthFormat.Depth16)
-            {
-                depthPixelFormat = PixelFormat.DepthComponent;
-                depthPixelInternalFormat = PixelInternalFormat.DepthComponent16;
-                depthPixelType = PixelType.UnsignedByte;
-                depthAttachmentType = FramebufferAttachment.DepthAttachment;
-            }
-            else if (backbufferFormat == DepthFormat.Depth24)
-            {
-                depthPixelFormat = PixelFormat.DepthComponent;
-                depthPixelInternalFormat = PixelInternalFormat.DepthComponent24;
-                depthPixelType = PixelType.UnsignedByte;
-                depthAttachmentType = FramebufferAttachment.DepthAttachment;
-            }
-            else
-            {
-                depthPixelFormat = PixelFormat.DepthStencil;
-                depthPixelInternalFormat = PixelInternalFormat.Depth24Stencil8;
-                depthPixelType = PixelType.UnsignedInt248;
-                depthAttachmentType = FramebufferAttachment.DepthStencilAttachment;
-            }
-            
-            GL.BindTexture(TextureTarget.Texture2D, INTERNAL_glDepthStencilAttachment);
-            GL.TexImage2D(
-                TextureTarget.Texture2D,
-                0,
-                depthPixelInternalFormat,
-                clientWidth,
-                clientHeight,
-                0,
-                depthPixelFormat,
-                depthPixelType,
-                IntPtr.Zero
-            );
-            
-            if (backbufferFormat != INTERNAL_depthFormat)
-            {
-                FramebufferAttachment attach;
-                if (INTERNAL_depthFormat == DepthFormat.Depth24Stencil8)
-                {
-                    attach = FramebufferAttachment.DepthStencilAttachment;
-                }
-                else
-                {
-                    attach = FramebufferAttachment.DepthAttachment;
-                }
-                
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, INTERNAL_glFramebuffer);
-                
-                GL.FramebufferTexture2D(
-                    FramebufferTarget.Framebuffer,
-                    attach,
-                    TextureTarget.Texture2D,
-                    0,
-                    0
-                );
-                GL.FramebufferTexture2D(
-                    FramebufferTarget.Framebuffer,
-                    depthAttachmentType,
-                    TextureTarget.Texture2D,
-                    INTERNAL_glDepthStencilAttachment,
-                    0
-                );
-             
-                GL.BindFramebuffer(
-                    FramebufferTarget.Framebuffer,
-                    Game.GraphicsDevice.IsRenderTargetBound ?
-                        Game.GraphicsDevice.glRenderTargetFrameBuffer :
-                        Game.GraphicsDevice.glFramebuffer
-                );
-                
-                INTERNAL_depthFormat = backbufferFormat;
-            }
-            
-            // Pop the GL texture state.
-            GL.BindTexture(TextureTarget.Texture2D, oldTextureBinding);
-            GL.ActiveTexture((TextureUnit) oldActiveTexture);
-#endif
-            
-            INTERNAL_glFramebufferWidth = clientWidth;
-            INTERNAL_glFramebufferHeight = clientHeight;
-            Mouse.INTERNAL_BackbufferWidth = clientWidth;
-            Mouse.INTERNAL_BackbufferHeight = clientHeight;
 
 #if WIIU_GAMEPAD
             wiiuPixelData = new byte[INTERNAL_glFramebufferWidth * INTERNAL_glFramebufferHeight * 4];

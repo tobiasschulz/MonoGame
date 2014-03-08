@@ -69,9 +69,6 @@ non-infringement.
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-#if !PSM
-using System.Drawing;
-#endif
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;

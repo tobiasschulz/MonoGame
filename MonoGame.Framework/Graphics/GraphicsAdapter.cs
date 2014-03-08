@@ -86,7 +86,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 return new DisplayMode(
                     mode.w,
                     mode.h,
-                    mode.refresh_rate,
                     SurfaceFormat.Color
                 );
 #elif IOS
@@ -254,11 +253,25 @@ namespace Microsoft.Xna.Framework.Graphics
                     for (int i = 0; i < numModes; i++)
                     {
                         SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
+
+                        // Check for dupes caused by varying refresh rates.
+                        bool dupe = false;
+                        foreach (DisplayMode mode in modes)
+                        {
+                            if (filler.w == mode.Width && filler.h == mode.Height)
+                            {
+                                dupe = true;
+                            }
+                        }
+                        if (dupe)
+                        {
+                            continue;
+                        }
+
                         modes.Add(
                             new DisplayMode(
                                 filler.w,
                                 filler.h,
-                                filler.refresh_rate,
                                 SurfaceFormat.Color // FIXME: Assumption!
                             )
                         );

@@ -36,7 +36,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -131,7 +130,6 @@
     <Compile Include="Media\MediaState.cs" />
     <Compile Include="Media\MediaSourceType.cs" />
     <Compile Include="Content\ContentReader.cs" />
-    <Compile Include="Graphics\GraphicsCapabilities.cs" />
     <Compile Include="Graphics\IGraphicsDeviceService.cs" />
     <Compile Include="Content\ContentTypeReader.cs" />
     <Compile Include="Content\ContentTypeReaderManager.cs" />
@@ -343,7 +341,6 @@
     <Compile Include="Graphics\GraphicsAdapter.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
     <Compile Include="Graphics\GraphicsExtensions.cs" />
-    <Compile Include="Graphics\ImageEx.cs" />
     <Compile Include="Graphics\Model.cs" />
     <Compile Include="Graphics\ModelBone.cs" />
     <Compile Include="Graphics\ModelBoneCollection.cs" />
@@ -377,16 +374,15 @@
     <Compile Include="Utilities\ObjectFactoryWithReset.cs" />
     <Compile Include="Content\ResourceContentManager.cs" />
     <Compile Include="Media\VideoSoundtrackType.cs" />
-    <Compile Include="Audio\MSADPCMToPCM.cs" />
     <Compile Include="GamerServices\LeaderboardEntry.cs" />
     <Compile Include="GamerServices\LeaderboardIdentity.cs" />
     <Compile Include="GamerServices\LeaderboardKey.cs" />
     <Compile Include="GamerServices\LeaderboardReader.cs" />
     <Compile Include="GamerServices\LeaderboardWriter.cs" />
     <Compile Include="GamerServices\PropertyDictionary.cs" />
-    <Compile Include="SDL2\Audio\OpenALSoundController.cs" />
+    <Compile Include="Audio\OpenALDevice.cs" />
     <Compile Include="Audio\SoundEffect.cs" />
-    <Compile Include="SDL2\Audio\SoundEffectInstance.cs" />
+    <Compile Include="Audio\SoundEffectInstance.cs" />
     <Compile Include="SDL2\Input\SDL2_GamePad.cs" />
     <Compile Include="SDL2\SDL2_GamePlatform.cs" />
     <Compile Include="SDL2\SDL2_GameWindow.cs" />
@@ -406,7 +402,9 @@
     <Compile Include="GamerServices\NotificationPosition.cs" />
     <Compile Include="Graphics\DeviceLostException.cs" />
     <Compile Include="Graphics\OpenGLDevice.cs" />
+    <Compile Include="Graphics\OcclusionQuery.cs" />
     <Compile Include="Input\Touch\TouchPanelState.cs" />
+    <Compile Include="Audio\DynamicSoundEffectInstance.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">

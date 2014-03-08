@@ -26,6 +26,8 @@
  */
 #endregion
 
+// TODO: Get this to use the OpenGLDevice instead of raw OpenGL -flibit
+
 #region VideoPlayer Graphics Define
 #if SDL2
 #define VIDEOPLAYER_OPENGL
@@ -113,7 +115,7 @@ namespace Microsoft.Xna.Framework.Media
             GL.GenTextures(3, yuvTextures);
             
             // Create the RGBA framebuffer target.
-            GL.GenFramebuffers(1, out rgbaFramebuffer);
+            rgbaFramebuffer = OpenGLDevice.Framebuffer.GenFramebuffer();
             
             // Create our pile of vertices.
             vert_pos = new float[2 * 4]; // 2 dimensions * 4 vertices
@@ -160,7 +162,7 @@ namespace Microsoft.Xna.Framework.Media
             GL.DeleteProgram(shaderProgram);
             
             // Delete the RGBA framebuffer target.
-            GL.DeleteFramebuffers(1, ref rgbaFramebuffer);
+            OpenGLDevice.Framebuffer.DeleteFramebuffer(rgbaFramebuffer);
             
             // Delete the YUV textures.
             GL.DeleteTextures(3, yuvTextures);
@@ -231,14 +233,8 @@ namespace Microsoft.Xna.Framework.Media
             GL.ActiveTexture(TextureUnit.Texture0);
             
             // Attach the Texture2D to the framebuffer.
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
-            GL.FramebufferTexture2D(
-                FramebufferTarget.Framebuffer,
-                FramebufferAttachment.ColorAttachment0,
-                TextureTarget.Texture2D,
-                videoTexture.glTexture,
-                0
-            );
+            OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
+            OpenGLDevice.Framebuffer.AttachColor(videoTexture.texture.Handle, 0);
             
             // Allocate YUV GL textures
             GL_internal_genTexture(
@@ -305,7 +301,7 @@ namespace Microsoft.Xna.Framework.Media
             GL.ActiveTexture(TextureUnit.Texture2);
             GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
             GL.ActiveTexture((TextureUnit) oldActiveTexture);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, oldFramebuffer);
+            OpenGLDevice.Framebuffer.BindFramebuffer(oldFramebuffer);
             if (oldCullState)
             {
                 GL.Enable(EnableCap.CullFace);
@@ -637,6 +633,8 @@ namespace Microsoft.Xna.Framework.Media
             );
             
             // Set up the vertex pointers/arrays.
+            OpenGLDevice.Instance.Attributes[0].CurrentBuffer = int.MaxValue;
+            OpenGLDevice.Instance.Attributes[1].CurrentBuffer = int.MaxValue;
             GL.VertexAttribPointer(
                 0,
                 2,
@@ -657,7 +655,7 @@ namespace Microsoft.Xna.Framework.Media
             GL.EnableVertexAttribArray(1);
             
             // Bind our target framebuffer.
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, rgbaFramebuffer);
+            OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
             
             // Prepare YUV GL textures with our current frame data
             GL.ActiveTexture(TextureUnit.Texture0);
