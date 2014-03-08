@@ -650,7 +650,11 @@ namespace Microsoft.Xna.Framework.Graphics
             // SurfaceFormat.Color is SDL_PIXELFORMAT_ARGB8888
             if (pixelFormatPtr->format != SDL.SDL_PIXELFORMAT_ARGB8888)
             {
-                surface = SDL.SDL_ConvertSurfaceFormat(surface, SDL.SDL_PIXELFORMAT_ARGB8888, 0);
+                // create a copy
+                IntPtr convertedSurface = SDL.SDL_ConvertSurfaceFormat(surface, SDL.SDL_PIXELFORMAT_ARGB8888, 0);
+                // free the old surface
+                SDL.SDL_FreeSurface(surface);
+                surface = convertedSurface;
             }
             return surface;
         }
