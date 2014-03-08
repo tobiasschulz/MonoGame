@@ -200,6 +200,8 @@ namespace Microsoft.Xna.Framework
         private IntPtr INTERNAL_GLContext;
         
         private string INTERNAL_deviceName;
+
+        private bool INTERNAL_useFullscreenSpaces;
         
         #endregion
 
@@ -430,18 +432,24 @@ namespace Microsoft.Xna.Framework
                         if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
                         {
                             IsActive = true;
-                            
-                            // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
-                            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Current);
-                            
+
+                            if (!INTERNAL_useFullscreenSpaces)
+                            {
+                                // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
+                                SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Current);
+                            }
+
                             // Disable the screensaver when we're back.
                             SDL.SDL_DisableScreenSaver();
                         }
                         else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
                         {
                             IsActive = false;
-                            
-                            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
+
+                            if (!INTERNAL_useFullscreenSpaces)
+                            {
+                                SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
+                            }
                             
                             // Give the screensaver back, we're not that important now.
                             SDL.SDL_EnableScreenSaver();
@@ -734,6 +742,17 @@ namespace Microsoft.Xna.Framework
             // We hide the mouse cursor by default.
             IsMouseVisible = false;
             
+            // OSX has some fancy fullscreen features, let's use them!
+            if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+            {
+                string hint = SDL.SDL_GetHint(SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
+                INTERNAL_useFullscreenSpaces = (String.IsNullOrEmpty(hint) || hint.Equals("1"));
+            }
+            else
+            {
+                INTERNAL_useFullscreenSpaces = false;
+            }
+
             // Initialize OpenGL
             INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
             OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
