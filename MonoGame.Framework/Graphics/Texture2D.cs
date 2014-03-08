@@ -493,6 +493,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Load the SDL_Surface* from RWops, get the image data
             IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
+            surface = INTERNAL_convertSurfaceFormat(surface);
             int width = INTERNAL_getSurfaceWidth(surface);
             int height = INTERNAL_getSurfaceHeight(surface);
             byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
@@ -628,7 +629,7 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 #pragma warning disable 0169
             UInt32 flags;
-            IntPtr format;
+            public IntPtr format;
             public Int32 w;
             public Int32 h;
             Int32 pitch;
@@ -640,6 +641,22 @@ namespace Microsoft.Xna.Framework.Graphics
             IntPtr map;
             Int32 refcount;
 #pragma warning restore 0169
+        }
+
+        private static unsafe IntPtr INTERNAL_convertSurfaceFormat(IntPtr surface)
+        {
+            SDL_Surface* surPtr = (SDL_Surface*)surface;
+            SDL.SDL_PixelFormat* pixelFormatPtr = (SDL.SDL_PixelFormat*)surPtr->format;
+            // SurfaceFormat.Color is SDL_PIXELFORMAT_ABGR8888
+            if (pixelFormatPtr->format != SDL.SDL_PIXELFORMAT_ABGR8888)
+            {
+                // create a copy
+                IntPtr convertedSurface = SDL.SDL_ConvertSurfaceFormat(surface, SDL.SDL_PIXELFORMAT_ABGR8888, 0);
+                // free the old surface
+                SDL.SDL_FreeSurface(surface);
+                surface = convertedSurface;
+            }
+            return surface;
         }
 
         private static unsafe IntPtr INTERNAL_getSurfacePixels(IntPtr surface)
