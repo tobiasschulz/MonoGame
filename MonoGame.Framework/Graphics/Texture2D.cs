@@ -645,14 +645,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private static unsafe IntPtr INTERNAL_convertSurfaceFormat(IntPtr surface)
         {
-            SDL_Surface* surPtr = (SDL_Surface*)surface;
-            SDL.SDL_PixelFormat* pixelFormatPtr = (SDL.SDL_PixelFormat*)surPtr->format;
+            SDL_Surface* surPtr = (SDL_Surface*) surface;
+            SDL.SDL_PixelFormat* pixelFormatPtr = (SDL.SDL_PixelFormat*) surPtr->format;
             // SurfaceFormat.Color is SDL_PIXELFORMAT_ABGR8888
             if (pixelFormatPtr->format != SDL.SDL_PIXELFORMAT_ABGR8888)
             {
-                // create a copy
+                // Create a properly formatted copy, free the old surface
                 IntPtr convertedSurface = SDL.SDL_ConvertSurfaceFormat(surface, SDL.SDL_PIXELFORMAT_ABGR8888, 0);
-                // free the old surface
                 SDL.SDL_FreeSurface(surface);
                 surface = convertedSurface;
             }
