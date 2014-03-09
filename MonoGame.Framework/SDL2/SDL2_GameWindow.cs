@@ -230,9 +230,14 @@ namespace Microsoft.Xna.Framework
         [DefaultValue(false)]
         public override bool AllowUserResizing
         {
+            /* FIXME: This change should happen immediately. However, SDL2 does
+             * not yet have an SDL_SetWindowResizable, so we mostly just have
+             * this for the #define we've got at the top of this file.
+             * -flibit
+             */
             get
             {
-                return (INTERNAL_sdlWindowFlags_Current & SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE) != SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
+                return (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE) != 0;
             }
             set
             {
@@ -280,7 +285,7 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-                return (INTERNAL_sdlWindowFlags_Current & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) != SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS;
+                return (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) != 0;
             }
             set
             {
@@ -825,7 +830,7 @@ namespace Microsoft.Xna.Framework
             INTERNAL_deviceName = screenDeviceName;
             
             // Bordered
-            if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) == SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS)
+            if (IsBorderless)
             {
                 SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
             }
