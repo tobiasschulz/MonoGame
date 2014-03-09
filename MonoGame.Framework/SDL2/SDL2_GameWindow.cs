@@ -627,8 +627,8 @@ namespace Microsoft.Xna.Framework
                     0,
                     OpenGLDevice.Instance.Backbuffer.Width,
                     OpenGLDevice.Instance.Backbuffer.Height,
-                    PixelFormat.Rgba,
-                    PixelType.UnsignedByte,
+                    OpenTK.Graphics.OpenGL.PixelFormat.Rgba,
+                    OpenTK.Graphics.OpenGL.PixelType.UnsignedByte,
                     wiiuPixelData
                 );
                 DRC.drc_push_vid_frame(
@@ -800,7 +800,7 @@ namespace Microsoft.Xna.Framework
                 return;
             }
             DRC.drc_enable_system_input_feeder(wiiuStream);
-            wiiuPixelData = new byte[INTERNAL_glFramebufferWidth * INTERNAL_glFramebufferHeight * 4];
+            wiiuPixelData = new byte[startWidth * startHeight * 4];
 #endif
         }
         
@@ -895,7 +895,7 @@ namespace Microsoft.Xna.Framework
             );
 
 #if WIIU_GAMEPAD
-            wiiuPixelData = new byte[INTERNAL_glFramebufferWidth * INTERNAL_glFramebufferHeight * 4];
+            wiiuPixelData = new byte[clientWidth * clientHeight * 4];
 #endif
         }
         
