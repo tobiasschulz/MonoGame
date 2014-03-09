@@ -1,36 +1,148 @@
+#region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE.txt for details.
+ */
+#endregion
+
+#region Using Statements
 using System;
-using System.Diagnostics;
-using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public class DepthStencilState : GraphicsResource
-    {
+	{
+		#region Public Properties
 
-        // TODO: We should be asserting if the state has
-        // been changed after it has been bound to the device!
-
-        public bool DepthBufferEnable { get; set; }
-        public bool DepthBufferWriteEnable { get; set; }
-        public StencilOperation CounterClockwiseStencilDepthBufferFail { get; set; }
-        public StencilOperation CounterClockwiseStencilFail { get; set; }
-        public CompareFunction CounterClockwiseStencilFunction { get; set; }
-        public StencilOperation CounterClockwiseStencilPass { get; set; }
-        public CompareFunction DepthBufferFunction { get; set; }
-        public int ReferenceStencil { get; set; }
-        public StencilOperation StencilDepthBufferFail { get; set; }
-        public bool StencilEnable { get; set; }
-        public StencilOperation StencilFail { get; set; }
-        public CompareFunction StencilFunction { get; set; }
-        public int StencilMask { get; set; }
-        public StencilOperation StencilPass { get; set; }
-        public int StencilWriteMask { get; set; }
-        public bool TwoSidedStencilMode { get; set; }
-
-		public DepthStencilState ()
+		public bool DepthBufferEnable
 		{
-            DepthBufferEnable = true;
-            DepthBufferWriteEnable = true;
+			get;
+			set;
+		}
+
+		public bool DepthBufferWriteEnable
+		{
+			get;
+			set;
+		}
+
+		public StencilOperation CounterClockwiseStencilDepthBufferFail
+		{
+			get;
+			set;
+		}
+
+		public StencilOperation CounterClockwiseStencilFail	
+		{
+			get;
+			set;
+		}
+
+		public CompareFunction CounterClockwiseStencilFunction	
+		{
+			get;
+			set;
+		}
+
+		public StencilOperation CounterClockwiseStencilPass	
+		{
+			get;
+			set;
+		}
+
+		public CompareFunction DepthBufferFunction	
+		{
+			get;
+			set;
+		}
+
+		public int ReferenceStencil	
+		{
+			get;
+			set;
+		}
+
+		public StencilOperation StencilDepthBufferFail	
+		{
+			get;
+			set;
+		}
+
+		public bool StencilEnable	
+		{
+			get;
+			set;
+		}
+
+		public StencilOperation StencilFail	
+		{
+			get;
+			set;
+		}
+
+		public CompareFunction StencilFunction	
+		{
+			get;
+			set;
+		}
+
+		public int StencilMask	
+		{
+			get;
+			set;
+		}
+
+		public StencilOperation StencilPass	
+		{
+			get;
+			set;
+		}
+
+		public int StencilWriteMask	
+		{
+			get;
+			set;
+		}
+
+		public bool TwoSidedStencilMode	
+		{
+			get;
+			set;
+		}
+
+		#endregion
+
+		#region Public DepthStencilState Presets
+
+		public static readonly DepthStencilState Default = new DepthStencilState(
+			"DepthStencilState.Default",
+			true,
+			true
+		);
+
+		public static readonly DepthStencilState DepthRead = new DepthStencilState(
+			"DepthStencilState.DepthRead",
+			true,
+			false
+		);
+
+		public static readonly DepthStencilState None = new DepthStencilState(
+			"DepthStencilState.None",
+			false,
+			false
+		);
+
+		#endregion
+
+		#region Public Constructor
+
+		public DepthStencilState()
+		{
+			DepthBufferEnable = true;
+			DepthBufferWriteEnable = true;
 			DepthBufferFunction = CompareFunction.LessEqual;
 			StencilEnable = false;
 			StencilFunction = CompareFunction.Always;
@@ -47,37 +159,20 @@ namespace Microsoft.Xna.Framework.Graphics
 			ReferenceStencil = 0;
 		}
 
-        private static readonly Utilities.ObjectFactoryWithReset<DepthStencilState> _default;
-        private static readonly Utilities.ObjectFactoryWithReset<DepthStencilState> _depthRead;
-        private static readonly Utilities.ObjectFactoryWithReset<DepthStencilState> _none;
+		#endregion
 
-        public static DepthStencilState Default { get { return _default.Value; } }
-        public static DepthStencilState DepthRead { get { return _depthRead.Value; } }
-        public static DepthStencilState None { get { return _none.Value; } }
-		
-		static DepthStencilState ()
-		{
-			_default = new Utilities.ObjectFactoryWithReset<DepthStencilState>(() => new DepthStencilState
-            {
-                Name = "DepthStencilState.Default",
-				DepthBufferEnable = true,
-				DepthBufferWriteEnable = true
-			});
-			
-			_depthRead = new Utilities.ObjectFactoryWithReset<DepthStencilState>(() => new DepthStencilState
-            {
-                Name = "DepthStencilState.DepthRead",
-                DepthBufferEnable = true,
-				DepthBufferWriteEnable = false
-			});
-			
-			_none = new Utilities.ObjectFactoryWithReset<DepthStencilState>(() => new DepthStencilState
-            {
-                Name = "DepthStencilState.None",
-                DepthBufferEnable = false,
-				DepthBufferWriteEnable = false
-			});
+		#region Private Constructor
+
+		private DepthStencilState(
+			string name,
+			bool depthBufferEnable,
+			bool depthBufferWriteEnable
+		) : this() {
+			Name = name;
+			DepthBufferEnable = depthBufferEnable;
+			DepthBufferWriteEnable = depthBufferWriteEnable;
 		}
+
+		#endregion
 	}
 }
-

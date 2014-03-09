@@ -2,25 +2,68 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class RasterizerState : GraphicsResource
 	{
-        // TODO: We should be asserting if the state has
-        // been changed after it has been bound to the device!
+		#region Public Properties
 
-        public CullMode CullMode { get; set; }
-        public float DepthBias { get; set; }
-        public FillMode FillMode { get; set; }
-        public bool MultiSampleAntiAlias { get; set; }
-        public bool ScissorTestEnable { get; set; }
-        public float SlopeScaleDepthBias { get; set; }
+		public CullMode CullMode
+		{
+			get;
+			set;
+		}
 
-		private static readonly Utilities.ObjectFactoryWithReset<RasterizerState> _cullClockwise;
-        private static readonly Utilities.ObjectFactoryWithReset<RasterizerState> _cullCounterClockwise;
-        private static readonly Utilities.ObjectFactoryWithReset<RasterizerState> _cullNone;
+		public float DepthBias
+		{
+			get;
+			set;
+		}
 
-        public static RasterizerState CullClockwise { get { return _cullClockwise.Value; } }
-        public static RasterizerState CullCounterClockwise { get { return _cullCounterClockwise.Value; } }
-        public static RasterizerState CullNone { get { return _cullNone.Value; } }
+		public FillMode FillMode
+		{
+			get;
+			set;
+		}
 
-        public RasterizerState()
+		public bool MultiSampleAntiAlias
+		{
+			get;
+			set;
+		}
+
+		public bool ScissorTestEnable
+		{
+			get;
+			set;
+		}
+
+		public float SlopeScaleDepthBias
+		{
+			get;
+			set;
+		}
+
+		#endregion
+
+		#region Public RasterizerState Presets
+
+		public static readonly RasterizerState CullClockwise = new RasterizerState(
+			"RasterizerState.CullClockwise",
+			CullMode.CullClockwiseFace
+		);
+
+		public static readonly RasterizerState CullCounterClockwise = new RasterizerState(
+			"RasterizerState.CullCounterClockwise",
+			CullMode.CullCounterClockwiseFace
+		);
+
+		public static readonly RasterizerState CullNone = new RasterizerState(
+			"RasterizerState.CullNone",
+			CullMode.None
+		);
+
+		#endregion
+
+		#region Public Constructor
+
+		public RasterizerState()
 		{
 			CullMode = CullMode.CullCounterClockwiseFace;
 			FillMode = FillMode.Solid;
@@ -30,25 +73,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			SlopeScaleDepthBias = 0;
 		}
 
-		static RasterizerState ()
-		{
-			_cullClockwise = new Utilities.ObjectFactoryWithReset<RasterizerState>(() => new RasterizerState
-            {
-                Name = "RasterizerState.CullClockwise",
-				CullMode = CullMode.CullClockwiseFace
-			});
+		#endregion
 
-			_cullCounterClockwise = new Utilities.ObjectFactoryWithReset<RasterizerState>(() => new RasterizerState
-            {
-                Name = "RasterizerState.CullCounterClockwise",
-				CullMode = CullMode.CullCounterClockwiseFace
-			});
+		#region Private Constructor
 
-			_cullNone = new Utilities.ObjectFactoryWithReset<RasterizerState>(() => new RasterizerState
-            {
-                Name = "RasterizerState.CullNone",
-				CullMode = CullMode.None
-			});
+		private RasterizerState(
+			string name,
+			CullMode cullMode
+		) : this() {
+			Name = name;
+			CullMode = cullMode;
 		}
-    }
+
+		#endregion
+	}
 }
