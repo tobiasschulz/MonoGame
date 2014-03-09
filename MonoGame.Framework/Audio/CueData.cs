@@ -194,7 +194,7 @@ namespace Microsoft.Xna.Framework.Audio
 			if ((soundFlags & 0x0E) != 0)
 			{
 				// RPC data length, unused
-				reader.ReadUInt16();
+				ushort rpcDataLength = reader.ReadUInt16();
 
 				// Number of RPC Presets
 				RPCCodes = new uint[reader.ReadByte()];
@@ -204,6 +204,12 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					RPCCodes[i] = reader.ReadUInt32();
 				}
+
+				// Seek past the rest - we dunno what it is yet.
+				reader.BaseStream.Seek(
+					rpcDataLength - 2 - 1 - (4 * RPCCodes.Length),
+					SeekOrigin.Current
+				);
 			}
 
 			// Parse DSP Presets
