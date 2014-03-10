@@ -1,48 +1,57 @@
-﻿namespace Microsoft.Xna.Framework.Graphics
+#region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE.txt for details.
+ */
+#endregion
+
+namespace Microsoft.Xna.Framework.Graphics
 {
-    public sealed class TextureCollection
-    {
-        #region Private Variables
+	public sealed class TextureCollection
+	{
+		#region Private Variables
 
-        private readonly Texture[] textures;
+		private readonly Texture[] textures;
 
-        #endregion
+		#endregion
 
-        #region Internal Constructor
+		#region Internal Constructor
 
-        internal TextureCollection(int maxTextures)
-        {
-            textures = new Texture[maxTextures];
-        }
+		internal TextureCollection(int maxTextures)
+		{
+			textures = new Texture[maxTextures];
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Array Access Method
+		#region Public Array Access Method
 
-        public Texture this[int index]
-        {
-            get
-            {
-                return textures[index];
-            }
-            set
-            {
-                textures[index] = value;
-            }
-        }
+		public Texture this[int index]
+		{
+			get
+			{
+				return textures[index];
+			}
+			set
+			{
+				textures[index] = value;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal Array Clear Method
+		#region Internal Array Clear Method
 
-        internal void Clear()
-        {
-            for (int i = 0; i < textures.Length; i += 1)
-            {
-                textures[i] = null;
-            }
-        }
+		internal void Clear()
+		{
+			for (int i = 0; i < textures.Length; i += 1)
+			{
+				textures[i] = null;
+			}
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
