@@ -1,0 +1,16 @@
+This is MonoGame-SDL2, a branch of MonoGame that uses SDL2 for its platform
+implementation.
+
+This is the base branch that will be the foundation for FNA, a new XNA4
+reimplementation that focuses solely on developing an accurate XNA4 runtime for
+the desktop.
+
+License
+-------
+MG-SDL2 is released under the Microsoft Public License. See LICENSE for details.
+
+Roadmap
+-------
+To see the current roadmap for MonoGame-SDL2, see the Github issues page:
+
+https://github.com/flibitijibibo/MonoGame/issues
