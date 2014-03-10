@@ -184,7 +184,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					GL.TexParameter(
 						Target,
 						(TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-						(filter == TextureFilter.Anisotropic) ? Anistropy.Flush() : 1.0f
+						(filter == TextureFilter.Anisotropic) ? Math.Max(Anistropy.Flush(), 1.0f) : 1.0f
 					);
 				}
 
