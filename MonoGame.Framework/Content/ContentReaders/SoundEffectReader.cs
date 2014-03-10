@@ -12,7 +12,7 @@ using System;
 using System.IO;
 
 using Microsoft.Xna.Framework.Audio;
-#endif
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
