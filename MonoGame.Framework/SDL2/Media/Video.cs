@@ -90,13 +90,13 @@ namespace Microsoft.Xna.Framework.Media
 
 		#region Internal Video Constructor
 
-		internal Video(string FileName)
+		internal Video(string fileName)
 		{
 			// Check out the file...
-			_fileName = Normalize(FileName);
-			if (_fileName == null)
+			FileName = Normalize(fileName);
+			if (FileName == null)
 			{
-				throw new Exception("File " + FileName + " does not exist!");
+				throw new Exception("File " + fileName + " does not exist!");
 			}
 
 			// Set everything to NULL. Yes, this actually matters later.
@@ -183,7 +183,7 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Initialize the decoder.
 			theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
-				_fileName,
+				FileName,
 				150, // Arbitrarily 5 seconds in a 30fps movie.
 #if VIDEOPLAYER_OPENGL
 				TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
