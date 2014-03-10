@@ -1,70 +1,11 @@
 #region License
-/*
-Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009-2012 The MonoGame Team
-
-All rights reserved.
-
-This license governs use of the accompanying software. If you use the software,
-you accept this license. If you do not accept the license, do not use the
-software.
-
-1. Definitions
-
-The terms "reproduce," "reproduction," "derivative works," and "distribution"
-have the same meaning here as under U.S. copyright law.
-
-A "contribution" is the original software, or any additions or changes to the
-software.
-
-A "contributor" is any person that distributes its contribution under this
-license.
-
-"Licensed patents" are a contributor's patent claims that read directly on its
-contribution.
-
-2. Grant of Rights
-
-(A) Copyright Grant- Subject to the terms of this license, including the
-license conditions and limitations in section 3, each contributor grants you a
-non-exclusive, worldwide, royalty-free copyright license to reproduce its
-contribution, prepare derivative works of its contribution, and distribute its
-contribution or any derivative works that you create.
-
-(B) Patent Grant- Subject to the terms of this license, including the license
-conditions and limitations in section 3, each contributor grants you a
-non-exclusive, worldwide, royalty-free license under its licensed patents to
-make, have made, use, sell, offer for sale, import, and/or otherwise dispose of
-its contribution in the software or derivative works of the contribution in the
-software.
-
-3. Conditions and Limitations
-
-(A) No Trademark License- This license does not grant you rights to use any
-contributors' name, logo, or trademarks.
-
-(B) If you bring a patent claim against any contributor over patents that you
-claim are infringed by the software, your patent license from such contributor
-to the software ends automatically.
-
-(C) If you distribute any portion of the software, you must retain all
-copyright, patent, trademark, and attribution notices that are present in the
-software.
-
-(D) If you distribute any portion of the software in source code form, you may
-do so only under this license by including a complete copy of this license with
-your distribution. If you distribute any portion of the software in compiled or
-object code form, you may only do so under a license that complies with this
-license.
-
-(E) The software is licensed "as-is." You bear the risk of using it. The
-contributors give no express warranties, guarantees or conditions. You may have
-additional consumer rights under your local laws which this license cannot
-change. To the extent permitted under your local laws, the contributors exclude
-the implied warranties of merchantability, fitness for a particular purpose and
-non-infringement.
-*/
-#endregion License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE.txt for details.
+ */
+#endregion
 
 #region RESIZABLE_WINDOW Option
 // #define RESIZABLE_WINDOW
@@ -120,852 +61,852 @@ using SDL2;
 
 namespace Microsoft.Xna.Framework
 {
-    public class SDL2_GameWindow : GameWindow
-    {
-        #region The Game
-        
-        internal Game Game;
-        
-        #endregion
+	public class SDL2_GameWindow : GameWindow
+	{
+		#region The Game
 
-        #region Wii U GamePad Support, libdrc Interop
+		internal Game Game;
+
+		#endregion
+
+		#region Wii U GamePad Support, libdrc Interop
 
 #if WIIU_GAMEPAD
-        private static class DRC
-        {
-            // FIXME: Deal with Mac/Windows LibName later.
-            private const string nativeLibName = "libdrc.so";
+		private static class DRC
+		{
+			// FIXME: Deal with Mac/Windows LibName later.
+			private const string nativeLibName = "libdrc.so";
 
-            public enum drc_pixel_format
-            {
-                DRC_RGB,
-                DRC_RGBA,
-                DRC_BGR,
-                DRC_BGRA,
-                DRC_RGB565
-            }
+			public enum drc_pixel_format
+			{
+				DRC_RGB,
+				DRC_RGBA,
+				DRC_BGR,
+				DRC_BGRA,
+				DRC_RGB565
+			}
 
-            public enum drc_flipping_mode
-            {
-                DRC_NO_FLIP,
-                DRC_FLIP_VERTICALLY
-            }
+			public enum drc_flipping_mode
+			{
+				DRC_NO_FLIP,
+				DRC_FLIP_VERTICALLY
+			}
 
-            /* IntPtr refers to a drc_streamer* */
-            [DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr drc_new_streamer();
+			/* IntPtr refers to a drc_streamer* */
+			[DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern IntPtr drc_new_streamer();
 
-            /* self refers to a drc_streamer* */
-            [DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-            public static extern void drc_delete_streamer(IntPtr self);
+			/* self refers to a drc_streamer* */
+			[DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern void drc_delete_streamer(IntPtr self);
 
-            /* self refers to a drc_streamer* */
-            [DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-            public static extern int drc_start_streamer(IntPtr self);
+			/* self refers to a drc_streamer* */
+			[DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int drc_start_streamer(IntPtr self);
 
-            /* self refers to a drc_streamer* */
-            [DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-            public static extern void drc_stop_streamer(IntPtr self);
+			/* self refers to a drc_streamer* */
+			[DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern void drc_stop_streamer(IntPtr self);
 
-            /* self refers to a drc_streamer* */
-            [DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-            public static extern int drc_push_vid_frame(
-                IntPtr self,
-                byte[] buffer,
-                uint size,
-                ushort width,
-                ushort height,
-                drc_pixel_format pixfmt,
-                drc_flipping_mode flipmode
-            );
+			/* self refers to a drc_streamer* */
+			[DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern int drc_push_vid_frame(
+				IntPtr self,
+				byte[] buffer,
+				uint size,
+				ushort width,
+				ushort height,
+				drc_pixel_format pixfmt,
+				drc_flipping_mode flipmode
+			);
 
-            /* self refers to a drc_streamer* */
-            [DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-            public static extern void drc_enable_system_input_feeder(IntPtr self);
-        }
+			/* self refers to a drc_streamer* */
+			[DllImportAttribute(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+			public static extern void drc_enable_system_input_feeder(IntPtr self);
+		}
 
-        private IntPtr wiiuStream;
-        private byte[] wiiuPixelData;
+		private IntPtr wiiuStream;
+		private byte[] wiiuPixelData;
 #endif
 
-        #endregion
-        
-        #region Internal SDL2 window variables
-        
-        private IntPtr INTERNAL_sdlWindow;
-        
-        private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
-        private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
-        
-        private IntPtr INTERNAL_GLContext;
-        
-        private string INTERNAL_deviceName;
+		#endregion
 
-        private bool INTERNAL_useFullscreenSpaces;
-        
-        #endregion
+		#region Internal SDL2 window variables
 
-        #region Internal Loop Sentinel
-        
-        private bool INTERNAL_runApplication;
-        
-        #endregion
+		private IntPtr INTERNAL_sdlWindow;
 
-        #region Internal Text Input Helpers
+		private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Current;
+		private SDL.SDL_WindowFlags INTERNAL_sdlWindowFlags_Next;
 
-        private int[] INTERNAL_TextInputControlRepeat;
-        private bool[] INTERNAL_TextInputControlDown;
-        private bool INTERNAL_TextInputSuppress;
+		private IntPtr INTERNAL_GLContext;
 
-        #endregion
+		private string INTERNAL_deviceName;
 
-        #region Private Active XNA Key List
+		private bool INTERNAL_useFullscreenSpaces;
 
-        private List<Keys> keys;
-        
-        #endregion
-        
-        #region Public Properties
-        
-        [DefaultValue(false)]
-        public override bool AllowUserResizing
-        {
-            /* FIXME: This change should happen immediately. However, SDL2 does
-             * not yet have an SDL_SetWindowResizable, so we mostly just have
-             * this for the #define we've got at the top of this file.
-             * -flibit
-             */
-            get
-            {
-                return (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE) != 0;
-            }
-            set
-            {
-                // Note: This can only be used BEFORE window creation!
-                if (value)
-                {
-                    INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
-                }
-                else
-                {
-                    INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
-                }
-            }
-        }
+		#endregion
 
-        public override Rectangle ClientBounds
-        {
-            get
-            {
-                int x = 0, y = 0, w = 0, h = 0;
-                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
-                SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, out w, out h);
-                return new Rectangle(x, y, w, h);
-            }
-        }
+		#region Internal Loop Sentinel
 
-        public override DisplayOrientation CurrentOrientation
-        {
-            get
-            {
-                // SDL2 has no orientation.
-                return DisplayOrientation.LandscapeLeft;
-            }
-        }
+		private bool INTERNAL_runApplication;
+
+		#endregion
+
+		#region Internal Text Input Helpers
+
+		private int[] INTERNAL_TextInputControlRepeat;
+		private bool[] INTERNAL_TextInputControlDown;
+		private bool INTERNAL_TextInputSuppress;
+
+		#endregion
+
+		#region Private Active XNA Key List
+
+		private List<Keys> keys;
+
+		#endregion
+
+		#region Public Properties
+
+		[DefaultValue(false)]
+		public override bool AllowUserResizing
+		{
+			/* FIXME: This change should happen immediately. However, SDL2 does
+			 * not yet have an SDL_SetWindowResizable, so we mostly just have
+			 * this for the #define we've got at the top of this file.
+			 * -flibit
+			 */
+			get
+			{
+				return (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE) != 0;
+			}
+			set
+			{
+				// Note: This can only be used BEFORE window creation!
+				if (value)
+				{
+					INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
+				}
+				else
+				{
+					INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
+				}
+			}
+		}
+
+		public override Rectangle ClientBounds
+		{
+			get
+			{
+				int x = 0, y = 0, w = 0, h = 0;
+				SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
+				SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, out w, out h);
+				return new Rectangle(x, y, w, h);
+			}
+		}
+
+		public override DisplayOrientation CurrentOrientation
+		{
+			get
+			{
+				// SDL2 has no orientation.
+				return DisplayOrientation.LandscapeLeft;
+			}
+		}
   
-        public override IntPtr Handle
-        {
-            get
-            {
-                return INTERNAL_sdlWindow;
-            }
-        }
-        
-        public override bool IsBorderless
-        {
-            get
-            {
-                return (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) != 0;
-            }
-            set
-            {
-                if (value)
-                {
-                    INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS;
-                }
-                else
-                {
-                    INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS;
-                }
-            }
-        }
-        
-        public override string ScreenDeviceName
-        {
-            get
-            {
-                return INTERNAL_deviceName;
-            }
-        }
+		public override IntPtr Handle
+		{
+			get
+			{
+				return INTERNAL_sdlWindow;
+			}
+		}
 
-        #endregion Properties
-        
-        #region INTERNAL: GamePlatform Interaction, Properties
-        
-        public bool IsVSync
-        {
-            get
-            {
-                int result = 0;
-                result = SDL.SDL_GL_GetSwapInterval();
-                return (result == 1 || result == -1);
-            }
-            set
-            {
-                if (value)
-                {
-                    if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
-                    {
-                        // Apple is a big fat liar about swap_control_tear. Use stock VSync.
-                        SDL.SDL_GL_SetSwapInterval(1);
-                    }
-                    else
-                    {
-                        if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
-                        {
-                            System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
-                        }
-                        else
-                        {
-                            System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
-                            SDL.SDL_ClearError();
-                            SDL.SDL_GL_SetSwapInterval(1);
-                        }
-                    }
-                }
-                else
-                {
-                    SDL.SDL_GL_SetSwapInterval(0);
-                }
-            }
-        }
-        
-        public bool IsGrabbing
-        {
-            get
-            {
-                return (SDL.SDL_GetWindowGrab(INTERNAL_sdlWindow) == SDL.SDL_bool.SDL_TRUE);
-            }
-            set
-            {
-                if (value)
-                {
-                    SDL.SDL_SetWindowGrab(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
-                }
-                else
-                {
-                    SDL.SDL_SetWindowGrab(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
-                }
-            }
-        }
-        
-        public bool IsMouseVisible
-        {
-            get
-            {
-                return (SDL.SDL_ShowCursor(SDL.SDL_QUERY) == 1);
-            }
-            set
-            {
-                SDL.SDL_ShowCursor(value ? 1 : 0);
-            }
-        }
-        
-        public bool IsActive
-        {
-            get;
-            set;
-        }
-        
-        #endregion
-        
-        #region INTERNAL: GamePlatform Interaction, Methods
-        
-        public void INTERNAL_RunLoop()
-        {
-            SDL.SDL_Event evt;
-            
-            while (INTERNAL_runApplication)
-            {
+		public override bool IsBorderless
+		{
+			get
+			{
+				return (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS) != 0;
+			}
+			set
+			{
+				if (value)
+				{
+					INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS;
+				}
+				else
+				{
+					INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS;
+				}
+			}
+		}
+
+		public override string ScreenDeviceName
+		{
+			get
+			{
+				return INTERNAL_deviceName;
+			}
+		}
+
+		#endregion Properties
+
+		#region INTERNAL: GamePlatform Interaction, Properties
+
+		public bool IsVSync
+		{
+			get
+			{
+				int result = 0;
+				result = SDL.SDL_GL_GetSwapInterval();
+				return (result == 1 || result == -1);
+			}
+			set
+			{
+				if (value)
+				{
+					if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+					{
+						// Apple is a big fat liar about swap_control_tear. Use stock VSync.
+						SDL.SDL_GL_SetSwapInterval(1);
+					}
+					else
+					{
+						if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
+						{
+							System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
+						}
+						else
+						{
+							System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
+							SDL.SDL_ClearError();
+							SDL.SDL_GL_SetSwapInterval(1);
+						}
+					}
+				}
+				else
+				{
+					SDL.SDL_GL_SetSwapInterval(0);
+				}
+			}
+		}
+
+		public bool IsGrabbing
+		{
+			get
+			{
+				return (SDL.SDL_GetWindowGrab(INTERNAL_sdlWindow) == SDL.SDL_bool.SDL_TRUE);
+			}
+			set
+			{
+				if (value)
+				{
+					SDL.SDL_SetWindowGrab(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
+				}
+				else
+				{
+					SDL.SDL_SetWindowGrab(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
+				}
+			}
+		}
+
+		public bool IsMouseVisible
+		{
+			get
+			{
+				return (SDL.SDL_ShowCursor(SDL.SDL_QUERY) == 1);
+			}
+			set
+			{
+				SDL.SDL_ShowCursor(value ? 1 : 0);
+			}
+		}
+
+		public bool IsActive
+		{
+			get;
+			set;
+		}
+
+		#endregion
+
+		#region INTERNAL: GamePlatform Interaction, Methods
+
+		public void INTERNAL_RunLoop()
+		{
+			SDL.SDL_Event evt;
+
+			while (INTERNAL_runApplication)
+			{
 #if !THREADED_GL
-                Threading.Run();
+				Threading.Run();
 #endif
-                while (SDL.SDL_PollEvent(out evt) == 1)
-                {
-                    // TODO: All events...
-                    
-                    // Keyboard
-                    if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
-                    {
-                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
-                        if (!keys.Contains(key))
-                        {
-                            keys.Add(key);
-                            INTERNAL_TextInputIn(key);
-                        }
-                    }
-                    else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
-                    {
-                        Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
-                        if (keys.Contains(key))
-                        {
-                            keys.Remove(key);
-                            INTERNAL_TextInputOut(key);
-                        }
-                    }
+				while (SDL.SDL_PollEvent(out evt) == 1)
+				{
+					// TODO: All events...
 
-                    // Mouse Motion Event
-                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
-                    {
-                        Mouse.INTERNAL_IsWarped = false;
-                    }
+					// Keyboard
+					if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
+					{
+						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
+						if (!keys.Contains(key))
+						{
+							keys.Add(key);
+							INTERNAL_TextInputIn(key);
+						}
+					}
+					else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
+					{
+						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
+						if (keys.Contains(key))
+						{
+							keys.Remove(key);
+							INTERNAL_TextInputOut(key);
+						}
+					}
 
-                    // Various Window Events...
-                    else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
-                    {
-                        // Window Focus
-                        if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
-                        {
-                            IsActive = true;
+					// Mouse Motion Event
+					else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
+					{
+						Mouse.INTERNAL_IsWarped = false;
+					}
 
-                            if (!INTERNAL_useFullscreenSpaces)
-                            {
-                                // If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
-                                SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Current);
-                            }
+					// Various Window Events...
+					else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
+					{
+						// Window Focus
+						if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
+						{
+							IsActive = true;
 
-                            // Disable the screensaver when we're back.
-                            SDL.SDL_DisableScreenSaver();
-                        }
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
-                        {
-                            IsActive = false;
+							if (!INTERNAL_useFullscreenSpaces)
+							{
+								// If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
+								SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Current);
+							}
 
-                            if (!INTERNAL_useFullscreenSpaces)
-                            {
-                                SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
-                            }
-                            
-                            // Give the screensaver back, we're not that important now.
-                            SDL.SDL_EnableScreenSaver();
-                        }
+							// Disable the screensaver when we're back.
+							SDL.SDL_DisableScreenSaver();
+						}
+						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
+						{
+							IsActive = false;
 
-                        // Window Resize
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
-                        {
-                            Mouse.INTERNAL_WindowWidth = evt.window.data1;
-                            Mouse.INTERNAL_WindowHeight = evt.window.data2;
-                            
-                            // Should be called on user resize only, NOT ApplyChanges!.
-                            OnClientSizeChanged();
-                        }
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
-                        {
-                            Mouse.INTERNAL_WindowWidth = evt.window.data1;
-                            Mouse.INTERNAL_WindowHeight = evt.window.data2;
-                        }
+							if (!INTERNAL_useFullscreenSpaces)
+							{
+								SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, 0);
+							}
 
-                        // Mouse Focus
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
-                        {
-                            SDL.SDL_DisableScreenSaver();
-                        }
-                        else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
-                        {
-                            SDL.SDL_EnableScreenSaver();
-                        }
-                    }
-                    
-                    // Mouse Wheel
-                    else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
-                    {
-                        Mouse.INTERNAL_MouseWheel += evt.wheel.y;
-                    }
-                    
-                    // Controller device management
-                    else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEADDED)
-                    {
-                        Input.GamePad.INTERNAL_AddInstance(evt.jdevice.which);
-                    }
-                    else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEREMOVED)
-                    {
-                        Input.GamePad.INTERNAL_RemoveInstance(evt.jdevice.which);
-                    }
+							// Give the screensaver back, we're not that important now.
+							SDL.SDL_EnableScreenSaver();
+						}
 
-                    // Text Input
-                    else if (evt.type == SDL.SDL_EventType.SDL_TEXTINPUT && !INTERNAL_TextInputSuppress)
-                    {
-                        string text;
-                        unsafe { text = new string((char*) evt.text.text); }
-                        if (text.Length > 0)
-                        {
-                            OnTextInput(evt, new TextInputEventArgs(text[0]));
-                        }
-                    }
+						// Window Resize
+						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
+						{
+							Mouse.INTERNAL_WindowWidth = evt.window.data1;
+							Mouse.INTERNAL_WindowHeight = evt.window.data2;
 
-                    // Quit
-                    else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
-                    {
-                        INTERNAL_runApplication = false;
-                        break;
-                    }
-                }
-                // Text Input Controls Key Handling
-                INTERNAL_TextInputUpdate();
+							// Should be called on user resize only, NOT ApplyChanges!.
+							OnClientSizeChanged();
+						}
+						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
+						{
+							Mouse.INTERNAL_WindowWidth = evt.window.data1;
+							Mouse.INTERNAL_WindowHeight = evt.window.data2;
+						}
 
-                if (keys.Contains(Keys.LeftAlt) && keys.Contains(Keys.F4))
-                {
-                    INTERNAL_runApplication = false;
-                }
+						// Mouse Focus
+						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
+						{
+							SDL.SDL_DisableScreenSaver();
+						}
+						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
+						{
+							SDL.SDL_EnableScreenSaver();
+						}
+					}
 
-                Keyboard.SetKeys(keys);
-                Game.Tick();
-            }
-            
-            // We out.
-            Game.Exit();
-        }
+					// Mouse Wheel
+					else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
+					{
+						Mouse.INTERNAL_MouseWheel += evt.wheel.y;
+					}
 
-        public void INTERNAL_TextInputIn(Keys key)
-        {
-            if (key == Keys.Back)
-            {
-                INTERNAL_TextInputControlDown[0] = true;
-                INTERNAL_TextInputControlRepeat[0] = Environment.TickCount + 400;
-                OnTextInput(null, new TextInputEventArgs((char)8)); // Backspace
-            }
-            else if (key == Keys.Tab)
-            {
-                INTERNAL_TextInputControlDown[1] = true;
-                INTERNAL_TextInputControlRepeat[1] = Environment.TickCount + 400;
-                OnTextInput(null, new TextInputEventArgs((char)9)); // Tab
-            }
-            else if (key == Keys.Enter)
-            {
-                INTERNAL_TextInputControlDown[2] = true;
-                INTERNAL_TextInputControlRepeat[2] = Environment.TickCount + 400;
-                OnTextInput(null, new TextInputEventArgs((char)13)); // Enter
-            }
-            else if (keys.Contains(Keys.LeftControl) && key == Keys.V) // Control-V Pasting support
-            {
-                INTERNAL_TextInputControlDown[3] = true;
-                INTERNAL_TextInputControlRepeat[3] = Environment.TickCount + 400;
-                OnTextInput(null, new TextInputEventArgs((char)22)); // Control-V (Paste)
-                INTERNAL_TextInputSuppress = true;
-            }
-        }
+					// Controller device management
+					else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEADDED)
+					{
+						Input.GamePad.INTERNAL_AddInstance(evt.jdevice.which);
+					}
+					else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEREMOVED)
+					{
+						Input.GamePad.INTERNAL_RemoveInstance(evt.jdevice.which);
+					}
 
-        public void INTERNAL_TextInputOut(Keys key)
-        {
-            if (key == Keys.Back)
-            {
-                INTERNAL_TextInputControlDown[0] = false;
-            }
-            else if (key == Keys.Tab)
-            {
-                INTERNAL_TextInputControlDown[1] = false;
-            }
-            else if (key == Keys.Enter)
-            {
-                INTERNAL_TextInputControlDown[2] = false;
-            }
-            else if ((!keys.Contains(Keys.LeftControl) && INTERNAL_TextInputControlDown[3]) || key == Keys.V)
-            {
-                INTERNAL_TextInputControlDown[3] = false;
-                INTERNAL_TextInputSuppress = false;
-            }
-        }
+					// Text Input
+					else if (evt.type == SDL.SDL_EventType.SDL_TEXTINPUT && !INTERNAL_TextInputSuppress)
+					{
+						string text;
+						unsafe { text = new string((char*) evt.text.text); }
+						if (text.Length > 0)
+						{
+							OnTextInput(evt, new TextInputEventArgs(text[0]));
+						}
+					}
 
-        public void INTERNAL_TextInputUpdate()
-        {
-            if (INTERNAL_TextInputControlDown[0] && INTERNAL_TextInputControlRepeat[0] <= Environment.TickCount)
-            {
-                OnTextInput(null, new TextInputEventArgs((char)8));
-            }
-            if (INTERNAL_TextInputControlDown[1] && INTERNAL_TextInputControlRepeat[1] <= Environment.TickCount)
-            {
-                OnTextInput(null, new TextInputEventArgs((char)9));
-            }
-            if (INTERNAL_TextInputControlDown[2] && INTERNAL_TextInputControlRepeat[2] <= Environment.TickCount)
-            {
-                OnTextInput(null, new TextInputEventArgs((char)13));
-            }
-            if (INTERNAL_TextInputControlDown[3] && INTERNAL_TextInputControlRepeat[3] <= Environment.TickCount)
-            {
-                OnTextInput(null, new TextInputEventArgs((char)22));
-            }
-        }
-        
-        public void INTERNAL_SwapBuffers()
-        {
-            int windowWidth, windowHeight;
-            SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, out windowWidth, out windowHeight);
-            OpenGLDevice.Framebuffer.BlitToBackbuffer(
-                OpenGLDevice.Instance.Backbuffer.Width,
-                OpenGLDevice.Instance.Backbuffer.Height,
-                windowWidth,
-                windowHeight
-            );
-            SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
-            OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+					// Quit
+					else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
+					{
+						INTERNAL_runApplication = false;
+						break;
+					}
+				}
+				// Text Input Controls Key Handling
+				INTERNAL_TextInputUpdate();
+
+				if (keys.Contains(Keys.LeftAlt) && keys.Contains(Keys.F4))
+				{
+					INTERNAL_runApplication = false;
+				}
+
+				Keyboard.SetKeys(keys);
+				Game.Tick();
+			}
+
+			// We out.
+			Game.Exit();
+		}
+
+		public void INTERNAL_TextInputIn(Keys key)
+		{
+			if (key == Keys.Back)
+			{
+				INTERNAL_TextInputControlDown[0] = true;
+				INTERNAL_TextInputControlRepeat[0] = Environment.TickCount + 400;
+				OnTextInput(null, new TextInputEventArgs((char)8)); // Backspace
+			}
+			else if (key == Keys.Tab)
+			{
+				INTERNAL_TextInputControlDown[1] = true;
+				INTERNAL_TextInputControlRepeat[1] = Environment.TickCount + 400;
+				OnTextInput(null, new TextInputEventArgs((char)9)); // Tab
+			}
+			else if (key == Keys.Enter)
+			{
+				INTERNAL_TextInputControlDown[2] = true;
+				INTERNAL_TextInputControlRepeat[2] = Environment.TickCount + 400;
+				OnTextInput(null, new TextInputEventArgs((char)13)); // Enter
+			}
+			else if (keys.Contains(Keys.LeftControl) && key == Keys.V) // Control-V Pasting support
+			{
+				INTERNAL_TextInputControlDown[3] = true;
+				INTERNAL_TextInputControlRepeat[3] = Environment.TickCount + 400;
+				OnTextInput(null, new TextInputEventArgs((char)22)); // Control-V (Paste)
+				INTERNAL_TextInputSuppress = true;
+			}
+		}
+
+		public void INTERNAL_TextInputOut(Keys key)
+		{
+			if (key == Keys.Back)
+			{
+				INTERNAL_TextInputControlDown[0] = false;
+			}
+			else if (key == Keys.Tab)
+			{
+				INTERNAL_TextInputControlDown[1] = false;
+			}
+			else if (key == Keys.Enter)
+			{
+				INTERNAL_TextInputControlDown[2] = false;
+			}
+			else if ((!keys.Contains(Keys.LeftControl) && INTERNAL_TextInputControlDown[3]) || key == Keys.V)
+			{
+				INTERNAL_TextInputControlDown[3] = false;
+				INTERNAL_TextInputSuppress = false;
+			}
+		}
+
+		public void INTERNAL_TextInputUpdate()
+		{
+			if (INTERNAL_TextInputControlDown[0] && INTERNAL_TextInputControlRepeat[0] <= Environment.TickCount)
+			{
+				OnTextInput(null, new TextInputEventArgs((char)8));
+			}
+			if (INTERNAL_TextInputControlDown[1] && INTERNAL_TextInputControlRepeat[1] <= Environment.TickCount)
+			{
+				OnTextInput(null, new TextInputEventArgs((char)9));
+			}
+			if (INTERNAL_TextInputControlDown[2] && INTERNAL_TextInputControlRepeat[2] <= Environment.TickCount)
+			{
+				OnTextInput(null, new TextInputEventArgs((char)13));
+			}
+			if (INTERNAL_TextInputControlDown[3] && INTERNAL_TextInputControlRepeat[3] <= Environment.TickCount)
+			{
+				OnTextInput(null, new TextInputEventArgs((char)22));
+			}
+		}
+
+		public void INTERNAL_SwapBuffers()
+		{
+			int windowWidth, windowHeight;
+			SDL.SDL_GetWindowSize(INTERNAL_sdlWindow, out windowWidth, out windowHeight);
+			OpenGLDevice.Framebuffer.BlitToBackbuffer(
+				OpenGLDevice.Instance.Backbuffer.Width,
+				OpenGLDevice.Instance.Backbuffer.Height,
+				windowWidth,
+				windowHeight
+			);
+			SDL.SDL_GL_SwapWindow(INTERNAL_sdlWindow);
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
 
 #if WIIU_GAMEPAD
-            if (wiiuStream != IntPtr.Zero)
-            {
-                OpenTK.Graphics.OpenGL.GL.ReadPixels(
-                    0,
-                    0,
-                    OpenGLDevice.Instance.Backbuffer.Width,
-                    OpenGLDevice.Instance.Backbuffer.Height,
-                    OpenTK.Graphics.OpenGL.PixelFormat.Rgba,
-                    OpenTK.Graphics.OpenGL.PixelType.UnsignedByte,
-                    wiiuPixelData
-                );
-                DRC.drc_push_vid_frame(
-                    wiiuStream,
-                    wiiuPixelData,
-                    (uint) wiiuPixelData.Length,
-                    (ushort) Graphics.OpenGLDevice.Instance.Backbuffer.Width,
-                    (ushort) Graphics.OpenGLDevice.Instance.Backbuffer.Height,
-                    DRC.drc_pixel_format.DRC_RGBA,
-                    DRC.drc_flipping_mode.DRC_FLIP_VERTICALLY
-                );
-            }
+			if (wiiuStream != IntPtr.Zero)
+			{
+				OpenTK.Graphics.OpenGL.GL.ReadPixels(
+					0,
+					0,
+					OpenGLDevice.Instance.Backbuffer.Width,
+					OpenGLDevice.Instance.Backbuffer.Height,
+					OpenTK.Graphics.OpenGL.PixelFormat.Rgba,
+					OpenTK.Graphics.OpenGL.PixelType.UnsignedByte,
+					wiiuPixelData
+				);
+				DRC.drc_push_vid_frame(
+					wiiuStream,
+					wiiuPixelData,
+					(uint) wiiuPixelData.Length,
+					(ushort) Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+					(ushort) Graphics.OpenGLDevice.Instance.Backbuffer.Height,
+					DRC.drc_pixel_format.DRC_RGBA,
+					DRC.drc_flipping_mode.DRC_FLIP_VERTICALLY
+				);
+			}
 #endif
-        }
-        
-        public void INTERNAL_StopLoop()
-        {
-            INTERNAL_runApplication = false;
-        }
-        
-        public void INTERNAL_Destroy()
-        {
-            /* Some window managers might try to minimize the window as we're
-             * destroying it. This looks pretty stupid and could cause problems,
-             * so set this hint right before we destroy everything.
-             * -flibit
-             */
-            SDL.SDL_SetHintWithPriority(
-                SDL.SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
-                "0",
-                SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
-            );
+		}
 
-            OpenGLDevice.Instance.Dispose();
+		public void INTERNAL_StopLoop()
+		{
+			INTERNAL_runApplication = false;
+		}
+
+		public void INTERNAL_Destroy()
+		{
+			/* Some window managers might try to minimize the window as we're
+			 * destroying it. This looks pretty stupid and could cause problems,
+			 * so set this hint right before we destroy everything.
+			 * -flibit
+			 */
+			SDL.SDL_SetHintWithPriority(
+				SDL.SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
+				"0",
+				SDL.SDL_HintPriority.SDL_HINT_OVERRIDE
+			);
+
+			OpenGLDevice.Instance.Dispose();
 
 #if THREADED_GL
-            SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
+			SDL.SDL_GL_DeleteContext(Threading.BackgroundContext.context);
 #endif
-            
-            SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
-            
-            SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
+
+			SDL.SDL_GL_DeleteContext(INTERNAL_GLContext);
+
+			SDL.SDL_DestroyWindow(INTERNAL_sdlWindow);
 
 #if WIIU_GAMEPAD
-            if (wiiuStream != IntPtr.Zero)
-            {
-                DRC.drc_stop_streamer(wiiuStream);
-                DRC.drc_delete_streamer(wiiuStream);
-                wiiuStream = IntPtr.Zero;
-            }
+			if (wiiuStream != IntPtr.Zero)
+			{
+				DRC.drc_stop_streamer(wiiuStream);
+				DRC.drc_delete_streamer(wiiuStream);
+				wiiuStream = IntPtr.Zero;
+			}
 #endif
 
-            // This _should_ be the last SDL call we make...
-            SDL.SDL_Quit();
-        }
-        
-        #endregion
+			// This _should_ be the last SDL call we make...
+			SDL.SDL_Quit();
+		}
+
+		#endregion
   
-        #region Constructor
-        
-        public SDL2_GameWindow()
-        {
-            int startWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
-            int startHeight = GraphicsDeviceManager.DefaultBackBufferHeight;
+		#region Constructor
 
-            /* SDL2 might complain if an OS that uses SDL_main has not actually
-             * used SDL_main by the time you initialize SDL2.
-             * The only platform that is affected is Windows, but we can skip
-             * their WinMain. This was only added to prevent iOS from exploding.
-             * -flibit
-             */
-            SDL.SDL_SetMainReady();
+		public SDL2_GameWindow()
+		{
+			int startWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
+			int startHeight = GraphicsDeviceManager.DefaultBackBufferHeight;
 
-            // This _should_ be the first SDL call we make...
-            SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
+			/* SDL2 might complain if an OS that uses SDL_main has not actually
+			 * used SDL_main by the time you initialize SDL2.
+			 * The only platform that is affected is Windows, but we can skip
+			 * their WinMain. This was only added to prevent iOS from exploding.
+			 * -flibit
+			 */
+			SDL.SDL_SetMainReady();
 
-            INTERNAL_runApplication = true;
-            
-            // Initialize Active Key List
-            keys = new List<Keys>();
-            
-            INTERNAL_sdlWindowFlags_Next = (
-                SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL |
-                SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
-                SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS |
-                SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
-            );
+			// This _should_ be the first SDL call we make...
+			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
+
+			INTERNAL_runApplication = true;
+
+			// Initialize Active Key List
+			keys = new List<Keys>();
+
+			INTERNAL_sdlWindowFlags_Next = (
+				SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL |
+				SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
+				SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS |
+				SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
+			);
 #if RESIZABLE_WINDOW
-            AllowUserResizing = true;
+			AllowUserResizing = true;
 #else
-            AllowUserResizing = false;
+			AllowUserResizing = false;
 #endif
-            
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_RED_SIZE, 8);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_BLUE_SIZE, 8);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_ALPHA_SIZE, 8);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
-            
-            INTERNAL_sdlWindow = SDL.SDL_CreateWindow(
-                "MonoGame-SDL2 Window",
-                SDL.SDL_WINDOWPOS_CENTERED,
-                SDL.SDL_WINDOWPOS_CENTERED,
-                startWidth,
-                startHeight,
-                INTERNAL_sdlWindowFlags_Next
-            );
-            
-            INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
-            
-            // Disable the screensaver.
-            SDL.SDL_DisableScreenSaver();
-            
-            // We hide the mouse cursor by default.
-            IsMouseVisible = false;
-            
-            // OSX has some fancy fullscreen features, let's use them!
-            if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
-            {
-                string hint = SDL.SDL_GetHint(SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
-                INTERNAL_useFullscreenSpaces = (String.IsNullOrEmpty(hint) || hint.Equals("1"));
-            }
-            else
-            {
-                INTERNAL_useFullscreenSpaces = false;
-            }
 
-            // Initialize OpenGL
-            INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
-            OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
-            
-            // Assume we will have focus.
-            IsActive = true;
-            
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_RED_SIZE, 8);
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8);
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_BLUE_SIZE, 8);
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_ALPHA_SIZE, 8);
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
+
+			INTERNAL_sdlWindow = SDL.SDL_CreateWindow(
+				"MonoGame-SDL2 Window",
+				SDL.SDL_WINDOWPOS_CENTERED,
+				SDL.SDL_WINDOWPOS_CENTERED,
+				startWidth,
+				startHeight,
+				INTERNAL_sdlWindowFlags_Next
+			);
+
+			INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
+
+			// Disable the screensaver.
+			SDL.SDL_DisableScreenSaver();
+
+			// We hide the mouse cursor by default.
+			IsMouseVisible = false;
+
+			// OSX has some fancy fullscreen features, let's use them!
+			if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			{
+				string hint = SDL.SDL_GetHint(SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
+				INTERNAL_useFullscreenSpaces = (String.IsNullOrEmpty(hint) || hint.Equals("1"));
+			}
+			else
+			{
+				INTERNAL_useFullscreenSpaces = false;
+			}
+
+			// Initialize OpenGL
+			INTERNAL_GLContext = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow);
+			OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
+
+			// Assume we will have focus.
+			IsActive = true;
+
 #if THREADED_GL
-            // Create a background context
-            SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-            Threading.WindowInfo = INTERNAL_sdlWindow;
-            Threading.BackgroundContext = new GL_ContextHandle()
-            {
-                context = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow)
-            };
-            
-            // Make the foreground context current.
-            SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
+			// Create a background context
+			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+			Threading.WindowInfo = INTERNAL_sdlWindow;
+			Threading.BackgroundContext = new GL_ContextHandle()
+			{
+				context = SDL.SDL_GL_CreateContext(INTERNAL_sdlWindow)
+			};
+
+			// Make the foreground context current.
+			SDL.SDL_GL_MakeCurrent(INTERNAL_sdlWindow, INTERNAL_GLContext);
 #endif
 
-            // Set up the OpenGL Device. Loads entry points.
-            new OpenGLDevice();
+			// Set up the OpenGL Device. Loads entry points.
+			new OpenGLDevice();
 
-            // Setup Text Input Control Character Arrays (Only 4 control keys supported at this time)
-            INTERNAL_TextInputControlDown = new bool[4];
-            INTERNAL_TextInputControlRepeat = new int[4];
+			// Setup Text Input Control Character Arrays (Only 4 control keys supported at this time)
+			INTERNAL_TextInputControlDown = new bool[4];
+			INTERNAL_TextInputControlRepeat = new int[4];
 
 #if WIIU_GAMEPAD
-            wiiuStream = DRC.drc_new_streamer();
-            if (wiiuStream == IntPtr.Zero)
-            {
-                System.Console.WriteLine("Failed to alloc GamePad stream!");
-                return;
-            }
-            if (DRC.drc_start_streamer(wiiuStream) < 1) // ???
-            {
-                System.Console.WriteLine("Failed to start GamePad stream!");
-                DRC.drc_delete_streamer(wiiuStream);
-                wiiuStream = IntPtr.Zero;
-                return;
-            }
-            DRC.drc_enable_system_input_feeder(wiiuStream);
-            wiiuPixelData = new byte[startWidth * startHeight * 4];
+			wiiuStream = DRC.drc_new_streamer();
+			if (wiiuStream == IntPtr.Zero)
+			{
+				System.Console.WriteLine("Failed to alloc GamePad stream!");
+				return;
+			}
+			if (DRC.drc_start_streamer(wiiuStream) < 1) // ???
+			{
+				System.Console.WriteLine("Failed to start GamePad stream!");
+				DRC.drc_delete_streamer(wiiuStream);
+				wiiuStream = IntPtr.Zero;
+				return;
+			}
+			DRC.drc_enable_system_input_feeder(wiiuStream);
+			wiiuPixelData = new byte[startWidth * startHeight * 4];
 #endif
-        }
-        
-        #endregion
-        
-        #region ScreenDeviceChange
-        
-        public override void BeginScreenDeviceChange(bool willBeFullScreen)
-        {
-            // Fullscreen windowflag
-            if (willBeFullScreen)
-            {
-                INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
-            }
-            else
-            {
-                INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
-            }
-        }
+		}
+
+		#endregion
+
+		#region ScreenDeviceChange
+
+		public override void BeginScreenDeviceChange(bool willBeFullScreen)
+		{
+			// Fullscreen windowflag
+			if (willBeFullScreen)
+			{
+				INTERNAL_sdlWindowFlags_Next |= SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+			}
+			else
+			{
+				INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+			}
+		}
   
-        public override void EndScreenDeviceChange(
-            string screenDeviceName,
-            int clientWidth,
-            int clientHeight
-        ) {
-            // Set screen device name, not that we use it...
-            INTERNAL_deviceName = screenDeviceName;
-            
-            // Bordered
-            if (IsBorderless)
-            {
-                SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
-            }
-            else
-            {
-                SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
-            }
-            
-            // Fullscreen (Note: this only reads the fullscreen flag)
-            SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
-            
-            // Window bounds
-            SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
-            
-            // Window position
-            if (    (INTERNAL_sdlWindowFlags_Current & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP &&
-                    (INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0 )
-            {
-                // If exiting fullscreen, just center the window on the desktop.
-                SDL.SDL_SetWindowPosition(
-                    INTERNAL_sdlWindow,
-                    SDL.SDL_WINDOWPOS_CENTERED,
-                    SDL.SDL_WINDOWPOS_CENTERED
-                );
-            }
-            else if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
-            {
-                // Try to center the window around the old window position.
-                int x = 0;
-                int y = 0;
-                SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
-                SDL.SDL_SetWindowPosition(
-                    INTERNAL_sdlWindow,
-                    x + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
-                    y + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
-                );
-            }
-            
-            // Current flags have just been updated.
-            INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
-            
-            // Now, update the viewport
-            Game.GraphicsDevice.Viewport = new Viewport(
-                0,
-                0,
-                clientWidth,
-                clientHeight
-            );
-            
-            // Update the scissor rectangle to our new default target size
-            Game.GraphicsDevice.ScissorRectangle = new Rectangle(
-                0,
-                0,
-                clientWidth,
-                clientHeight
-            );
-            
-            OpenGLDevice.Instance.Backbuffer.ResetFramebuffer(
-                clientWidth,
-                clientHeight,
-                Game.GraphicsDevice.PresentationParameters.DepthStencilFormat
-            );
+		public override void EndScreenDeviceChange(
+			string screenDeviceName,
+			int clientWidth,
+			int clientHeight
+		) {
+			// Set screen device name, not that we use it...
+			INTERNAL_deviceName = screenDeviceName;
+
+			// Bordered
+			if (IsBorderless)
+			{
+				SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
+			}
+			else
+			{
+				SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
+			}
+
+			// Fullscreen (Note: this only reads the fullscreen flag)
+			SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
+
+			// Window bounds
+			SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
+
+			// Window position
+			if (	(INTERNAL_sdlWindowFlags_Current & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP &&
+				(INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0	)
+			{
+				// If exiting fullscreen, just center the window on the desktop.
+				SDL.SDL_SetWindowPosition(
+					INTERNAL_sdlWindow,
+					SDL.SDL_WINDOWPOS_CENTERED,
+					SDL.SDL_WINDOWPOS_CENTERED
+				);
+			}
+			else if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
+			{
+				// Try to center the window around the old window position.
+				int x = 0;
+				int y = 0;
+				SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
+				SDL.SDL_SetWindowPosition(
+					INTERNAL_sdlWindow,
+					x + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
+					y + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
+				);
+			}
+
+			// Current flags have just been updated.
+			INTERNAL_sdlWindowFlags_Current = INTERNAL_sdlWindowFlags_Next;
+
+			// Now, update the viewport
+			Game.GraphicsDevice.Viewport = new Viewport(
+				0,
+				0,
+				clientWidth,
+				clientHeight
+			);
+
+			// Update the scissor rectangle to our new default target size
+			Game.GraphicsDevice.ScissorRectangle = new Rectangle(
+				0,
+				0,
+				clientWidth,
+				clientHeight
+			);
+
+			OpenGLDevice.Instance.Backbuffer.ResetFramebuffer(
+				clientWidth,
+				clientHeight,
+				Game.GraphicsDevice.PresentationParameters.DepthStencilFormat
+			);
 
 #if WIIU_GAMEPAD
-            wiiuPixelData = new byte[clientWidth * clientHeight * 4];
+			wiiuPixelData = new byte[clientWidth * clientHeight * 4];
 #endif
-        }
-        
-        #endregion
-        
-        #region Sets
+		}
 
-        protected internal override void SetSupportedOrientations(DisplayOrientation orientations)
-        {
-            // No-op. SDL2 has no orientation.
-        }
-        
-        protected override void SetTitle(string title)
-        {
-            SDL.SDL_SetWindowTitle(
-                INTERNAL_sdlWindow,
-                title
-            );
+		#endregion
 
-            string fileIn = String.Empty;
-            if (System.IO.File.Exists(title + ".bmp"))
-            {
-                // If the title and filename work, it just works. Fine.
-                fileIn = title + ".bmp";
-            }
-            else
-            {
-                // But sometimes the title has invalid characters inside.
+		#region Sets
 
-                /* In addition to the filesystem's invalid charset, we need to
-                 * blacklist the Windows standard set too, no matter what.
-                 * -flibit
-                 */
-                char[] hardCodeBadChars = new char[]
-                {
-                    '<',
-                    '>',
-                    ':',
-                    '"',
-                    '/',
-                    '\\',
-                    '|',
-                    '?',
-                    '*'
-                };
-                List<char> badChars = new List<char>();
-                badChars.AddRange(System.IO.Path.GetInvalidFileNameChars());
-                badChars.AddRange(hardCodeBadChars);
+		protected internal override void SetSupportedOrientations(DisplayOrientation orientations)
+		{
+			// No-op. SDL2 has no orientation.
+		}
 
-                string stripChars = title;
-                foreach (char c in badChars)
-                {
-                    stripChars = stripChars.Replace(c.ToString(), "");
-                }
-                stripChars += ".bmp";
+		protected override void SetTitle(string title)
+		{
+			SDL.SDL_SetWindowTitle(
+				INTERNAL_sdlWindow,
+				title
+			);
 
-                if (System.IO.File.Exists(stripChars))
-                {
-                    fileIn = stripChars;
-                }
-            }
+			string fileIn = String.Empty;
+			if (System.IO.File.Exists(title + ".bmp"))
+			{
+				// If the title and filename work, it just works. Fine.
+				fileIn = title + ".bmp";
+			}
+			else
+			{
+				// But sometimes the title has invalid characters inside.
 
-            if (!String.IsNullOrEmpty(fileIn))
-            {
-                IntPtr icon = SDL.SDL_LoadBMP(fileIn);
-                SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
-                SDL.SDL_FreeSurface(icon);
-            }
-        }
+				/* In addition to the filesystem's invalid charset, we need to
+				 * blacklist the Windows standard set too, no matter what.
+				 * -flibit
+				 */
+				char[] hardCodeBadChars = new char[]
+				{
+					'<',
+					'>',
+					':',
+					'"',
+					'/',
+					'\\',
+					'|',
+					'?',
+					'*'
+				};
+				List<char> badChars = new List<char>();
+				badChars.AddRange(System.IO.Path.GetInvalidFileNameChars());
+				badChars.AddRange(hardCodeBadChars);
+
+				string stripChars = title;
+				foreach (char c in badChars)
+				{
+					stripChars = stripChars.Replace(c.ToString(), "");
+				}
+				stripChars += ".bmp";
+
+				if (System.IO.File.Exists(stripChars))
+				{
+					fileIn = stripChars;
+				}
+			}
+
+			if (!String.IsNullOrEmpty(fileIn))
+			{
+				IntPtr icon = SDL.SDL_LoadBMP(fileIn);
+				SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+				SDL.SDL_FreeSurface(icon);
+			}
+		}
   
-        #endregion
-    }
+		#endregion
+	}
 }
