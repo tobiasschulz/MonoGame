@@ -389,9 +389,9 @@
     <Compile Include="SDL2\Media\Video.cs" />
     <Compile Include="SDL2\Media\VideoPlayer.cs" />
     <Compile Include="SDL2\Media\Song.cs" />
-    <Compile Include="SDL2\GamerServices\SignedInGamer.cs" />
-    <Compile Include="SDL2\GamerServices\Guide.cs" />
-    <Compile Include="SDL2\GamerServices\MonoGameGamerServicesHelper.cs" />
+    <Compile Include="GamerServices\SignedInGamer.cs" />
+    <Compile Include="GamerServices\Guide.cs" />
+    <Compile Include="GamerServices\MonoGameGamerServicesHelper.cs" />
     <Compile Include="Storage\StorageDeviceHelper.cs" />
     <Compile Include="GamerServices\GuideAlreadyVisibleException.cs" />
     <Compile Include="Graphics\Vertices\VertexBufferBinding.cs" />
