@@ -65,7 +65,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 Format,
                 false
             );
-            GL.BindTexture(TextureTarget.Texture3D, texture.Handle);
+            OpenGLDevice.Instance.BindTexture(texture);
             GL.TexImage3D(
                 TextureTarget.Texture3D,
                 0,
@@ -133,7 +133,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-            GL.BindTexture(TextureTarget.Texture3D, texture.Handle);
+            OpenGLDevice.Instance.BindTexture(texture);
             GraphicsExtensions.CheckGLError();
             GL.TexSubImage3D(
                 TextureTarget.Texture3D,

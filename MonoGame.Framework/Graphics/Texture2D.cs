@@ -137,7 +137,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Threading.BlockOnUIThread(() =>
             {
                 GenerateGLTextureIfRequired();
-                GL.BindTexture(TextureTarget.Texture2D, texture.Handle);
+                OpenGLDevice.Instance.BindTexture(texture);
 
                 if (    Format == SurfaceFormat.Dxt1 ||
                         Format == SurfaceFormat.Dxt3 ||
@@ -188,13 +188,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     GraphicsExtensions.CheckGLError();
                 }
                 texture.Flush(true);
-
-                // Restore the bound texture.
-                GL.BindTexture(
-                    OpenGLDevice.Instance.Samplers[0].Target.GetCurrent(),
-                    OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle
-                );
-                GraphicsExtensions.CheckGLError();
             });
         }
 
@@ -294,7 +287,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     }
 
                     GenerateGLTextureIfRequired();
-                    GL.BindTexture(TextureTarget.Texture2D, texture.Handle);
+                    OpenGLDevice.Instance.BindTexture(texture);
                     if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
                     {
                         if (rect.HasValue)
@@ -366,11 +359,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     }
 
                     GL.Finish();
-
-                    GL.BindTexture(
-                        OpenGLDevice.Instance.Samplers[0].Target.GetCurrent(),
-                        OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle
-                    );
                 }
                 finally
                 {
@@ -427,7 +415,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 );
             }
 
-            GL.BindTexture(TextureTarget.Texture2D, texture.Handle);
+            OpenGLDevice.Instance.BindTexture(texture);
 
             if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
             {

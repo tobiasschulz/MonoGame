@@ -978,6 +978,27 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region glBindTexture Method
+
+        public void BindTexture(OpenGLTexture texture)
+        {
+            Samplers[0].Target.Set(texture.Target);
+            Samplers[0].Texture.Set(texture);
+            if (Samplers[0].Target.NeedsFlush())
+            {
+                GL.BindTexture(
+                    Samplers[0].Target.GetCurrent(),
+                    0
+                );
+            }
+            GL.BindTexture(
+                Samplers[0].Target.Flush(),
+                Samplers[0].Texture.Flush().Handle
+            );
+        }
+
+        #endregion
+
         #region glEnable/glDisable Method
 
         private void ToggleGLState(EnableCap feature, bool enable)
