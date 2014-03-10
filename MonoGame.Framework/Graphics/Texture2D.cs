@@ -109,8 +109,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				OpenGLDevice.Instance.BindTexture(texture);
 
 				if (	Format == SurfaceFormat.Dxt1 ||
-			Format == SurfaceFormat.Dxt3 ||
-			Format == SurfaceFormat.Dxt5	)
+					Format == SurfaceFormat.Dxt3 ||
+					Format == SurfaceFormat.Dxt5	)
 				{
 					PixelInternalFormat internalFormat;
 					if (Format == SurfaceFormat.Dxt1)
@@ -241,8 +241,8 @@ namespace Microsoft.Xna.Framework.Graphics
 						// a 4x4 block.
 						// Ref: http://www.mentby.com/Group/mac-opengl/issue-with-dxt-mipmapped-textures.html
 						if (	Format == SurfaceFormat.Dxt1 ||
-				Format == SurfaceFormat.Dxt3 ||
-				Format == SurfaceFormat.Dxt5	)
+							Format == SurfaceFormat.Dxt3 ||
+							Format == SurfaceFormat.Dxt5	)
 						{
 							if (w > 4)
 							{

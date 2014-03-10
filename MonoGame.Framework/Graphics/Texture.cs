@@ -74,8 +74,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			Debug.Assert(width > 0, "The width is negative!");
 
 			if (	Format == SurfaceFormat.Dxt1 ||
-			Format == SurfaceFormat.Dxt3 ||
-			Format == SurfaceFormat.Dxt5	)
+				Format == SurfaceFormat.Dxt3 ||
+				Format == SurfaceFormat.Dxt5	)
 			{
 				return ((width + 3) / 4) * Format.Size();
 			}

@@ -338,7 +338,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			int bufferSize = VertexCount * VertexDeclaration.VertexStride;
 
 			if (	vertexStride > bufferSize ||
-			vertexStride < VertexDeclaration.VertexStride	)
+				vertexStride < VertexDeclaration.VertexStride	)
 			{
 				throw new ArgumentOutOfRangeException(
 					"One of the following conditions is true:\n" +

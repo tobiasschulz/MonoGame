@@ -616,11 +616,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			if (	AlphaBlendEnable.GetCurrent() &&
-			(	force ||
-				SrcBlend.NeedsFlush() ||
-				DstBlend.NeedsFlush() ||
-				SrcBlendAlpha.NeedsFlush() ||
-				DstBlendAlpha.NeedsFlush()	)	)
+				(	force ||
+					SrcBlend.NeedsFlush() ||
+					DstBlend.NeedsFlush() ||
+					SrcBlendAlpha.NeedsFlush() ||
+					DstBlendAlpha.NeedsFlush()	)	)
 			{
 				GL.BlendFuncSeparate(
 					XNAToGL.BlendModeSrc[SrcBlend.Flush()],
@@ -631,9 +631,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			if (	AlphaBlendEnable.GetCurrent() &&
-			(	force ||
-				BlendOp.NeedsFlush() ||
-				BlendOpAlpha.NeedsFlush()	)	)
+				(	force ||
+					BlendOp.NeedsFlush() ||
+					BlendOpAlpha.NeedsFlush()	)	)
 			{
 				GL.BlendEquationSeparate(
 					XNAToGL.BlendEquation[BlendOp.Flush()],
@@ -663,9 +663,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			if (	ZEnable.GetCurrent() &&
-			(	force ||
-				DepthBias.NeedsFlush() ||
-				SlopeScaleDepthBias.NeedsFlush()	)	)
+				(	force ||
+					DepthBias.NeedsFlush() ||
+					SlopeScaleDepthBias.NeedsFlush()	)	)
 			{
 				float depthBias = DepthBias.Flush();
 				float slopeScaleDepthBias = SlopeScaleDepthBias.Flush();
@@ -695,18 +695,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			if (	StencilEnable.GetCurrent() &&
-			(	force ||
-				SeparateStencilEnable.NeedsFlush() ||
-				StencilRef.NeedsFlush() ||
-				StencilMask.NeedsFlush() ||
-				StencilFunc.NeedsFlush() ||
-				CCWStencilFunc.NeedsFlush() ||
-				StencilFail.NeedsFlush() ||
-				StencilZFail.NeedsFlush() ||
-				StencilPass.NeedsFlush() ||
-				CCWStencilFail.NeedsFlush() ||
-				CCWStencilZFail.NeedsFlush() ||
-				CCWStencilPass.NeedsFlush()	)	)
+				(	force ||
+					SeparateStencilEnable.NeedsFlush() ||
+					StencilRef.NeedsFlush() ||
+					StencilMask.NeedsFlush() ||
+					StencilFunc.NeedsFlush() ||
+					CCWStencilFunc.NeedsFlush() ||
+					StencilFail.NeedsFlush() ||
+					StencilZFail.NeedsFlush() ||
+					StencilPass.NeedsFlush() ||
+					CCWStencilFail.NeedsFlush() ||
+					CCWStencilZFail.NeedsFlush() ||
+					CCWStencilPass.NeedsFlush()	)	)
 			{
 				// TODO: Can we split StencilFunc/StencilOp up nicely? -flibit
 				if (SeparateStencilEnable.Flush())
@@ -916,11 +916,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			IntPtr pointer
 		) {
 			if (	Attributes[location].CurrentBuffer != currentVertexBuffer ||
-			Attributes[location].CurrentPointer != pointer ||
-			Attributes[location].CurrentSize != size ||
-			Attributes[location].CurrentType != type ||
-			Attributes[location].CurrentNormalized != normalized ||
-			Attributes[location].CurrentStride != stride	)
+				Attributes[location].CurrentPointer != pointer ||
+				Attributes[location].CurrentSize != size ||
+				Attributes[location].CurrentType != type ||
+				Attributes[location].CurrentNormalized != normalized ||
+				Attributes[location].CurrentStride != stride	)
 			{
 				GL.VertexAttribPointer(
 					location,
@@ -1151,7 +1151,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (renderbuffer != currentRenderbuffer)
 			{
 				if (	depthFormat != currentDepthStencilFormat &&
-			currentDepthStencilFormat != DepthFormat.None	)
+					currentDepthStencilFormat != DepthFormat.None	)
 				{
 					// Changing formats, unbind the current renderbuffer first.
 					Framebuffer.AttachDepthRenderbuffer(

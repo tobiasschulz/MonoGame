@@ -244,8 +244,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				);
 			}
 			if (	(left < 0 || left >= right) ||
-			(top < 0 || top >= bottom) ||
-			(front < 0 || front >= back)	)
+				(top < 0 || top >= bottom) ||
+				(front < 0 || front >= back)	)
 			{
 				throw new ArgumentException("Neither box size nor box position can be negative");
 			}

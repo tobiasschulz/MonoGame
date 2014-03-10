@@ -568,7 +568,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				for (int i = 0; i < renderTargets.Length; i += 1)
 				{
 					if (	renderTargets[i].RenderTarget != renderTargetBindings[i].RenderTarget ||
-				renderTargets[i].ArraySlice != renderTargetBindings[i].ArraySlice	)
+						renderTargets[i].ArraySlice != renderTargetBindings[i].ArraySlice	)
 					{
 						isRedundant = false;
 					}
