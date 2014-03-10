@@ -119,7 +119,7 @@ namespace Microsoft.Xna.Framework.Graphics
             {
                 GraphicsDevice.AddDisposeAction(() =>
                 {
-                    GL.DeleteBuffer(Handle);
+                    OpenGLDevice.Instance.DeleteVertexBuffer(Handle);
                     GraphicsExtensions.CheckGLError();
                 });
             }

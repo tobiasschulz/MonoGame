@@ -954,6 +954,30 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion
 
+        #region glDeleteBuffers Methods
+
+        public void DeleteVertexBuffer(int buffer)
+        {
+            if (buffer == currentVertexBuffer)
+            {
+                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+                currentVertexBuffer = 0;
+            }
+            GL.DeleteBuffer(0);
+        }
+
+        public void DeleteIndexBuffer(int buffer)
+        {
+            if (buffer == currentIndexBuffer)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+                currentIndexBuffer = 0;
+            }
+            GL.DeleteBuffer(0);
+        }
+
+        #endregion
+
         #region glEnable/glDisable Method
 
         private void ToggleGLState(EnableCap feature, bool enable)
