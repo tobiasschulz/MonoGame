@@ -69,6 +69,7 @@ namespace Microsoft.Xna.Framework.Graphics
             texture.WrapS.Set(TextureAddressMode.Clamp);
             texture.WrapT.Set(TextureAddressMode.Clamp);
 
+            GL.BindTexture(TextureTarget.TextureCubeMap, texture.Handle);
             for (int i = 0; i < 6; i += 1)
             {
                 TextureTarget target = GetGLCubeFace((CubeMapFace) i);
