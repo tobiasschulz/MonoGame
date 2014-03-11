@@ -1869,6 +1869,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			public enum GLenum : uint
 			{
+				// Hint Enum Values
+				GL_DONT_CARE =				0x1100,
 				// Source Enum Values
 				GL_DEBUG_SOURCE_API_ARB =		0x8246,
 				GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB =	0x8247,
@@ -1889,12 +1891,21 @@ namespace Microsoft.Xna.Framework.Graphics
 				GL_DEBUG_SEVERITY_LOW_ARB =		0x9148,
 			}
 
-			// Entry Point
+			// Entry Points
 			private delegate void DebugMessageCallback(
 				DebugProc callback,
 				IntPtr userParam
 			);
+			private delegate void DebugMessageControl(
+				GLenum source,
+				GLenum type,
+				GLenum severity,
+				IntPtr count, // sizei
+				IntPtr ids, // const uint*
+				bool enabled
+			);
 			private static DebugMessageCallback glDebugMessageCallbackARB;
+			private static DebugMessageControl glDebugMessageControlARB;
 
 			// Function pointer
 			private delegate void DebugProc(
@@ -1934,17 +1945,38 @@ namespace Microsoft.Xna.Framework.Graphics
 			public static void Initialize()
 			{
 #if DEBUG
-				IntPtr func = SDL2.SDL.SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
-				if (func == IntPtr.Zero)
+				IntPtr messageCallback = SDL2.SDL.SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
+				IntPtr messageControl = SDL2.SDL.SDL_GL_GetProcAddress("glDebugMessageControlARB");
+				if (messageCallback == IntPtr.Zero || messageControl == IntPtr.Zero)
 				{
 					System.Console.WriteLine("ARB_debug_output not supported!");
 					return;
 				}
 				glDebugMessageCallbackARB = (DebugMessageCallback) Marshal.GetDelegateForFunctionPointer(
-					func,
+					messageCallback,
 					typeof(DebugMessageCallback)
 				);
+				glDebugMessageControlARB = (DebugMessageControl) Marshal.GetDelegateForFunctionPointer(
+					messageControl,
+					typeof(DebugMessageControl)
+				);
 				glDebugMessageCallbackARB(DebugCall, IntPtr.Zero);
+				glDebugMessageControlARB(
+					GLenum.GL_DONT_CARE,
+					GLenum.GL_DONT_CARE,
+					GLenum.GL_DONT_CARE,
+					IntPtr.Zero,
+					IntPtr.Zero,
+					true
+				);
+				glDebugMessageControlARB(
+					GLenum.GL_DONT_CARE,
+					GLenum.GL_DEBUG_TYPE_OTHER_ARB,
+					GLenum.GL_DEBUG_SEVERITY_LOW_ARB,
+					IntPtr.Zero,
+					IntPtr.Zero,
+					false
+				);
 #endif
 			}
 		}
