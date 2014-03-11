@@ -38,17 +38,17 @@ using OpenTK.Graphics.OpenGL;
 
 namespace MonoGame.GLSL
 {
-    public class GLEffect : IEffectMatrices
+    public class GLEffect //: IEffectMatrices
     {
         private GraphicsDevice GraphicsDevice;
 
         private List<GLShaderProgram> Shaders;
 
-        public Matrix Projection { get; set; }
+        public Matrix Projection { set { Parameters.SetMatrix ("Projection", value); } }
 
-        public Matrix View { get; set; }
+        public Matrix View { set { Parameters.SetMatrix ("View", value); } }
 
-        public Matrix World { get; set; }
+        public Matrix World { set { Parameters.SetMatrix ("World", value); } }
 
         public GLParamaterCollection Parameters { get; private set; }
         
@@ -77,27 +77,28 @@ namespace MonoGame.GLSL
 
             // Draw the model.
             foreach (ModelMesh mesh in model.Meshes) {
-                Matrix world = sharedDrawBoneMatrices [mesh.ParentBone.Index] * World;
-                Draw (mesh, world);
+                //Matrix world = sharedDrawBoneMatrices [mesh.ParentBone.Index] * World;
+                Draw (mesh);
             }
         }
-
+        /*
         public void Draw (ModelMesh mesh)
         {
-            Draw (mesh, World);
-        }
+            Draw (mesh);
+        }*/
 
-        public void Draw (ModelMesh mesh, Matrix world)
+        public void Draw (ModelMesh mesh)
         {
             foreach (ModelMeshPart part in mesh.MeshParts) {
                 if (part.PrimitiveCount > 0) {
                     GraphicsDevice.SetVertexBuffer (part.VertexBuffer);
                     GraphicsDevice.Indices = part.IndexBuffer;
                     GraphicsDevice.VertexShader = Shaders [0].VertexShader;
+                    //Console.WriteLine (Shaders [0].VertexShader);
                     GraphicsDevice.PixelShader = Shaders [0].PixelShader;
                     //part.Effect.CurrentTechnique.Passes [0].Apply ();
-                    //GraphicsDevice.DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
-                    DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                    GraphicsDevice.DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                    //DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
                 }
             }
         }

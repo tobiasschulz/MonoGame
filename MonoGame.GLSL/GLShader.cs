@@ -42,9 +42,30 @@ namespace MonoGame.GLSL
         public string Code { get; private set; }
 
         public GLShader (GraphicsDevice graphicsDevice, ShaderStage stage, string code)
-            : base (graphicsDevice, stage, System.Text.Encoding.ASCII.GetBytes (code))
+            : base (graphicsDevice, stage, System.Text.Encoding.ASCII.GetBytes (code), Attributes(stage), ConstantBuffers(stage))
         {
             Code = code;
+        }
+
+        private static Attribute[] Attributes(ShaderStage stage) {
+            Attribute[] attribs = new Attribute[0];
+            if (stage == ShaderStage.Vertex) {
+                attribs = new Attribute[1];
+                attribs [0] = new Shader.Attribute () {
+                    usage = VertexElementUsage.Position,
+                    index = 0,
+                    name = "position",
+                    format = 0,
+                    location = 0
+                };
+            }
+            Console.WriteLine ("attribs.Length="+attribs.Length);
+            return attribs;
+        }
+
+        private static int[] ConstantBuffers (ShaderStage stage)
+        {
+            return new int[] { stage == ShaderStage.Pixel ? 0 : 1 };
         }
     }
 

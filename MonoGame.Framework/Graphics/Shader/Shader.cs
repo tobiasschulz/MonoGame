@@ -61,7 +61,7 @@ namespace Microsoft.Xna.Framework.Graphics
         // We keep this around for recompiling on context lost and debugging.
         private readonly string _glslCode;
 
-        private struct Attribute
+        internal struct Attribute
         {
             public VertexElementUsage usage;
             public int index;
@@ -113,15 +113,15 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public ShaderStage Stage { get; private set; }
 
-        internal Shader(GraphicsDevice device, ShaderStage stage, byte[] shaderBytecode)
+        internal Shader(GraphicsDevice device, ShaderStage stage, byte[] shaderBytecode, Attribute[] attributes, int[] constantBuffers)
         {
             GraphicsDevice = device;
             Stage = stage;
             Samplers = new SamplerInfo[0];
-            CBuffers = new int[0];
+            CBuffers = constantBuffers;
             _glslCode = System.Text.Encoding.ASCII.GetString(shaderBytecode);
             HashKey = MonoGame.Utilities.Hash.ComputeHash(shaderBytecode);
-            _attributes = new Attribute[0];
+            _attributes = attributes;
         }
         internal Shader(GraphicsDevice device, BinaryReader reader)
         {
@@ -132,6 +132,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var shaderLength = reader.ReadInt32();
             var shaderBytecode = reader.ReadBytes(shaderLength);
+
+            bool verbose = System.Text.Encoding.ASCII.GetString(shaderBytecode).Contains("#define ps_c1 ps_uniforms_vec4[1]");
+            string shaderString = System.Text.Encoding.ASCII.GetString (shaderBytecode);
 
             var samplerCount = (int)reader.ReadByte();
             Samplers = new SamplerInfo[samplerCount];
@@ -163,9 +166,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var cbufferCount = (int)reader.ReadByte();
             CBuffers = new int[cbufferCount];
-            for (var c = 0; c < cbufferCount; c++)
+            for (var c = 0; c < cbufferCount; c++) {
                 CBuffers[c] = reader.ReadByte();
-
+                if (verbose)Console.WriteLine("CBuffers ["+c+"]="+CBuffers[c]);
+            }
 #if DIRECTX
 
             _shaderBytecode = shaderBytecode;
@@ -193,13 +197,13 @@ namespace Microsoft.Xna.Framework.Graphics
             for (var a = 0; a < attributeCount; a++)
             {
                 _attributes[a].name = reader.ReadString();
-                Console.WriteLine("attribute["+a+"].name="+_attributes[a].name);
+                if (verbose)Console.WriteLine("attribute["+a+"].name="+_attributes[a].name);
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
-                Console.WriteLine("attribute["+a+"].usage="+_attributes[a].usage);
+                if (verbose)Console.WriteLine("attribute["+a+"].usage="+_attributes[a].usage);
                 _attributes[a].index = reader.ReadByte();
-                Console.WriteLine("attribute["+a+"].index="+_attributes[a].index);
+                if (verbose)Console.WriteLine("attribute["+a+"].index="+_attributes[a].index);
                 _attributes[a].format = reader.ReadInt16();
-                Console.WriteLine("attribute["+a+"].format="+_attributes[a].format);
+                if (verbose)Console.WriteLine("attribute["+a+"].format="+_attributes[a].format);
             }
 
 #endif // OPENGL
