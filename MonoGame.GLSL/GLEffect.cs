@@ -40,6 +40,8 @@ namespace MonoGame.GLSL
 {
     public class GLEffect : IEffectMatrices
     {
+        private GraphicsDevice GraphicsDevice;
+
         private List<GLShaderProgram> Shaders;
 
         public Matrix Projection { get; set; }
@@ -50,8 +52,9 @@ namespace MonoGame.GLSL
 
         public GLParamaterCollection Parameters { get; private set; }
         
-        private GLEffect (GraphicsDevice device, IEnumerable<GLShaderProgram> shaderPrograms)
+        private GLEffect (GraphicsDevice graphicsDevice, IEnumerable<GLShaderProgram> shaderPrograms)
         {
+            GraphicsDevice = graphicsDevice;
             Shaders = shaderPrograms.ToList ();
             Parameters = new GLParamaterCollection ();
             
@@ -59,12 +62,12 @@ namespace MonoGame.GLSL
             vertexBufferBindings = new VertexBufferBinding[OpenGLDevice.Instance.MaxVertexAttributes];
         }
 
-        public static GLEffect FromFiles (GraphicsDevice device, string pixelShaderFilename, string vertexShaderFilename)
+        public static GLEffect FromFiles (GraphicsDevice graphicsDevice, string pixelShaderFilename, string vertexShaderFilename)
         {
             GLShader pixelShader = new GLShader (ShaderStage.Pixel, File.ReadAllText (pixelShaderFilename));
             GLShader vertexShader = new GLShader (ShaderStage.Vertex, File.ReadAllText (vertexShaderFilename));
             GLShaderProgram shaderProgram = new GLShaderProgram (vertex: vertexShader, pixel: pixelShader);
-            return new GLEffect (device: device, shaderPrograms: new GLShaderProgram[] { shaderProgram });
+            return new GLEffect (graphicsDevice: graphicsDevice, shaderPrograms: new GLShaderProgram[] { shaderProgram });
         }
 
         public void Draw (Model model)
@@ -91,9 +94,12 @@ namespace MonoGame.GLSL
         {
             foreach (ModelMeshPart part in mesh.MeshParts) {
                 if (part.PrimitiveCount > 0) {
-                    SetVertexBuffer (part.VertexBuffer);
+                    GraphicsDevice.SetVertexBuffer (part.VertexBuffer);
                     Indices = part.IndexBuffer;
                     DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                    GraphicsDevice.VertexShader = Shaders [0].VertexShader;
+                    GraphicsDevice.PixelShader = Shaders [0].PixelShader;
+                    GraphicsDevice.DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
                 }
             }
         }
@@ -129,7 +135,7 @@ namespace MonoGame.GLSL
                 // Set up the vertex buffers
                 foreach (VertexBufferBinding vertBuffer in vertexBufferBindings) {
                     if (vertBuffer.VertexBuffer != null) {
-                        BindVertexBuffer (vertBuffer.VertexBuffer.Handle);
+                        OpenGLDevice.Instance.BindVertexBuffer (vertBuffer.VertexBuffer.Handle);
                         vertBuffer.VertexBuffer.VertexDeclaration.Apply (
                             pass.VertexShader,
                             (IntPtr)(vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + baseVertex))
@@ -141,7 +147,7 @@ namespace MonoGame.GLSL
                 OpenGLDevice.Instance.FlushGLVertexAttributes ();
 
                 // Bind the index buffer
-                BindIndexBuffer (Indices.Handle);
+                OpenGLDevice.Instance.BindIndexBuffer (Indices.Handle);
 
                 // Draw!
                 GL.DrawRangeElements (
@@ -155,38 +161,6 @@ namespace MonoGame.GLSL
 
                 // Check for errors in the debug context
                 GraphicsExtensions.CheckGLError ();
-            }
-        }
-
-        public void SetVertexBuffer (VertexBuffer vertexBuffer)
-        {
-            if (!ReferenceEquals (vertexBufferBindings [0].VertexBuffer, vertexBuffer)) {
-                vertexBufferBindings [0] = new VertexBufferBinding (vertexBuffer);
-            }
-
-            for (int vertexStreamSlot = 1; vertexStreamSlot < vertexBufferBindings.Length; ++vertexStreamSlot) {
-                if (vertexBufferBindings [vertexStreamSlot].VertexBuffer != null) {
-                    vertexBufferBindings [vertexStreamSlot] = new VertexBufferBinding (null);
-                }
-            }
-        }
-
-        private int currentVertexBuffer = 0;
-        private int currentIndexBuffer = 0;
-
-        public void BindVertexBuffer (int buffer)
-        {
-            if (buffer != currentVertexBuffer) {
-                GL.BindBuffer (BufferTarget.ArrayBuffer, buffer);
-                currentVertexBuffer = buffer;
-            }
-        }
-
-        public void BindIndexBuffer (int buffer)
-        {
-            if (buffer != currentIndexBuffer) {
-                GL.BindBuffer (BufferTarget.ElementArrayBuffer, buffer);
-                currentIndexBuffer = buffer;
             }
         }
 
