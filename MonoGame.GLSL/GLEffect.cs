@@ -53,6 +53,9 @@ namespace MonoGame.GLSL
         {
             Device = device;
             Shaders = shaderPrograms.ToList ();
+            
+            // Force set the buffers and shaders on next ApplyState() call
+            vertexBufferBindings = new VertexBufferBinding[OpenGLDevice.Instance.MaxVertexAttributes];
         }
 
         public static GLEffect FromFiles (GraphicsDevice device, string pixelShaderFilename, string vertexShaderFilename)
@@ -120,7 +123,7 @@ namespace MonoGame.GLSL
                 pass.Apply ();
 
                 // Unsigned short or unsigned int?
-                bool shortIndices = Device.Indices.IndexElementSize == IndexElementSize.SixteenBits;
+                bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
 
                 // Set up the vertex buffers
                 foreach (VertexBufferBinding vertBuffer in vertexBufferBindings) {
