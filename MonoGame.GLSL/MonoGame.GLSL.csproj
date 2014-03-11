@@ -39,6 +39,7 @@
     <Compile Include="GLEffect.cs" />
     <Compile Include="GLShaderProgramCache.cs" />
     <Compile Include="VertexDeclarationExtension.cs" />
+    <Compile Include="GLParamaterCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -50,5 +51,10 @@
       <Project>{85480198-8711-4355-830E-72FD794AD3F6}</Project>
       <Name>SDL2-CS</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="opengl32.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

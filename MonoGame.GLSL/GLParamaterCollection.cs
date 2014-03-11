@@ -32,41 +32,64 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenTK.Graphics.OpenGL;
 
 namespace MonoGame.GLSL
 {
-    internal class GLShaderProgram
+    public class GLParamaterCollection
     {
-        public GLShader VertexShader { get; private set; }
+        private Dictionary<string, float> parametersFloat = new Dictionary<string, float> ();
+        private Dictionary<string, Matrix> parametersMatrix = new Dictionary<string, Matrix> ();
 
-        public GLShader PixelShader { get; private set; }
-
-        public int ProgramId { get { return shaderProgram; } }
-
-        public GLShaderProgram (GLShader pixel, GLShader vertex)
+        internal GLParamaterCollection ()
         {
-            VertexShader = vertex;
-            PixelShader = pixel;
         }
 
-        private int shaderProgram;
-        private readonly GLShaderProgramCache programCache = new GLShaderProgramCache ();
-
-        public void Apply ()
+        public float GetFloat (string name)
         {
-            // Lookup the shader program.
-            var info = programCache.GetProgramInfo (VertexShader, PixelShader);
-            if (info.program == -1) {
-                return;
-            }
+            if (parametersFloat.ContainsKey (name))
+                return parametersFloat [name];
+            else
+                return 0f;
+        }
 
-            // Set the new program if it has changed.
-            if (shaderProgram != info.program) {
-                GL.UseProgram (info.program);
+        public void SetFloat (string name, float value)
+        {
+            parametersFloat [name] = value;
+        }
+
+        public Matrix GetMatrix (string name)
+        {
+            if (parametersMatrix.ContainsKey (name))
+                return parametersMatrix [name];
+            else
+                return default (Matrix);
+        }
+
+        public void SetMatrix (string name, Matrix value)
+        {
+            parametersMatrix [name] = value;
+        }
+
+        internal void Apply (GLShaderProgram program)
+        {
+            foreach (KeyValuePair<string, float> pair in parametersFloat) {
+                int loc = GL.GetUniformLocation (program: program.ProgramId, name: pair.Key);
                 GraphicsExtensions.CheckGLError ();
-                shaderProgram = info.program;
+                GL.ProgramUniform1 (program: program.ProgramId, location: loc, v0: pair.Value);
+                GraphicsExtensions.CheckGLError ();
+            }
+            foreach (KeyValuePair<string, Matrix> pair in parametersMatrix) {
+                int loc = GL.GetUniformLocation (program: program.ProgramId, name: pair.Key);
+                GraphicsExtensions.CheckGLError ();
+                float[] buffer = new float[16];
+                for (int i = 0; i < 16; ++i) {
+                    buffer [i] = pair.Value [i];
+                }
+                GL.ProgramUniformMatrix4 (program: program.ProgramId, location: loc, count: 1, transpose: false, value: buffer);
+                GraphicsExtensions.CheckGLError ();
             }
         }
     }

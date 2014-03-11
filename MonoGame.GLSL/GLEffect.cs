@@ -40,7 +40,6 @@ namespace MonoGame.GLSL
 {
     public class GLEffect : IEffectMatrices
     {
-        private GraphicsDevice Device;
         private List<GLShaderProgram> Shaders;
 
         public Matrix Projection { get; set; }
@@ -49,10 +48,12 @@ namespace MonoGame.GLSL
 
         public Matrix World { get; set; }
 
+        public GLParamaterCollection Parameters { get; private set; }
+        
         private GLEffect (GraphicsDevice device, IEnumerable<GLShaderProgram> shaderPrograms)
         {
-            Device = device;
             Shaders = shaderPrograms.ToList ();
+            Parameters = new GLParamaterCollection ();
             
             // Force set the buffers and shaders on next ApplyState() call
             vertexBufferBindings = new VertexBufferBinding[OpenGLDevice.Instance.MaxVertexAttributes];
@@ -121,6 +122,7 @@ namespace MonoGame.GLSL
         {
             foreach (GLShaderProgram pass in Shaders) {
                 pass.Apply ();
+                Parameters.Apply (pass);
 
                 // Unsigned short or unsigned int?
                 bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
