@@ -623,18 +623,14 @@ namespace Microsoft.Xna.Framework
 			// Set screen device name, not that we use it...
 			INTERNAL_deviceName = screenDeviceName;
 
-			// Bordered
-			if (IsBorderless)
-			{
-				SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_FALSE);
-			}
-			else
-			{
-				SDL.SDL_SetWindowBordered(INTERNAL_sdlWindow, SDL.SDL_bool.SDL_TRUE);
-			}
-
 			// Fullscreen (Note: this only reads the fullscreen flag)
 			SDL.SDL_SetWindowFullscreen(INTERNAL_sdlWindow, (uint) INTERNAL_sdlWindowFlags_Next);
+
+			// Bordered
+			SDL.SDL_SetWindowBordered(
+				INTERNAL_sdlWindow,
+				IsBorderless ? SDL.SDL_bool.SDL_TRUE : SDL.SDL_bool.SDL_FALSE
+			);
 
 			// Window bounds
 			SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
