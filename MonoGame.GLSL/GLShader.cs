@@ -51,15 +51,11 @@ namespace MonoGame.GLSL
             Stage = stage;
 
             ShaderHandle = GL.CreateShader(stage == ShaderStage.Vertex ? ShaderType.VertexShader : ShaderType.FragmentShader);
-            GraphicsExtensions.CheckGLError();
             GL.ShaderSource(ShaderHandle, code);
-            GraphicsExtensions.CheckGLError();
             GL.CompileShader(ShaderHandle);
-            GraphicsExtensions.CheckGLError();
-            
+
             var compiled = 0;
             GL.GetShader(ShaderHandle, ShaderParameter.CompileStatus, out compiled);
-            GraphicsExtensions.CheckGLError();
             if (compiled == (int)All.False) {
                 var log = GL.GetShaderInfoLog(ShaderHandle);
                 Console.WriteLine(log);
@@ -67,7 +63,6 @@ namespace MonoGame.GLSL
                 if (GL.IsShader(ShaderHandle))
                 {
                     GL.DeleteShader(ShaderHandle);
-                    GraphicsExtensions.CheckGLError();
                 }
                 ShaderHandle = -1;
 

@@ -78,10 +78,8 @@ namespace MonoGame.GLSL
         {
             foreach (KeyValuePair<string, float> pair in parametersFloat) {
                 int loc = GL.GetUniformLocation (program: program.Program, name: pair.Key);
-                GraphicsExtensions.CheckGLError ();
                 if (loc != -1) {
                     GL.Uniform1 (location: loc, v0: pair.Value);
-                    GraphicsExtensions.CheckGLError ();
                 }
             }
 
@@ -90,7 +88,6 @@ namespace MonoGame.GLSL
                 Matrix matrix = parametersMatrix[name];
                 Console.WriteLine ("key: "+name);
                 int loc = GL.GetUniformLocation (program: program.Program, name: name);
-                GraphicsExtensions.CheckGLError ();
                 Console.WriteLine ("try name: "+name+", loc: "+loc);
                 if (false&&loc != -1) {
                     Console.WriteLine ("name: "+name+", loc: "+loc);
@@ -101,7 +98,6 @@ namespace MonoGame.GLSL
                         matrix.M41, matrix.M42, matrix.M43, matrix.M44
                     );
                     GL.UniformMatrix4 (location: loc, transpose: false, value: ref matrixTK);
-                    GraphicsExtensions.CheckGLError ();
                 }
             }
             Console.WriteLine ("_parametersMatrix.Count="+parametersMatrix.Count);

@@ -51,25 +51,19 @@ namespace MonoGame.GLSL
             PixelShader = pixel;
             
             Program = GL.CreateProgram ();
-            GraphicsExtensions.CheckGLError ();
 
             GL.AttachShader (Program, vertex.ShaderHandle);
-            GraphicsExtensions.CheckGLError ();
 
             GL.AttachShader (Program, pixel.ShaderHandle);
-            GraphicsExtensions.CheckGLError ();
 
             //vertexShader.BindVertexAttributes(program);
 
             GL.LinkProgram (Program);
-            GraphicsExtensions.CheckGLError ();
 
             GL.UseProgram (Program);
-            GraphicsExtensions.CheckGLError ();
 
             var linked = 0;
             GL.GetProgram (Program, ProgramParameter.LinkStatus, out linked);
-            GraphicsExtensions.LogGLError ("VertexShaderCache.Link(), GL.GetProgram");
             if (linked == 0) {
                 var log = GL.GetProgramInfoLog (Program);
                 Console.WriteLine (log);
@@ -83,13 +77,11 @@ namespace MonoGame.GLSL
         public void Bind ()
         {
             GL.UseProgram (Program);
-            GraphicsExtensions.CheckGLError ();
         }
 
         public void Unbind ()
         {
             GL.UseProgram (0);
-            GraphicsExtensions.CheckGLError ();
         }
     }
 }

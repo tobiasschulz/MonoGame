@@ -95,7 +95,6 @@ namespace MonoGame.GLSL
         private void Draw (ModelMeshPart meshPart, ref Matrix transform)
         {
             GL.EnableClientState(ArrayCap.VertexArray);
-            GraphicsExtensions.CheckGLError ();
 
             int verticesBuffer;
             int indicesBuffer;
@@ -120,20 +119,16 @@ namespace MonoGame.GLSL
                 GL.GenBuffers (1, out verticesBuffer);
                 /* Make the new VBO active */
                 GL.BindBuffer (BufferTarget.ArrayBuffer, verticesBuffer);
-                GraphicsExtensions.CheckGLError ();
                 /* Upload vertex data to the video device */
                 GL.BufferData (BufferTarget.ArrayBuffer, (IntPtr)(verticesData.Length * sizeof(float)), verticesData, BufferUsageHint.StaticDraw);
-                GraphicsExtensions.CheckGLError ();
                 GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 
                 //Create a new VBO and use the variable id to store the VBO id
                 GL.GenBuffers (1, out indicesBuffer);
                 /* Make the new VBO active */
                 GL.BindBuffer (BufferTarget.ElementArrayBuffer, indicesBuffer);
-                GraphicsExtensions.CheckGLError ();
                 /* Upload vertex data to the video device */
                 GL.BufferData (BufferTarget.ElementArrayBuffer, (IntPtr)(indicesData.Length * sizeof(int)), indicesData, BufferUsageHint.StaticDraw);
-                GraphicsExtensions.CheckGLError ();
                 GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 
                 bufferCache [meshPart] = new VertexIndexBuffers {
@@ -154,13 +149,10 @@ namespace MonoGame.GLSL
 
             /* Make the new VBO active. */
             GL.BindBuffer (BufferTarget.ArrayBuffer, verticesBuffer);
-            GraphicsExtensions.CheckGLError ();
             GL.VertexAttribPointer (AttribLocation, 3, VertexAttribPointerType.Float, false, 0, 0);
-            GraphicsExtensions.CheckGLError ();
             GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
 
             GL.BindBuffer (BufferTarget.ElementArrayBuffer, indicesBuffer);
-            GraphicsExtensions.CheckGLError ();
             /* Actually draw the triangle, giving the number of vertices provided by invoke glDrawArrays
                while telling that our data is a triangle and we want to draw 0-3 vertexes 
             */
@@ -170,7 +162,6 @@ namespace MonoGame.GLSL
             GL.ClearColor(0.1f,0.5f,0.6f,1.0f);
             
             GL.EnableVertexAttribArray (AttribLocation);
-            GraphicsExtensions.CheckGLError ();
 
             Console.WriteLine (
                 "mode: " + BeginMode.Triangles + ", " +
@@ -188,13 +179,7 @@ namespace MonoGame.GLSL
                 type: DrawElementsType.UnsignedInt,
                 indices: (IntPtr)(meshPart.StartIndex * 4)
             );
-
-            // Check for errors in the debug context
-            GraphicsExtensions.CheckGLError ();
-            
             GL.DisableVertexAttribArray (AttribLocation);
-            GraphicsExtensions.CheckGLError ();
-
             
             GL.Finish();
             ShaderProgram.Unbind ();
