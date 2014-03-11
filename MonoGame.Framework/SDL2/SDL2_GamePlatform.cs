@@ -20,19 +20,7 @@ namespace Microsoft.Xna.Framework
 {
 	class SDL2_GamePlatform : GamePlatform
 	{
-		#region Internal SDL2 Window
-
-		private SDL2_GameWindow INTERNAL_window;
-
-		#endregion
-
-		#region SDL2 OS String
-
-		public static readonly string OSVersion = SDL.SDL_GetPlatform();
-
-		#endregion
-
-		#region Public Properties
+		#region Public GamePlatform Properties
 
 		public override GameRunBehavior DefaultRunBehavior
 		{
@@ -46,27 +34,69 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return INTERNAL_window.IsVSync;
+				int result = 0;
+				result = SDL.SDL_GL_GetSwapInterval();
+				return (result == 1 || result == -1);
 			}
 			set
 			{
-				INTERNAL_window.IsVSync = value;
+				if (value)
+				{
+					if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+					{
+						// Apple is a big fat liar about swap_control_tear. Use stock VSync.
+						SDL.SDL_GL_SetSwapInterval(1);
+					}
+					else
+					{
+						if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
+						{
+							System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
+						}
+						else
+						{
+							System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
+							SDL.SDL_ClearError();
+							SDL.SDL_GL_SetSwapInterval(1);
+						}
+					}
+				}
+				else
+				{
+					SDL.SDL_GL_SetSwapInterval(0);
+				}
 			}
 		}
 
 		#endregion
 
+		#region SDL2 OS String
+
+		public static readonly string OSVersion = SDL.SDL_GetPlatform();
+
+		#endregion
+
+		#region Internal SDL2 Window
+
+		private SDL2_GameWindow INTERNAL_window;
+
+		#endregion
+
+		#region Public Constructor
+
 		public SDL2_GamePlatform(Game game) : base(game)
 		{
 			// Set and initialize the SDL2 window
-			INTERNAL_window = new SDL2_GameWindow();
-			INTERNAL_window.Game = game;
+			INTERNAL_window = new SDL2_GameWindow(game, this);
 			this.Window = INTERNAL_window;
 
 			// Create the OpenAL device
 			new OpenALDevice();
 		}
 
+		#endregion
+
+		#region Public GamePlatform Methods
 
 		public override void RunLoop()
 		{
@@ -92,11 +122,6 @@ namespace Microsoft.Xna.Framework
 
 		public override bool BeforeUpdate(GameTime gameTime)
 		{
-			if (IsActive != INTERNAL_window.IsActive)
-			{
-				IsActive = INTERNAL_window.IsActive;
-			}
-
 			// Update our OpenAL sound buffer pools
 			OpenALDevice.Instance.Update();
 
@@ -130,12 +155,12 @@ namespace Microsoft.Xna.Framework
 
 		public override void EndScreenDeviceChange(string screenDeviceName, int clientWidth, int clientHeight)
 		{
-			INTERNAL_window.EndScreenDeviceChange(screenDeviceName, clientWidth, clientHeight);
+			Window.EndScreenDeviceChange(screenDeviceName, clientWidth, clientHeight);
 		}
 
 		public override void BeginScreenDeviceChange(bool willBeFullScreen)
 		{
-			INTERNAL_window.BeginScreenDeviceChange(willBeFullScreen);
+			Window.BeginScreenDeviceChange(willBeFullScreen);
 		}
 
 		public override void Log(string Message)
@@ -161,7 +186,7 @@ namespace Microsoft.Xna.Framework
 
 		protected override void OnIsMouseVisibleChanged()
 		{
-			INTERNAL_window.IsMouseVisible = IsMouseVisible;
+			SDL.SDL_ShowCursor(IsMouseVisible ? 1 : 0);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -182,5 +207,7 @@ namespace Microsoft.Xna.Framework
 
 			base.Dispose(disposing);
 		}
+
+		#endregion
 	}
 }
