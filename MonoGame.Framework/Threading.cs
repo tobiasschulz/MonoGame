@@ -93,7 +93,7 @@ namespace Microsoft.Xna.Framework
 		/// Runs a threaded operation on the main thread, blocking the thread.
 		/// If we're on the main thread, the action will run immediately.
 		/// </summary>
-		/// <param name="action">The action to be run on the UI thread</param>
+		/// <param name="action">The action to be run on the main thread</param>
 		public static void ForceToMainThread(Action action)
 		{
 			// If we're already on the main thread, just call the action.
