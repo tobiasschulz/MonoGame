@@ -57,15 +57,12 @@ namespace MonoGame.GLSL
             GraphicsDevice = graphicsDevice;
             Shaders = shaderPrograms.ToList ();
             Parameters = new GLParamaterCollection ();
-            
-            // Force set the buffers and shaders on next ApplyState() call
-            vertexBufferBindings = new VertexBufferBinding[OpenGLDevice.Instance.MaxVertexAttributes];
         }
 
         public static GLEffect FromFiles (GraphicsDevice graphicsDevice, string pixelShaderFilename, string vertexShaderFilename)
         {
-            GLShader pixelShader = new GLShader (ShaderStage.Pixel, File.ReadAllText (pixelShaderFilename));
-            GLShader vertexShader = new GLShader (ShaderStage.Vertex, File.ReadAllText (vertexShaderFilename));
+            GLShader pixelShader = new GLShader (graphicsDevice, ShaderStage.Pixel, File.ReadAllText (pixelShaderFilename));
+            GLShader vertexShader = new GLShader (graphicsDevice, ShaderStage.Vertex, File.ReadAllText (vertexShaderFilename));
             GLShaderProgram shaderProgram = new GLShaderProgram (vertex: vertexShader, pixel: pixelShader);
             return new GLEffect (graphicsDevice: graphicsDevice, shaderPrograms: new GLShaderProgram[] { shaderProgram });
         }
@@ -95,17 +92,15 @@ namespace MonoGame.GLSL
             foreach (ModelMeshPart part in mesh.MeshParts) {
                 if (part.PrimitiveCount > 0) {
                     GraphicsDevice.SetVertexBuffer (part.VertexBuffer);
-                    Indices = part.IndexBuffer;
-                    DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                    GraphicsDevice.Indices = part.IndexBuffer;
                     GraphicsDevice.VertexShader = Shaders [0].VertexShader;
                     GraphicsDevice.PixelShader = Shaders [0].PixelShader;
-                    GraphicsDevice.DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                    //part.Effect.CurrentTechnique.Passes [0].Apply ();
+                    //GraphicsDevice.DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
+                    DrawIndexedPrimitives (PrimitiveType.TriangleList, part.VertexOffset, 0, part.NumVertices, part.StartIndex, part.PrimitiveCount);
                 }
             }
         }
-
-        private VertexBufferBinding[] vertexBufferBindings;
-        private IndexBuffer Indices;
 
         /// <summary>
         /// Draw geometry by indexing into the vertex buffer.
@@ -130,10 +125,10 @@ namespace MonoGame.GLSL
                 pass.Apply (parameters: Parameters);
 
                 // Unsigned short or unsigned int?
-                bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
+                bool shortIndices = GraphicsDevice.Indices.IndexElementSize == IndexElementSize.SixteenBits;
 
                 // Set up the vertex buffers
-                foreach (VertexBufferBinding vertBuffer in vertexBufferBindings) {
+                foreach (VertexBufferBinding vertBuffer in GraphicsDevice.vertexBufferBindings) {
                     if (vertBuffer.VertexBuffer != null) {
                         OpenGLDevice.Instance.BindVertexBuffer (vertBuffer.VertexBuffer.Handle);
                         vertBuffer.VertexBuffer.VertexDeclaration.Apply (
@@ -147,7 +142,7 @@ namespace MonoGame.GLSL
                 OpenGLDevice.Instance.FlushGLVertexAttributes ();
 
                 // Bind the index buffer
-                OpenGLDevice.Instance.BindIndexBuffer (Indices.Handle);
+                OpenGLDevice.Instance.BindIndexBuffer (GraphicsDevice.Indices.Handle);
 
                 // Draw!
                 GL.DrawRangeElements (

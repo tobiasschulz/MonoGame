@@ -220,7 +220,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private Buffer Object Variables
 
-		private VertexBufferBinding[] vertexBufferBindings;
+		internal VertexBufferBinding[] vertexBufferBindings;
 
 		#endregion
 
@@ -1083,7 +1083,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private State Flush Methods
 
-		private void ApplyState(bool applyShaders)
+		internal void ApplyState(bool applyShaders)
 		{
 			// Apply BlendState
 			OpenGLDevice.Instance.AlphaBlendEnable.Set(

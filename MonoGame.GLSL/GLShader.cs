@@ -37,106 +37,14 @@ using MonoGame.Utilities;
 
 namespace MonoGame.GLSL
 {
-    internal class GLShader : IDisposable
+    internal class GLShader : Shader
     {
-        public ShaderStage Stage { get; private set; }
-
         public string Code { get; private set; }
 
-        public int HashKey { get; private set; }
-        // The shader handle.
-        private int _shaderHandle = -1;
-        private GLAttribute[] Attributes;
-        private GLSamplerInfo[] Samplers;
-
-        public GLShader (ShaderStage stage, string code)
+        public GLShader (GraphicsDevice graphicsDevice, ShaderStage stage, string code)
+            : base (graphicsDevice, stage, System.Text.Encoding.ASCII.GetBytes (code))
         {
-            Stage = stage;
             Code = code;
-
-            HashKey = Hash.ComputeHash (System.Text.Encoding.ASCII.GetBytes (Code));
-            Attributes = new GLAttribute[0];
-            Samplers = new GLSamplerInfo[0];
-        }
-
-        internal int GetShaderHandle ()
-        {
-            // If the shader has already been created then return it.
-            if (_shaderHandle != -1)
-                return _shaderHandle;
-
-            //
-            _shaderHandle = GL.CreateShader (Stage == ShaderStage.Vertex ? ShaderType.VertexShader : ShaderType.FragmentShader);
-            GraphicsExtensions.CheckGLError ();
-            GL.ShaderSource (_shaderHandle, Code);
-            GraphicsExtensions.CheckGLError ();
-            GL.CompileShader (_shaderHandle);
-            GraphicsExtensions.CheckGLError ();
-
-            var compiled = 0;
-            GL.GetShader (_shaderHandle, ShaderParameter.CompileStatus, out compiled);
-            GraphicsExtensions.CheckGLError ();
-            if (compiled == (int)All.False) {
-                var log = GL.GetShaderInfoLog (_shaderHandle);
-                Console.WriteLine (log);
-
-                if (GL.IsShader (_shaderHandle)) {
-                    GL.DeleteShader (_shaderHandle);
-                    GraphicsExtensions.CheckGLError ();
-                }
-                _shaderHandle = -1;
-
-                throw new InvalidOperationException ("Shader Compilation Failed");
-            }
-
-            return _shaderHandle;
-        }
-
-        internal void GetVertexAttributeLocations (int program)
-        {
-            for (int i = 0; i < Attributes.Length; ++i) {
-                Attributes [i].location = GL.GetAttribLocation (program, Attributes [i].name);
-                GraphicsExtensions.CheckGLError ();
-            }
-        }
-
-        internal int GetAttribLocation (VertexElementUsage usage, int index)
-        {
-            for (int i = 0; i < Attributes.Length; ++i) {
-                if ((Attributes [i].usage == usage) && (Attributes [i].index == index))
-                    return Attributes [i].location;
-            }
-            return -1;
-        }
-
-        internal void ApplySamplerTextureUnits (int program)
-        {
-            // Assign the texture unit index to the sampler uniforms.
-            foreach (var sampler in Samplers) {
-                var loc = GL.GetUniformLocation (program, sampler.name);
-                GraphicsExtensions.CheckGLError ();
-                if (loc != -1) {
-                    GL.Uniform1 (loc, sampler.textureSlot);
-                    GraphicsExtensions.CheckGLError ();
-                }
-            }
-        }
-
-        public void Dispose ()
-        {
-            Dispose (true);
-            GC.SuppressFinalize (this);
-        }
-
-        protected void Dispose (bool disposing)
-        {
-            if (_shaderHandle != -1) {
-                if (GL.IsShader (_shaderHandle)) {
-                    GL.DeleteShader (_shaderHandle);
-                    GraphicsExtensions.CheckGLError ();
-                }
-                _shaderHandle = -1;
-            }
         }
     }
 

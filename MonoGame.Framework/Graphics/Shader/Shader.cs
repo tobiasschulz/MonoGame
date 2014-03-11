@@ -112,7 +112,17 @@ namespace Microsoft.Xna.Framework.Graphics
 	    public int[] CBuffers { get; private set; }
 
         public ShaderStage Stage { get; private set; }
-		
+
+        internal Shader(GraphicsDevice device, ShaderStage stage, byte[] shaderBytecode)
+        {
+            GraphicsDevice = device;
+            Stage = stage;
+            Samplers = new SamplerInfo[0];
+            CBuffers = new int[0];
+            _glslCode = System.Text.Encoding.ASCII.GetString(shaderBytecode);
+            HashKey = MonoGame.Utilities.Hash.ComputeHash(shaderBytecode);
+            _attributes = new Attribute[0];
+        }
         internal Shader(GraphicsDevice device, BinaryReader reader)
         {
             GraphicsDevice = device;
@@ -183,9 +193,13 @@ namespace Microsoft.Xna.Framework.Graphics
             for (var a = 0; a < attributeCount; a++)
             {
                 _attributes[a].name = reader.ReadString();
+                Console.WriteLine("attribute["+a+"].name="+_attributes[a].name);
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
+                Console.WriteLine("attribute["+a+"].usage="+_attributes[a].usage);
                 _attributes[a].index = reader.ReadByte();
+                Console.WriteLine("attribute["+a+"].index="+_attributes[a].index);
                 _attributes[a].format = reader.ReadInt16();
+                Console.WriteLine("attribute["+a+"].format="+_attributes[a].format);
             }
 
 #endif // OPENGL
