@@ -217,7 +217,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				y = rect.Value.Y;
 				w = rect.Value.Width;
 				h = rect.Value.Height;
-				}
+			}
 			else
 			{
 				x = 0;
@@ -267,17 +267,33 @@ namespace Microsoft.Xna.Framework.Graphics
 						{
 							dataLength = data.Length - startByte;
 						}
-						GL.CompressedTexSubImage2D(
-							TextureTarget.Texture2D,
-							level,
-							x,
-							y,
-							w,
-							h,
-							glFormat,
-							dataLength,
-							dataPtr
-						);
+						if (rect.HasValue)
+						{
+							GL.CompressedTexSubImage2D(
+								TextureTarget.Texture2D,
+								level,
+								x,
+								y,
+								w,
+								h,
+								glFormat,
+								dataLength,
+								dataPtr
+							);
+						}
+						else
+						{
+							GL.CompressedTexImage2D(
+								TextureTarget.Texture2D,
+								level,
+								glInternalFormat,
+								w,
+								h,
+								0,
+								dataLength,
+								dataPtr
+							);
+						}
 						GraphicsExtensions.CheckGLError();
 					}
 					else
@@ -288,17 +304,34 @@ namespace Microsoft.Xna.Framework.Graphics
 							GraphicsExtensions.Size(this.Format)
 						);
 
-						GL.TexSubImage2D(
-							TextureTarget.Texture2D,
-							level,
-							x,
-							y,
-							w,
-							h,
-							glFormat,
-							glType,
-							dataPtr
-						);
+						if (rect.HasValue)
+						{
+							GL.TexSubImage2D(
+								TextureTarget.Texture2D,
+								level,
+								x,
+								y,
+								w,
+								h,
+								glFormat,
+								glType,
+								dataPtr
+							);
+						}
+						else
+						{
+							GL.TexImage2D(
+								TextureTarget.Texture2D,
+								level,
+								glInternalFormat,
+								w,
+								h,
+								0,
+								glFormat,
+								glType,
+								dataPtr
+							);
+						}
 						GraphicsExtensions.CheckGLError();
 
 						// Return to default pixel alignment
