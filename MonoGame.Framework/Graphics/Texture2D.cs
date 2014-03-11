@@ -103,9 +103,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			Format = format;
 			GetGLSurfaceFormat();
 
-			Threading.BlockOnUIThread(() =>
+			Threading.ForceToMainThread(() =>
 			{
-				GenerateGLTextureIfRequired();
+				texture = new OpenGLDevice.OpenGLTexture(
+					TextureTarget.Texture2D,
+					Format,
+					LevelCount > 1
+				);
+				if (((Width & (Width - 1)) != 0) || ((Height & (Height - 1)) != 0))
+				{
+					texture.WrapS.Set(TextureAddressMode.Clamp);
+					texture.WrapT.Set(TextureAddressMode.Clamp);
+				}
 				OpenGLDevice.Instance.BindTexture(texture);
 
 				if (	Format == SurfaceFormat.Dxt1 ||
@@ -139,7 +148,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						((this.Width + 3) / 4) * ((this.Height + 3) / 4) * format.Size(),
 						IntPtr.Zero
 					);
-					GraphicsExtensions.CheckGLError();
 				}
 				else
 				{
@@ -154,7 +162,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						glType,
 						IntPtr.Zero
 					);
-					GraphicsExtensions.CheckGLError();
 				}
 				texture.Flush(true);
 			});
@@ -201,7 +208,42 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new ArgumentNullException("data");
 			}
 
-			Threading.BlockOnUIThread(() =>
+			int x, y, w, h;
+			if (rect.HasValue)
+			{
+				x = rect.Value.X;
+				y = rect.Value.Y;
+				w = rect.Value.Width;
+				h = rect.Value.Height;
+			}
+			else
+			{
+				x = 0;
+				y = 0;
+				w = Math.Max(Width >> level, 1);
+				h = Math.Max(Height >> level, 1);
+
+				// For DXT textures the width and height of each level is a multiple of 4.
+				// OpenGL only: The last two mip levels require the width and height to be
+				// passed as 2x2 and 1x1, but there needs to be enough data passed to occupy
+				// a 4x4 block.
+				// Ref: http://www.mentby.com/Group/mac-opengl/issue-with-dxt-mipmapped-textures.html
+				if (	Format == SurfaceFormat.Dxt1 ||
+					Format == SurfaceFormat.Dxt3 ||
+					Format == SurfaceFormat.Dxt5	)
+				{
+					if (w > 4)
+					{
+						w = (w + 3) & ~3;
+					}
+					if (h > 4)
+					{
+						h = (h + 3) & ~3;
+					}
+				}
+			}
+
+			Threading.ForceToMainThread(() =>
 			{
 				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
@@ -211,54 +253,18 @@ namespace Microsoft.Xna.Framework.Graphics
 					int startByte = startIndex * elementSizeInBytes;
 					IntPtr dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startByte);
 
-					int dataLength;
-					if (elementCount > 0)
-					{
-						dataLength = elementCount * elementSizeInBytes;
-					}
-					else
-					{
-						dataLength = data.Length - startByte;
-					}
-					int x, y, w, h;
-					if (rect.HasValue)
-					{
-						x = rect.Value.X;
-						y = rect.Value.Y;
-						w = rect.Value.Width;
-						h = rect.Value.Height;
-					}
-					else
-					{
-						x = 0;
-						y = 0;
-						w = Math.Max(Width >> level, 1);
-						h = Math.Max(Height >> level, 1);
-
-						// For DXT textures the width and height of each level is a multiple of 4.
-						// OpenGL only: The last two mip levels require the width and height to be
-						// passed as 2x2 and 1x1, but there needs to be enough data passed to occupy
-						// a 4x4 block.
-						// Ref: http://www.mentby.com/Group/mac-opengl/issue-with-dxt-mipmapped-textures.html
-						if (	Format == SurfaceFormat.Dxt1 ||
-							Format == SurfaceFormat.Dxt3 ||
-							Format == SurfaceFormat.Dxt5	)
-						{
-							if (w > 4)
-							{
-								w = (w + 3) & ~3;
-							}
-							if (h > 4)
-							{
-								h = (h + 3) & ~3;
-							}
-						}
-					}
-
-					GenerateGLTextureIfRequired();
 					OpenGLDevice.Instance.BindTexture(texture);
 					if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
 					{
+						int dataLength;
+						if (elementCount > 0)
+						{
+							dataLength = elementCount * elementSizeInBytes;
+						}
+						else
+						{
+							dataLength = data.Length - startByte;
+						}
 						if (rect.HasValue)
 						{
 							GL.CompressedTexSubImage2D(
@@ -272,7 +278,6 @@ namespace Microsoft.Xna.Framework.Graphics
 								dataLength,
 								dataPtr
 							);
-							GraphicsExtensions.CheckGLError();
 						}
 						else
 						{
@@ -286,13 +291,16 @@ namespace Microsoft.Xna.Framework.Graphics
 								dataLength,
 								dataPtr
 							);
-							GraphicsExtensions.CheckGLError();
 						}
 					}
 					else
 					{
 						// Set pixel alignment to match texel size in bytes
-						GL.PixelStore(PixelStoreParameter.UnpackAlignment, GraphicsExtensions.Size(this.Format));
+						GL.PixelStore(
+							PixelStoreParameter.UnpackAlignment,
+							GraphicsExtensions.Size(this.Format)
+						);
+
 						if (rect.HasValue)
 						{
 							GL.TexSubImage2D(
@@ -306,7 +314,6 @@ namespace Microsoft.Xna.Framework.Graphics
 								glType,
 								dataPtr
 							);
-							GraphicsExtensions.CheckGLError();
 						}
 						else
 						{
@@ -321,10 +328,13 @@ namespace Microsoft.Xna.Framework.Graphics
 								glType,
 								dataPtr
 							);
-							GraphicsExtensions.CheckGLError();
 						}
+
 						// Return to default pixel alignment
-						GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
+						GL.PixelStore(
+							PixelStoreParameter.UnpackAlignment,
+							4
+						);
 					}
 
 					GL.Finish();
@@ -549,32 +559,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		// TODO: You could extend the XNA API with this...
 		internal void GenerateMipmaps()
 		{
-			Threading.BlockOnUIThread(() =>
+			Threading.ForceToMainThread(() =>
 			{
 				texture.Generate2DMipmaps();
 			});
-		}
-
-		#endregion
-
-		#region Private glGenTexture Method
-
-		private void GenerateGLTextureIfRequired()
-		{
-			if (texture == null || texture.Handle == 0)
-			{
-				texture = new OpenGLDevice.OpenGLTexture(
-					TextureTarget.Texture2D,
-					Format,
-					LevelCount > 1
-				);
-
-				if (((Width & (Width - 1)) != 0) || ((Height & (Height - 1)) != 0))
-				{
-					texture.WrapS.Set(TextureAddressMode.Clamp);
-					texture.WrapT.Set(TextureAddressMode.Clamp);
-				}
-			}
 		}
 
 		#endregion

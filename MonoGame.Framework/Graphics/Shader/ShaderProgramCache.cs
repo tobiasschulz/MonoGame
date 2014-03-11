@@ -52,7 +52,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (GL.IsProgram(pair.Value.program))
                 {
                     GL.DeleteProgram(pair.Value.program);
-                    GraphicsExtensions.CheckGLError();
                 }
             }
             _programCache.Clear();
@@ -80,21 +79,16 @@ namespace Microsoft.Xna.Framework.Graphics
             // as this is only called at draw time when we're in the
             // main drawing thread.
             var program = GL.CreateProgram();
-            GraphicsExtensions.CheckGLError();
 
             GL.AttachShader(program, vertexShader.GetShaderHandle());
-            GraphicsExtensions.CheckGLError();
 
             GL.AttachShader(program, pixelShader.GetShaderHandle());
-            GraphicsExtensions.CheckGLError();
 
             //vertexShader.BindVertexAttributes(program);
 
             GL.LinkProgram(program);
-            GraphicsExtensions.CheckGLError();
 
             GL.UseProgram(program);
-            GraphicsExtensions.CheckGLError();
 
             vertexShader.GetVertexAttributeLocations(program);
 
@@ -107,7 +101,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
             GL.GetProgram(program, ProgramParameter.LinkStatus, out linked);
 #endif
-            GraphicsExtensions.LogGLError("VertexShaderCache.Link(), GL.GetProgram");
             if (linked == 0)
             {
 #if !GLES

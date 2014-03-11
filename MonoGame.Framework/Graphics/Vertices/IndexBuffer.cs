@@ -125,7 +125,18 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			INTERNAL_isDynamic = dynamic;
 
-			Threading.BlockOnUIThread(GenerateIfRequired);
+			Threading.ForceToMainThread(() =>
+			{
+				Handle = GL.GenBuffer();
+
+				OpenGLDevice.Instance.BindIndexBuffer(Handle);
+				GL.BufferData(
+					BufferTarget.ElementArrayBuffer,
+					(IntPtr) (IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4)),
+					IntPtr.Zero,
+					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
+				);
+			});
 		}
 
 		#endregion
@@ -139,7 +150,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDevice.AddDisposeAction(() =>
 				{
 					OpenGLDevice.Instance.DeleteIndexBuffer(Handle);
-					GraphicsExtensions.CheckGLError();
 				});
 			}
 			base.Dispose(disposing);
@@ -194,14 +204,14 @@ namespace Microsoft.Xna.Framework.Graphics
 				);
 			}
 
-			if (Threading.IsOnUIThread())
-			{
-				GetBufferData(offsetInBytes, data, startIndex, elementCount);
-			}
-			else
-			{
-				Threading.BlockOnUIThread(() => GetBufferData(offsetInBytes, data, startIndex, elementCount));
-			}
+			Threading.ForceToMainThread(() =>
+				GetBufferData(
+					offsetInBytes,
+					data,
+					startIndex,
+					elementCount
+				)
+			);
 		}
 
 		#endregion
@@ -217,7 +227,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.BindIndexBuffer(Handle);
 
 			IntPtr ptr = GL.MapBuffer(BufferTarget.ArrayBuffer, BufferAccess.ReadOnly);
-			GraphicsExtensions.CheckGLError();
 
 			// Pointer to the start of data to read in the index buffer
 			ptr = new IntPtr(ptr.ToInt64() + offsetInBytes);
@@ -242,7 +251,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -309,28 +317,15 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new InvalidOperationException("The array specified in the data parameter is not the correct size for the amount of data requested.");
 			}
 
-			if (Threading.IsOnUIThread())
-			{
+			Threading.ForceToMainThread(() =>
 				BufferData(
 					offsetInBytes,
 					data,
 					startIndex,
 					elementCount,
 					options
-				);
-			}
-			else
-			{
-				Threading.BlockOnUIThread(() =>
-					BufferData(
-						offsetInBytes,
-						data,
-						startIndex,
-						elementCount,
-						options
-					)
-				);
-			}
+				)
+			);
 		}
 
 		private void BufferData<T>(
@@ -340,8 +335,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			int elementCount,
 			SetDataOptions options
 		) where T : struct {
-			GenerateIfRequired();
-
 			int elementSizeInByte = Marshal.SizeOf(typeof(T));
 			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
@@ -355,7 +348,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					IntPtr.Zero,
 					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
 				);
-				GraphicsExtensions.CheckGLError();
 			}
 
 			GL.BufferSubData(
@@ -364,36 +356,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				(IntPtr) (elementSizeInByte * elementCount),
 				(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInByte)
 			);
-			GraphicsExtensions.CheckGLError();
 
 			dataHandle.Free();
-		}
-
-		#endregion
-
-		#region Private GenBuffer Method
-
-		/// <summary>
-		/// If the IBO does not exist, create it.
-		/// </summary>
-		private void GenerateIfRequired()
-		{
-			if (Handle == 0)
-			{
-				int sizeInBytes = IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4);
-
-				Handle = GL.GenBuffer();
-				GraphicsExtensions.CheckGLError();
-
-				OpenGLDevice.Instance.BindIndexBuffer(Handle);
-				GL.BufferData(
-					BufferTarget.ElementArrayBuffer,
-					(IntPtr) sizeInBytes,
-					IntPtr.Zero,
-					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
-				);
-				GraphicsExtensions.CheckGLError();
-			}
 		}
 
 		#endregion

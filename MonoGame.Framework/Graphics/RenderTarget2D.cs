@@ -130,16 +130,14 @@ namespace Microsoft.Xna.Framework.Graphics
 				return;
 			}
 
-			Threading.BlockOnUIThread(() =>
+			Threading.ForceToMainThread(() =>
 			{
 				this.glDepthStencilBuffer = OpenGLDevice.Framebuffer.GenRenderbuffer(
 					width,
 					height,
 					preferredDepthFormat
 				);
-				GraphicsExtensions.CheckGLError();
 			});
-
 		}
 
 		#endregion

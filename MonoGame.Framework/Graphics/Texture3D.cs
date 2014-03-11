@@ -88,7 +88,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				IntPtr.Zero
 			);
 			texture.Flush(true);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -143,7 +142,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
 			OpenGLDevice.Instance.BindTexture(texture);
-			GraphicsExtensions.CheckGLError();
 			GL.TexSubImage3D(
 				TextureTarget.Texture3D,
 				level,
@@ -157,7 +155,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				glType,
 				(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)))
 			);
-			GraphicsExtensions.CheckGLError();
 
 			dataHandle.Free();
 		}

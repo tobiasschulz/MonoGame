@@ -286,7 +286,6 @@ namespace Microsoft.Xna.Framework.Graphics
             var key = new UniformLocationKey(program, name);
             if (!UniformLocationCache.TryGetValue(key, out result)) {
                 result = UniformLocationCache[key] = GL.GetUniformLocation(program, name);
-                GraphicsExtensions.CheckGLError();
             }
 
             return result;
@@ -328,7 +327,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 // GL is checking the type of the uniform.
 
                 GL.Uniform4(_location, _buffer.Length / 16, (float*)bytePtr);
-                GraphicsExtensions.CheckGLError();
             }
 
             // Clear the dirty flag.

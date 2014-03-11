@@ -61,7 +61,7 @@ namespace Microsoft.Xna.Framework.Graphics
         // We keep this around for recompiling on context lost and debugging.
         private readonly string _glslCode;
 
-        internal struct Attribute
+        private struct Attribute
         {
             public VertexElementUsage usage;
             public int index;
@@ -112,17 +112,7 @@ namespace Microsoft.Xna.Framework.Graphics
 	    public int[] CBuffers { get; private set; }
 
         public ShaderStage Stage { get; private set; }
-
-        internal Shader(GraphicsDevice device, ShaderStage stage, byte[] shaderBytecode, Attribute[] attributes, int[] constantBuffers)
-        {
-            GraphicsDevice = device;
-            Stage = stage;
-            Samplers = new SamplerInfo[0];
-            CBuffers = constantBuffers;
-            _glslCode = System.Text.Encoding.ASCII.GetString(shaderBytecode);
-            HashKey = MonoGame.Utilities.Hash.ComputeHash(shaderBytecode);
-            _attributes = attributes;
-        }
+		
         internal Shader(GraphicsDevice device, BinaryReader reader)
         {
             GraphicsDevice = device;
@@ -132,9 +122,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var shaderLength = reader.ReadInt32();
             var shaderBytecode = reader.ReadBytes(shaderLength);
-
-            bool verbose = System.Text.Encoding.ASCII.GetString(shaderBytecode).Contains("#define ps_c1 ps_uniforms_vec4[1]");
-            string shaderString = System.Text.Encoding.ASCII.GetString (shaderBytecode);
 
             var samplerCount = (int)reader.ReadByte();
             Samplers = new SamplerInfo[samplerCount];
@@ -166,10 +153,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var cbufferCount = (int)reader.ReadByte();
             CBuffers = new int[cbufferCount];
-            for (var c = 0; c < cbufferCount; c++) {
+            for (var c = 0; c < cbufferCount; c++)
                 CBuffers[c] = reader.ReadByte();
-                if (verbose)Console.WriteLine("CBuffers ["+c+"]="+CBuffers[c]);
-            }
+
 #if DIRECTX
 
             _shaderBytecode = shaderBytecode;
@@ -197,13 +183,9 @@ namespace Microsoft.Xna.Framework.Graphics
             for (var a = 0; a < attributeCount; a++)
             {
                 _attributes[a].name = reader.ReadString();
-                if (verbose)Console.WriteLine("attribute["+a+"].name="+_attributes[a].name);
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
-                if (verbose)Console.WriteLine("attribute["+a+"].usage="+_attributes[a].usage);
                 _attributes[a].index = reader.ReadByte();
-                if (verbose)Console.WriteLine("attribute["+a+"].index="+_attributes[a].index);
                 _attributes[a].format = reader.ReadInt16();
-                if (verbose)Console.WriteLine("attribute["+a+"].format="+_attributes[a].format);
             }
 
 #endif // OPENGL
@@ -218,15 +200,12 @@ namespace Microsoft.Xna.Framework.Graphics
             
             //
             _shaderHandle = GL.CreateShader(Stage == ShaderStage.Vertex ? ShaderType.VertexShader : ShaderType.FragmentShader);
-            GraphicsExtensions.CheckGLError();
 #if GLES
 			GL.ShaderSource(_shaderHandle, 1, new string[] { _glslCode }, (int[])null);
 #else
             GL.ShaderSource(_shaderHandle, _glslCode);
 #endif
-            GraphicsExtensions.CheckGLError();
             GL.CompileShader(_shaderHandle);
-            GraphicsExtensions.CheckGLError();
 
             var compiled = 0;
 #if GLES
@@ -234,7 +213,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
             GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, out compiled);
 #endif
-            GraphicsExtensions.CheckGLError();
             if (compiled == (int)All.False)
             {
 #if GLES
@@ -257,7 +235,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (GL.IsShader(_shaderHandle))
                 {
                     GL.DeleteShader(_shaderHandle);
-                    GraphicsExtensions.CheckGLError();
                 }
                 _shaderHandle = -1;
 
@@ -272,7 +249,6 @@ namespace Microsoft.Xna.Framework.Graphics
             for (int i = 0; i < _attributes.Length; ++i)
             {
                 _attributes[i].location = GL.GetAttribLocation(program, _attributes[i].name);
-                GraphicsExtensions.CheckGLError();
             }
         }
 
@@ -292,11 +268,9 @@ namespace Microsoft.Xna.Framework.Graphics
             foreach (var sampler in Samplers)
             {
                 var loc = GL.GetUniformLocation(program, sampler.name);
-                GraphicsExtensions.CheckGLError();
                 if (loc != -1)
                 {
                     GL.Uniform1(loc, sampler.textureSlot);
-                    GraphicsExtensions.CheckGLError();
                 }
             }
         }
@@ -311,7 +285,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (GL.IsShader(_shaderHandle))
                 {
                     GL.DeleteShader(_shaderHandle);
-                    GraphicsExtensions.CheckGLError();
                 }
                 _shaderHandle = -1;
             }
@@ -337,7 +310,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             if (GL.IsShader(_shaderHandle))
                             {
                                 GL.DeleteShader(_shaderHandle);
-                                GraphicsExtensions.CheckGLError();
                             }
                             _shaderHandle = -1;
                         }
