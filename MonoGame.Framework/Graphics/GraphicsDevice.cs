@@ -502,7 +502,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		public void Present()
 		{
 			GL.Flush();
-			GraphicsExtensions.CheckGLError();
 
 			// Dispose of any GL resources that were disposed in another thread
 			lock (disposeActionsLock)
@@ -745,9 +744,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt,
 				(IntPtr) (startIndex * (shortIndices ? 2 : 4))
 			);
-
-			// Check for errors in the debug context
-			GraphicsExtensions.CheckGLError();
 		}
 
 		public void DrawInstancedPrimitives(
@@ -801,9 +797,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				(IntPtr) (startIndex * (shortIndices ? 2 : 4)),
 				instanceCount
 			);
-
-			// Check for errors in the debug context
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -854,7 +847,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				vertexOffset,
 				GetElementCountArray(primitiveType, primitiveCount)
 			);
-			GraphicsExtensions.CheckGLError();
 
 			// Release the handles.
 			vbHandle.Free();
@@ -892,9 +884,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				vertexStart,
 				GetElementCountArray(primitiveType, primitiveCount)
 			);
-
-			// Check for errors in the debug context
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -963,9 +952,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				(IntPtr) (ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(short)))
 			);
 
-			// Check for errors in the debug context
-			GraphicsExtensions.CheckGLError();
-
 			// Release the handles.
 			ibHandle.Free();
 			vbHandle.Free();
@@ -1032,9 +1018,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				DrawElementsType.UnsignedInt,
 				(IntPtr) (ibHandle.AddrOfPinnedObject().ToInt64() + (indexOffset * sizeof(int)))
 			);
-
-			// Check for errors in the debug context
-			GraphicsExtensions.CheckGLError();
 
 			// Release the handles.
 			ibHandle.Free();
@@ -1215,7 +1198,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (shaderProgram != info.program)
 			{
 				GL.UseProgram(info.program);
-				GraphicsExtensions.CheckGLError();
 				shaderProgram = info.program;
 			}
 
@@ -1263,7 +1245,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			GL.Uniform4(info.posFixupLoc, 1, posFixup);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion

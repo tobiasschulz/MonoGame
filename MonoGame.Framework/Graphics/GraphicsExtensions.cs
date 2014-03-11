@@ -388,35 +388,5 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             return 0;
         }
-
-        [Conditional("DEBUG")]
-		[DebuggerHidden]
-        public static void CheckGLError()
-        {
-            ErrorCode error = GL.GetError();
-            if (error != ErrorCode.NoError)
-                throw new MonoGameGLException("GL.GetError() returned " + error.ToString());
-        }
-
-        [Conditional("DEBUG")]
-        public static void LogGLError(string location)
-        {
-            try
-            {
-                GraphicsExtensions.CheckGLError();
-            }
-            catch (MonoGameGLException ex)
-            {
-                Debug.WriteLine("MonoGameGLException at " + location + " - " + ex.Message);
-            }
-        }
-    }
-
-    public class MonoGameGLException : Exception
-    {
-        public MonoGameGLException(string message)
-            : base(message)
-        {
-        }
     }
 }

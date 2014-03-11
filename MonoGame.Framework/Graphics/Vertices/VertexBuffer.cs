@@ -118,7 +118,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			Threading.ForceToMainThread(() =>
 			{
 				Handle = GL.GenBuffer();
-				GraphicsExtensions.CheckGLError();
 
 				OpenGLDevice.Instance.BindVertexBuffer(Handle);
 				GL.BufferData(
@@ -127,7 +126,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					IntPtr.Zero,
 					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
 				);
-				GraphicsExtensions.CheckGLError();
 			});
 		}
 
@@ -142,7 +140,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDevice.AddDisposeAction(() =>
 				{
 					OpenGLDevice.Instance.DeleteVertexBuffer(Handle);
-					GraphicsExtensions.CheckGLError();
 				});
 			}
 			base.Dispose(disposing);
@@ -232,7 +229,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.BindVertexBuffer(Handle);
 
 			IntPtr ptr = GL.MapBuffer(BufferTarget.ArrayBuffer, BufferAccess.ReadOnly);
-			GraphicsExtensions.CheckGLError();
 
 			// Pointer to the start of data to read in the index buffer
 			ptr = new IntPtr(ptr.ToInt64() + offsetInBytes);
@@ -277,7 +273,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -399,7 +394,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					IntPtr.Zero,
 					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
 				);
-				GraphicsExtensions.CheckGLError();
 			}
 
 			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
@@ -411,7 +405,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				(IntPtr) sizeInBytes,
 				dataPtr
 			);
-			GraphicsExtensions.CheckGLError();
 
 			dataHandle.Free();
 		}

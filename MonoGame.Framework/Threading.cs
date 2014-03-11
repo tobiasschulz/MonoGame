@@ -114,7 +114,6 @@ namespace Microsoft.Xna.Framework
 
 				// Must flush the GL calls now before we release the context
 				GL.Flush();
-				Graphics.GraphicsExtensions.CheckGLError();
 
 				// Free the threaded context for the next threaded call...
 				SDL.SDL_GL_MakeCurrent(WindowInfo, IntPtr.Zero);

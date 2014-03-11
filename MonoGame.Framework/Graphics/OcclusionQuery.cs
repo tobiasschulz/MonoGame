@@ -23,11 +23,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				int[] resultReady = {0};
 				GL.GetQueryObject(
-			glQueryId,
-			GetQueryObjectParam.QueryResultAvailable,
-			resultReady
-		);
-				GraphicsExtensions.CheckGLError();
+					glQueryId,
+					GetQueryObjectParam.QueryResultAvailable,
+					resultReady
+				);
 				return resultReady[0] != 0;
 			}
 		}
@@ -42,7 +41,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					GetQueryObjectParam.QueryResultAvailable,
 					result
 				);
-				GraphicsExtensions.CheckGLError();
 				return result[0];
 			}
 		}
@@ -61,7 +59,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			this.GraphicsDevice = graphicsDevice;
 			GL.GenQueries(1, out glQueryId);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -75,7 +72,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDevice.AddDisposeAction(() =>
 				{
 					GL.DeleteQueries(1, ref glQueryId);
-					GraphicsExtensions.CheckGLError();
 				});
 			}
 			base.Dispose(disposing);
@@ -88,13 +84,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		public void Begin()
 		{
 			GL.BeginQuery(QueryTarget.SamplesPassed, glQueryId);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		public void End()
 		{
 			GL.EndQuery(QueryTarget.SamplesPassed);
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion

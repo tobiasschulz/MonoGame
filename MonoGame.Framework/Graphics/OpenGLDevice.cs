@@ -17,6 +17,8 @@
 #region Using Statements
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+
 using OpenTK.Graphics.OpenGL;
 #endregion
 
@@ -493,6 +495,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Load OpenGL entry points
 			GL.LoadAll();
 
+			// Initialize ARB_debug_output callback
+			DebugOutput.Initialize();
+
 			// Initialize XNA->GL conversion Dictionaries
 			XNAToGL.Initialize();
 
@@ -868,9 +873,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// END SAMPLER STATES
-
-			// Check for errors.
-			GraphicsExtensions.CheckGLError();
 		}
 
 		#endregion
@@ -1855,6 +1857,94 @@ namespace Microsoft.Xna.Framework.Graphics
 
 				Width = width;
 				Height = height;
+#endif
+			}
+		}
+
+		#endregion
+
+		#region Private ARB_debug_output Wrapper
+
+		private static class DebugOutput
+		{
+			public enum GLenum : uint
+			{
+				// Source Enum Values
+				GL_DEBUG_SOURCE_API_ARB =		0x8246,
+				GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB =	0x8247,
+				GL_DEBUG_SOURCE_SHADER_COMPILER_ARB =	0x8248,
+				GL_DEBUG_SOURCE_THIRD_PARTY_ARB =	0x8249,
+				GL_DEBUG_SOURCE_APPLICATION_ARB =	0x824A,
+				GL_DEBUG_SOURCE_OTHER_ARB =		0x824B,
+				// Type Enum Values
+				GL_DEBUG_TYPE_ERROR_ARB =		0x824C,
+				GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB =	0x824D,
+				GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB =	0x824E,
+				GL_DEBUG_TYPE_PORTABILITY_ARB =		0x824F,
+				GL_DEBUG_TYPE_PERFORMANCE_ARB =		0x8250,
+				GL_DEBUG_TYPE_OTHER_ARB =		0x8251,
+				// Severity Enum Values
+				GL_DEBUG_SEVERITY_HIGH_ARB =		0x9146,
+				GL_DEBUG_SEVERITY_MEDIUM_ARB =		0x9147,
+				GL_DEBUG_SEVERITY_LOW_ARB =		0x9148,
+			}
+
+			// Entry Point
+			private delegate void DebugMessageCallback(
+				DebugProc callback,
+				IntPtr userParam
+			);
+			private static DebugMessageCallback glDebugMessageCallbackARB;
+
+			// Function pointer
+			private delegate void DebugProc(
+				GLenum source,
+				GLenum type,
+				uint id,
+				GLenum severity,
+				IntPtr length, // sizei
+				IntPtr message, // const char*
+				IntPtr userParam // const void*
+			);
+			private static DebugProc DebugCall = DebugCallback;
+
+			// Debug callback
+			private static void DebugCallback(
+				GLenum source,
+				GLenum type,
+				uint id,
+				GLenum severity,
+				IntPtr length, // sizei
+				IntPtr message, // const char*
+				IntPtr userParam // const void*
+			) {
+				System.Console.WriteLine(
+					"{0}\n\tSource: {1}\n\tType: {2}\n\tSeverity: {3}",
+					Marshal.PtrToStringAnsi(message),
+					source.ToString(),
+					type.ToString(),
+					severity.ToString()
+				);
+				if (type == GLenum.GL_DEBUG_TYPE_ERROR_ARB)
+				{
+					throw new Exception("ARB_debug_output found an error.");
+				}
+			}
+
+			public static void Initialize()
+			{
+#if DEBUG
+				IntPtr func = SDL2.SDL.SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
+				if (func == IntPtr.Zero)
+				{
+					System.Console.WriteLine("ARB_debug_output not supported!");
+					return;
+				}
+				glDebugMessageCallbackARB = (DebugMessageCallback) Marshal.GetDelegateForFunctionPointer(
+					func,
+					typeof(DebugMessageCallback)
+				);
+				glDebugMessageCallbackARB(DebugCall, IntPtr.Zero);
 #endif
 			}
 		}

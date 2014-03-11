@@ -100,7 +100,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						glType,
 						IntPtr.Zero
 					);
-					GraphicsExtensions.CheckGLError();
 				}
 			}
 			texture.Flush(true);
@@ -112,7 +111,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					TextureParameterName.GenerateMipmap,
 					1
 				);
-				GraphicsExtensions.CheckGLError();
 			}
 		}
 
@@ -216,7 +214,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						glType,
 						(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)))
 					);
-					GraphicsExtensions.CheckGLError();
 				}
 			}
 			finally

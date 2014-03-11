@@ -148,7 +148,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						((this.Width + 3) / 4) * ((this.Height + 3) / 4) * format.Size(),
 						IntPtr.Zero
 					);
-					GraphicsExtensions.CheckGLError();
 				}
 				else
 				{
@@ -163,7 +162,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						glType,
 						IntPtr.Zero
 					);
-					GraphicsExtensions.CheckGLError();
 				}
 				texture.Flush(true);
 			});
@@ -294,7 +292,6 @@ namespace Microsoft.Xna.Framework.Graphics
 								dataPtr
 							);
 						}
-						GraphicsExtensions.CheckGLError();
 					}
 					else
 					{
@@ -332,7 +329,6 @@ namespace Microsoft.Xna.Framework.Graphics
 								dataPtr
 							);
 						}
-						GraphicsExtensions.CheckGLError();
 
 						// Return to default pixel alignment
 						GL.PixelStore(

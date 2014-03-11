@@ -200,15 +200,12 @@ namespace Microsoft.Xna.Framework.Graphics
             
             //
             _shaderHandle = GL.CreateShader(Stage == ShaderStage.Vertex ? ShaderType.VertexShader : ShaderType.FragmentShader);
-            GraphicsExtensions.CheckGLError();
 #if GLES
 			GL.ShaderSource(_shaderHandle, 1, new string[] { _glslCode }, (int[])null);
 #else
             GL.ShaderSource(_shaderHandle, _glslCode);
 #endif
-            GraphicsExtensions.CheckGLError();
             GL.CompileShader(_shaderHandle);
-            GraphicsExtensions.CheckGLError();
 
             var compiled = 0;
 #if GLES
@@ -216,7 +213,6 @@ namespace Microsoft.Xna.Framework.Graphics
 #else
             GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, out compiled);
 #endif
-            GraphicsExtensions.CheckGLError();
             if (compiled == (int)All.False)
             {
 #if GLES
@@ -239,7 +235,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (GL.IsShader(_shaderHandle))
                 {
                     GL.DeleteShader(_shaderHandle);
-                    GraphicsExtensions.CheckGLError();
                 }
                 _shaderHandle = -1;
 
@@ -254,7 +249,6 @@ namespace Microsoft.Xna.Framework.Graphics
             for (int i = 0; i < _attributes.Length; ++i)
             {
                 _attributes[i].location = GL.GetAttribLocation(program, _attributes[i].name);
-                GraphicsExtensions.CheckGLError();
             }
         }
 
@@ -274,11 +268,9 @@ namespace Microsoft.Xna.Framework.Graphics
             foreach (var sampler in Samplers)
             {
                 var loc = GL.GetUniformLocation(program, sampler.name);
-                GraphicsExtensions.CheckGLError();
                 if (loc != -1)
                 {
                     GL.Uniform1(loc, sampler.textureSlot);
-                    GraphicsExtensions.CheckGLError();
                 }
             }
         }
@@ -293,7 +285,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (GL.IsShader(_shaderHandle))
                 {
                     GL.DeleteShader(_shaderHandle);
-                    GraphicsExtensions.CheckGLError();
                 }
                 _shaderHandle = -1;
             }
@@ -319,7 +310,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             if (GL.IsShader(_shaderHandle))
                             {
                                 GL.DeleteShader(_shaderHandle);
-                                GraphicsExtensions.CheckGLError();
                             }
                             _shaderHandle = -1;
                         }
