@@ -105,7 +105,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			Threading.ForceToMainThread(() =>
 			{
-				GenerateGLTextureIfRequired();
+				texture = new OpenGLDevice.OpenGLTexture(
+					TextureTarget.Texture2D,
+					Format,
+					LevelCount > 1
+				);
+				if (((Width & (Width - 1)) != 0) || ((Height & (Height - 1)) != 0))
+				{
+					texture.WrapS.Set(TextureAddressMode.Clamp);
+					texture.WrapT.Set(TextureAddressMode.Clamp);
+				}
 				OpenGLDevice.Instance.BindTexture(texture);
 
 				if (	Format == SurfaceFormat.Dxt1 ||
@@ -255,7 +264,6 @@ namespace Microsoft.Xna.Framework.Graphics
 						}
 					}
 
-					GenerateGLTextureIfRequired();
 					OpenGLDevice.Instance.BindTexture(texture);
 					if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
 					{
@@ -553,28 +561,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				texture.Generate2DMipmaps();
 			});
-		}
-
-		#endregion
-
-		#region Private glGenTexture Method
-
-		private void GenerateGLTextureIfRequired()
-		{
-			if (texture == null || texture.Handle == 0)
-			{
-				texture = new OpenGLDevice.OpenGLTexture(
-					TextureTarget.Texture2D,
-					Format,
-					LevelCount > 1
-				);
-
-				if (((Width & (Width - 1)) != 0) || ((Height & (Height - 1)) != 0))
-				{
-					texture.WrapS.Set(TextureAddressMode.Clamp);
-					texture.WrapT.Set(TextureAddressMode.Clamp);
-				}
-			}
 		}
 
 		#endregion
