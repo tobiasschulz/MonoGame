@@ -448,7 +448,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				throw new ArgumentNullException("disposeAction");
 			}
-			if (Threading.IsOnUIThread())
+			if (Threading.IsOnMainThread())
 			{
 				disposeAction();
 			}

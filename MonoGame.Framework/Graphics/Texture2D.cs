@@ -103,7 +103,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			Format = format;
 			GetGLSurfaceFormat();
 
-			Threading.BlockOnUIThread(() =>
+			Threading.ForceToMainThread(() =>
 			{
 				GenerateGLTextureIfRequired();
 				OpenGLDevice.Instance.BindTexture(texture);
@@ -201,7 +201,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new ArgumentNullException("data");
 			}
 
-			Threading.BlockOnUIThread(() =>
+			Threading.ForceToMainThread(() =>
 			{
 				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
@@ -549,7 +549,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		// TODO: You could extend the XNA API with this...
 		internal void GenerateMipmaps()
 		{
-			Threading.BlockOnUIThread(() =>
+			Threading.ForceToMainThread(() =>
 			{
 				texture.Generate2DMipmaps();
 			});

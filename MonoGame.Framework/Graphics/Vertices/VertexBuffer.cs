@@ -115,7 +115,20 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			INTERNAL_isDynamic = dynamic;
-			Threading.BlockOnUIThread(GenerateIfRequired);
+			Threading.ForceToMainThread(() =>
+			{
+				Handle = GL.GenBuffer();
+				GraphicsExtensions.CheckGLError();
+
+				OpenGLDevice.Instance.BindVertexBuffer(Handle);
+				GL.BufferData(
+					BufferTarget.ArrayBuffer,
+					new IntPtr(VertexDeclaration.VertexStride * VertexCount),
+					IntPtr.Zero,
+					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
+				);
+				GraphicsExtensions.CheckGLError();
+			});
 		}
 
 		#endregion
@@ -194,14 +207,15 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new InvalidOperationException("The array is not the correct size for the amount of data requested.");
 			}
 
-			if (Threading.IsOnUIThread())
-			{
-				GetBufferData(offsetInBytes, data, startIndex, elementCount, vertexStride);
-			}
-			else
-			{
-				Threading.BlockOnUIThread(() => GetBufferData(offsetInBytes, data, startIndex, elementCount, vertexStride));
-			}
+			Threading.ForceToMainThread(() =>
+				GetBufferData(
+					offsetInBytes,
+					data,
+					startIndex,
+					elementCount,
+					vertexStride
+				)
+			);
 		}
 
 		#endregion
@@ -349,8 +363,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			int elementSizeInBytes = Marshal.SizeOf(typeof(T));
 
-			if (Threading.IsOnUIThread())
-			{
+			Threading.ForceToMainThread(() =>
 				SetBufferData(
 					bufferSize,
 					elementSizeInBytes,
@@ -360,23 +373,8 @@ namespace Microsoft.Xna.Framework.Graphics
 					elementCount,
 					vertexStride,
 					options
-				);
-			}
-			else
-			{
-				Threading.BlockOnUIThread(() =>
-					SetBufferData(
-						bufferSize,
-						elementSizeInBytes,
-						offsetInBytes,
-						data,
-						startIndex,
-						elementCount,
-						vertexStride,
-						options
-					)
-				);
-			}
+				)
+			);
 		}
 
 		private void SetBufferData<T>(
@@ -389,8 +387,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			int vertexStride,
 			SetDataOptions options
 		) where T : struct {
-			GenerateIfRequired();
-
 			OpenGLDevice.Instance.BindVertexBuffer(Handle);
 
 			int sizeInBytes = elementSizeInBytes * elementCount;
@@ -418,31 +414,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			GraphicsExtensions.CheckGLError();
 
 			dataHandle.Free();
-		}
-
-		#endregion
-
-		#region Private GenBuffer Method
-
-		/// <summary>
-		/// If the VBO does not exist, create it.
-		/// </summary>
-		private void GenerateIfRequired()
-		{
-			if (Handle == 0)
-			{
-				Handle = GL.GenBuffer();
-				GraphicsExtensions.CheckGLError();
-
-				OpenGLDevice.Instance.BindVertexBuffer(Handle);
-				GL.BufferData(
-					BufferTarget.ArrayBuffer,
-					new IntPtr(VertexDeclaration.VertexStride * VertexCount),
-					IntPtr.Zero,
-					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
-				);
-				GraphicsExtensions.CheckGLError();
-			}
 		}
 
 		#endregion
