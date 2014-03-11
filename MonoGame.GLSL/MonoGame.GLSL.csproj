@@ -53,7 +53,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="opengl32.dll.config">
+    <None Include="MonoGame.GLSL.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -54,7 +54,7 @@ namespace MonoGame.GLSL
         private int shaderProgram;
         private readonly GLShaderProgramCache programCache = new GLShaderProgramCache ();
 
-        public void Apply ()
+        public void Apply (GLParamaterCollection parameters)
         {
             // Lookup the shader program.
             var info = programCache.GetProgramInfo (VertexShader, PixelShader);
@@ -67,6 +67,8 @@ namespace MonoGame.GLSL
                 GL.UseProgram (info.program);
                 GraphicsExtensions.CheckGLError ();
                 shaderProgram = info.program;
+
+                parameters.Apply (program: this);
             }
         }
     }

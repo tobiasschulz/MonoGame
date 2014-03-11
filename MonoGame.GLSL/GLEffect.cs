@@ -121,8 +121,7 @@ namespace MonoGame.GLSL
         )
         {
             foreach (GLShaderProgram pass in Shaders) {
-                pass.Apply ();
-                Parameters.Apply (pass);
+                pass.Apply (parameters: Parameters);
 
                 // Unsigned short or unsigned int?
                 bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
@@ -142,7 +141,7 @@ namespace MonoGame.GLSL
                 OpenGLDevice.Instance.FlushGLVertexAttributes ();
 
                 // Bind the index buffer
-                OpenGLDevice.Instance.BindIndexBuffer (Indices.Handle);
+                BindIndexBuffer (Indices.Handle);
 
                 // Draw!
                 GL.DrawRangeElements (

@@ -78,18 +78,23 @@ namespace MonoGame.GLSL
             foreach (KeyValuePair<string, float> pair in parametersFloat) {
                 int loc = GL.GetUniformLocation (program: program.ProgramId, name: pair.Key);
                 GraphicsExtensions.CheckGLError ();
-                GL.ProgramUniform1 (program: program.ProgramId, location: loc, v0: pair.Value);
-                GraphicsExtensions.CheckGLError ();
+                if (loc != -1) {
+                    GL.Uniform1 (location: loc, v0: pair.Value);
+                    GraphicsExtensions.CheckGLError ();
+                }
             }
             foreach (KeyValuePair<string, Matrix> pair in parametersMatrix) {
                 int loc = GL.GetUniformLocation (program: program.ProgramId, name: pair.Key);
                 GraphicsExtensions.CheckGLError ();
-                float[] buffer = new float[16];
-                for (int i = 0; i < 16; ++i) {
-                    buffer [i] = pair.Value [i];
+                if (loc != -1) {
+                    Console.WriteLine ("name: "+pair.Key+", loc: "+loc);
+                    float[] buffer = new float[16];
+                    for (int i = 0; i < 16; ++i) {
+                        buffer [i] = pair.Value [i];
+                    }
+                    GL.UniformMatrix4 (location: loc, count: 1, transpose: false, value: buffer);
+                    GraphicsExtensions.CheckGLError ();
                 }
-                GL.ProgramUniformMatrix4 (program: program.ProgramId, location: loc, count: 1, transpose: false, value: buffer);
-                GraphicsExtensions.CheckGLError ();
             }
         }
     }
