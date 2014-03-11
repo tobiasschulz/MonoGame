@@ -629,7 +629,7 @@ namespace Microsoft.Xna.Framework
 			// Bordered
 			SDL.SDL_SetWindowBordered(
 				INTERNAL_sdlWindow,
-				IsBorderless ? SDL.SDL_bool.SDL_TRUE : SDL.SDL_bool.SDL_FALSE
+				IsBorderless ? SDL.SDL_bool.SDL_FALSE : SDL.SDL_bool.SDL_TRUE
 			);
 
 			// Window bounds
