@@ -37,63 +37,42 @@ using MonoGame.Utilities;
 
 namespace MonoGame.GLSL
 {
-    internal class GLShader : Shader
+    internal class GLShader
     {
         public string Code { get; private set; }
 
-        public GLShader (GraphicsDevice graphicsDevice, ShaderStage stage, string code)
-            : base (graphicsDevice, stage, System.Text.Encoding.ASCII.GetBytes (code), Attributes(stage), ConstantBuffers(stage))
+        public int ShaderHandle { get; private set; }
+
+        public ShaderStage Stage { get; private set; }
+
+        public GLShader (ShaderStage stage, string code)
         {
             Code = code;
-        }
+            Stage = stage;
 
-        private static Attribute[] Attributes(ShaderStage stage) {
-            Attribute[] attribs = new Attribute[0];
-            if (stage == ShaderStage.Vertex) {
-                attribs = new Attribute[1];
-                attribs [0] = new Shader.Attribute () {
-                    usage = VertexElementUsage.Position,
-                    index = 0,
-                    name = "position",
-                    format = 0,
-                    location = 0
-                };
+            ShaderHandle = GL.CreateShader(stage == ShaderStage.Vertex ? ShaderType.VertexShader : ShaderType.FragmentShader);
+            GraphicsExtensions.CheckGLError();
+            GL.ShaderSource(ShaderHandle, code);
+            GraphicsExtensions.CheckGLError();
+            GL.CompileShader(ShaderHandle);
+            GraphicsExtensions.CheckGLError();
+            
+            var compiled = 0;
+            GL.GetShader(ShaderHandle, ShaderParameter.CompileStatus, out compiled);
+            GraphicsExtensions.CheckGLError();
+            if (compiled == (int)All.False) {
+                var log = GL.GetShaderInfoLog(ShaderHandle);
+                Console.WriteLine(log);
+
+                if (GL.IsShader(ShaderHandle))
+                {
+                    GL.DeleteShader(ShaderHandle);
+                    GraphicsExtensions.CheckGLError();
+                }
+                ShaderHandle = -1;
+
+                throw new InvalidOperationException("Shader Compilation Failed");
             }
-            Console.WriteLine ("attribs.Length="+attribs.Length);
-            return attribs;
         }
-
-        private static int[] ConstantBuffers (ShaderStage stage)
-        {
-            return new int[] { stage == ShaderStage.Pixel ? 0 : 1 };
-        }
-    }
-
-    internal struct GLAttribute
-    {
-        public VertexElementUsage usage;
-        public int index;
-        public string name;
-        public short format;
-        public int location;
-    }
-
-    internal struct GLSamplerInfo
-    {
-        public GLSamplerType type;
-        public int textureSlot;
-        public int samplerSlot;
-        public string name;
-        public SamplerState state;
-        // TODO: This should be moved to EffectPass.
-        public int parameter;
-    }
-
-    internal enum GLSamplerType
-    {
-        Sampler2D = 0,
-        SamplerCube = 1,
-        SamplerVolume = 2,
-        Sampler1D = 3,
     }
 }

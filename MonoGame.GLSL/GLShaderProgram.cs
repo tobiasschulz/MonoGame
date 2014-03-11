@@ -43,33 +43,53 @@ namespace MonoGame.GLSL
 
         public GLShader PixelShader { get; private set; }
 
-        public int ProgramId { get { return shaderProgram; } }
+        public int Program { get; private set; }
 
         public GLShaderProgram (GLShader pixel, GLShader vertex)
         {
             VertexShader = vertex;
             PixelShader = pixel;
+            
+            Program = GL.CreateProgram ();
+            GraphicsExtensions.CheckGLError ();
+
+            GL.AttachShader (Program, vertex.ShaderHandle);
+            GraphicsExtensions.CheckGLError ();
+
+            GL.AttachShader (Program, pixel.ShaderHandle);
+            GraphicsExtensions.CheckGLError ();
+
+            //vertexShader.BindVertexAttributes(program);
+
+            GL.LinkProgram (Program);
+            GraphicsExtensions.CheckGLError ();
+
+            GL.UseProgram (Program);
+            GraphicsExtensions.CheckGLError ();
+
+            var linked = 0;
+            GL.GetProgram (Program, ProgramParameter.LinkStatus, out linked);
+            GraphicsExtensions.LogGLError ("VertexShaderCache.Link(), GL.GetProgram");
+            if (linked == 0) {
+                var log = GL.GetProgramInfoLog (Program);
+                Console.WriteLine (log);
+                GL.DetachShader (Program, vertex.ShaderHandle);
+                GL.DetachShader (Program, pixel.ShaderHandle);
+                GL.DeleteProgram (Program);
+                throw new InvalidOperationException ("Unable to link effect program");
+            }
         }
 
-        private int shaderProgram;
-        private readonly GLShaderProgramCache programCache = new GLShaderProgramCache ();
-
-        public void Apply (GLParamaterCollection parameters)
+        public void Bind ()
         {
-            // Lookup the shader program.
-            var info = programCache.GetProgramInfo (VertexShader, PixelShader);
-            if (info.program == -1) {
-                return;
-            }
+            GL.UseProgram (Program);
+            GraphicsExtensions.CheckGLError ();
+        }
 
-            // Set the new program if it has changed.
-            if (shaderProgram != info.program) {
-                GL.UseProgram (info.program);
-                GraphicsExtensions.CheckGLError ();
-                shaderProgram = info.program;
-
-                parameters.Apply (program: this);
-            }
+        public void Unbind ()
+        {
+            GL.UseProgram (0);
+            GraphicsExtensions.CheckGLError ();
         }
     }
 }

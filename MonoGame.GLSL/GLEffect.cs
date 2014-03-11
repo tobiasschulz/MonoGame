@@ -38,33 +38,30 @@ using OpenTK.Graphics.OpenGL;
 
 namespace MonoGame.GLSL
 {
-    public class GLEffect //: IEffectMatrices
+    public class GLEffect : IEffectMatrices
     {
-        private GraphicsDevice GraphicsDevice;
+        private GLShaderProgram ShaderProgram;
 
-        private List<GLShaderProgram> Shaders;
+        public Matrix Projection { set { Parameters.SetMatrix ("Projection", value); } get { return Parameters.GetMatrix ("Projection"); } }
 
-        public Matrix Projection { set { Parameters.SetMatrix ("Projection", value); } }
+        public Matrix View { set { Parameters.SetMatrix ("View", value); } get { return Parameters.GetMatrix ("View"); } }
 
-        public Matrix View { set { Parameters.SetMatrix ("View", value); } }
-
-        public Matrix World { set { Parameters.SetMatrix ("World", value); } }
+        public Matrix World { set { Parameters.SetMatrix ("World", value); } get { return Parameters.GetMatrix ("World"); } }
 
         public GLParamaterCollection Parameters { get; private set; }
-        
-        private GLEffect (GraphicsDevice graphicsDevice, IEnumerable<GLShaderProgram> shaderPrograms)
+
+        private GLEffect (GLShaderProgram shaderProgram)
         {
-            GraphicsDevice = graphicsDevice;
-            Shaders = shaderPrograms.ToList ();
+            ShaderProgram = shaderProgram;
             Parameters = new GLParamaterCollection ();
         }
 
-        public static GLEffect FromFiles (GraphicsDevice graphicsDevice, string pixelShaderFilename, string vertexShaderFilename)
+        public static GLEffect FromFiles (string pixelShaderFilename, string vertexShaderFilename)
         {
-            GLShader pixelShader = new GLShader (graphicsDevice, ShaderStage.Pixel, File.ReadAllText (pixelShaderFilename));
-            GLShader vertexShader = new GLShader (graphicsDevice, ShaderStage.Vertex, File.ReadAllText (vertexShaderFilename));
+            GLShader pixelShader = new GLShader (ShaderStage.Pixel, File.ReadAllText (pixelShaderFilename));
+            GLShader vertexShader = new GLShader (ShaderStage.Vertex, File.ReadAllText (vertexShaderFilename));
             GLShaderProgram shaderProgram = new GLShaderProgram (vertex: vertexShader, pixel: pixelShader);
-            return new GLEffect (graphicsDevice: graphicsDevice, shaderPrograms: new GLShaderProgram[] { shaderProgram });
+            return new GLEffect (shaderProgram: shaderProgram);
         }
 
         public void Draw (Model model)
@@ -78,16 +75,181 @@ namespace MonoGame.GLSL
             // Draw the model.
             foreach (ModelMesh mesh in model.Meshes) {
                 //Matrix world = sharedDrawBoneMatrices [mesh.ParentBone.Index] * World;
-                Draw (mesh);
+                Draw (mesh, sharedDrawBoneMatrices [mesh.ParentBone.Index]);
             }
         }
-        /*
-        public void Draw (ModelMesh mesh)
-        {
-            Draw (mesh);
-        }*/
 
-        public void Draw (ModelMesh mesh)
+        public void Draw (ModelMesh mesh, Matrix transform)
+        {
+            foreach (ModelMeshPart meshPart in mesh.MeshParts) {
+                if (meshPart.PrimitiveCount > 0) {
+                    Draw (meshPart, ref transform);
+                }
+            }
+        }
+
+        private Dictionary<ModelMeshPart, VertexIndexBuffers> bufferCache = new Dictionary<ModelMeshPart, VertexIndexBuffers> ();
+
+        private int AttribLocation = -1;
+
+        private void Draw (ModelMeshPart meshPart, ref Matrix transform)
+        {
+            GL.EnableClientState(ArrayCap.VertexArray);
+            GraphicsExtensions.CheckGLError ();
+
+            int verticesBuffer;
+            int indicesBuffer;
+            if (!bufferCache.ContainsKey (meshPart)) {
+                List<Vector3> vertices = new List<Vector3> ();
+                List<TriangleVertexIndices> indices = new List<TriangleVertexIndices> ();
+                VertexHelper.ExtractModelMeshPartData (meshPart, ref transform, vertices, indices);
+                float[] verticesData = new float[vertices.Count * 3];
+                for (int i = 0; i < vertices.Count; ++i) {
+                    verticesData [i * 3 + 0] = vertices [i].X;
+                    verticesData [i * 3 + 1] = vertices [i].Y;
+                    verticesData [i * 3 + 2] = vertices [i].Z;
+                }
+                int[] indicesData = new int[indices.Count * 3];
+                for (int i = 0; i < indices.Count; ++i) {
+                    indicesData [i * 3 + 0] = indices [i].A;
+                    indicesData [i * 3 + 1] = indices [i].B;
+                    indicesData [i * 3 + 2] = indices [i].C;
+                }
+
+                //Create a new VBO and use the variable id to store the VBO id
+                GL.GenBuffers (1, out verticesBuffer);
+                /* Make the new VBO active */
+                GL.BindBuffer (BufferTarget.ArrayBuffer, verticesBuffer);
+                GraphicsExtensions.CheckGLError ();
+                /* Upload vertex data to the video device */
+                GL.BufferData (BufferTarget.ArrayBuffer, (IntPtr)(verticesData.Length * sizeof(float)), verticesData, BufferUsageHint.StaticDraw);
+                GraphicsExtensions.CheckGLError ();
+                GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+
+                //Create a new VBO and use the variable id to store the VBO id
+                GL.GenBuffers (1, out indicesBuffer);
+                /* Make the new VBO active */
+                GL.BindBuffer (BufferTarget.ElementArrayBuffer, indicesBuffer);
+                GraphicsExtensions.CheckGLError ();
+                /* Upload vertex data to the video device */
+                GL.BufferData (BufferTarget.ElementArrayBuffer, (IntPtr)(indicesData.Length * sizeof(int)), indicesData, BufferUsageHint.StaticDraw);
+                GraphicsExtensions.CheckGLError ();
+                GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+
+                bufferCache [meshPart] = new VertexIndexBuffers {
+                    VerticesBuffer = verticesBuffer,
+                    IndicesBuffer = indicesBuffer
+                };
+            } else {
+                verticesBuffer = bufferCache [meshPart].VerticesBuffer;
+                indicesBuffer = bufferCache [meshPart].IndicesBuffer;
+            }
+
+            ShaderProgram.Bind ();
+            Parameters.Apply (program: ShaderProgram);
+
+            /* Specify that our coordinate data is going into attribute index 0(shaderAttribute), and contains three floats per vertex */
+            if (AttribLocation == -1)
+                AttribLocation = GL.GetAttribLocation (ShaderProgram.Program, "Position");
+
+            /* Make the new VBO active. */
+            GL.BindBuffer (BufferTarget.ArrayBuffer, verticesBuffer);
+            GraphicsExtensions.CheckGLError ();
+            GL.VertexAttribPointer (AttribLocation, 3, VertexAttribPointerType.Float, false, 0, 0);
+            GraphicsExtensions.CheckGLError ();
+            GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+
+            GL.BindBuffer (BufferTarget.ElementArrayBuffer, indicesBuffer);
+            GraphicsExtensions.CheckGLError ();
+            /* Actually draw the triangle, giving the number of vertices provided by invoke glDrawArrays
+               while telling that our data is a triangle and we want to draw 0-3 vertexes 
+            */
+            //GL.DrawArrays (BeginMode.Triangles, vertexOffset, numVertices);
+
+
+            GL.ClearColor(0.1f,0.5f,0.6f,1.0f);
+            
+            GL.EnableVertexAttribArray (AttribLocation);
+            GraphicsExtensions.CheckGLError ();
+
+            Console.WriteLine (
+                "mode: " + BeginMode.Triangles + ", " +
+                "start: " + meshPart.VertexOffset + ", " +
+                "end: " + (meshPart.VertexOffset + meshPart.NumVertices) + ", " +
+                "count: " + (meshPart.PrimitiveCount * 3) + ", " +
+                "type: " + DrawElementsType.UnsignedInt + ", " +
+                "indices: " + (IntPtr)(meshPart.StartIndex * 4)
+            );
+            GL.DrawRangeElements (
+                mode: BeginMode.Triangles,
+                start: meshPart.VertexOffset,
+                end: meshPart.VertexOffset + meshPart.NumVertices,
+                count: meshPart.PrimitiveCount * 3,
+                type: DrawElementsType.UnsignedInt,
+                indices: (IntPtr)(meshPart.StartIndex * 4)
+            );
+
+            // Check for errors in the debug context
+            GraphicsExtensions.CheckGLError ();
+            
+            GL.DisableVertexAttribArray (AttribLocation);
+            GraphicsExtensions.CheckGLError ();
+
+            
+            GL.Finish();
+            ShaderProgram.Unbind ();
+        }
+        
+        private void DrawCube()
+        {
+            GL.Begin(BeginMode.Quads);
+
+            GL.Color3(System.Drawing.Color.Silver);
+            GL.Vertex3(-1.0f, -1.0f, -1.0f);
+            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+            GL.Vertex3(1.0f, 1.0f, -1.0f);
+            GL.Vertex3(1.0f, -1.0f, -1.0f);
+
+            GL.Color3(System.Drawing.Color.Honeydew);
+            GL.Vertex3(-1.0f, -1.0f, -1.0f);
+            GL.Vertex3(1.0f, -1.0f, -1.0f);
+            GL.Vertex3(1.0f, -1.0f, 1.0f);
+            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+
+            GL.Color3(System.Drawing.Color.Moccasin);
+
+            GL.Vertex3(-1.0f, -1.0f, -1.0f);
+            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+
+            GL.Color3(System.Drawing.Color.IndianRed);
+            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+            GL.Vertex3(1.0f, -1.0f, 1.0f);
+            GL.Vertex3(1.0f, 1.0f, 1.0f);
+            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+
+            GL.Color3(System.Drawing.Color.PaleVioletRed);
+            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+            GL.Vertex3(1.0f, 1.0f, 1.0f);
+            GL.Vertex3(1.0f, 1.0f, -1.0f);
+
+            GL.Color3(System.Drawing.Color.ForestGreen);
+            GL.Vertex3(1.0f, -1.0f, -1.0f);
+            GL.Vertex3(1.0f, 1.0f, -1.0f);
+            GL.Vertex3(1.0f, 1.0f, 1.0f);
+            GL.Vertex3(1.0f, -1.0f, 1.0f);
+
+            GL.End();
+        }
+
+        private struct VertexIndexBuffers
+        {
+            public int VerticesBuffer;
+            public int IndicesBuffer;
+        };
+        /*public void Draw (ModelMesh mesh)
         {
             foreach (ModelMeshPart part in mesh.MeshParts) {
                 if (part.PrimitiveCount > 0) {
@@ -122,7 +284,6 @@ namespace MonoGame.GLSL
             int primitiveCount
         )
         {
-            foreach (GLShaderProgram pass in Shaders) {
                 pass.Apply (parameters: Parameters);
 
                 // Unsigned short or unsigned int?
@@ -157,7 +318,6 @@ namespace MonoGame.GLSL
 
                 // Check for errors in the debug context
                 GraphicsExtensions.CheckGLError ();
-            }
         }
 
         #region Private XNA->GL Conversion Methods
@@ -196,6 +356,6 @@ namespace MonoGame.GLSL
             throw new ArgumentException();
         }
 
-        #endregion
+        #endregion*/
     }
 }

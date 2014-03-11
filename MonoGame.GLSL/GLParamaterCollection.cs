@@ -70,32 +70,41 @@ namespace MonoGame.GLSL
 
         public void SetMatrix (string name, Matrix value)
         {
+            Console.WriteLine ("set name: "+name+", value: "+value);
             parametersMatrix [name] = value;
         }
 
         internal void Apply (GLShaderProgram program)
         {
             foreach (KeyValuePair<string, float> pair in parametersFloat) {
-                int loc = GL.GetUniformLocation (program: program.ProgramId, name: pair.Key);
+                int loc = GL.GetUniformLocation (program: program.Program, name: pair.Key);
                 GraphicsExtensions.CheckGLError ();
                 if (loc != -1) {
                     GL.Uniform1 (location: loc, v0: pair.Value);
                     GraphicsExtensions.CheckGLError ();
                 }
             }
-            foreach (KeyValuePair<string, Matrix> pair in parametersMatrix) {
-                int loc = GL.GetUniformLocation (program: program.ProgramId, name: pair.Key);
+
+            Console.WriteLine ("parametersMatrix.Count="+parametersMatrix.Count);
+            foreach (string name in parametersMatrix.Keys) {
+                Matrix matrix = parametersMatrix[name];
+                Console.WriteLine ("key: "+name);
+                int loc = GL.GetUniformLocation (program: program.Program, name: name);
                 GraphicsExtensions.CheckGLError ();
-                if (loc != -1) {
-                    Console.WriteLine ("name: "+pair.Key+", loc: "+loc);
-                    float[] buffer = new float[16];
-                    for (int i = 0; i < 16; ++i) {
-                        buffer [i] = pair.Value [i];
-                    }
-                    GL.UniformMatrix4 (location: loc, count: 1, transpose: false, value: buffer);
+                Console.WriteLine ("try name: "+name+", loc: "+loc);
+                if (false&&loc != -1) {
+                    Console.WriteLine ("name: "+name+", loc: "+loc);
+                    OpenTK.Matrix4 matrixTK = new OpenTK.Matrix4 (
+                        matrix.M11, matrix.M12, matrix.M13, matrix.M14,
+                        matrix.M21, matrix.M22, matrix.M23, matrix.M24,
+                        matrix.M31, matrix.M32, matrix.M33, matrix.M34,
+                        matrix.M41, matrix.M42, matrix.M43, matrix.M44
+                    );
+                    GL.UniformMatrix4 (location: loc, transpose: false, value: ref matrixTK);
                     GraphicsExtensions.CheckGLError ();
                 }
             }
+            Console.WriteLine ("_parametersMatrix.Count="+parametersMatrix.Count);
         }
     }
 }

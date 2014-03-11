@@ -1212,7 +1212,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// Set the new program if it has changed.
-			if (shaderProgram != info.program)
+			if (shaderProgram != info.program||true)
 			{
 				GL.UseProgram(info.program);
 				GraphicsExtensions.CheckGLError();
