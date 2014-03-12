@@ -95,6 +95,7 @@ namespace MonoGame.GLSL
             foreach (ModelMeshPart meshPart in mesh.MeshParts) {
                 if (meshPart.PrimitiveCount > 0) {
                     Draw (meshPart, ref transform);
+                    DrawXNA (meshPart, ref transform);
                 }
             }
         }
@@ -102,13 +103,16 @@ namespace MonoGame.GLSL
         private Dictionary<ModelMeshPart, VertexIndexBuffers> bufferCache = new Dictionary<ModelMeshPart, VertexIndexBuffers> ();
         private int AttribLocation = -1;
 
+        public static GraphicsDevice GraphicsDevice;
+
         public void Draw (ModelMeshPart meshPart, ref Matrix transform)
         {
             //transform = Matrix.Identity;
+
             GL.Disable (EnableCap.StencilTest); // default
             GL.ClearStencil (0);
             GL.Disable (EnableCap.CullFace);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear (ClearBufferMask.ColorBufferBit);
 
             GL.EnableClientState (ArrayCap.VertexArray);
 
@@ -127,70 +131,113 @@ namespace MonoGame.GLSL
                     verticesData [i * 3 + 1] = vertices [i].Y;
                     verticesData [i * 3 + 2] = vertices [i].Z;
                 }
-                int[] indicesData = new int[indices.Count * 3];
+                ushort[] indicesData = new ushort[indices.Count * 3];
                 for (int i = 0; i < indices.Count; ++i) {
-                    indicesData [i * 3 + 0] = indices [i].A;
-                    indicesData [i * 3 + 1] = indices [i].B;
-                    indicesData [i * 3 + 2] = indices [i].C;
+                    indicesData [i * 3 + 0] = (ushort)indices [i].A;
+                    indicesData [i * 3 + 1] = (ushort)indices [i].B;
+                    indicesData [i * 3 + 2] = (ushort)indices [i].C;
                 }
 
                 //Create a new VBO and use the variable id to store the VBO id
                 GL.GenBuffers (1, out verticesBuffer);
-                /* Make the new VBO active */
-                GL.BindBuffer (BufferTarget.ArrayBuffer, verticesBuffer);
-                /* Upload vertex data to the video device */
+                // Make the new VBO active 
+                OpenGLDevice.Instance.BindVertexBuffer (verticesBuffer);
+                // Upload vertex data to the video device 
                 GL.BufferData (BufferTarget.ArrayBuffer, (IntPtr)(verticesData.Length * sizeof(float)), verticesData, BufferUsageHint.StaticDraw);
-                GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+                OpenGLDevice.Instance.BindVertexBuffer (0);
 
                 //Create a new VBO and use the variable id to store the VBO id
                 GL.GenBuffers (1, out indicesBuffer);
-                /* Make the new VBO active */
-                GL.BindBuffer (BufferTarget.ElementArrayBuffer, indicesBuffer);
-                /* Upload vertex data to the video device */
-                GL.BufferData (BufferTarget.ElementArrayBuffer, (IntPtr)(indicesData.Length * sizeof(int)), indicesData, BufferUsageHint.StaticDraw);
-                GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+                // Make the new VBO active 
+                OpenGLDevice.Instance.BindIndexBuffer (indicesBuffer);
+                // Upload vertex data to the video device 
+                GL.BufferData (BufferTarget.ElementArrayBuffer, (IntPtr)(indicesData.Length * sizeof(uint)), indicesData, BufferUsageHint.StaticDraw);
+                OpenGLDevice.Instance.BindIndexBuffer (0);
 
                 bufferCache [meshPart] = new VertexIndexBuffers {
                     VerticesBuffer = verticesBuffer,
                     IndicesBuffer = indicesBuffer
                 };
+
+                OpenGLDevice.Instance.BindIndexBuffer (0);
+                OpenGLDevice.Instance.BindVertexBuffer (0);
             } else {
                 Console.WriteLine ("load mesh part: " + meshPart);
                 verticesBuffer = bufferCache [meshPart].VerticesBuffer;
                 indicesBuffer = bufferCache [meshPart].IndicesBuffer;
             }
 
+
             ShaderProgram.Bind ();
             Parameters.Apply (program: ShaderProgram);
 
-            /* Specify that our coordinate data is going into attribute index 0(shaderAttribute), and contains three floats per vertex */
+            // Specify that our coordinate data is going into attribute index 0(shaderAttribute), and contains three floats per vertex 
             if (AttribLocation == -1)
                 AttribLocation = GL.GetAttribLocation (ShaderProgram.Program, "Position");
 
-            /* Make the new VBO active. */
-            GL.BindBuffer (BufferTarget.ArrayBuffer, verticesBuffer);
+            // Make the new VBO active.
+            OpenGLDevice.Instance.BindVertexBuffer (verticesBuffer);
             GL.VertexAttribPointer (AttribLocation, 3, VertexAttribPointerType.Float, false, 0, 0);
-            GL.BindBuffer (BufferTarget.ArrayBuffer, 0);
+            OpenGLDevice.Instance.BindVertexBuffer (0);
 
-            GL.BindBuffer (BufferTarget.ElementArrayBuffer, indicesBuffer);
-            /* Actually draw the triangle, giving the number of vertices provided by invoke glDrawArrays
-               while telling that our data is a triangle and we want to draw 0-3 vertexes 
-            */
+            GL.Viewport (0, 0, 300, 300);
+
+            GL.ClearColor (0.1f, 0.5f, 0.6f, 1.0f);
+
+            OpenGLDevice.Instance.BindIndexBuffer (indicesBuffer);
+            // Actually draw the triangle, giving the number of vertices provided by invoke glDrawArrays
+            //   while telling that our data is a triangle and we want to draw 0-3 vertexes 
+
             //GL.DrawArrays (BeginMode.Triangles, vertexOffset, numVertices);
 
 
-            GL.EnableVertexAttribArray (AttribLocation);
-
-            GL.Viewport (0, 0, 300, 300);
+            //GL.EnableVertexAttribArray (AttribLocation);
             
-            GL.ClearColor (0.1f, 0.5f, 0.6f, 1.0f);
+            OpenGLDevice.Instance.BindVertexBuffer (0);
+            OpenGLDevice.Instance.BindIndexBuffer (0);
+
+
+
+            
+
+            GL.DisableVertexAttribArray (AttribLocation);
+
+            GL.Flush ();
+            GL.Finish ();
+            ShaderProgram.Unbind ();
+
+            GraphicsDevice.ResetShaders ();
+        }
+        
+        public void DrawXNA (ModelMeshPart meshPart, ref Matrix transform)
+        {    /// XNA
+            
+            GraphicsDevice.SetVertexBuffer(meshPart.VertexBuffer);
+            GraphicsDevice.Indices = meshPart.IndexBuffer;
+
+            meshPart.Effect.CurrentTechnique.Passes [0].Apply ();
+            GraphicsDevice.ApplyState(true);
+            
+            foreach (VertexBufferBinding vertBuffer in GraphicsDevice.vertexBufferBindings)
+            {
+                if (vertBuffer.VertexBuffer != null)
+                {
+                    OpenGLDevice.Instance.BindVertexBuffer(vertBuffer.VertexBuffer.Handle);
+                    vertBuffer.VertexBuffer.VertexDeclaration.Apply(
+                        GraphicsDevice.VertexShader,
+                        (IntPtr) (vertBuffer.VertexBuffer.VertexDeclaration.VertexStride * (vertBuffer.VertexOffset + 0))
+                        );
+                }
+            }
+            OpenGLDevice.Instance.FlushGLVertexAttributes();
+            OpenGLDevice.Instance.BindIndexBuffer(meshPart.IndexBuffer.Handle);
 
             Console.WriteLine (
                 "mode: " + BeginMode.Triangles + ", " +
                 "start: " + meshPart.VertexOffset + ", " +
                 "end: " + (meshPart.VertexOffset + meshPart.NumVertices) + ", " +
                 "count: " + (meshPart.PrimitiveCount * 3) + ", " +
-                "type: " + DrawElementsType.UnsignedInt + ", " +
+                "type: " + DrawElementsType.UnsignedShort + ", " +
                 "indices: " + (IntPtr)(meshPart.StartIndex * 4)
             );
             GL.DrawRangeElements (
@@ -198,14 +245,10 @@ namespace MonoGame.GLSL
                 start: meshPart.VertexOffset,
                 end: meshPart.VertexOffset + meshPart.NumVertices,
                 count: meshPart.PrimitiveCount * 3,
-                type: DrawElementsType.UnsignedInt,
+                type: DrawElementsType.UnsignedShort,
                 indices: (IntPtr)(meshPart.StartIndex * 4)
             );
-            GL.DisableVertexAttribArray (AttribLocation);
 
-            GL.Flush ();
-            GL.Finish ();
-            ShaderProgram.Unbind ();
         }
 
         private void DrawCube ()

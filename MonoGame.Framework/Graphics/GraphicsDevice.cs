@@ -165,7 +165,14 @@ namespace Microsoft.Xna.Framework.Graphics
 				// vertex shader uniform if the viewport changes.
 				vertexShaderDirty = true;
 			}
-		}
+        }
+
+        public void ResetShaders ()
+        {
+            vertexShaderDirty = true;
+            pixelShaderDirty = true;
+            shaderProgram = -1;
+        }
 
 		#endregion
 
@@ -220,7 +227,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private Buffer Object Variables
 
-		private VertexBufferBinding[] vertexBufferBindings;
+		internal VertexBufferBinding[] vertexBufferBindings;
 
 		#endregion
 
@@ -735,7 +742,15 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Bind the index buffer
 			OpenGLDevice.Instance.BindIndexBuffer(Indices.Handle);
 
-			// Draw!
+            // Draw!
+            Console.WriteLine (
+                "mode: " + PrimitiveTypeGL(primitiveType) + ", " +
+                "start: " + minVertexIndex + ", " +
+                "end: " + (minVertexIndex + numVertices) + ", " +
+                "count: " + (GetElementCountArray(primitiveType, primitiveCount)) + ", " +
+                "type: " + (shortIndices ? DrawElementsType.UnsignedShort : DrawElementsType.UnsignedInt) + ", " +
+                "indices: " + (IntPtr)(startIndex * (shortIndices ? 2 : 4))
+                );
 			GL.DrawRangeElements(
 				PrimitiveTypeGL(primitiveType),
 				minVertexIndex,
@@ -1066,7 +1081,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private State Flush Methods
 
-		private void ApplyState(bool applyShaders)
+		internal void ApplyState(bool applyShaders)
 		{
 			// Apply BlendState
 			OpenGLDevice.Instance.AlphaBlendEnable.Set(
