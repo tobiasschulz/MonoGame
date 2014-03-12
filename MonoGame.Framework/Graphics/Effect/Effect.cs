@@ -81,7 +81,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Clone(cloneSource);
 		}
 
-        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode)
+        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode, string effectName)
             : this(graphicsDevice)
 		{
 			// By default we currently cache all unique byte streams
@@ -118,7 +118,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 cloneSource = new Effect(graphicsDevice);
                 using (var stream = new MemoryStream(effectCode))
                 using (var reader = new BinaryReader(stream))
-                    cloneSource.ReadEffect(reader);
+                    cloneSource.ReadEffect(reader, effectName);
 
                 // Cache the effect for later in its original unmodified state.
                 EffectCache.Add(effectKey, cloneSource);
@@ -251,8 +251,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if !PSM
 
-		private void ReadEffect (BinaryReader reader)
+		private void ReadEffect (BinaryReader reader, string effectName)
 		{
+            string readableCode = "";
+
 			// Check the header to make sure the file and version is correct!
 			var header = new string (reader.ReadChars (MGFXHeader.Length));
 			var version = (int)reader.ReadByte ();
@@ -302,6 +304,13 @@ namespace Microsoft.Xna.Framework.Graphics
 				                                offsets,
 				                                name);
                 ConstantBuffers[c] = buffer;
+
+                readableCode += "#ConstantBuffer("+EffectUtilities.Params(
+                    "sizeInBytes", sizeInBytes,
+                    "parameters", EffectUtilities.Join(parameters),
+                    "offsets", EffectUtilities.Join(offsets),
+                    "name", name
+                )+")\n";
             }
 
             // Read in all the shader objects.
@@ -329,6 +338,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             Techniques = new EffectTechniqueCollection(techniques);
             CurrentTechnique = Techniques[0];
+
+            EffectUtilities.ReadableEffectCode[effectName] = readableCode;
         }
 
         private static EffectAnnotationCollection ReadAnnotations(BinaryReader reader)
