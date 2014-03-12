@@ -53,7 +53,6 @@ namespace MonoGame.GLSL
             Program = GL.CreateProgram ();
 
             GL.AttachShader (Program, vertex.ShaderHandle);
-
             GL.AttachShader (Program, pixel.ShaderHandle);
 
             //vertexShader.BindVertexAttributes(program);
@@ -72,6 +71,8 @@ namespace MonoGame.GLSL
                 GL.DeleteProgram (Program);
                 throw new InvalidOperationException ("Unable to link effect program");
             }
+            var log2 = GL.GetProgramInfoLog (Program);
+            Console.WriteLine (log2);
         }
 
         public void Bind ()

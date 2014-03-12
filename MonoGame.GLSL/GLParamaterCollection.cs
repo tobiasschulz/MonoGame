@@ -70,7 +70,7 @@ namespace MonoGame.GLSL
 
         public void SetMatrix (string name, Matrix value)
         {
-            Console.WriteLine ("set name: "+name+", value: "+value);
+            Console.WriteLine ("set name: " + name + ", value: " + value);
             parametersMatrix [name] = value;
         }
 
@@ -83,24 +83,24 @@ namespace MonoGame.GLSL
                 }
             }
 
-            Console.WriteLine ("parametersMatrix.Count="+parametersMatrix.Count);
-            foreach (string name in parametersMatrix.Keys) {
-                Matrix matrix = parametersMatrix[name];
-                Console.WriteLine ("key: "+name);
+            // Console.WriteLine ("parametersMatrix.Count=" + parametersMatrix.Count);
+            string[] keys = parametersMatrix.Keys.ToArray ();
+            for (int i = 0; i < keys.Length; ++i) {
+                string name = keys [i];
+                Matrix matrix = parametersMatrix [name];
                 int loc = GL.GetUniformLocation (program: program.Program, name: name);
-                Console.WriteLine ("try name: "+name+", loc: "+loc);
-                if (false&&loc != -1) {
-                    Console.WriteLine ("name: "+name+", loc: "+loc);
+                if (loc != -1) {
+                    Console.WriteLine ("name: " + name + ", loc: " + loc);
                     OpenTK.Matrix4 matrixTK = new OpenTK.Matrix4 (
                         matrix.M11, matrix.M12, matrix.M13, matrix.M14,
                         matrix.M21, matrix.M22, matrix.M23, matrix.M24,
                         matrix.M31, matrix.M32, matrix.M33, matrix.M34,
                         matrix.M41, matrix.M42, matrix.M43, matrix.M44
                     );
-                    GL.UniformMatrix4 (location: loc, transpose: false, value: ref matrixTK);
+                    GL.UniformMatrix4 (location: loc, count: 1, transpose: false, value: ref matrixTK.Row0.X);
+
                 }
             }
-            Console.WriteLine ("_parametersMatrix.Count="+parametersMatrix.Count);
         }
     }
 }

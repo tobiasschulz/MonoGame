@@ -79,6 +79,16 @@ namespace MonoGame.GLSL
             }
         }
 
+        public void DrawXNA (ModelMesh mesh, Matrix transform)
+        {
+            foreach (ModelMeshPart meshPart in mesh.MeshParts) {
+                (meshPart.Effect as BasicEffect).World = transform*World;
+                (meshPart.Effect as BasicEffect).View = View;
+                (meshPart.Effect as BasicEffect).Projection = Projection;
+            }
+            mesh.Draw ();
+        }
+
         public void Draw (ModelMesh mesh, Matrix transform)
         {
             foreach (ModelMeshPart meshPart in mesh.MeshParts) {
@@ -89,16 +99,18 @@ namespace MonoGame.GLSL
         }
 
         private Dictionary<ModelMeshPart, VertexIndexBuffers> bufferCache = new Dictionary<ModelMeshPart, VertexIndexBuffers> ();
-
         private int AttribLocation = -1;
 
-        private void Draw (ModelMeshPart meshPart, ref Matrix transform)
+        public void Draw (ModelMeshPart meshPart, ref Matrix transform)
         {
-            GL.EnableClientState(ArrayCap.VertexArray);
+            transform = Matrix.Identity;
+
+            GL.EnableClientState (ArrayCap.VertexArray);
 
             int verticesBuffer;
             int indicesBuffer;
             if (!bufferCache.ContainsKey (meshPart)) {
+                Console.WriteLine ("new mesh part: " + meshPart);
                 List<Vector3> vertices = new List<Vector3> ();
                 List<TriangleVertexIndices> indices = new List<TriangleVertexIndices> ();
                 VertexHelper.ExtractModelMeshPartData (meshPart, ref transform, vertices, indices);
@@ -136,6 +148,7 @@ namespace MonoGame.GLSL
                     IndicesBuffer = indicesBuffer
                 };
             } else {
+                Console.WriteLine ("load mesh part: " + meshPart);
                 verticesBuffer = bufferCache [meshPart].VerticesBuffer;
                 indicesBuffer = bufferCache [meshPart].IndicesBuffer;
             }
@@ -159,9 +172,11 @@ namespace MonoGame.GLSL
             //GL.DrawArrays (BeginMode.Triangles, vertexOffset, numVertices);
 
 
-            GL.ClearColor(0.1f,0.5f,0.6f,1.0f);
-            
             GL.EnableVertexAttribArray (AttribLocation);
+
+            GL.Viewport (0, 0, 300, 300);
+            
+            GL.ClearColor (0.1f, 0.5f, 0.6f, 1.0f);
 
             Console.WriteLine (
                 "mode: " + BeginMode.Triangles + ", " +
@@ -180,53 +195,55 @@ namespace MonoGame.GLSL
                 indices: (IntPtr)(meshPart.StartIndex * 4)
             );
             GL.DisableVertexAttribArray (AttribLocation);
-            
-            GL.Finish();
+
+            GL.Flush ();
+            GL.Finish ();
             ShaderProgram.Unbind ();
+
         }
-        
-        private void DrawCube()
+
+        private void DrawCube ()
         {
-            GL.Begin(BeginMode.Quads);
+            GL.Begin (BeginMode.Quads);
 
-            GL.Color3(System.Drawing.Color.Silver);
-            GL.Vertex3(-1.0f, -1.0f, -1.0f);
-            GL.Vertex3(-1.0f, 1.0f, -1.0f);
-            GL.Vertex3(1.0f, 1.0f, -1.0f);
-            GL.Vertex3(1.0f, -1.0f, -1.0f);
+            GL.Color3 (System.Drawing.Color.Silver);
+            GL.Vertex3 (-1.0f, -1.0f, -1.0f);
+            GL.Vertex3 (-1.0f, 1.0f, -1.0f);
+            GL.Vertex3 (1.0f, 1.0f, -1.0f);
+            GL.Vertex3 (1.0f, -1.0f, -1.0f);
 
-            GL.Color3(System.Drawing.Color.Honeydew);
-            GL.Vertex3(-1.0f, -1.0f, -1.0f);
-            GL.Vertex3(1.0f, -1.0f, -1.0f);
-            GL.Vertex3(1.0f, -1.0f, 1.0f);
-            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+            GL.Color3 (System.Drawing.Color.Honeydew);
+            GL.Vertex3 (-1.0f, -1.0f, -1.0f);
+            GL.Vertex3 (1.0f, -1.0f, -1.0f);
+            GL.Vertex3 (1.0f, -1.0f, 1.0f);
+            GL.Vertex3 (-1.0f, -1.0f, 1.0f);
 
-            GL.Color3(System.Drawing.Color.Moccasin);
+            GL.Color3 (System.Drawing.Color.Moccasin);
 
-            GL.Vertex3(-1.0f, -1.0f, -1.0f);
-            GL.Vertex3(-1.0f, -1.0f, 1.0f);
-            GL.Vertex3(-1.0f, 1.0f, 1.0f);
-            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+            GL.Vertex3 (-1.0f, -1.0f, -1.0f);
+            GL.Vertex3 (-1.0f, -1.0f, 1.0f);
+            GL.Vertex3 (-1.0f, 1.0f, 1.0f);
+            GL.Vertex3 (-1.0f, 1.0f, -1.0f);
 
-            GL.Color3(System.Drawing.Color.IndianRed);
-            GL.Vertex3(-1.0f, -1.0f, 1.0f);
-            GL.Vertex3(1.0f, -1.0f, 1.0f);
-            GL.Vertex3(1.0f, 1.0f, 1.0f);
-            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+            GL.Color3 (System.Drawing.Color.IndianRed);
+            GL.Vertex3 (-1.0f, -1.0f, 1.0f);
+            GL.Vertex3 (1.0f, -1.0f, 1.0f);
+            GL.Vertex3 (1.0f, 1.0f, 1.0f);
+            GL.Vertex3 (-1.0f, 1.0f, 1.0f);
 
-            GL.Color3(System.Drawing.Color.PaleVioletRed);
-            GL.Vertex3(-1.0f, 1.0f, -1.0f);
-            GL.Vertex3(-1.0f, 1.0f, 1.0f);
-            GL.Vertex3(1.0f, 1.0f, 1.0f);
-            GL.Vertex3(1.0f, 1.0f, -1.0f);
+            GL.Color3 (System.Drawing.Color.PaleVioletRed);
+            GL.Vertex3 (-1.0f, 1.0f, -1.0f);
+            GL.Vertex3 (-1.0f, 1.0f, 1.0f);
+            GL.Vertex3 (1.0f, 1.0f, 1.0f);
+            GL.Vertex3 (1.0f, 1.0f, -1.0f);
 
-            GL.Color3(System.Drawing.Color.ForestGreen);
-            GL.Vertex3(1.0f, -1.0f, -1.0f);
-            GL.Vertex3(1.0f, 1.0f, -1.0f);
-            GL.Vertex3(1.0f, 1.0f, 1.0f);
-            GL.Vertex3(1.0f, -1.0f, 1.0f);
+            GL.Color3 (System.Drawing.Color.ForestGreen);
+            GL.Vertex3 (1.0f, -1.0f, -1.0f);
+            GL.Vertex3 (1.0f, 1.0f, -1.0f);
+            GL.Vertex3 (1.0f, 1.0f, 1.0f);
+            GL.Vertex3 (1.0f, -1.0f, 1.0f);
 
-            GL.End();
+            GL.End ();
         }
 
         private struct VertexIndexBuffers
@@ -342,5 +359,9 @@ namespace MonoGame.GLSL
         }
 
         #endregion*/
+
+        public static void ApplyState (GraphicsDevice device) {
+            device.ApplyState (false);
+        }
     }
 }
