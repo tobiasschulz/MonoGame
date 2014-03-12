@@ -115,6 +115,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		
         internal Shader(GraphicsDevice device, BinaryReader reader, ref string readableCode)
         {
+        }
+
+        internal Shader(GraphicsDevice device, BinaryReader reader, ref string readableCode)
+        {
             GraphicsDevice = device;
 
             var isVertexShader = reader.ReadBoolean();

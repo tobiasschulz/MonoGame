@@ -129,6 +129,27 @@ namespace Microsoft.Xna.Framework.Graphics
             Clone(cloneSource);
         }
 
+        public Effect (GraphicsDevice graphicsDevice, string effectCode, string effectName)
+            : this(graphicsDevice)
+        {
+            var effectKey = MonoGame.Utilities.Hash.ComputeHash(System.Text.Encoding.ASCII.GetBytes(effectCode));
+            Effect cloneSource;
+            if (!EffectCache.TryGetValue(effectKey, out cloneSource))
+            {
+                // Create one.
+                cloneSource = new Effect(graphicsDevice);
+                string[] lines = EffectUtilities.SplitLines(effectCode);
+                cloneSource.ReadEffect(lines, effectName);
+
+                // Cache the effect for later in its original unmodified state.
+                EffectCache.Add(effectKey, cloneSource);
+            }
+
+            // Clone it.
+            _isClone = true;
+            Clone(cloneSource);
+        }
+
         /// <summary>
         /// Clone the source into this existing object.
         /// </summary>
@@ -253,9 +274,75 @@ namespace Microsoft.Xna.Framework.Graphics
 #if !PSM
 
         private string EffectName = "";
+        
+        private void ReadEffect (string[] lines, string effectName)
+        {
+            List<ConstantBuffer> ConstantBuffersList = new List<ConstantBuffer>();
+            List<EffectParameter> EffectParameterList = new List<EffectParameter>();
 
-		private void ReadEffect (BinaryReader reader, string effectName)
-		{
+            int g = 0;
+            while (g < lines.Length)
+            {
+                string command;
+                if (EffectUtilities.MatchesMonoGameMetaLine(lines[g], "ConstantBuffer", out command))
+                {
+                    var buffer = new ConstantBuffer(device: GraphicsDevice,
+                                                    sizeInBytes: EffectUtilities.ParseParam(command, "sizeInBytes", 0),
+                                                    parameterIndexes: EffectUtilities.ParseParam(command, "parameters", new int[] { }),
+                                                    parameterOffsets: EffectUtilities.ParseParam(command, "offsets", new int[] { }),
+                                                    name: EffectUtilities.ParseParam(command, "name", ""));
+                    ConstantBuffersList.Add(buffer);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMonoGameMetaLine(lines[g], "EffectParameter", out command))
+                {
+                    string classStr = EffectUtilities.ParseParam(command, "class", "");
+                    EffectParameterClass class_ = classStr == "Vector" ? EffectParameterClass.Vector
+                            : classStr == "Matrix" ? EffectParameterClass.Matrix
+                            : classStr == "Scalar" ? EffectParameterClass.Scalar
+                            : classStr == "Struct" ? EffectParameterClass.Struct
+                            : EffectParameterClass.Object;
+                    string typeStr = EffectUtilities.ParseParam(command, "class", "");
+                    EffectParameterType type = typeStr == "Bool" ? EffectParameterType.Bool
+                        : typeStr == "Int32" ? EffectParameterType.Int32
+                            : typeStr == "Single" ? EffectParameterType.Single
+                            : typeStr == "String" ? EffectParameterType.String
+                            : typeStr == "Texture" ? EffectParameterType.Texture
+                            : typeStr == "Texture1D" ? EffectParameterType.Texture1D
+                            : typeStr == "Texture2D" ? EffectParameterType.Texture2D
+                            : typeStr == "Texture3D" ? EffectParameterType.Texture3D
+                            : typeStr == "TextureCube" ? EffectParameterType.TextureCube
+                            : EffectParameterType.Void;
+                    var parameter = new EffectParameter(
+                        class_: class_,
+                        type: type,
+                        name: EffectUtilities.ParseParam(command, "name", ""),
+                        rowCount: EffectUtilities.ParseParam(command, "rows", 0),
+                        columnCount: EffectUtilities.ParseParam(command, "columns", 0),
+                        semantic: EffectUtilities.ParseParam(command, "semantic", ""),
+                        annotations: EffectAnnotationCollection.Empty,
+                        elements: EffectParameterCollection.Empty,
+                        structMembers: EffectParameterCollection.Empty,
+                        data: null
+                        );
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMonoGameMetaLine(lines[g], "BeginShader", out command))
+                {
+                    ++g;
+                }
+                else
+                {
+                    throw new ArgumentException("Shader Parsing failed: unknown line "+g+": "+lines[g]);
+                }
+            }
+
+            ConstantBuffers = ConstantBuffersList.ToArray();
+            Parameters = new EffectParameterCollection(EffectParameterList.ToArray());
+        }
+        
+        private void ReadEffect (BinaryReader reader, string effectName)
+        {
             string readableCode = "";
 
 			// Check the header to make sure the file and version is correct!
