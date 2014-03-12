@@ -35,6 +35,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using OpenTK.Graphics.OpenGL;
+using SDL2;
 
 namespace MonoGame.GLSL
 {
@@ -82,7 +83,7 @@ namespace MonoGame.GLSL
         public void DrawXNA (ModelMesh mesh, Matrix transform)
         {
             foreach (ModelMeshPart meshPart in mesh.MeshParts) {
-                (meshPart.Effect as BasicEffect).World = transform*World;
+                (meshPart.Effect as BasicEffect).World = transform * World;
                 (meshPart.Effect as BasicEffect).View = View;
                 (meshPart.Effect as BasicEffect).Projection = Projection;
             }
@@ -103,7 +104,11 @@ namespace MonoGame.GLSL
 
         public void Draw (ModelMeshPart meshPart, ref Matrix transform)
         {
-            transform = Matrix.Identity;
+            //transform = Matrix.Identity;
+            GL.Disable (EnableCap.StencilTest); // default
+            GL.ClearStencil (0);
+            GL.Disable (EnableCap.CullFace);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
 
             GL.EnableClientState (ArrayCap.VertexArray);
 
@@ -113,7 +118,9 @@ namespace MonoGame.GLSL
                 Console.WriteLine ("new mesh part: " + meshPart);
                 List<Vector3> vertices = new List<Vector3> ();
                 List<TriangleVertexIndices> indices = new List<TriangleVertexIndices> ();
+                //OpenTK.Graphics.GraphicsContext.CurrentContext = monogameContext;
                 VertexHelper.ExtractModelMeshPartData (meshPart, ref transform, vertices, indices);
+                //OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
                 float[] verticesData = new float[vertices.Count * 3];
                 for (int i = 0; i < vertices.Count; ++i) {
                     verticesData [i * 3 + 0] = vertices [i].X;
@@ -199,7 +206,6 @@ namespace MonoGame.GLSL
             GL.Flush ();
             GL.Finish ();
             ShaderProgram.Unbind ();
-
         }
 
         private void DrawCube ()
@@ -359,8 +365,8 @@ namespace MonoGame.GLSL
         }
 
         #endregion*/
-
-        public static void ApplyState (GraphicsDevice device) {
+        public static void ApplyState (GraphicsDevice device)
+        {
             device.ApplyState (false);
         }
     }
