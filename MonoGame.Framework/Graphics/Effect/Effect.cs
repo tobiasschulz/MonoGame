@@ -302,33 +302,45 @@ namespace Microsoft.Xna.Framework.Graphics
                 else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectParameter", out command))
                 {
                     string classStr = EffectUtilities.ParseParam(command, "class", "");
-                    EffectParameterClass class_ = classStr == "Vector" ? EffectParameterClass.Vector
-                            : classStr == "Matrix" ? EffectParameterClass.Matrix
-                            : classStr == "Scalar" ? EffectParameterClass.Scalar
-                            : classStr == "Struct" ? EffectParameterClass.Struct
-                            : EffectParameterClass.Object;
-                    string typeStr = EffectUtilities.ParseParam(command, "class", "");
-                    EffectParameterType type = typeStr == "Bool" ? EffectParameterType.Bool
-                        : typeStr == "Int32" ? EffectParameterType.Int32
-                            : typeStr == "Single" ? EffectParameterType.Single
-                            : typeStr == "String" ? EffectParameterType.String
-                            : typeStr == "Texture" ? EffectParameterType.Texture
-                            : typeStr == "Texture1D" ? EffectParameterType.Texture1D
-                            : typeStr == "Texture2D" ? EffectParameterType.Texture2D
-                            : typeStr == "Texture3D" ? EffectParameterType.Texture3D
-                            : typeStr == "TextureCube" ? EffectParameterType.TextureCube
-                            : EffectParameterType.Void;
+                    EffectParameterClass class_ = (EffectParameterClass)Enum.Parse(typeof(EffectParameterClass), classStr);
+                    string typeStr = EffectUtilities.ParseParam(command, "type", "");
+                    EffectParameterType type = (EffectParameterType)Enum.Parse(typeof(EffectParameterType), typeStr);
+                    int rows = EffectUtilities.ParseParam(command, "rows", 0);
+                    int columns = EffectUtilities.ParseParam(command, "columns", 0);
+                    object data = null;
+                    //if (elements.Count == 0 && structMembers.Count == 0)
+                    switch (type)
+                    {                       
+                        case EffectParameterType.Bool:
+                            case EffectParameterType.Int32:
+                            case EffectParameterType.Single:
+                        {
+                            var buffer = new float[rows * columns];
+                            for (var j = 0; j < buffer.Length; j++)
+                                buffer[j] = 0;
+                            data = buffer;
+                            break;                          
+                        }
+                        case EffectParameterType.String:
+                            // TODO: We have not investigated what a string
+                            // type should do in the parameter list.  Till then
+                            // throw to let the user know.
+                            throw new NotSupportedException();
+                        default:
+                            break;
+                    }
+
                     var parameter = new EffectParameter(
                         class_: class_,
                         type: type,
                         name: EffectUtilities.ParseParam(command, "name", ""),
-                        rowCount: EffectUtilities.ParseParam(command, "rows", 0),
-                        columnCount: EffectUtilities.ParseParam(command, "columns", 0),
+                        rowCount: rows,
+                        columnCount: columns,
                         semantic: EffectUtilities.ParseParam(command, "semantic", ""),
                         annotations: EffectAnnotationCollection.Empty,
                         elements: EffectParameterCollection.Empty,
                         structMembers: EffectParameterCollection.Empty,
-                        data: null
+                        data: data
                         );
                     EffectParameterList.Add(parameter);
                     ++g;
@@ -337,6 +349,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     string stageStr = EffectUtilities.ParseParam(command, "stage", "");
                     ShaderStage stage = stageStr.ToLower() == "vertex" ? ShaderStage.Vertex : ShaderStage.Pixel;
+                    ++g;
                     Shader shader = new Shader(device: GraphicsDevice, stage: stage, lines: lines, g: ref g);
                     ShaderList.Add(shader);
                 }
