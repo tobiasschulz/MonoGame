@@ -30,7 +30,7 @@ namespace Microsoft.Xna.Framework
             return code.Split(new [] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public static bool MatchesMonoGameMetaLine(string line, string commandName, out string command)
+        public static bool MatchesMetaDeclaration(string line, string commandName, out string command)
         {
             string[] starts = new string[] { "#monogame " + commandName + "(", "#monogame " + commandName + " " };
             foreach (string start in starts)
@@ -43,6 +43,7 @@ namespace Microsoft.Xna.Framework
                     {
                         command = command.Substring(0, command.Length - 1);
                     }
+                    Console.WriteLine("MonoGame Effect Declaraction: "+commandName+"("+command+")");
                     return true;
                 }
             }
@@ -56,7 +57,7 @@ namespace Microsoft.Xna.Framework
             if (command.Contains(key))
             {
                 int begin = command.IndexOf(key) + key.Length;
-                if (begin + 1 < command.Length)
+                if (begin + 1 <= command.Length)
                 {
                     int end = command.IndexOf(";", begin);
                     if (end != -1)

@@ -277,14 +277,19 @@ namespace Microsoft.Xna.Framework.Graphics
         
         private void ReadEffect (string[] lines, string effectName)
         {
+            EffectName = effectName;
+
             List<ConstantBuffer> ConstantBuffersList = new List<ConstantBuffer>();
             List<EffectParameter> EffectParameterList = new List<EffectParameter>();
+            List<Shader> ShaderList = new List<Shader>();
+            List<EffectPass> PassesList = new List<EffectPass>();
+            List<EffectTechnique> TechniquesList = new List<EffectTechnique>();
 
             int g = 0;
             while (g < lines.Length)
             {
                 string command;
-                if (EffectUtilities.MatchesMonoGameMetaLine(lines[g], "ConstantBuffer", out command))
+                if (EffectUtilities.MatchesMetaDeclaration(lines[g], "ConstantBuffer", out command))
                 {
                     var buffer = new ConstantBuffer(device: GraphicsDevice,
                                                     sizeInBytes: EffectUtilities.ParseParam(command, "sizeInBytes", 0),
@@ -294,7 +299,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     ConstantBuffersList.Add(buffer);
                     ++g;
                 }
-                else if (EffectUtilities.MatchesMonoGameMetaLine(lines[g], "EffectParameter", out command))
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectParameter", out command))
                 {
                     string classStr = EffectUtilities.ParseParam(command, "class", "");
                     EffectParameterClass class_ = classStr == "Vector" ? EffectParameterClass.Vector
@@ -325,10 +330,52 @@ namespace Microsoft.Xna.Framework.Graphics
                         structMembers: EffectParameterCollection.Empty,
                         data: null
                         );
+                    EffectParameterList.Add(parameter);
                     ++g;
                 }
-                else if (EffectUtilities.MatchesMonoGameMetaLine(lines[g], "BeginShader", out command))
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "BeginShader", out command))
                 {
+                    string stageStr = EffectUtilities.ParseParam(command, "stage", "");
+                    ShaderStage stage = stageStr.ToLower() == "vertex" ? ShaderStage.Vertex : ShaderStage.Pixel;
+                    Shader shader = new Shader(device: GraphicsDevice, stage: stage, lines: lines, g: ref g);
+                    ShaderList.Add(shader);
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectPass", out command))
+                {
+                    int vertexIndex = EffectUtilities.ParseParam(command, "vertexShader", -1);
+                    int pixelIndex = EffectUtilities.ParseParam(command, "pixelShader", -1);
+                    if (vertexIndex == -1) {
+                        throw new ArgumentException("No vertexShader specified: " + command);
+                    }
+                    if (pixelIndex == -1) {
+                        throw new ArgumentException("No pixelShader specified: " + command);
+                    }
+                    if (vertexIndex >= ShaderList.Count) {
+                        throw new ArgumentException("The EffectPass has be to be specified after (Vertex-)Shader #"+vertexIndex
+                                                    +" (shader count so far: "+ ShaderList.Count);
+                    }
+                    if (pixelIndex >= ShaderList.Count) {
+                        throw new ArgumentException("The EffectPass has be to be specified after (Pixel-)Shader #"+vertexIndex
+                                                    +" (shader count so far: "+ ShaderList.Count);
+                    }
+                    EffectPass pass = new EffectPass(
+                        effect: this,
+                        name: EffectUtilities.ParseParam(command, "name", ""),
+                        vertexShader: ShaderList[vertexIndex],
+                        pixelShader: ShaderList[pixelIndex],
+                        blendState: null,
+                        depthStencilState: null,
+                        rasterizerState: null,
+                        annotations: EffectAnnotationCollection.Empty
+                    );
+                    PassesList.Add(pass);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectTechnique", out command))
+                {
+                    string name = EffectUtilities.ParseParam(command, "name", "");
+                    TechniquesList.Add(new EffectTechnique(this, name, new EffectPassCollection(PassesList.ToArray()), EffectAnnotationCollection.Empty));
+                    PassesList = new List<EffectPass>();
                     ++g;
                 }
                 else
@@ -339,6 +386,21 @@ namespace Microsoft.Xna.Framework.Graphics
 
             ConstantBuffers = ConstantBuffersList.ToArray();
             Parameters = new EffectParameterCollection(EffectParameterList.ToArray());
+            _shaders = ShaderList.ToArray();
+            if (TechniquesList.Count > 0)
+            {
+                CurrentTechnique = TechniquesList[0];
+            }
+            else if (PassesList.Count > 0)
+            {
+                TechniquesList.Add(new EffectTechnique(this, "DefaultTechnique", new EffectPassCollection(PassesList.ToArray()), EffectAnnotationCollection.Empty));
+                PassesList = new List<EffectPass>();
+            }
+            else
+            {
+                throw new ArgumentException("No Techniques found!");
+            }
+            Techniques = new EffectTechniqueCollection(TechniquesList.ToArray());
         }
         
         private void ReadEffect (BinaryReader reader, string effectName)
@@ -635,8 +697,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				parameters[i] = new EffectParameter(
 					class_, type, name, rowCount, columnCount, semantic, 
 					annotations, elements, structMembers, data);
-
-                if (readableParameterContent != null) throw new Exception();
 
                 if (readableParameterContent == null)
                 {

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Collections.Generic;
 
 #if OPENGL
 #if SDL2
@@ -113,8 +114,60 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public ShaderStage Stage { get; private set; }
 		
-        internal Shader(GraphicsDevice device, BinaryReader reader, ref string readableCode)
+        internal Shader(GraphicsDevice device, ShaderStage stage, string[] lines, ref int g)
         {
+            Stage = stage;
+            List<SamplerInfo> SamplerList = new List<SamplerInfo>();
+            List<Attribute> AttributeList = new List<Attribute>();
+            
+            while (g < lines.Length)
+            {
+                string command;
+                if (EffectUtilities.MatchesMetaDeclaration(lines[g], "Sampler", out command))
+                {
+                    SamplerInfo sampler = new SamplerInfo();
+                    sampler.name = EffectUtilities.ParseParam(command, "name", "");
+                    string typeStr = EffectUtilities.ParseParam(command, "type", "");
+                    sampler.type = typeStr == "Sampler1D" ? SamplerType.Sampler1D
+                            : typeStr == "Sampler2D" ? SamplerType.Sampler2D
+                            : typeStr == "SamplerCube" ? SamplerType.SamplerCube
+                            : SamplerType.SamplerVolume;
+                    sampler.textureSlot = EffectUtilities.ParseParam(command, "textureSlot", 0);
+                    sampler.samplerSlot = EffectUtilities.ParseParam(command, "samplerSlot", 0);
+                    sampler.parameter = EffectUtilities.ParseParam(command, "parameter", 0);
+                    SamplerList.Add(sampler);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "ConstantBuffer", out command))
+                {
+                    CBuffers = EffectUtilities.ParseParam(command, "indices", new int[] { });
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "Attribute", out command))
+                {
+                    Attribute attribute = new Attribute();
+                    attribute.name = EffectUtilities.ParseParam(command, "name", "");
+                    string usageStr = EffectUtilities.ParseParam(command, "usage", "");
+                    attribute.usage = (VertexElementUsage) Enum.Parse(typeof(VertexElementUsage), usageStr);
+                    attribute.index = EffectUtilities.ParseParam(command, "index", 0);
+                    attribute.format = (short) EffectUtilities.ParseParam(command, "format", 0);
+
+                    AttributeList.Add(attribute);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EndShader", out command))
+                {
+                    ++g;
+                    break;
+                }
+                else {
+                    _glslCode += lines[g]+"\n";
+                    ++g;
+                }
+            }
+
+            Samplers = SamplerList.ToArray();
+            _attributes = AttributeList.ToArray();
         }
 
         internal Shader(GraphicsDevice device, BinaryReader reader, ref string readableCode)
@@ -168,7 +221,8 @@ namespace Microsoft.Xna.Framework.Graphics
             CBuffers = new int[cbufferCount];
             for (var c = 0; c < cbufferCount; c++)
                 CBuffers[c] = reader.ReadByte();
-            readableCode += "#monogame ConstantBuffers " + EffectUtilities.Join(CBuffers)+"\n";
+            readableCode += "#monogame ConstantBuffer(indices=" + EffectUtilities.Join(CBuffers)+")\n";
+
 
 #if DIRECTX
 
@@ -212,7 +266,7 @@ namespace Microsoft.Xna.Framework.Graphics
             readableCode += "\n";
             readableCode += _glslCode;
             readableCode += "\n";
-            readableCode += "#monogame EndShader\n";
+            readableCode += "#monogame EndShader()\n";
 
 #endif // OPENGL
         }
