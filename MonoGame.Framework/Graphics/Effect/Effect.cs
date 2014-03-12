@@ -45,6 +45,7 @@ using System.Text;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Linq;
 
 #if PSM
 using Sce.PlayStation.Core.Graphics;
@@ -81,7 +82,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Clone(cloneSource);
 		}
 
-        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode)
+        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode, string name)
             : this(graphicsDevice)
 		{
 			// By default we currently cache all unique byte streams
@@ -118,7 +119,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 cloneSource = new Effect(graphicsDevice);
                 using (var stream = new MemoryStream(effectCode))
                 using (var reader = new BinaryReader(stream))
-                    cloneSource.ReadEffect(reader);
+                    cloneSource.ReadEffect(reader, name);
 
                 // Cache the effect for later in its original unmodified state.
                 EffectCache.Add(effectKey, cloneSource);
@@ -251,8 +252,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if !PSM
 
-		private void ReadEffect (BinaryReader reader)
+        public static Dictionary<string, string> ReadableEffectFormat = new Dictionary<string, string>();
+
+		private void ReadEffect (BinaryReader reader, string effectName)
 		{
+            string readableFormat = "";
 			// Check the header to make sure the file and version is correct!
 			var header = new string (reader.ReadChars (MGFXHeader.Length));
 			var version = (int)reader.ReadByte ();
@@ -275,7 +279,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Read in all the constant buffers.
 			var buffers = (int)reader.ReadByte ();
 			ConstantBuffers = new ConstantBuffer[buffers];
-			for (var c = 0; c < buffers; c++) 
+            for (var c = 0; c < buffers; c++) 
             {
 				
 #if OPENGL
@@ -302,6 +306,11 @@ namespace Microsoft.Xna.Framework.Graphics
 				                                offsets,
 				                                name);
                 ConstantBuffers[c] = buffer;
+                
+                readableFormat += "#ConstantBuffer(name="+name+",sizeInBytes="+sizeInBytes+","
+                    +"parameters=["+string.Join(",", parameters.Select(i=>""+i))+"]"
+                                                +"offsets=["+string.Join(",", offsets.Select(i=>""+i))+"]"
+                                             +")";
             }
 
             // Read in all the shader objects.
@@ -329,6 +338,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
             Techniques = new EffectTechniqueCollection(techniques);
             CurrentTechnique = Techniques[0];
+
+            ReadableEffectFormat [effectName] = readableFormat;
         }
 
         private static EffectAnnotationCollection ReadAnnotations(BinaryReader reader)

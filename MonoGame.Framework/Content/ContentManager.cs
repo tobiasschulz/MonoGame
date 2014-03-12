@@ -422,7 +422,7 @@ namespace Microsoft.Xna.Framework.Content
                 {
                     var data = new byte[assetStream.Length];
                     assetStream.Read(data, 0, (int)assetStream.Length);
-                    return new Effect(this.graphicsDeviceService.GraphicsDevice, data);
+                    return new Effect(this.graphicsDeviceService.GraphicsDevice, data, assetName);
                 }
             }
             return null;

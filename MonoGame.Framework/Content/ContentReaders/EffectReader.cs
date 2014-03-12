@@ -33,7 +33,7 @@ namespace Microsoft.Xna.Framework.Content
         {
             int count = input.ReadInt32();
             
-            var effect = new Effect(input.GraphicsDevice,input.ReadBytes(count));
+            var effect = new Effect(input.GraphicsDevice,input.ReadBytes(count), input.AssetName);
             effect.Name = input.AssetName;
             
             return effect;
