@@ -8,7 +8,7 @@ namespace Microsoft.Xna.Framework
     {
         public static Dictionary<string, string> ReadableEffectCode = new Dictionary<string, string>();
 
-        public static string  Join<T>(T[] data) where T : struct
+        public static string  Join<T>(IEnumerable<T> data)
         {
             return "[" + string.Join(", ", from value in data select "" + value) + "]";
         }

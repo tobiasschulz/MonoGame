@@ -113,12 +113,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public ShaderStage Stage { get; private set; }
 		
-        internal Shader(GraphicsDevice device, BinaryReader reader)
+        internal Shader(GraphicsDevice device, BinaryReader reader, ref string readableCode)
         {
             GraphicsDevice = device;
 
             var isVertexShader = reader.ReadBoolean();
             Stage = isVertexShader ? ShaderStage.Vertex : ShaderStage.Pixel;
+            readableCode += "#monogame BeginShader("+EffectUtilities.Params("stage", (isVertexShader ? "vertex" : "pixel"))+")\n";
 
             var shaderLength = reader.ReadInt32();
             var shaderBytecode = reader.ReadBytes(shaderLength);
@@ -149,12 +150,21 @@ namespace Microsoft.Xna.Framework.Graphics
                 Samplers[s].name = null;
 #endif
                 Samplers[s].parameter = reader.ReadByte();
+
+                readableCode += "#monogame Sampler("+EffectUtilities.Params(
+                    "name", Samplers[s].name,
+                    "type", Samplers[s].type,
+                    "textureSlot", Samplers[s].textureSlot,
+                    "samplerSlot", Samplers[s].samplerSlot,
+                    "parameter", Samplers[s].parameter
+                    )+")\n";
             }
 
             var cbufferCount = (int)reader.ReadByte();
             CBuffers = new int[cbufferCount];
             for (var c = 0; c < cbufferCount; c++)
                 CBuffers[c] = reader.ReadByte();
+            readableCode += "#monogame ConstantBuffers " + EffectUtilities.Join(CBuffers)+"\n";
 
 #if DIRECTX
 
@@ -186,7 +196,19 @@ namespace Microsoft.Xna.Framework.Graphics
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
                 _attributes[a].index = reader.ReadByte();
                 _attributes[a].format = reader.ReadInt16();
+
+                readableCode += "#monogame Attribute("+EffectUtilities.Params(
+                    "name", _attributes[a].name,
+                    "usage", _attributes[a].usage,
+                    "index", _attributes[a].index,
+                    "format", _attributes[a].format
+                    )+")\n";
             }
+            
+            readableCode += "\n";
+            readableCode += _glslCode;
+            readableCode += "\n";
+            readableCode += "#monogame EndShader\n";
 
 #endif // OPENGL
         }

@@ -162,6 +162,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Take a reference to the original shader list.
             _shaders = cloneSource._shaders;
+            EffectName = cloneSource.EffectName;
         }
 
         /// <summary>
@@ -251,6 +252,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if !PSM
 
+        private string EffectName = "";
+
 		private void ReadEffect (BinaryReader reader, string effectName)
 		{
             string readableCode = "";
@@ -305,22 +308,30 @@ namespace Microsoft.Xna.Framework.Graphics
 				                                name);
                 ConstantBuffers[c] = buffer;
 
-                readableCode += "#ConstantBuffer("+EffectUtilities.Params(
+                readableCode += "#monogame ConstantBuffer("+EffectUtilities.Params(
+                    "name", name,
                     "sizeInBytes", sizeInBytes,
                     "parameters", EffectUtilities.Join(parameters),
-                    "offsets", EffectUtilities.Join(offsets),
-                    "name", name
+                    "offsets", EffectUtilities.Join(offsets)
                 )+")\n";
             }
+
+            readableCode += "\n";
 
             // Read in all the shader objects.
             var shaders = (int)reader.ReadByte();
             _shaders = new Shader[shaders];
             for (var s = 0; s < shaders; s++)
-                _shaders[s] = new Shader(GraphicsDevice, reader);
+            {
+                if (s > 0)
+                    readableCode += "\n";
+                _shaders[s] = new Shader(GraphicsDevice, reader, ref readableCode);
+            }
+            
+            readableCode += "\n";
 
             // Read in the parameters.
-            Parameters = ReadParameters(reader);
+            Parameters = ReadParameters(reader, ref readableCode);
 
             // Read the techniques.
             var techniqueCount = (int)reader.ReadByte();
@@ -331,15 +342,26 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 var annotations = ReadAnnotations(reader);
 
-                var passes = ReadPasses(reader, this, _shaders);
+                var passes = ReadPasses(reader, this, _shaders, ref readableCode);
 
                 techniques[t] = new EffectTechnique(this, name, passes, annotations);
+
+                readableCode += "#monogame EffectTechnique("+EffectUtilities.Params(
+                    "name", name
+                    )+")\n";
             }
 
             Techniques = new EffectTechniqueCollection(techniques);
             CurrentTechnique = Techniques[0];
 
             EffectUtilities.ReadableEffectCode[effectName] = readableCode;
+            EffectName = effectName;
+        }
+
+        public string EffectCode {
+            get {
+                return EffectUtilities.ReadableEffectCode[EffectName];
+            }
         }
 
         private static EffectAnnotationCollection ReadAnnotations(BinaryReader reader)
@@ -355,7 +377,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return new EffectAnnotationCollection(annotations);
         }
 
-        private static EffectPassCollection ReadPasses(BinaryReader reader, Effect effect, Shader[] shaders)
+        private static EffectPassCollection ReadPasses(BinaryReader reader, Effect effect, Shader[] shaders, ref string readableCode)
         {
             var count = (int)reader.ReadByte();
             var passes = new EffectPass[count];
@@ -370,12 +392,14 @@ namespace Microsoft.Xna.Framework.Graphics
                 var shaderIndex = (int)reader.ReadByte();
                 if (shaderIndex != 255)
                     vertexShader = shaders[shaderIndex];
+                int vertexIndex = shaderIndex;
 
                 // Get the pixel shader.
                 Shader pixelShader = null;
                 shaderIndex = (int)reader.ReadByte();
                 if (shaderIndex != 255)
                     pixelShader = shaders[shaderIndex];
+                int pixelIndex = shaderIndex;
 
 				BlendState blend = null;
 				DepthStencilState depth = null;
@@ -431,16 +455,32 @@ namespace Microsoft.Xna.Framework.Graphics
 						ScissorTestEnable = reader.ReadBoolean(),
 						SlopeScaleDepthBias = reader.ReadSingle(),
 					};
-				}
+                }
+
+                readableCode += "#monogame EffectPass("+EffectUtilities.Params(
+                    "name", name,
+                    "vertexShader", vertexIndex,
+                    "pixelShader", pixelIndex
+                    //"BlendState", blend,
+                    //"DepthStencilState", depth,
+                    //"RasterizerState", raster
+                    )+")\n";
 
                 passes[i] = new EffectPass(effect, name, vertexShader, pixelShader, blend, depth, raster, annotations);
 			}
 
             return new EffectPassCollection(passes);
-		}
+        }
 
-		private static EffectParameterCollection ReadParameters(BinaryReader reader)
-		{
+        private static EffectParameterCollection ReadParameters(BinaryReader reader, ref string readableCode)
+        {
+            List<string> fake = null;
+            return ReadParameters(reader, ref readableCode, ref fake);
+        }
+
+        private static EffectParameterCollection ReadParameters(BinaryReader reader, ref string readableCode,
+                                                                ref List<string> readableParameterContent)
+        {
 			var count = (int)reader.ReadByte();			
             if (count == 0)
                 return EffectParameterCollection.Empty;
@@ -455,9 +495,11 @@ namespace Microsoft.Xna.Framework.Graphics
 				var annotations = ReadAnnotations(reader);
 				var rowCount = (int)reader.ReadByte();
 				var columnCount = (int)reader.ReadByte();
-
-				var elements = ReadParameters(reader);
-				var structMembers = ReadParameters(reader);
+                
+                List<string> readableElements = new List<string>();
+                var elements = ReadParameters(reader, ref readableCode, ref readableElements);
+                List<string> readableStructMembers = new List<string>();
+                var structMembers = ReadParameters(reader, ref readableCode, ref readableStructMembers);
 
 				object data = null;
 				if (elements.Count == 0 && structMembers.Count == 0)
@@ -506,6 +548,37 @@ namespace Microsoft.Xna.Framework.Graphics
 				parameters[i] = new EffectParameter(
 					class_, type, name, rowCount, columnCount, semantic, 
 					annotations, elements, structMembers, data);
+
+                if (readableParameterContent != null) throw new Exception();
+
+                if (readableParameterContent == null)
+                {
+                    readableCode += "#monogame EffectParameter(" + EffectUtilities.Params(
+                        "name", name,
+                        "class", class_,
+                        "type", type,
+                        "semantic", semantic,
+                        "rows", rowCount,
+                        "columns", columnCount,
+                        "elements", EffectUtilities.Join(readableElements),
+                        "structMembers", EffectUtilities.Join(readableStructMembers)
+                    ) + ")\n";
+                }
+                else
+                {
+                    readableParameterContent.Add(
+                        "EffectParameter<" + EffectUtilities.Params(
+                        "name", name,
+                        "class", class_,
+                        "type", type,
+                        "semantic", semantic,
+                        "rowCount", rowCount,
+                        "columnCount", columnCount,
+                        "elements", EffectUtilities.Join(readableElements),
+                        "structMembers", EffectUtilities.Join(readableStructMembers)
+                        )+">"
+                    );
+                }
 			}
 
 			return new EffectParameterCollection(parameters);
