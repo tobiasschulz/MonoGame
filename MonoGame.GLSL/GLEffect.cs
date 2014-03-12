@@ -365,9 +365,5 @@ namespace MonoGame.GLSL
         }
 
         #endregion*/
-        public static void ApplyState (GraphicsDevice device)
-        {
-            device.ApplyState (false);
-        }
     }
 }

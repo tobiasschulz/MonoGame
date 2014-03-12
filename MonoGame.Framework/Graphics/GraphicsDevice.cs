@@ -220,7 +220,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private Buffer Object Variables
 
-		internal VertexBufferBinding[] vertexBufferBindings;
+		private VertexBufferBinding[] vertexBufferBindings;
 
 		#endregion
 
@@ -1066,7 +1066,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private State Flush Methods
 
-		internal void ApplyState(bool applyShaders)
+		private void ApplyState(bool applyShaders)
 		{
 			// Apply BlendState
 			OpenGLDevice.Instance.AlphaBlendEnable.Set(
@@ -1195,7 +1195,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// Set the new program if it has changed.
-			if (shaderProgram != info.program||true)
+			if (shaderProgram != info.program)
 			{
 				GL.UseProgram(info.program);
 				shaderProgram = info.program;

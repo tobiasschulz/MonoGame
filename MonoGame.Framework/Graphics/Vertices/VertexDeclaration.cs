@@ -150,30 +150,30 @@ namespace Microsoft.Xna.Framework.Graphics
                 );
             }
 		}
-    }
 
-    /// <summary>
-    /// Vertex attribute information for a particular shader/vertex declaration combination.
-    /// </summary>
-    internal class VertexDeclarationAttributeInfo
-    {
-        internal bool[] EnabledAttributes;
-
-        internal class Element
+        /// <summary>
+        /// Vertex attribute information for a particular shader/vertex declaration combination.
+        /// </summary>
+        class VertexDeclarationAttributeInfo
         {
-            public int Offset;
-            public int AttributeLocation;
-            public int NumberOfElements;
-            public VertexAttribPointerType VertexAttribPointerType;
-            public bool Normalized;
-        }
+            internal bool[] EnabledAttributes;
 
-        internal List<Element> Elements;
+            internal class Element
+            {
+                public int Offset;
+                public int AttributeLocation;
+                public int NumberOfElements;
+                public VertexAttribPointerType VertexAttribPointerType;
+                public bool Normalized;
+            }
 
-        internal VertexDeclarationAttributeInfo(int maxVertexAttributes)
-        {
-            EnabledAttributes = new bool[maxVertexAttributes];
-            Elements = new List<Element>();
+            internal List<Element> Elements;
+
+            internal VertexDeclarationAttributeInfo(int maxVertexAttributes)
+            {
+                EnabledAttributes = new bool[maxVertexAttributes];
+                Elements = new List<Element>();
+            }
         }
     }
 }
