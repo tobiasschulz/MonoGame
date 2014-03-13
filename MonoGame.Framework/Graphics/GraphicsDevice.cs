@@ -647,7 +647,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				vertexBufferBindings[0] = new VertexBufferBinding(vertexBuffer);
 			}
 
-			for (int vertexStreamSlot = 1; vertexStreamSlot < vertexBufferBindings.Length; ++vertexStreamSlot)
+			for (int vertexStreamSlot = 1; vertexStreamSlot < vertexBufferBindings.Length; vertexStreamSlot += 1)
 			{
 				if (vertexBufferBindings[vertexStreamSlot].VertexBuffer != null)
 				{
@@ -667,7 +667,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			int slot = 0;
 			if (vertexBuffers != null)
 			{
-				for (; slot < vertexBuffers.Length; ++slot)
+				for (; slot < vertexBuffers.Length; slot += 1)
 				{
 					if (!ReferenceEquals(vertexBufferBindings[slot].VertexBuffer, vertexBuffers[slot].VertexBuffer)
 						|| (vertexBufferBindings[slot].VertexOffset != vertexBuffers[slot].VertexOffset)
@@ -679,7 +679,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// Unset any unused vertex buffers
-			for (; slot < vertexBufferBindings.Length; ++slot)
+			for (; slot < vertexBufferBindings.Length; slot += 1)
 			{
 				if (vertexBufferBindings[slot].VertexBuffer != null)
 				{

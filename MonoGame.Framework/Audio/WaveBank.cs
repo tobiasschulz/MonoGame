@@ -226,7 +226,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Obtain WaveBank chunk offsets/lengths
 			uint[] offsets = new uint[5];
 			uint[] lengths = new uint[5];
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 5; i += 1)
 			{
 				offsets[i] = reader.ReadUInt32();
 				lengths[i] = reader.ReadUInt32();
@@ -279,7 +279,7 @@ namespace Microsoft.Xna.Framework.Audio
 				INTERNAL_soundStreamEntries = new SoundStreamEntry[numEntries];
 			}
 			uint curOffset = offsets[1];
-			for (int curEntry = 0; curEntry < numEntries; curEntry++)
+			for (int curEntry = 0; curEntry < numEntries; curEntry += 1)
 			{
 				// Seek to the current entry
 				reader.BaseStream.Seek(curOffset, SeekOrigin.Begin);

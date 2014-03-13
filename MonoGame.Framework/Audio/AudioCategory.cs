@@ -123,13 +123,13 @@ namespace Microsoft.Xna.Framework.Audio
 		internal void INTERNAL_update()
 		{
 			// Unmanaged Cues are only removed when the user disposes them.
-			for (int i = 0; i < activeCues.Count; i++)
+			for (int i = 0; i < activeCues.Count; i += 1)
 			{
 				if (!activeCues[i].INTERNAL_update())
 				{
 					cueInstanceCounts[activeCues[i].Name] -= 1;
 					activeCues.RemoveAt(i);
-					i--;
+					i -= 1;
 				}
 			}
 			foreach (Cue curCue in activeCues)
@@ -167,7 +167,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal void INTERNAL_removeOldestCue(string name)
 		{
-			for (int i = 0; i < activeCues.Count; i++)
+			for (int i = 0; i < activeCues.Count; i += 1)
 			{
 				if (activeCues[i].Name.Equals(name))
 				{
@@ -182,7 +182,7 @@ namespace Microsoft.Xna.Framework.Audio
 			float lowestVolume = float.MaxValue;
 			int lowestIndex = -1;
 
-			for (int i = 0; i < activeCues.Count; i++)
+			for (int i = 0; i < activeCues.Count; i += 1)
 			{
 				if (	activeCues[i].Name.Equals(name) &&
 					activeCues[i].GetVariable("Volume") < lowestVolume	)

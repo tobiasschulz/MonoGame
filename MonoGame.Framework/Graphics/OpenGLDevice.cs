@@ -1870,9 +1870,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private static class DebugOutput
 		{
-			public enum GLenum : uint
+			private enum GLenum : uint
 			{
-				// Hint Enum Values
+				// Hint Enum Value
 				GL_DONT_CARE =				0x1100,
 				// Source Enum Values
 				GL_DEBUG_SOURCE_API_ARB =		0x8246,
@@ -1903,8 +1903,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				GLenum source,
 				GLenum type,
 				GLenum severity,
-				IntPtr count, // sizei
-				IntPtr ids, // const uint*
+				IntPtr count, // GLsizei
+				IntPtr ids, // const GLuint*
 				bool enabled
 			);
 			private static DebugMessageCallback glDebugMessageCallbackARB;
@@ -1916,9 +1916,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				GLenum type,
 				uint id,
 				GLenum severity,
-				IntPtr length, // sizei
-				IntPtr message, // const char*
-				IntPtr userParam // const void*
+				IntPtr length, // GLsizei
+				IntPtr message, // const GLchar*
+				IntPtr userParam // const GLvoid*
 			);
 			private static DebugProc DebugCall = DebugCallback;
 
@@ -1928,9 +1928,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				GLenum type,
 				uint id,
 				GLenum severity,
-				IntPtr length, // sizei
-				IntPtr message, // const char*
-				IntPtr userParam // const void*
+				IntPtr length, // GLsizei
+				IntPtr message, // const GLchar*
+				IntPtr userParam // const GLvoid*
 			) {
 				System.Console.WriteLine(
 					"{0}\n\tSource: {1}\n\tType: {2}\n\tSeverity: {3}",

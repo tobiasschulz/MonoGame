@@ -200,7 +200,7 @@ namespace Microsoft.Xna.Framework.Audio
 				RPCCodes = new uint[reader.ReadByte()];
 
 				// Obtain RPC curve codes
-				for (byte i = 0; i < RPCCodes.Length; i++)
+				for (byte i = 0; i < RPCCodes.Length; i += 1)
 				{
 					RPCCodes[i] = reader.ReadUInt32();
 				}
@@ -223,7 +223,7 @@ namespace Microsoft.Xna.Framework.Audio
 				DSPCodes = new uint[reader.ReadByte()];
 
 				// Obtain DSP Preset codes
-				for (byte j = 0; j < DSPCodes.Length; j++)
+				for (byte j = 0; j < DSPCodes.Length; j += 1)
 				{
 					DSPCodes[j] = reader.ReadUInt32();
 				}
@@ -232,7 +232,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Parse Sound Events
 			if (complex)
 			{
-				for (int i = 0; i < INTERNAL_clips.Length; i++)
+				for (int i = 0; i < INTERNAL_clips.Length; i += 1)
 				{
 					// XACT Clip volume
 					double clipVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
@@ -319,7 +319,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Number of XACT Events
 			INTERNAL_events = new XACTEvent[reader.ReadByte()];
 
-			for (int i = 0; i < INTERNAL_events.Length; i++)
+			for (int i = 0; i < INTERNAL_events.Length; i += 1)
 			{
 				// Full Event information
 				uint eventInfo = reader.ReadUInt32();
@@ -400,7 +400,7 @@ namespace Microsoft.Xna.Framework.Audio
 					ushort[] tracks = new ushort[numTracks];
 					byte[] waveBanks = new byte[numTracks];
 					byte[] weights = new byte[numTracks];
-					for (ushort j = 0; j < numTracks; j++)
+					for (ushort j = 0; j < numTracks; j += 1)
 					{
 						tracks[j] = reader.ReadUInt16();
 						waveBanks[j] = reader.ReadByte();
@@ -535,7 +535,7 @@ namespace Microsoft.Xna.Framework.Audio
 					ushort[] tracks = new ushort[numTracks];
 					byte[] waveBanks = new byte[numTracks];
 					byte[] weights = new byte[numTracks];
-					for (ushort j = 0; j < numTracks; j++)
+					for (ushort j = 0; j < numTracks; j += 1)
 					{
 						tracks[j] = reader.ReadUInt16();
 						waveBanks[j] = reader.ReadByte();
@@ -703,7 +703,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void LoadTracks(AudioEngine audioEngine, List<string> waveBankNames)
 		{
-			for (int i = 0; i < INTERNAL_waves.Length; i++)
+			for (int i = 0; i < INTERNAL_waves.Length; i += 1)
 			{
 				INTERNAL_waves[i] = audioEngine.INTERNAL_getWaveBankTrack(
 					waveBankNames[INTERNAL_waveBanks[i]],
@@ -759,12 +759,12 @@ namespace Microsoft.Xna.Framework.Audio
 			else if (INTERNAL_variationType == VariationPlaylistType.Random)
 			{
 				double max = 0.0;
-				for (int i = 0; i < INTERNAL_weights.Length; i++)
+				for (int i = 0; i < INTERNAL_weights.Length; i += 1)
 				{
 					max += INTERNAL_weights[i];
 				}
 				double next = random.NextDouble() * max;
-				for (int i = INTERNAL_weights.Length - 1; i >= 0; i--)
+				for (int i = INTERNAL_weights.Length - 1; i >= 0; i -= 1)
 				{
 					if (next > max - INTERNAL_weights[i])
 					{
@@ -777,7 +777,7 @@ namespace Microsoft.Xna.Framework.Audio
 			else if (INTERNAL_variationType == VariationPlaylistType.RandomNoImmediateRepeats)
 			{
 				double max = 0.0;
-				for (int i = 0; i < INTERNAL_weights.Length; i++)
+				for (int i = 0; i < INTERNAL_weights.Length; i += 1)
 				{
 					if (i == INTERNAL_curWave)
 					{
@@ -786,7 +786,7 @@ namespace Microsoft.Xna.Framework.Audio
 					max += INTERNAL_weights[i];
 				}
 				double next = random.NextDouble() * max;
-				for (int i = INTERNAL_weights.Length - 1; i >= 0; i--)
+				for (int i = INTERNAL_weights.Length - 1; i >= 0; i -= 1)
 				{
 					if (i == INTERNAL_curWave)
 					{

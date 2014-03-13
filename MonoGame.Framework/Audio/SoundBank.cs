@@ -128,7 +128,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Parse WaveBank names
 				soundBankStream.Seek(waveBankNameTableOffset, SeekOrigin.Begin);
 				INTERNAL_waveBankNames = new List<string>();
-				for (byte i = 0; i < numWaveBanks; i++)
+				for (byte i = 0; i < numWaveBanks; i += 1)
 				{
 					INTERNAL_waveBankNames.Add(
 						System.Text.Encoding.UTF8.GetString(
@@ -150,7 +150,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 				// Parse Simple Cues
 				soundBankStream.Seek(cueSimpleOffset, SeekOrigin.Begin);
-				for (ushort i = 0; i < numCueSimple; i++)
+				for (ushort i = 0; i < numCueSimple; i += 1)
 				{
 					// Cue flags, unused
 					reader.ReadByte();
@@ -176,7 +176,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 				// Parse Complex Cues
 				soundBankStream.Seek(cueComplexOffset, SeekOrigin.Begin);
-				for (ushort i = 0; i < numCueComplex; i++)
+				for (ushort i = 0; i < numCueComplex; i += 1)
 				{
 					// Cue flags
 					byte cueFlags = reader.ReadByte();
@@ -237,7 +237,7 @@ namespace Microsoft.Xna.Framework.Audio
 						// Used to determine Variation storage format
 						int varTableType = (varTableFlags >> 3) & 0x0007;
 
-						for (ushort j = 0; j < numVariations; j++)
+						for (ushort j = 0; j < numVariations; j += 1)
 						{
 							if (varTableType == 0)
 							{
