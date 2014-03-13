@@ -349,8 +349,15 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     string stageStr = EffectUtilities.ParseParam(command, "stage", "");
                     ShaderStage stage = stageStr.ToLower() == "vertex" ? ShaderStage.Vertex : ShaderStage.Pixel;
+                    int[] constantBuffers = EffectUtilities.ParseParam(command, "constantBuffers", new int[] { });
                     ++g;
-                    Shader shader = new Shader(device: GraphicsDevice, stage: stage, lines: lines, g: ref g);
+                    Shader shader = new Shader(
+                        device: GraphicsDevice,
+                        stage: stage,
+                        constantBuffers: constantBuffers,
+                        lines: lines,
+                        g: ref g
+                    );
                     ShaderList.Add(shader);
                 }
                 else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectPass", out command))

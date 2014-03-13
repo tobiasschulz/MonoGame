@@ -114,9 +114,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public ShaderStage Stage { get; private set; }
 		
-        internal Shader(GraphicsDevice device, ShaderStage stage, string[] lines, ref int g)
+        internal Shader(GraphicsDevice device, ShaderStage stage, int[] constantBuffers, string[] lines, ref int g)
         {
             Stage = stage;
+            CBuffers = constantBuffers;
             List<SamplerInfo> SamplerList = new List<SamplerInfo>();
             List<Attribute> AttributeList = new List<Attribute>();
             
@@ -136,11 +137,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     sampler.samplerSlot = EffectUtilities.ParseParam(command, "samplerSlot", 0);
                     sampler.parameter = EffectUtilities.ParseParam(command, "parameter", 0);
                     SamplerList.Add(sampler);
-                    ++g;
-                }
-                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "ConstantBuffer", out command))
-                {
-                    CBuffers = EffectUtilities.ParseParam(command, "indices", new int[] { });
                     ++g;
                 }
                 else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "Attribute", out command))
@@ -176,7 +172,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
             var isVertexShader = reader.ReadBoolean();
             Stage = isVertexShader ? ShaderStage.Vertex : ShaderStage.Pixel;
-            readableCode += "#monogame BeginShader("+EffectUtilities.Params("stage", (isVertexShader ? "vertex" : "pixel"))+")\n";
 
             var shaderLength = reader.ReadInt32();
             var shaderBytecode = reader.ReadBytes(shaderLength);
@@ -189,17 +184,17 @@ namespace Microsoft.Xna.Framework.Graphics
                 Samplers[s].textureSlot = reader.ReadByte();
                 Samplers[s].samplerSlot = reader.ReadByte();
 
-				if (reader.ReadBoolean())
-				{
-					Samplers[s].state = new SamplerState();
-					Samplers[s].state.AddressU = (TextureAddressMode)reader.ReadByte();
-					Samplers[s].state.AddressV = (TextureAddressMode)reader.ReadByte();
-					Samplers[s].state.AddressW = (TextureAddressMode)reader.ReadByte();
-					Samplers[s].state.Filter = (TextureFilter)reader.ReadByte();
-					Samplers[s].state.MaxAnisotropy = reader.ReadInt32();
-					Samplers[s].state.MaxMipLevel = reader.ReadInt32();
-					Samplers[s].state.MipMapLevelOfDetailBias = reader.ReadSingle();
-				}
+                if (reader.ReadBoolean())
+                {
+                    Samplers[s].state = new SamplerState();
+                    Samplers[s].state.AddressU = (TextureAddressMode)reader.ReadByte();
+                    Samplers[s].state.AddressV = (TextureAddressMode)reader.ReadByte();
+                    Samplers[s].state.AddressW = (TextureAddressMode)reader.ReadByte();
+                    Samplers[s].state.Filter = (TextureFilter)reader.ReadByte();
+                    Samplers[s].state.MaxAnisotropy = reader.ReadInt32();
+                    Samplers[s].state.MaxMipLevel = reader.ReadInt32();
+                    Samplers[s].state.MipMapLevelOfDetailBias = reader.ReadSingle();
+                }
 
 #if OPENGL
                 Samplers[s].name = reader.ReadString();
@@ -207,7 +202,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 Samplers[s].name = null;
 #endif
                 Samplers[s].parameter = reader.ReadByte();
+            }
 
+            var cbufferCount = (int)reader.ReadByte();
+            CBuffers = new int[cbufferCount];
+            for (var c = 0; c < cbufferCount; c++)
+                CBuffers[c] = reader.ReadByte();
+
+            readableCode += "#monogame BeginShader("+EffectUtilities.Params(
+                "stage", (isVertexShader ? "vertex" : "pixel"),
+                "constantBuffers", EffectUtilities.Join(CBuffers)
+            )+")\n";
+
+            for (var s = 0; s < samplerCount; s++)
+            {
                 readableCode += "#monogame Sampler("+EffectUtilities.Params(
                     "name", Samplers[s].name,
                     "type", Samplers[s].type,
@@ -216,13 +224,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     "parameter", Samplers[s].parameter
                     )+")\n";
             }
-
-            var cbufferCount = (int)reader.ReadByte();
-            CBuffers = new int[cbufferCount];
-            for (var c = 0; c < cbufferCount; c++)
-                CBuffers[c] = reader.ReadByte();
-            readableCode += "#monogame ConstantBuffer(indices=" + EffectUtilities.Join(CBuffers)+")\n";
-
 
 #if DIRECTX
 
