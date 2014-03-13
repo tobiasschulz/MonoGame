@@ -964,7 +964,7 @@ namespace Microsoft.Xna.Framework.Media
 			int[] buffers = AL.GenBuffers(NUM_BUFFERS);
 
 			// Fill and queue the buffers.
-			for (int i = 0; i < NUM_BUFFERS; i++)
+			for (int i = 0; i < NUM_BUFFERS; i += 1)
 			{
 				if (!StreamAudio(buffers[i]))
 				{

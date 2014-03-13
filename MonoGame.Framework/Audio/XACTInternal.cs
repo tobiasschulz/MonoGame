@@ -239,7 +239,7 @@ namespace Microsoft.Xna.Framework.Audio
 			else
 			{
 				// Something between points...
-				for (int i = 0; i < Points.Length - 1; i++)
+				for (int i = 0; i < Points.Length - 1; i += 1)
 				{
 					// y = b
 					result = Points[i].Y;

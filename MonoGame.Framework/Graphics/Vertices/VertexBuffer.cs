@@ -260,7 +260,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				else
 				{
 					// If the user is asking for a specific element within the vertex buffer, copy them one by one...
-					for (int i = 0; i < elementCount; i++)
+					for (int i = 0; i < elementCount; i += 1)
 					{
 						Marshal.Copy(buffer, i * vertexStride, dataPtr, dataSize);
 						dataPtr = (IntPtr)(dataPtr.ToInt64() + dataSize);
