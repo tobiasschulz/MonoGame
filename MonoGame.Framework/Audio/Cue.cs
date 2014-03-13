@@ -380,14 +380,14 @@ namespace Microsoft.Xna.Framework.Audio
 				INTERNAL_queuedPaused = false;
 			}
 
-			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
+			for (int i = 0; i < INTERNAL_instancePool.Count; i += 1)
 			{
 				if (INTERNAL_instancePool[i].State == SoundState.Stopped)
 				{
 					INTERNAL_instancePool[i].Dispose();
 					INTERNAL_instancePool.RemoveAt(i);
 					INTERNAL_instanceVolumes.RemoveAt(i);
-					i--;
+					i -= 1;
 				}
 			}
 
@@ -461,7 +461,7 @@ namespace Microsoft.Xna.Framework.Audio
 					throw new Exception("RPC Parameter Type: " + curRPC.Parameter);
 				}
 			}
-			for (int i = 0; i < INTERNAL_instancePool.Count; i++)
+			for (int i = 0; i < INTERNAL_instancePool.Count; i += 1)
 			{
 				/* The final volume should be the combination of the
 				 * authored volume, Volume variable and RPC volume result.
@@ -507,7 +507,7 @@ namespace Microsoft.Xna.Framework.Audio
 						INTERNAL_data.UserControlVariable
 					);
 				}
-				for (int i = 0; i < INTERNAL_data.Probabilities.Length / 2; i++)
+				for (int i = 0; i < INTERNAL_data.Probabilities.Length / 2; i += 1)
 				{
 					if (	INTERNAL_controlledValue <= INTERNAL_data.Probabilities[i, 0] &&
 						INTERNAL_controlledValue >= INTERNAL_data.Probabilities[i, 1]	)
@@ -529,13 +529,13 @@ namespace Microsoft.Xna.Framework.Audio
 
 			// Randomly pick a sound
 			double max = 0.0;
-			for (int i = 0; i < INTERNAL_data.Probabilities.GetLength(0); i++)
+			for (int i = 0; i < INTERNAL_data.Probabilities.GetLength(0); i += 1)
 			{
 				max += INTERNAL_data.Probabilities[i, 0] - INTERNAL_data.Probabilities[i, 1];
 			}
 			double next = random.NextDouble() * max;
 
-			for (int i = INTERNAL_data.Probabilities.GetLength(0) - 1; i >= 0; i--)
+			for (int i = INTERNAL_data.Probabilities.GetLength(0) - 1; i >= 0; i -= 1)
 			{
 				if (next > max - (INTERNAL_data.Probabilities[i, 0] - INTERNAL_data.Probabilities[i, 1]))
 				{

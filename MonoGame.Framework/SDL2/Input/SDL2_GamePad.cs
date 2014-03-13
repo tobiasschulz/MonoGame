@@ -457,7 +457,7 @@ namespace Microsoft.Xna.Framework.Input
 
 			// Limit to the first 4 sticks to avoid crashes.
 			int numSticks = Math.Min(4, SDL.SDL_NumJoysticks());
-			for (int x = 0; x < numSticks; x++)
+			for (int x = 0; x < numSticks; x += 1)
 			{
 				INTERNAL_AddInstance(x);
 			}

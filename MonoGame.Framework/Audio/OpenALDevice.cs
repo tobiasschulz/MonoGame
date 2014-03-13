@@ -150,17 +150,17 @@ namespace Microsoft.Xna.Framework.Audio
 #if DEBUG
 			CheckALError();
 #endif
-			for (int i = 0; i < instancePool.Count; i++)
+			for (int i = 0; i < instancePool.Count; i += 1)
 			{
 				if (instancePool[i].State == SoundState.Stopped)
 				{
 					instancePool[i].Dispose();
 					instancePool.RemoveAt(i);
-					i--;
+					i -= 1;
 				}
 			}
 
-			for (int i = 0; i < dynamicInstancePool.Count; i++)
+			for (int i = 0; i < dynamicInstancePool.Count; i += 1)
 			{
 				if (!dynamicInstancePool[i].Update())
 				{

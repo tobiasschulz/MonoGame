@@ -121,27 +121,10 @@ namespace Microsoft.Xna.Framework.Graphics
 					Format == SurfaceFormat.Dxt3 ||
 					Format == SurfaceFormat.Dxt5	)
 				{
-					PixelInternalFormat internalFormat;
-					if (Format == SurfaceFormat.Dxt1)
-					{
-						internalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
-					}
-					else if (Format == SurfaceFormat.Dxt3)
-					{
-						internalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
-					}
-					else if (Format == SurfaceFormat.Dxt5)
-					{
-						internalFormat = PixelInternalFormat.CompressedRgbaS3tcDxt5Ext;
-					}
-					else
-					{
-						throw new Exception("Unhandled SurfaceFormat: " + Format);
-					}
 					GL.CompressedTexImage2D(
 						TextureTarget.Texture2D,
 						0,
-						internalFormat,
+						glInternalFormat,
 						this.Width,
 						this.Height,
 						0,

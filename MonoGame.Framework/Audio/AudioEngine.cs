@@ -122,7 +122,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Obtain the Audio Category Names
 				reader.BaseStream.Seek(categoryNameOffset, SeekOrigin.Begin);
 				string[] categoryNames = new string[numCategories];
-				for (int i = 0; i < numCategories; i++)
+				for (int i = 0; i < numCategories; i += 1)
 				{
 					List<char> builtString = new List<char>();
 					while (reader.PeekChar() != 0)
@@ -136,7 +136,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Obtain the Audio Categories
 				reader.BaseStream.Seek(categoryOffset, SeekOrigin.Begin);
 				INTERNAL_categories = new List<AudioCategory>();
-				for (int i = 0; i < numCategories; i++)
+				for (int i = 0; i < numCategories; i += 1)
 				{
 					// Maximum instances, Unused
 					reader.ReadByte();
@@ -169,7 +169,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Obtain the Variable Names
 				reader.BaseStream.Seek(variableNameOffset, SeekOrigin.Begin);
 				string[] variableNames = new string[numVariables];
-				for (int i = 0; i < numVariables; i++)
+				for (int i = 0; i < numVariables; i += 1)
 				{
 					List<char> builtString = new List<char>();
 					while (reader.PeekChar() != 0)
@@ -183,7 +183,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Obtain the Variables
 				reader.BaseStream.Seek(variableOffset, SeekOrigin.Begin);
 				INTERNAL_variables = new List<Variable>();
-				for (int i = 0; i < numVariables; i++)
+				for (int i = 0; i < numVariables; i += 1)
 				{
 					// Variable Accessibility (See Variable constructor)
 					byte varFlags = reader.ReadByte();
@@ -236,7 +236,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Obtain the RPC Curves
 				reader.BaseStream.Seek(rpcOffset, SeekOrigin.Begin);
 				INTERNAL_RPCs = new Dictionary<long, RPC>();
-				for (int i = 0; i < numRPCs; i++)
+				for (int i = 0; i < numRPCs; i += 1)
 				{
 					// RPC "Code", used by the SoundBanks
 					long rpcCode = reader.BaseStream.Position;
@@ -252,7 +252,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// RPC Curve Points
 					RPCPoint[] rpcPoints = new RPCPoint[numPoints];
-					for (byte j = 0; j < numPoints; j++)
+					for (byte j = 0; j < numPoints; j += 1)
 					{
 						float x = reader.ReadSingle();
 						float y = reader.ReadSingle();
@@ -277,7 +277,7 @@ namespace Microsoft.Xna.Framework.Audio
 				// Obtain the DSP Parameters
 				reader.BaseStream.Seek(dspParameterOffset, SeekOrigin.Begin);
 				INTERNAL_dspParameters = new List<DSPParameter>();
-				for (int i = 0; i < numDSPParameters; i++)
+				for (int i = 0; i < numDSPParameters; i += 1)
 				{
 					// Effect Parameter Type
 					byte type = reader.ReadByte();
@@ -305,7 +305,7 @@ namespace Microsoft.Xna.Framework.Audio
 				reader.BaseStream.Seek(dspPresetOffset, SeekOrigin.Begin);
 				INTERNAL_dspPresets = new Dictionary<long, DSPPreset>();
 				int total = 0;
-				for (int i = 0; i < numDSPPresets; i++)
+				for (int i = 0; i < numDSPPresets; i += 1)
 				{
 					// DSP "Code", used by the SoundBanks
 					long dspCode = reader.BaseStream.Position;
@@ -318,9 +318,10 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// Obtain DSP Parameters
 					DSPParameter[] parameters = new DSPParameter[numParams];
-					for (uint j = 0; j < numParams; j++)
+					for (uint j = 0; j < numParams; j += 1)
 					{
-						parameters[j] = INTERNAL_dspParameters[total++];
+						parameters[j] = INTERNAL_dspParameters[total];
+						total += 1;
 					}
 
 					// Add to DSP Preset list
@@ -392,7 +393,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				throw new ArgumentNullException("name");
 			}
-			for (int i = 0; i < INTERNAL_categories.Count; i++)
+			for (int i = 0; i < INTERNAL_categories.Count; i += 1)
 			{
 				if (INTERNAL_categories[i].Name.Equals(name))
 				{
@@ -408,7 +409,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				throw new ArgumentNullException("name");
 			}
-			for (int i = 0; i < INTERNAL_variables.Count; i++)
+			for (int i = 0; i < INTERNAL_variables.Count; i += 1)
 			{
 				if (name.Equals(INTERNAL_variables[i].Name))
 				{
@@ -428,7 +429,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				throw new ArgumentNullException("name");
 			}
-			for (int i = 0; i < INTERNAL_variables.Count; i++)
+			for (int i = 0; i < INTERNAL_variables.Count; i += 1)
 			{
 				if (name.Equals(INTERNAL_variables[i].Name))
 				{
