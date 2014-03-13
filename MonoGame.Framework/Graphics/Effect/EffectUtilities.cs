@@ -101,7 +101,7 @@ namespace Microsoft.Xna.Framework
             {
                 str = str.Trim('[', ']');
                 List<int> resultValues = new List<int>();
-                if (str.Length == 0)
+                if (str.Length > 0)
                 {
                     foreach (string _value in str.Split(new [] { ',' }))
                     {
