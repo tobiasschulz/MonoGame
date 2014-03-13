@@ -101,17 +101,20 @@ namespace Microsoft.Xna.Framework
             {
                 str = str.Trim('[', ']');
                 List<int> resultValues = new List<int>();
-                foreach (string _value in str.Split(new [] { ',' }))
+                if (str.Length == 0)
                 {
-                    string value = _value.Trim(' ', '\t');
-                    int result;
-                    if (int.TryParse(value, out result))
+                    foreach (string _value in str.Split(new [] { ',' }))
                     {
-                        resultValues.Add(result);
-                    }
-                    else
-                    {
-                        throw new Exception("Invalid number <" + str + "> in command: <" + command + ">");
+                        string value = _value.Trim(' ', '\t');
+                        int result;
+                        if (int.TryParse(value, out result))
+                        {
+                            resultValues.Add(result);
+                        }
+                        else
+                        {
+                            throw new Exception("Invalid number <" + str + "> in command: <" + command + ">");
+                        }
                     }
                 }
                 return resultValues.ToArray();
