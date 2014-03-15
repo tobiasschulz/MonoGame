@@ -406,6 +406,8 @@
     <Compile Include="Graphics\OcclusionQuery.cs" />
     <Compile Include="Input\Touch\TouchPanelState.cs" />
     <Compile Include="Audio\DynamicSoundEffectInstance.cs" />
+    <Compile Include="Input\AccelerometerCapabilities.cs" />
+    <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">
