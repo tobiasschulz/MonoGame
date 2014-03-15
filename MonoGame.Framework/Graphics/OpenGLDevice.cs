@@ -1942,9 +1942,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 			}
 
+			[System.Diagnostics.ConditionalAttribute("DEBUG")]
 			public static void Initialize()
 			{
-#if DEBUG
 				IntPtr messageCallback = SDL2.SDL.SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
 				IntPtr messageControl = SDL2.SDL.SDL_GL_GetProcAddress("glDebugMessageControlARB");
 				if (messageCallback == IntPtr.Zero || messageControl == IntPtr.Zero)
@@ -1977,7 +1977,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					IntPtr.Zero,
 					false
 				);
-#endif
 			}
 		}
 
