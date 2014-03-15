@@ -55,7 +55,6 @@ namespace Microsoft.Xna.Framework.GamerServices
 
         #region Methods
 
-        /*
         public IAsyncResult BeginGetProfile( AsyncCallback callback, Object asyncState )
         {
             throw new NotImplementedException();
@@ -70,7 +69,6 @@ namespace Microsoft.Xna.Framework.GamerServices
         {
             throw new NotImplementedException();
         }
-        */
 
         public override string ToString()
         {
