@@ -20,11 +20,11 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			EffectMaterial existingInstance
 		) {
-			var effect = input.ReadExternalReference<Effect> ();
-			var effectMaterial = new EffectMaterial (effect);
-			var dict = input.ReadObject<Dictionary<string, object>> ();
+			Effect effect = input.ReadExternalReference<Effect> ();
+			EffectMaterial effectMaterial = new EffectMaterial (effect);
+			Dictionary<string, object> dict = input.ReadObject<Dictionary<string, object>> ();
 			foreach (KeyValuePair<string, object> item in dict) {
-				var parameter = effectMaterial.Parameters [item.Key];
+				EffectParameter parameter = effectMaterial.Parameters [item.Key];
 				if (parameter != null) {
 					if (typeof(Texture).IsAssignableFrom(item.Value.GetType()))
 					{

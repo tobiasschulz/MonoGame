@@ -155,16 +155,16 @@ namespace Microsoft.Xna.Framework.Content
 
 		public T ReadExternalReference<T>()
 		{
-			var externalReference = ReadString();
+			string externalReference = ReadString();
 			if (!String.IsNullOrEmpty(externalReference))
 			{
 				const char notSeparator = '\\';
-				var separator = Path.DirectorySeparatorChar;
+				char separator = Path.DirectorySeparatorChar;
 				externalReference = externalReference.Replace(notSeparator, separator);
 				// Get a uri for the asset path using the file:// schema and no host
-				var src = new Uri("file:///" + assetName.Replace(notSeparator, separator));
+				Uri src = new Uri("file:///" + assetName.Replace(notSeparator, separator));
 				// Add the relative path to the external reference
-				var dst = new Uri(src, externalReference);
+				Uri dst = new Uri(src, externalReference);
 				// The uri now contains the path to the external reference within the content manager
 				// Get the local path and skip the first character (the path separator)
 				return contentManager.Load<T>(dst.LocalPath.Substring(1));
@@ -196,7 +196,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		private void RecordDisposable<T>(T result)
 		{
-			var disposable = result as IDisposable;
+			IDisposable disposable = result as IDisposable;
 			if (disposable == null)
 			{
 				return;
@@ -218,14 +218,14 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return default(T);
 			}
-			var result = (T)typeReaders[typeReaderIndex - 1].Read(this, default(T));
+			T result = (T)typeReaders[typeReaderIndex - 1].Read(this, default(T));
 			RecordDisposable(result);
 			return result;
 		}
 
 		public T ReadObject<T>(ContentTypeReader typeReader)
 		{
-			var result = (T)typeReader.Read(this, default(T));
+			T result = (T)typeReader.Read(this, default(T));
 			RecordDisposable(result);
 			return result;
 		}
@@ -237,7 +237,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return default(T);
 			}
-			var result = (T)typeReaders[typeReaderIndex - 1].Read(this, existingInstance);
+			T result = (T)typeReaders[typeReaderIndex - 1].Read(this, existingInstance);
 			RecordDisposable(result);
 			return result;
 		}
@@ -248,7 +248,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return (T)ReadObject<object>();
 			}
-			var result = (T)typeReader.Read(this, existingInstance);
+			T result = (T)typeReader.Read(this, existingInstance);
 			RecordDisposable(result);
 			return result;
 		}
@@ -361,8 +361,8 @@ namespace Microsoft.Xna.Framework.Content
 
 		internal BoundingSphere ReadBoundingSphere()
 		{
-			var position = ReadVector3();
-			var radius = ReadSingle();
+			Vector3 position = ReadVector3();
+			float radius = ReadSingle();
 			return new BoundingSphere(position, radius);
 		}
 	}

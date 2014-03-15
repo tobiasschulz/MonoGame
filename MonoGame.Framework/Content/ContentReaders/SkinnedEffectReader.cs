@@ -19,7 +19,7 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			SkinnedEffect existingInstance
 		) {
-			var effect = new SkinnedEffect(input.GraphicsDevice);
+			SkinnedEffect effect = new SkinnedEffect(input.GraphicsDevice);
 			effect.Texture = input.ReadExternalReference<Texture>() as Texture2D;
 			effect.WeightsPerVertex = input.ReadInt32 ();
 			effect.DiffuseColor = input.ReadVector3 ();

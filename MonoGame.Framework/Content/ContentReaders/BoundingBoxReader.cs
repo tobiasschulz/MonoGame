@@ -15,7 +15,7 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			BoundingBox existingInstance
 		) {
-			var result = new BoundingBox(
+			BoundingBox result = new BoundingBox(
 				input.ReadVector3(),
 				input.ReadVector3()
 			);

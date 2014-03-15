@@ -8,6 +8,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Xna.Framework.Content
 	{
 		public static ConstructorInfo GetDefaultConstructor(this Type type)
 		{
-			var attrs = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+			BindingFlags attrs = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 			return type.GetConstructor(attrs, null, new Type[0], null);
 		}
 
@@ -29,13 +30,14 @@ namespace Microsoft.Xna.Framework.Content
 			// all properties in this list are defined in this class by comparing
 			// its get method with that of it's base class. If they're the same
 			// Then it's an overridden property.
-			var attrs =
+			BindingFlags attrs = (
 				BindingFlags.NonPublic |
 				BindingFlags.Public |
 				BindingFlags.Instance |
-				BindingFlags.DeclaredOnly;
-			var allProps = type.GetProperties(attrs).ToList();
-			var props = allProps.FindAll(
+				BindingFlags.DeclaredOnly
+			);
+			List<PropertyInfo> allProps = type.GetProperties(attrs).ToList();
+			PropertyInfo[] props = allProps.FindAll(
 				p => p.GetGetMethod(true) == p.GetGetMethod(true).GetBaseDefinition()
 			).ToArray();
 			return props;
@@ -43,11 +45,12 @@ namespace Microsoft.Xna.Framework.Content
 
 		public static FieldInfo[] GetAllFields(this Type type)
 		{
-			var attrs =
+			BindingFlags attrs = (
 				BindingFlags.NonPublic |
 				BindingFlags.Public |
 				BindingFlags.Instance |
-				BindingFlags.DeclaredOnly;
+				BindingFlags.DeclaredOnly
+			);
 			return type.GetFields(attrs);
 		}
 	}

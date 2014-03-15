@@ -17,15 +17,15 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader reader,
 			VertexDeclaration existingInstance
 		) {
-			var vertexStride = reader.ReadInt32();
-			var elementCount = reader.ReadInt32();
+			int vertexStride = reader.ReadInt32();
+			int elementCount = reader.ReadInt32();
 			VertexElement[] elements = new VertexElement[elementCount];
 			for (int i = 0; i < elementCount; i += 1)
 			{
-				var offset = reader.ReadInt32();
-				var elementFormat = (VertexElementFormat)reader.ReadInt32();
-				var elementUsage = (VertexElementUsage)reader.ReadInt32();
-				var usageIndex = reader.ReadInt32();
+				int offset = reader.ReadInt32();
+				VertexElementFormat elementFormat = (VertexElementFormat)reader.ReadInt32();
+				VertexElementUsage elementUsage = (VertexElementUsage)reader.ReadInt32();
+				int usageIndex = reader.ReadInt32();
 				elements[i] = new VertexElement(
 					offset,
 					elementFormat,

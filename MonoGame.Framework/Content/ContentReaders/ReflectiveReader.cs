@@ -35,7 +35,7 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			base.Initialize(manager);
 			this.manager = manager;
-			var type = targetType.BaseType;
+			Type type = targetType.BaseType;
 			if (type != null && type != typeof(object))
 			{
 				baseType = type;
@@ -60,7 +60,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			if (t.IsClass && !t.IsAbstract)
 			{
-				var constructor = t.GetDefaultConstructor();
+				ConstructorInfo constructor = t.GetDefaultConstructor();
 				if (constructor != null)
 				{
 					obj = constructor.Invoke(null);
@@ -86,8 +86,8 @@ namespace Microsoft.Xna.Framework.Content
 
 			if (property != null && property.Name == "Item")
 			{
-				var getMethod = property.GetGetMethod();
-				var setMethod = property.GetSetMethod();
+				MethodInfo getMethod = property.GetGetMethod();
+				MethodInfo setMethod = property.GetSetMethod();
 
 				if ( (getMethod != null &&
 				      getMethod.GetParameters().Length > 0) ||
@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework.Content
 			bool isSharedResource = false;
 			if (attr2 != null)
 			{
-				var cs = attr2 as ContentSerializerAttribute;
+				ContentSerializerAttribute cs = attr2 as ContentSerializerAttribute;
 				isSharedResource = cs.SharedResource;
 			}
 			else
@@ -226,12 +226,12 @@ namespace Microsoft.Xna.Framework.Content
 				baseTypeReader.Read(input, obj);
 			}
 			// Box the type.
-			var boxed = (object)obj;
-			foreach (var property in properties)
+			object boxed = (object)obj;
+			foreach (PropertyInfo property in properties)
 			{
 				Read(boxed, input, property);
 			}
-			foreach (var field in fields)
+			foreach (FieldInfo field in fields)
 			{
 				Read(boxed, input, field);
 			}

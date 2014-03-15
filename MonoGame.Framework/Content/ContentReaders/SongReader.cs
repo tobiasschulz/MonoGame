@@ -29,19 +29,19 @@ namespace Microsoft.Xna.Framework.Content
 
 		protected internal override Song Read(ContentReader input, Song existingInstance)
 		{
-			var path = input.ReadString();
+			string path = input.ReadString();
 			if (!String.IsNullOrEmpty(path))
 			{
 				const char notSeparator = '\\';
-				var separator = Path.DirectorySeparatorChar;
+				char separator = Path.DirectorySeparatorChar;
 				path = path.Replace(notSeparator, separator);
 				// Get a uri for the asset path using the file:// schema and no host
-				var src = new Uri(
+				Uri src = new Uri(
 					"file:///" +
 					input.AssetName.Replace(notSeparator, separator)
 				);
 				// Add the relative path to the external reference
-				var dst = new Uri(src, path);
+				Uri dst = new Uri(src, path);
 				// The uri now contains the path to the external reference within
 				// the content manager
 				// Get the local path and skip the first character
@@ -53,7 +53,7 @@ namespace Microsoft.Xna.Framework.Content
 					path
 				);
 			}
-			var durationMs = input.ReadObject<int>();
+			int durationMs = input.ReadObject<int>();
 			return new Song(path, durationMs);
 		}
 	}

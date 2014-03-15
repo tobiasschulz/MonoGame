@@ -43,11 +43,11 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			VertexBuffer existingInstance
 		) {
-			var declaration = input.ReadRawObject<VertexDeclaration>();
-			var vertexCount = (int) input.ReadUInt32();
-			var data = input.ReadBytes(vertexCount * declaration.VertexStride);
+			VertexDeclaration declaration = input.ReadRawObject<VertexDeclaration>();
+			int vertexCount = (int) input.ReadUInt32();
+			byte[] data = input.ReadBytes(vertexCount * declaration.VertexStride);
 
-			var buffer = new VertexBuffer(
+			VertexBuffer buffer = new VertexBuffer(
 				input.GraphicsDevice,
 				declaration,
 				vertexCount,

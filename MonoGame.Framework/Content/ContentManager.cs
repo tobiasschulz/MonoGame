@@ -61,7 +61,7 @@ namespace Microsoft.Xna.Framework.Content
 				bool contains = false;
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
-					var contentRef = ContentManagers[i];
+					WeakReference contentRef = ContentManagers[i];
 					if (Object.ReferenceEquals(contentRef.Target, contentManager))
 					{
 						contains = true;
@@ -86,7 +86,7 @@ namespace Microsoft.Xna.Framework.Content
 				// take the opportunity to prune the list of any finalized content managers.
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
-					var contentRef = ContentManagers[i];
+					WeakReference contentRef = ContentManagers[i];
 					if (!contentRef.IsAlive || Object.ReferenceEquals(contentRef.Target, contentManager))
 					{
 						ContentManagers.RemoveAt(i);
@@ -103,10 +103,10 @@ namespace Microsoft.Xna.Framework.Content
 				// opportunity to prune the list of any finalized content managers.
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
-					var contentRef = ContentManagers[i];
+					WeakReference contentRef = ContentManagers[i];
 					if (contentRef.IsAlive)
 					{
-						var contentManager = (ContentManager)contentRef.Target;
+						ContentManager contentManager = (ContentManager)contentRef.Target;
 						if (contentManager != null)
 						{
 							contentManager.ReloadGraphicsAssets();
@@ -379,7 +379,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				using (Stream assetStream = TitleContainer.OpenStream(assetName))
 				{
-					var data = new byte[assetStream.Length];
+					byte[] data = new byte[assetStream.Length];
 					assetStream.Read(data, 0, (int)assetStream.Length);
 					return new Effect(this.graphicsDeviceService.GraphicsDevice, data);
 				}
@@ -499,7 +499,9 @@ namespace Microsoft.Xna.Framework.Content
 			// Avoid recording disposable objects twice. ReloadAsset will try to record the disposables again.
 			// We don't know which asset recorded which disposable so just guard against storing multiple of the same instance.
 			if (!disposableAssets.Contains(disposable))
+			{
 				disposableAssets.Add(disposable);
+			}
 		}
 
 		/// <summary>
@@ -507,16 +509,19 @@ namespace Microsoft.Xna.Framework.Content
 		/// </summary>
 		protected virtual Dictionary<string, object> LoadedAssets
 		{
-			get { return loadedAssets; }
+			get
+			{
+				return loadedAssets;
+			}
 		}
 
 		protected virtual void ReloadGraphicsAssets()
 		{
-			foreach (var asset in LoadedAssets)
+			foreach (KeyValuePair<string, object> asset in LoadedAssets)
 			{
-				var methodInfo = typeof(ContentManager).GetMethod("ReloadAsset", BindingFlags.NonPublic | BindingFlags.Instance);
-				var genericMethod = methodInfo.MakeGenericMethod(asset.Value.GetType());
-				genericMethod.Invoke(this, new object[] { asset.Key, Convert.ChangeType(asset.Value, asset.Value.GetType()) }); 
+				MethodInfo methodInfo = typeof(ContentManager).GetMethod("ReloadAsset", BindingFlags.NonPublic | BindingFlags.Instance);
+				MethodInfo genericMethod = methodInfo.MakeGenericMethod(asset.Value.GetType());
+				genericMethod.Invoke(this, new object[] { asset.Key, Convert.ChangeType(asset.Value, asset.Value.GetType()) });
 			}
 		}
 
@@ -586,7 +591,7 @@ namespace Microsoft.Xna.Framework.Content
 		public virtual void Unload()
 		{
 			// Look for disposable assets.
-			foreach (var disposable in disposableAssets)
+			foreach (IDisposable disposable in disposableAssets)
 			{
 				if (disposable != null)
 				{

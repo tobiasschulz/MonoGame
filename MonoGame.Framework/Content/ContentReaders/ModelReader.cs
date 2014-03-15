@@ -61,18 +61,18 @@ namespace Microsoft.Xna.Framework.Content
 			for (uint i = 0; i < boneCount; i += 1)
 			{
 				string name = reader.ReadObject<string>();
-				var matrix = reader.ReadMatrix();
-				var bone = new ModelBone { Transform = matrix, Index = (int)i, Name = name };
+				Matrix matrix = reader.ReadMatrix();
+				ModelBone bone = new ModelBone { Transform = matrix, Index = (int)i, Name = name };
 				bones.Add(bone);
 			}
 			// Read the bone hierarchy.
 			for (int i = 0; i < boneCount; i += 1)
 			{
-				var bone = bones[i];
+				ModelBone bone = bones[i];
 				//Debug.WriteLine("Bone {0} hierarchy:", i);
 				// Read the parent bone reference.
 				//Debug.WriteLine("Parent: ");
-				var parentIndex = ReadBoneReference(reader, boneCount);
+				int parentIndex = ReadBoneReference(reader, boneCount);
 				if (parentIndex != -1)
 				{
 					bone.Parent = bones[parentIndex];
@@ -84,7 +84,7 @@ namespace Microsoft.Xna.Framework.Content
 					//Debug.WriteLine("Children:");
 					for (uint j = 0; j < childCount; j += 1)
 					{
-						var childIndex = ReadBoneReference(reader, boneCount);
+						int childIndex = ReadBoneReference(reader, boneCount);
 						if (childIndex != -1)
 						{
 							bone.AddChild(bones[childIndex]);
@@ -104,8 +104,8 @@ namespace Microsoft.Xna.Framework.Content
 
 				//Debug.WriteLine("Mesh {0}", i);
 				string name = reader.ReadObject<string>();
-				var parentBoneIndex = ReadBoneReference(reader, boneCount);
-				var boundingSphere = reader.ReadBoundingSphere();
+				int parentBoneIndex = ReadBoneReference(reader, boneCount);
+				BoundingSphere boundingSphere = reader.ReadBoundingSphere();
 
 				// Tag
 				reader.ReadObject<object>();
@@ -177,7 +177,7 @@ namespace Microsoft.Xna.Framework.Content
 				return existingInstance;
 			}
 			// Read the final pieces of model data.
-			var rootBoneIndex = ReadBoneReference(reader, boneCount);
+			int rootBoneIndex = ReadBoneReference(reader, boneCount);
 			Model model = new Model(reader.GraphicsDevice, bones, meshes);
 			model.Root = bones[rootBoneIndex];
 			model.BuildHierarchy();
