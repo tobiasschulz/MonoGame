@@ -16,28 +16,28 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class EffectMaterialReader : ContentTypeReader<EffectMaterial>
 	{
-		protected internal override EffectMaterial Read (
+		protected internal override EffectMaterial Read(
 			ContentReader input,
 			EffectMaterial existingInstance
 		) {
-			Effect effect = input.ReadExternalReference<Effect> ();
-			EffectMaterial effectMaterial = new EffectMaterial (effect);
-			Dictionary<string, object> dict = input.ReadObject<Dictionary<string, object>> ();
+			Effect effect = input.ReadExternalReference<Effect>();
+			EffectMaterial effectMaterial = new EffectMaterial(effect);
+			Dictionary<string, object> dict = input.ReadObject<Dictionary<string, object>>();
 			foreach (KeyValuePair<string, object> item in dict) {
-				EffectParameter parameter = effectMaterial.Parameters [item.Key];
+				EffectParameter parameter = effectMaterial.Parameters[item.Key];
 				if (parameter != null) {
 					if (typeof(Texture).IsAssignableFrom(item.Value.GetType()))
 					{
-						parameter.SetValue ((Texture)item.Value);
+						parameter.SetValue((Texture) item.Value);
 					}
 					else
 					{
-						throw new NotImplementedException ();
+						throw new NotImplementedException();
 					}
 				}
 				else
 				{
-					Debug.WriteLine ("No parameter " + item.Key);
+					Debug.WriteLine("No parameter " + item.Key);
 				}
 			}
 			return effectMaterial;

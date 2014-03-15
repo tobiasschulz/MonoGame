@@ -29,7 +29,7 @@ namespace Microsoft.Xna.Framework.Content
 		private bool optional;
 		private bool sharedResource;
 
-		public ContentSerializerAttribute ()
+		public ContentSerializerAttribute()
 		{
 		}
 
@@ -111,9 +111,9 @@ namespace Microsoft.Xna.Framework.Content
 			}
 		}
 
-		public ContentSerializerAttribute Clone ()
+		public ContentSerializerAttribute Clone()
 		{
-			ContentSerializerAttribute clone = new ContentSerializerAttribute ();
+			ContentSerializerAttribute clone = new ContentSerializerAttribute();
 			clone.allowNull = this.allowNull;
 			clone.collectionItemName = this.collectionItemName;
 			clone.elementName = this.elementName;

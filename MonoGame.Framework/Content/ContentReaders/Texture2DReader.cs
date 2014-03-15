@@ -88,23 +88,27 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			else
 			{
-				surfaceFormat = (SurfaceFormat)reader.ReadInt32();
+				surfaceFormat = (SurfaceFormat) reader.ReadInt32();
 			}
-			int width = (reader.ReadInt32 ());
-			int height = (reader.ReadInt32 ());
-			int levelCount = (reader.ReadInt32 ());
+			int width = reader.ReadInt32();
+			int height = reader.ReadInt32();
+			int levelCount = reader.ReadInt32();
 			int levelCountOutput = levelCount;
 			SurfaceFormat convertedFormat = surfaceFormat;
 			switch (surfaceFormat)
 			{
 			case SurfaceFormat.Dxt1:
 				if (!OpenGLDevice.Instance.SupportsDxt1)
+				{
 					convertedFormat = SurfaceFormat.Color;
+				}
 				break;
 			case SurfaceFormat.Dxt3:
 			case SurfaceFormat.Dxt5:
 				if (!OpenGLDevice.Instance.SupportsS3tc)
+				{
 					convertedFormat = SurfaceFormat.Color;
+				}
 				break;
 			case SurfaceFormat.NormalizedByte4:
 				convertedFormat = SurfaceFormat.Color;

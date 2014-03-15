@@ -22,7 +22,7 @@ namespace Microsoft.Xna.Framework.Content
 		{
 		}
 
-		static string [] supportedExtensions = new string[]  {".fxg"};
+		static string[] supportedExtensions = new string[] {".fxg"};
 
 		public static string Normalize(string FileName)
 		{

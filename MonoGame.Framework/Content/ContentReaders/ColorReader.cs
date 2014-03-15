@@ -18,11 +18,11 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class ColorReader : ContentTypeReader<Color>
 	{
-		internal ColorReader ()
+		internal ColorReader()
 		{
 		}
 
-		protected internal override Color Read (
+		protected internal override Color Read(
 			ContentReader input,
 			Color existingInstance
 		) {

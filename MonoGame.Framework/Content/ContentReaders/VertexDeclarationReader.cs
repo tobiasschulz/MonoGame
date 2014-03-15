@@ -23,8 +23,8 @@ namespace Microsoft.Xna.Framework.Content
 			for (int i = 0; i < elementCount; i += 1)
 			{
 				int offset = reader.ReadInt32();
-				VertexElementFormat elementFormat = (VertexElementFormat)reader.ReadInt32();
-				VertexElementUsage elementUsage = (VertexElementUsage)reader.ReadInt32();
+				VertexElementFormat elementFormat = (VertexElementFormat) reader.ReadInt32();
+				VertexElementUsage elementUsage = (VertexElementUsage) reader.ReadInt32();
 				int usageIndex = reader.ReadInt32();
 				elements[i] = new VertexElement(
 					offset,

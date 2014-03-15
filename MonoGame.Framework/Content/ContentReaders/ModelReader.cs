@@ -22,7 +22,7 @@ namespace Microsoft.Xna.Framework.Content
 		//      List<Effect> effects = new List<Effect>();
 		//      List<GraphicsResource> sharedResources = new List<GraphicsResource>();
 
-		public ModelReader ()
+		public ModelReader()
 		{
 		}
 
@@ -42,7 +42,7 @@ namespace Microsoft.Xna.Framework.Content
 			if (boneId != 0)
 			{
 				//Debug.WriteLine("bone #{0}", boneId - 1);
-				return (int)(boneId - 1);
+				return (int) (boneId - 1);
 			}
 			else
 			{
@@ -57,12 +57,16 @@ namespace Microsoft.Xna.Framework.Content
 			// Read the bone names and transforms.
 			uint boneCount = reader.ReadUInt32();
 			//Debug.WriteLine("Bone count: {0}", boneCount);
-			List<ModelBone> bones = new List<ModelBone>((int)boneCount);
+			List<ModelBone> bones = new List<ModelBone>((int) boneCount);
 			for (uint i = 0; i < boneCount; i += 1)
 			{
 				string name = reader.ReadObject<string>();
 				Matrix matrix = reader.ReadMatrix();
-				ModelBone bone = new ModelBone { Transform = matrix, Index = (int)i, Name = name };
+				ModelBone bone = new ModelBone {
+					Transform = matrix,
+					Index = (int) i,
+					Name = name
+				};
 				bones.Add(bone);
 			}
 			// Read the bone hierarchy.
@@ -121,7 +125,7 @@ namespace Microsoft.Xna.Framework.Content
 					ModelMeshPart part;
 					if (existingInstance != null)
 					{
-						part = existingInstance.Meshes[i].MeshParts[(int)j];
+						part = existingInstance.Meshes[i].MeshParts[(int) j];
 					}
 					else
 					{
@@ -138,7 +142,7 @@ namespace Microsoft.Xna.Framework.Content
 
 					parts.Add(part);
 
-					int jj = (int)j;
+					int jj = (int) j;
 					reader.ReadSharedResource<VertexBuffer>(
 						delegate (VertexBuffer v)
 						{

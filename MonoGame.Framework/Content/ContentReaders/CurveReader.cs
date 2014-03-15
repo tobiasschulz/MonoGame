@@ -23,8 +23,8 @@ namespace Microsoft.Xna.Framework.Content
 				curve = new Curve();
 			}
 
-			curve.PreLoop = (CurveLoopType)input.ReadInt32();
-			curve.PostLoop = (CurveLoopType)input.ReadInt32();
+			curve.PreLoop = (CurveLoopType) input.ReadInt32();
+			curve.PostLoop = (CurveLoopType) input.ReadInt32();
 			int num6 = input.ReadInt32();
 			for (int i = 0; i < num6; i += 1)
 			{
@@ -32,7 +32,7 @@ namespace Microsoft.Xna.Framework.Content
 				float num4 = input.ReadSingle();
 				float tangentIn = input.ReadSingle();
 				float tangentOut = input.ReadSingle();
-				CurveContinuity continuity = (CurveContinuity)input.ReadInt32();
+				CurveContinuity continuity = (CurveContinuity) input.ReadInt32();
 				curve.Keys.Add(
 					new CurveKey(
 						position,

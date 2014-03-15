@@ -218,14 +218,14 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return default(T);
 			}
-			T result = (T)typeReaders[typeReaderIndex - 1].Read(this, default(T));
+			T result = (T) typeReaders[typeReaderIndex - 1].Read(this, default(T));
 			RecordDisposable(result);
 			return result;
 		}
 
 		public T ReadObject<T>(ContentTypeReader typeReader)
 		{
-			T result = (T)typeReader.Read(this, default(T));
+			T result = (T) typeReader.Read(this, default(T));
 			RecordDisposable(result);
 			return result;
 		}
@@ -237,7 +237,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return default(T);
 			}
-			T result = (T)typeReaders[typeReaderIndex - 1].Read(this, existingInstance);
+			T result = (T) typeReaders[typeReaderIndex - 1].Read(this, existingInstance);
 			RecordDisposable(result);
 			return result;
 		}
@@ -246,9 +246,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			if (!typeReader.TargetType.IsValueType)
 			{
-				return (T)ReadObject<object>();
+				return (T) ReadObject<object>();
 			}
-			T result = (T)typeReader.Read(this, existingInstance);
+			T result = (T) typeReader.Read(this, existingInstance);
 			RecordDisposable(result);
 			return result;
 		}
@@ -265,12 +265,12 @@ namespace Microsoft.Xna.Framework.Content
 
 		public T ReadRawObject<T>()
 		{
-			return (T)ReadRawObject<T> (default(T));
+			return (T) ReadRawObject<T>(default(T));
 		}
 
 		public T ReadRawObject<T>(ContentTypeReader typeReader)
 		{
-			return (T)ReadRawObject<T>(typeReader, default(T));
+			return (T) ReadRawObject<T>(typeReader, default(T));
 		}
 
 		public T ReadRawObject<T>(T existingInstance)
@@ -280,7 +280,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				if (typeReader.TargetType == objectType)
 				{
-					return (T)ReadRawObject<T>(typeReader,existingInstance);
+					return (T) ReadRawObject<T>(typeReader,existingInstance);
 				}
 			}
 			throw new NotSupportedException();
@@ -288,7 +288,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		public T ReadRawObject<T>(ContentTypeReader typeReader, T existingInstance)
 		{
-			return (T)typeReader.Read(this, existingInstance);
+			return (T) typeReader.Read(this, existingInstance);
 		}
 
 		public void ReadSharedResource<T>(Action<T> fixup)
@@ -310,7 +310,7 @@ namespace Microsoft.Xna.Framework.Content
 									)
 								);
 							}
-							fixup((T)v);
+							fixup((T) v);
 						}
 					)
 				);

@@ -47,7 +47,7 @@ namespace Microsoft.Xna.Framework.Content
 					int faceSize = reader.ReadInt32();
 					byte[] faceData = reader.ReadBytes(faceSize);
 					textureCube.SetData<byte>(
-						(CubeMapFace)face,
+						(CubeMapFace) face,
 						i,
 						null,
 						faceData,

@@ -208,17 +208,17 @@ namespace Microsoft.Xna.Framework.Content
 			T obj;
 			if (existingInstance != null)
 			{
-				obj = (T)existingInstance;
+				obj = (T) existingInstance;
 			}
 			else
 			{
 				if (constructor == null)
 				{
-					obj = (T)Activator.CreateInstance(typeof(T));
+					obj = (T) Activator.CreateInstance(typeof(T));
 				}
 				else
 				{
-					obj = (T)constructor.Invoke(null);
+					obj = (T) constructor.Invoke(null);
 				}
 			}
 			if (baseTypeReader != null)
@@ -226,7 +226,7 @@ namespace Microsoft.Xna.Framework.Content
 				baseTypeReader.Read(input, obj);
 			}
 			// Box the type.
-			object boxed = (object)obj;
+			object boxed = (object) obj;
 			foreach (PropertyInfo property in properties)
 			{
 				Read(boxed, input, property);
@@ -236,7 +236,7 @@ namespace Microsoft.Xna.Framework.Content
 				Read(boxed, input, field);
 			}
 			// Unbox it... required for value types.
-			obj = (T)boxed;
+			obj = (T) boxed;
 			return obj;
 		}
 	}

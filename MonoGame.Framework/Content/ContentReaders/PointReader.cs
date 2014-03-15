@@ -43,11 +43,11 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class PointReader : ContentTypeReader<Point>
 	{
-		internal PointReader ()
+		internal PointReader()
 		{
 		}
 
-		protected internal override Point Read (
+		protected internal override Point Read(
 			ContentReader input,
 			Point existingInstance
 		) {

@@ -136,7 +136,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			else
 			{
-				return this.Read(input, (T)existingInstance);
+				return this.Read(input, (T) existingInstance);
 			}
 		}
 

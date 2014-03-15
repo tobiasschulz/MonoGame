@@ -23,12 +23,12 @@ namespace Microsoft.Xna.Framework.Content
 				input.ReadExternalReference<Texture>() as Texture2D;
 			effect.EnvironmentMap =
 				input.ReadExternalReference<TextureCube>() as TextureCube;
-			effect.EnvironmentMapAmount = input.ReadSingle ();
-			effect.EnvironmentMapSpecular = input.ReadVector3 ();
-			effect.FresnelFactor = input.ReadSingle ();
-			effect.DiffuseColor = input.ReadVector3 ();
-			effect.EmissiveColor = input.ReadVector3 ();
-			effect.Alpha = input.ReadSingle ();
+			effect.EnvironmentMapAmount = input.ReadSingle();
+			effect.EnvironmentMapSpecular = input.ReadVector3();
+			effect.FresnelFactor = input.ReadSingle();
+			effect.DiffuseColor = input.ReadVector3();
+			effect.EmissiveColor = input.ReadVector3();
+			effect.Alpha = input.ReadSingle();
 			return effect;
 		}
 	}

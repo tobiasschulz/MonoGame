@@ -106,7 +106,7 @@ namespace Microsoft.Xna.Framework.Content
 					WeakReference contentRef = ContentManagers[i];
 					if (contentRef.IsAlive)
 					{
-						ContentManager contentManager = (ContentManager)contentRef.Target;
+						ContentManager contentManager = (ContentManager) contentRef.Target;
 						if (contentManager != null)
 						{
 							contentManager.ReloadGraphicsAssets();
@@ -199,7 +199,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				if (asset is T)
 				{
-					return (T)asset;
+					return (T) asset;
 				}
 			}
 			// Load the asset.
@@ -267,7 +267,7 @@ namespace Microsoft.Xna.Framework.Content
 							result = reader.ReadAsset<T>();
 							if (result is GraphicsResource)
 							{
-								((GraphicsResource)result).Name = originalAssetName;
+								((GraphicsResource) result).Name = originalAssetName;
 							}
 						}
 					}
@@ -311,7 +311,7 @@ namespace Microsoft.Xna.Framework.Content
 				throw new ContentLoadException("Could not load " + originalAssetName + " asset!");
 			}
 
-			return (T)result;
+			return (T) result;
 		}
 
 		protected virtual string Normalize<T>(string assetName)
@@ -380,7 +380,7 @@ namespace Microsoft.Xna.Framework.Content
 				using (Stream assetStream = TitleContainer.OpenStream(assetName))
 				{
 					byte[] data = new byte[assetStream.Length];
-					assetStream.Read(data, 0, (int)assetStream.Length);
+					assetStream.Read(data, 0, (int) assetStream.Length);
 					return new Effect(this.graphicsDeviceService.GraphicsDevice, data);
 				}
 			}
@@ -396,7 +396,7 @@ namespace Microsoft.Xna.Framework.Content
 			byte platform = xnbReader.ReadByte();
 			if (
 				x != 'X' || n != 'N' || b != 'B' ||
-				!(targetPlatformIdentifiers.Contains((char)platform)) )
+				!(targetPlatformIdentifiers.Contains((char) platform)) )
 			{
 				throw new ContentLoadException("Asset does not appear to be a valid XNB file. Did you process your content for Windows?");
 			}
@@ -441,10 +441,10 @@ namespace Microsoft.Xna.Framework.Content
 					if (hi == 0xFF)
 					{
 						hi = lo;
-						lo = (byte)stream.ReadByte();
+						lo = (byte) stream.ReadByte();
 						frame_size = (hi << 8) | lo;
-						hi = (byte)stream.ReadByte();
-						lo = (byte)stream.ReadByte();
+						hi = (byte) stream.ReadByte();
+						lo = (byte) stream.ReadByte();
 						block_size = (hi << 8) | lo;
 						pos += 5;
 					}
