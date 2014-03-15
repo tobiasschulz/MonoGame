@@ -286,7 +286,7 @@ namespace Microsoft.Xna.Framework.Content
 					obj = (T)constructor.Invoke(null);
 				}
 			}
-			if(baseTypeReader != null)
+			if (baseTypeReader != null)
 			{
 				baseTypeReader.Read(input, obj);
 			}

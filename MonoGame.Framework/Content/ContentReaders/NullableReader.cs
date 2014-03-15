@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		protected internal override T? Read(ContentReader input, T? existingInstance)
 		{
-			if(input.ReadBoolean())
+			if (input.ReadBoolean())
 			{
 				return input.ReadObject<T>(elementReader);
 			}

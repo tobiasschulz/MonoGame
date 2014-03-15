@@ -281,9 +281,9 @@ namespace Microsoft.Xna.Framework.Content
 		public T ReadRawObject<T>(T existingInstance)
 		{
 			Type objectType = typeof(T);
-			foreach(ContentTypeReader typeReader in typeReaders)
+			foreach (ContentTypeReader typeReader in typeReaders)
 			{
-				if(typeReader.TargetType == objectType)
+				if (typeReader.TargetType == objectType)
 				{
 					return (T)ReadRawObject<T>(typeReader,existingInstance);
 				}
