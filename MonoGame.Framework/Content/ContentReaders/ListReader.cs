@@ -37,46 +37,49 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    public class ListReader<T> : ContentTypeReader<List<T>>
-    {
-        ContentTypeReader elementReader;
+	public class ListReader<T> : ContentTypeReader<List<T>>
+	{
+		ContentTypeReader elementReader;
 
-        public ListReader()
-        {
-        }
+		public ListReader()
+		{
+		}
 
-        protected internal override void Initialize(ContentTypeReaderManager manager)
-        {
+		protected internal override void Initialize(ContentTypeReaderManager manager)
+		{
 			Type readerType = typeof(T);
 			elementReader = manager.GetTypeReader(readerType);
-        }
+		}
 
 
-        protected internal override List<T> Read(ContentReader input, List<T> existingInstance)
-        {
-            int count = input.ReadInt32();
-            List<T> list = existingInstance;
-            if (list == null) list = new List<T>(count);
-            for (int i = 0; i < count; i++)
-            {
-                // list.Add(input.ReadObject<T>(elementReader));
-				
+		protected internal override List<T> Read(
+			ContentReader input,
+			List<T> existingInstance
+		) {
+			int count = input.ReadInt32();
+			List<T> list = existingInstance;
+			if (list == null)
+			{
+				list = new List<T>(count);
+			}
+			for (int i = 0; i < count; i += 1)
+			{
 				Type objectType = typeof(T);
 #if WINRT
-                if (objectType.GetTypeInfo().IsValueType)
+				if (objectType.GetTypeInfo().IsValueType)
 #else
-                if (objectType.IsValueType)
+				if (objectType.IsValueType)
 #endif
 				{
-                	list.Add(input.ReadObject<T>(elementReader));
+					list.Add(input.ReadObject<T>(elementReader));
 				}
 				else
 				{
 					int readerType = input.ReadByte();
-                	list.Add(input.ReadObject<T>(input.TypeReaders[readerType - 1]));
+					list.Add(input.ReadObject<T>(input.TypeReaders[readerType - 1]));
 				}
-            }
-            return list;
-        }
-    }
+			}
+			return list;
+		}
+	}
 }

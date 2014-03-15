@@ -60,44 +60,86 @@ namespace Microsoft.Xna.Framework.Content
 		private bool optional;
 		private bool sharedResource;
 
-
 		public ContentSerializerAttribute ()
 		{
 		}
 
-
-		public bool AllowNull {
-			get { return this.allowNull; }
-			set { this.allowNull = value; }
+		public bool AllowNull
+		{
+			get
+			{
+				return this.allowNull;
+			}
+			set
+			{
+				this.allowNull = value;
+			}
 		}
 
-		public string CollectionItemName {
-			get { return this.collectionItemName; }
-			set { this.collectionItemName = value; }
+		public string CollectionItemName
+		{
+			get
+			{
+				return this.collectionItemName;
+			}
+			set
+			{
+				this.collectionItemName = value;
+			}
 		}
 
-		public string ElementName {
-			get { return this.elementName; }
-			set { this.elementName = value; }
+		public string ElementName
+		{
+			get
+			{
+				return this.elementName;
+			}
+			set
+			{
+				this.elementName = value;
+			}
 		}
 
-		public bool FlattenContent {
-			get { return this.flattenContent; }
-			set { this.flattenContent = value; }
+		public bool FlattenContent
+		{
+			get
+			{
+				return this.flattenContent;
+			}
+			set
+			{
+				this.flattenContent = value;
+			}
 		}
 
-		public bool HasCollectionItemName {
-			get { return this.hasCollectionItemName; }
+		public bool HasCollectionItemName
+		{
+			get
+			{
+				return this.hasCollectionItemName;
+			}
 		}
 
-		public bool Optional {
-			get { return this.optional; }
-			set { this.optional = value; }
+		public bool Optional
+		{
+			get
+			{
+				return this.optional;
+			}
+			set
+			{
+				this.optional = value;
+			}
 		}
 
-		public bool SharedResource {
-			get { return this.sharedResource; }
-			set { this.sharedResource = value; }
+		public bool SharedResource
+		{
+			get{
+				return this.sharedResource;
+			}
+			set{
+				this.sharedResource = value;
+			}
 		}
 
 		public ContentSerializerAttribute Clone ()
@@ -114,4 +156,4 @@ namespace Microsoft.Xna.Framework.Content
 		}
 
 	}
-} 
+}

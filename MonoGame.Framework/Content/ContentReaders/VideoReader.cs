@@ -46,35 +46,46 @@ using Microsoft.Xna.Framework.Media;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    internal class VideoReader : ContentTypeReader<Video>
-    {
+	internal class VideoReader : ContentTypeReader<Video>
+	{
 #if ANDROID
-        static string[] supportedExtensions = new string[] { ".3gp", ".mkv", ".mp4", ".ts", ".webm" };
+		static string[] supportedExtensions = new string[] {
+			".3gp", ".mkv", ".mp4", ".ts", ".webm"
+		};
 #elif IOS
-        static string[] supportedExtensions = new string[] { ".mp4", ".mov", ".avi", ".m4v", ".3gp" };
+		static string[] supportedExtensions = new string[] {
+			".mp4", ".mov", ".avi", ".m4v", ".3gp"
+		};
 #elif SDL2
-        static string[] supportedExtensions = new string[] { ".ogv", ".ogg" };
+		static string[] supportedExtensions = new string[] {
+			".ogv", ".ogg"
+		};
 #else
-        static string[] supportedExtensions = new string[] { ".mp4", ".mov", ".avi", ".m4v" };
+		static string[] supportedExtensions = new string[] {
+			".mp4", ".mov", ".avi", ".m4v"
+		};
 #endif
 
-        internal static string Normalize(string fileName)
-        {
-            return Normalize(fileName, supportedExtensions);
-        }
+		internal static string Normalize(string fileName)
+		{
+			return Normalize(fileName, supportedExtensions);
+		}
 
-        protected internal override Video Read(ContentReader input, Video existingInstance)
-        {
-            string path = input.ReadObject<string>();
-            path = Path.Combine(input.ContentManager.RootDirectory, path);
-            path = TitleContainer.GetFilename(path);
+		protected internal override Video Read(
+			ContentReader input,
+			Video existingInstance
+		) {
+			string path = input.ReadObject<string>();
+			path = Path.Combine(input.ContentManager.RootDirectory, path);
+			path = TitleContainer.GetFilename(path);
 
-            /*int durationMS =*/ input.ReadObject<int>();
-            /*int width =*/ input.ReadObject<int>();
-            /*int height =*/ input.ReadObject<int>();
-            /*float framesPerSecond =*/ input.ReadObject<Single>();
-            /*int soundTrackType =*/ input.ReadObject<int>();   // 0 = Music, 1 = Dialog, 2 = Music and dialog
-            return new Video(path);
-        }
-    }
+			/*int durationMS =*/ input.ReadObject<int>();
+			/*int width =*/ input.ReadObject<int>();
+			/*int height =*/ input.ReadObject<int>();
+			/*float framesPerSecond =*/ input.ReadObject<Single>();
+			// 0 = Music, 1 = Dialog, 2 = Music and dialog
+			/*int soundTrackType =*/ input.ReadObject<int>();
+			return new Video(path);
+		}
+	}
 }

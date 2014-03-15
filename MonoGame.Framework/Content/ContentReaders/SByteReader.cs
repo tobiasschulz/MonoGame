@@ -43,15 +43,17 @@ using System;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    internal class SByteReader : ContentTypeReader<sbyte>
-    {
-        internal SByteReader()
-        {
-        }
+	internal class SByteReader : ContentTypeReader<sbyte>
+	{
+		internal SByteReader()
+		{
+		}
 
-        protected internal override sbyte Read(ContentReader input, sbyte existingInstance)
-        {
-            return input.ReadSByte();
-        }
-    }
+		protected internal override sbyte Read(
+			ContentReader input,
+			sbyte existingInstance
+		) {
+			return input.ReadSByte();
+		}
+	}
 }

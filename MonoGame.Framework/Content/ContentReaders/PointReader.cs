@@ -36,14 +36,16 @@ namespace Microsoft.Xna.Framework.Content
 	internal class PointReader : ContentTypeReader<Point>
 	{
 		internal PointReader ()
-			{
+		{
 		}
 
-		protected internal override Point Read (ContentReader input, Point existingInstance)
-		{
-			int X = input.ReadInt32 ();
-			int Y = input.ReadInt32 ();
-			return new Point ( X, Y);
+		protected internal override Point Read (
+			ContentReader input,
+			Point existingInstance
+		) {
+			int X = input.ReadInt32();
+			int Y = input.ReadInt32();
+			return new Point(X, Y);
 		}
 	}
 }

@@ -42,26 +42,26 @@ using System;
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class NullableReader<T> : ContentTypeReader<T?> where T : struct
-    {
-        ContentTypeReader elementReader;
+	{
+		ContentTypeReader elementReader;
 
-        internal NullableReader()
-        {
-        }
+		internal NullableReader()
+		{
+		}
 
-        protected internal override void Initialize(ContentTypeReaderManager manager)
-        {			
+		protected internal override void Initialize(ContentTypeReaderManager manager)
+		{
 			Type readerType = typeof(T);
 			elementReader = manager.GetTypeReader(readerType);
-        }
-		
-        protected internal override T? Read(ContentReader input, T? existingInstance)
-        {
+		}
+
+		protected internal override T? Read(ContentReader input, T? existingInstance)
+		{
 			if(input.ReadBoolean())
+			{
 				return input.ReadObject<T>(elementReader);
-			
+			}
 			return null;
 		}
-    }
+	}
 }
-

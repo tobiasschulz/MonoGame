@@ -40,12 +40,17 @@ purpose and non-infringement.
 
 namespace Microsoft.Xna.Framework.Content
 {
-    class BoundingBoxReader : ContentTypeReader<BoundingBox>
-    {
-        protected internal override BoundingBox Read(ContentReader input, BoundingBox existingInstance)
-        {
-            var result = new BoundingBox( input.ReadVector3(), input.ReadVector3() );
-            return result;
-        }
-    }
+	class BoundingBoxReader : ContentTypeReader<BoundingBox>
+	{
+		protected internal override BoundingBox Read(
+			ContentReader input,
+			BoundingBox existingInstance
+		) {
+			var result = new BoundingBox(
+				input.ReadVector3(),
+				input.ReadVector3()
+			);
+			return result;
+		}
+	}
 }

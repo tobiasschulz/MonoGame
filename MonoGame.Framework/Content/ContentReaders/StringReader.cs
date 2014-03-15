@@ -32,15 +32,17 @@ using System.Text;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    internal class StringReader : ContentTypeReader<String>
-    {
-        internal StringReader()
-        {
-        }
+	internal class StringReader : ContentTypeReader<String>
+	{
+		internal StringReader()
+		{
+		}
 
-        protected internal override string Read(ContentReader input, string existingInstance)
-        {
-            return input.ReadString();
-        }
-    }
+		protected internal override string Read(
+			ContentReader input,
+			string existingInstance
+		) {
+			return input.ReadString();
+		}
+	}
 }

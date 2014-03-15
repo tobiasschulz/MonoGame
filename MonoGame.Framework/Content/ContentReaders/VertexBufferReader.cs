@@ -30,17 +30,24 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    class VertexBufferReader : ContentTypeReader<VertexBuffer>
-    {
-        protected internal override VertexBuffer Read(ContentReader input, VertexBuffer existingInstance)
-        {
-            var declaration = input.ReadRawObject<VertexDeclaration>();
-            var vertexCount = (int)input.ReadUInt32();
-            var data = input.ReadBytes(vertexCount * declaration.VertexStride);
+	class VertexBufferReader : ContentTypeReader<VertexBuffer>
+	{
+		protected internal override VertexBuffer Read(
+			ContentReader input,
+			VertexBuffer existingInstance
+		) {
+			var declaration = input.ReadRawObject<VertexDeclaration>();
+			var vertexCount = (int) input.ReadUInt32();
+			var data = input.ReadBytes(vertexCount * declaration.VertexStride);
 
-            var buffer = new VertexBuffer( input.GraphicsDevice, declaration, vertexCount, BufferUsage.None );
-            buffer.SetData( data );
-            return buffer;
-        }
-    }
+			var buffer = new VertexBuffer(
+				input.GraphicsDevice,
+				declaration,
+				vertexCount,
+				BufferUsage.None
+			);
+			buffer.SetData(data);
+			return buffer;
+		}
+	}
 }

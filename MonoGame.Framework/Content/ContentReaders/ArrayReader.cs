@@ -32,47 +32,57 @@ using System.Reflection;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    public class ArrayReader<T> : ContentTypeReader<T[]>
-    {
-        ContentTypeReader elementReader;
+	public class ArrayReader<T> : ContentTypeReader<T[]>
+	{
+		ContentTypeReader elementReader;
 
-        public ArrayReader()
-        {
-        }
+		public ArrayReader()
+		{
+		}
 
-        protected internal override void Initialize(ContentTypeReaderManager manager)
+		protected internal override void Initialize(ContentTypeReaderManager manager)
 		{
 			Type readerType = typeof(T);
 			elementReader = manager.GetTypeReader(readerType);
-        }
+		}
 
-        protected internal override T[] Read(ContentReader input, T[] existingInstance)
-        {
-            uint count = input.ReadUInt32();
-            T[] array = existingInstance;
-            if (array == null)
-                array = new T[count];
+		protected internal override T[] Read(ContentReader input, T[] existingInstance)
+		{
+			uint count = input.ReadUInt32();
+			T[] array = existingInstance;
+			if (array == null)
+			{
+				array = new T[count];
+			}
 
 #if WINRT
-            if (typeof(T).GetTypeInfo().IsValueType)
+			if (typeof(T).GetTypeInfo().IsValueType)
 #else
-            if (typeof(T).IsValueType)
+			if (typeof(T).IsValueType)
 #endif
 			{
-                for (uint i = 0; i < count; i++)
-                {
-                	array[i] = input.ReadObject<T>(elementReader);
-                }
+				for (uint i = 0; i < count; i++)
+				{
+					array[i] = input.ReadObject<T>(elementReader);
+				}
 			}
 			else
 			{
-                for (uint i = 0; i < count; i++)
-                {
-                    int readerType = input.Read7BitEncodedInt();
-                	array[i] = readerType > 0 ? input.ReadObject<T>(input.TypeReaders[readerType - 1]) : default(T);
-                }
+				for (uint i = 0; i < count; i++)
+				{
+					int readerType = input.Read7BitEncodedInt();
+					if (readerType > 0)
+					{
+						array[i] = input.ReadObject<T>(
+							input.TypeReaders[readerType - 1]
+						);
+					}
+					else {
+						array[i] = default(T);
+					}
+				}
 			}
-            return array;
-        }
-    }
+			return array;
+		}
+	}
 }

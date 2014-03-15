@@ -42,15 +42,17 @@ using System;
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class DoubleReader : ContentTypeReader<double>
-    {
-        internal DoubleReader()
-        {
-        }
+	{
+		internal DoubleReader()
+		{
+		}
 
-        protected internal override double Read(ContentReader input, double existingInstance)
-        {
-            return input.ReadDouble();
-        }
-    }
+		protected internal override double Read(
+			ContentReader input,
+			double existingInstance
+		) {
+			return input.ReadDouble();
+		}
+	}
 }
 

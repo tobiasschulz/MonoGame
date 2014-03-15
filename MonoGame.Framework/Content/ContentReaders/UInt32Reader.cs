@@ -42,14 +42,16 @@ using System;
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class UInt32Reader : ContentTypeReader<uint>
-    {
-        internal UInt32Reader()
-        {
-        }
+	{
+		internal UInt32Reader()
+		{
+		}
 
-        protected internal override uint Read(ContentReader input, uint existingInstance)
-        {
-            return input.ReadUInt32();
-        }
-    }
+		protected internal override uint Read(
+			ContentReader input,
+			uint existingInstance
+		) {
+			return input.ReadUInt32();
+		}
+	}
 }

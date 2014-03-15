@@ -48,14 +48,16 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class BooleanReader : ContentTypeReader<bool>
-    {
-        internal BooleanReader()
-        {
-        }
+	{
+		internal BooleanReader()
+		{
+		}
 
-        protected internal override bool Read(ContentReader input, bool existingInstance)
-        {
-            return input.ReadBoolean();
-        }
-    }
+		protected internal override bool Read(
+			ContentReader input,
+			bool existingInstance
+		) {
+			return input.ReadBoolean();
+		}
+	}
 }

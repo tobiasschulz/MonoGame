@@ -42,25 +42,40 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    class IndexBufferReader : ContentTypeReader<IndexBuffer>
-    {
-        protected internal override IndexBuffer Read(ContentReader input, IndexBuffer existingInstance)
-        {
-            IndexBuffer indexBuffer = existingInstance;
+	class IndexBufferReader : ContentTypeReader<IndexBuffer>
+	{
+		protected internal override IndexBuffer Read(
+			ContentReader input,
+			IndexBuffer existingInstance
+		) {
+			IndexBuffer indexBuffer = existingInstance;
+			bool sixteenBits = input.ReadBoolean();
+			int dataSize = input.ReadInt32();
+			byte[] data = input.ReadBytes(dataSize);
+			if (indexBuffer == null)
+			{
+				if (sixteenBits)
+				{
+					indexBuffer = new IndexBuffer(
+						input.GraphicsDevice,
+						IndexElementSize.SixteenBits,
+						dataSize / 2,
+						BufferUsage.None
+					);
+				}
+				else
+				{
+					indexBuffer = new IndexBuffer(
+						input.GraphicsDevice,
+						IndexElementSize.ThirtyTwoBits,
+						dataSize / 4,
+						BufferUsage.None
+					);
+				}
+			}
 
-            bool sixteenBits = input.ReadBoolean();
-            int dataSize = input.ReadInt32();
-            byte[] data = input.ReadBytes(dataSize);
-
-            if (indexBuffer == null)
-            {
-                indexBuffer = new IndexBuffer(input.GraphicsDevice,
-                    sixteenBits ? IndexElementSize.SixteenBits : IndexElementSize.ThirtyTwoBits, 
-                    dataSize / (sixteenBits ? 2 : 4), BufferUsage.None);
-            }
-
-            indexBuffer.SetData(data);
-            return indexBuffer;
-        }
-    }
+			indexBuffer.SetData(data);
+			return indexBuffer;
+		}
+	}
 }

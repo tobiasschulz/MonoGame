@@ -40,14 +40,31 @@ purpose and non-infringement.
 
 namespace Microsoft.Xna.Framework.Content
 {
-    class MatrixReader : ContentTypeReader<Matrix>
-    {
-        protected internal override Matrix Read(ContentReader input, Matrix existingInstance)
-        {
-            return new Matrix(  input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 
-                                input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 
-                                input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 
-                                input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle() );
-        }
-    }
+	class MatrixReader : ContentTypeReader<Matrix>
+	{
+		protected internal override Matrix Read(
+			ContentReader input,
+			Matrix existingInstance
+		) {
+			// 4x4 matrix
+			return new Matrix(
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle(),
+				input.ReadSingle()
+			);
+		}
+	}
 }
