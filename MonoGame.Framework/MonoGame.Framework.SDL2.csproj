@@ -408,6 +408,8 @@
     <Compile Include="Audio\DynamicSoundEffectInstance.cs" />
     <Compile Include="Input\AccelerometerCapabilities.cs" />
     <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
+    <Compile Include="GamerServices\GameUpdateRequiredException.cs" />
+    <Compile Include="FrameworkDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">
