@@ -41,10 +41,6 @@
 using System;
 using System.Collections.Generic;
 
-#if WINRT
-using System.Reflection;
-#endif
-
 namespace Microsoft.Xna.Framework.Content
 {
 
@@ -85,11 +81,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				TKey key;
 				TValue value;
-#if WINRT
-				if (keyType.GetTypeInfo().IsValueType)
-#else
 				if (keyType.IsValueType)
-#endif
 				{
 					key = input.ReadObject<TKey>(keyReader);
 				}
@@ -98,19 +90,15 @@ namespace Microsoft.Xna.Framework.Content
 					int readerType = input.ReadByte();
 					key = input.ReadObject<TKey>(input.TypeReaders[readerType - 1]);
 				}
-#if WINRT
-				if (valueType.GetTypeInfo().IsValueType)
-#else
-					if (valueType.IsValueType)
-#endif
-					{
-						value = input.ReadObject<TValue>(valueReader);
-					}
-					else
-					{
-						int readerType = input.ReadByte();
-						value = input.ReadObject<TValue>(input.TypeReaders[readerType - 1]);
-					}
+				if (valueType.IsValueType)
+				{
+					value = input.ReadObject<TValue>(valueReader);
+				}
+				else
+				{
+					int readerType = input.ReadByte();
+					value = input.ReadObject<TValue>(input.TypeReaders[readerType - 1]);
+				}
 				dictionary.Add(key, value);
 			}
 			return dictionary;

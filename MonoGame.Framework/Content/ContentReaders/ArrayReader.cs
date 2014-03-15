@@ -26,9 +26,6 @@ SOFTWARE.
 #endregion License
 
 using System;
-#if WINRT
-using System.Reflection;
-#endif
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -55,11 +52,7 @@ namespace Microsoft.Xna.Framework.Content
 				array = new T[count];
 			}
 
-#if WINRT
-			if (typeof(T).GetTypeInfo().IsValueType)
-#else
 			if (typeof(T).IsValueType)
-#endif
 			{
 				for (uint i = 0; i < count; i += 1)
 				{

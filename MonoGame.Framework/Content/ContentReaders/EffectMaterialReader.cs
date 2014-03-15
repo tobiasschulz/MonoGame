@@ -40,9 +40,6 @@ purpose and non-infringement.
 
 using System;
 using System.Collections.Generic;
-#if WINRT
-using System.Reflection;
-#endif
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
 
@@ -60,11 +57,7 @@ namespace Microsoft.Xna.Framework.Content
 			foreach (KeyValuePair<string, object> item in dict) {
 				var parameter = effectMaterial.Parameters [item.Key];
 				if (parameter != null) {
-#if WINRT
-					if (typeof(Texture).GetTypeInfo().IsAssignableFrom(item.Value.GetType().GetTypeInfo()))
-#else
 					if (typeof(Texture).IsAssignableFrom(item.Value.GetType()))
-#endif
 					{
 						parameter.SetValue ((Texture)item.Value);
 					}

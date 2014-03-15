@@ -39,11 +39,7 @@ namespace Microsoft.Xna.Framework.Content
 		static string assemblyName;
 		static ContentTypeReaderManager()
 		{
-#if WINRT
-			assemblyName = typeof(ContentTypeReaderManager).GetTypeInfo().Assembly.FullName;
-#else
 			assemblyName = Assembly.GetExecutingAssembly().FullName;
-#endif
 		}
 
 		public ContentTypeReaderManager(ContentReader reader)

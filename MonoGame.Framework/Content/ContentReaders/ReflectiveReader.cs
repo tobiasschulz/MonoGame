@@ -65,11 +65,7 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			base.Initialize(manager);
 			this.manager = manager;
-#if WINRT
-			var type = targetType.GetTypeInfo().BaseType;
-#else
 			var type = targetType.BaseType;
-#endif
 			if (type != null && type != typeof(object))
 			{
 				baseType = type;
@@ -92,12 +88,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				t = field.FieldType;
 			}
-#if WINRT
-			var ti = t.GetTypeInfo();
-			if (ti.IsClass && !ti.IsAbstract)
-#else
 			if (t.IsClass && !t.IsAbstract)
-#endif
 			{
 				var constructor = t.GetDefaultConstructor();
 				if (constructor != null)
@@ -125,13 +116,8 @@ namespace Microsoft.Xna.Framework.Content
 
 			if (property != null && property.Name == "Item")
 			{
-#if WINRT
-				var getMethod = property.GetMethod;
-				var setMethod = property.SetMethod;
-#else
 				var getMethod = property.GetGetMethod();
 				var setMethod = property.GetSetMethod();
-#endif
 
 				if ( (getMethod != null &&
 				      getMethod.GetParameters().Length > 0) ||
@@ -145,20 +131,12 @@ namespace Microsoft.Xna.Framework.Content
 					return;
 				}
 			}
-#if WINRT
-			Attribute attr = member.GetCustomAttribute(typeof(ContentSerializerIgnoreAttribute));
-#else
 			Attribute attr = Attribute.GetCustomAttribute(member, typeof(ContentSerializerIgnoreAttribute));
-#endif
 			if (attr != null)
 			{
 				return;
 			}
-#if WINRT
-			Attribute attr2 = member.GetCustomAttribute(typeof(ContentSerializerAttribute));
-#else
 			Attribute attr2 = Attribute.GetCustomAttribute(member, typeof(ContentSerializerAttribute));
-#endif
 			bool isSharedResource = false;
 			if (attr2 != null)
 			{
@@ -169,18 +147,6 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				if (property != null)
 				{
-#if WINRT
-					if ( property.GetMethod != null &&
-					    !property.GetMethod.IsPublic )
-					{
-						return;
-					}
-					if ( property.SetMethod != null &&
-					    !property.SetMethod.IsPublic )
-					{
-						return;
-					}
-#else
 					foreach (MethodInfo info in property.GetAccessors(true))
 					{
 						if (info.IsPublic == false)
@@ -188,7 +154,6 @@ namespace Microsoft.Xna.Framework.Content
 							return;
 						}
 					}
-#endif
 				}
 				else
 				{

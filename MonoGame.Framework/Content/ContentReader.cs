@@ -29,9 +29,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-#if WINRT
-using System.Reflection;
-#endif
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -154,13 +151,8 @@ namespace Microsoft.Xna.Framework.Content
 			var externalReference = ReadString();
 			if (!String.IsNullOrEmpty(externalReference))
 			{
-#if WINRT
-				const char notSeparator = '/';
-				const char separator = '\\';
-#else
 				const char notSeparator = '\\';
 				var separator = Path.DirectorySeparatorChar;
-#endif
 				externalReference = externalReference.Replace(notSeparator, separator);
 				// Get a uri for the asset path using the file:// schema and no host
 				var src = new Uri("file:///" + assetName.Replace(notSeparator, separator));
@@ -245,11 +237,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		public T ReadObject<T>(ContentTypeReader typeReader, T existingInstance)
 		{
-#if WINRT
-			if (!typeReader.TargetType.GetTypeInfo().IsValueType)
-#else
 			if (!typeReader.TargetType.IsValueType)
-#endif
 			{
 				return (T)ReadObject<object>();
 			}

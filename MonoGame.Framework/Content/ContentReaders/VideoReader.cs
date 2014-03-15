@@ -48,15 +48,7 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class VideoReader : ContentTypeReader<Video>
 	{
-#if ANDROID
-		static string[] supportedExtensions = new string[] {
-			".3gp", ".mkv", ".mp4", ".ts", ".webm"
-		};
-#elif IOS
-		static string[] supportedExtensions = new string[] {
-			".mp4", ".mov", ".avi", ".m4v", ".3gp"
-		};
-#elif SDL2
+#if SDL2
 		static string[] supportedExtensions = new string[] {
 			".ogv", ".ogg"
 		};

@@ -29,9 +29,6 @@ SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Text;
-#if WINRT
-using System.Reflection;
-#endif
 
 using Microsoft.Xna.Framework.Content;
 
@@ -65,11 +62,7 @@ namespace Microsoft.Xna.Framework.Content
 			for (int i = 0; i < count; i += 1)
 			{
 				Type objectType = typeof(T);
-#if WINRT
-				if (objectType.GetTypeInfo().IsValueType)
-#else
 				if (objectType.IsValueType)
-#endif
 				{
 					list.Add(input.ReadObject<T>(elementReader));
 				}

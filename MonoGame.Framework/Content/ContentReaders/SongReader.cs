@@ -48,9 +48,7 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class SongReader : ContentTypeReader<Song>
 	{
-#if ANDROID
-		static string[] supportedExtensions = new string[] { ".mp3", ".ogg", ".mid" };
-#elif SDL2
+#if SDL2
 		static string[] supportedExtensions = new string[] { ".flac", ".ogg" };
 #else
 		static string[] supportedExtensions = new string[] { ".mp3" };
@@ -66,13 +64,8 @@ namespace Microsoft.Xna.Framework.Content
 			var path = input.ReadString();
 			if (!String.IsNullOrEmpty(path))
 			{
-#if WINRT
-				const char notSeparator = '/';
-				const char separator = '\\';
-#else
 				const char notSeparator = '\\';
 				var separator = Path.DirectorySeparatorChar;
-#endif
 				path = path.Replace(notSeparator, separator);
 				// Get a uri for the asset path using the file:// schema and no host
 				var src = new Uri(

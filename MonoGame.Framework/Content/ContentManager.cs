@@ -49,10 +49,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Path = System.IO.Path;
 using System.Diagnostics;
 
-#if !WINRT
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
-#endif
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -249,26 +247,15 @@ namespace Microsoft.Xna.Framework.Content
 				string assetPath = Path.Combine(RootDirectory, assetName) + ".xnb";
 				stream = TitleContainer.OpenStream(assetPath);
 
-#if ANDROID
-				// Read the asset into memory in one go. This results in a ~50% reduction
-				// in load times on Android due to slow Android asset streams.
-				MemoryStream memStream = new MemoryStream();
-				stream.CopyTo(memStream);
-				memStream.Seek(0, SeekOrigin.Begin);
-				stream.Close();
-				stream = memStream;
-#endif
 			}
 			catch (FileNotFoundException fileNotFound)
 			{
 				throw new ContentLoadException("The content file was not found.", fileNotFound);
 			}
-#if !WINRT
 			catch (DirectoryNotFoundException directoryNotFound)
 			{
 				throw new ContentLoadException("The directory was not found.", directoryNotFound);
 			}
-#endif
 			catch (Exception exception)
 			{
 				throw new ContentLoadException("Opening stream error.", exception);
@@ -368,7 +355,6 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return SpriteFontReader.Normalize(assetName);
 			}
-#if !WINRT
 			else if ((typeof(T) == typeof(Song)))
 			{
 				return SongReader.Normalize(assetName);
@@ -381,7 +367,6 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return Video.Normalize(assetName);
 			}
-#endif
 			else if ((typeof(T) == typeof(Effect)))
 			{
 				return EffectReader.Normalize(assetName);
@@ -408,7 +393,6 @@ namespace Microsoft.Xna.Framework.Content
 				//result = new SpriteFont(Texture2D.FromFile(graphicsDeviceService.GraphicsDevice,assetName), null, null, null, 0, 0.0f, null, null);
 				throw new NotImplementedException();
 			}
-#if !DIRECTX
 			else if ((typeof(T) == typeof(Song)))
 			{
 				return new Song(assetName);
@@ -422,7 +406,6 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				return new Video(assetName);
 			}
-#endif
 			else if ((typeof(T) == typeof(Effect)))
 			{
 				using (Stream assetStream = TitleContainer.OpenStream(assetName))
@@ -470,18 +453,6 @@ namespace Microsoft.Xna.Framework.Content
 				int decodedBytes = 0;
 				long startPos = stream.Position;
 				long pos = startPos;
-#if ANDROID
-				// Android native stream does not support the Position property. LzxDecoder.Decompress also uses
-				// Seek.  So we read the entirity of the stream into a memory stream and replace stream with the
-				// memory stream.
-				MemoryStream memStream = new MemoryStream();
-				stream.CopyTo(memStream);
-				memStream.Seek(0, SeekOrigin.Begin);
-				stream.Dispose();
-				stream = memStream;
-				// Position is at the start of the MemoryStream as Stream.CopyTo copies from current position
-				pos = 0;
-#endif
 
 				while (pos - startPos < compressedSize)
 				{
@@ -574,11 +545,7 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			foreach (var asset in LoadedAssets)
 			{
-#if WINDOWS_STOREAPP
-				var methodInfo = typeof(ContentManager).GetType().GetTypeInfo().GetDeclaredMethod("ReloadAsset");
-#else
 				var methodInfo = typeof(ContentManager).GetMethod("ReloadAsset", BindingFlags.NonPublic | BindingFlags.Instance);
-#endif
 				var genericMethod = methodInfo.MakeGenericMethod(asset.Value.GetType());
 				genericMethod.Invoke(this, new object[] { asset.Key, Convert.ChangeType(asset.Value, asset.Value.GetType()) }); 
 			}
