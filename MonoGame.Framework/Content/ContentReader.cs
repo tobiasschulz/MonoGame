@@ -129,7 +129,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 
 			object[] sharedResources = new object[sharedResourceCount];
-			for (int i = 0; i < sharedResourceCount; ++i)
+			for (int i = 0; i < sharedResourceCount; i += 1)
 			{
 				int index = Read7BitEncodedInt();
 				if (index > 0)

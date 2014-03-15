@@ -61,14 +61,14 @@ namespace Microsoft.Xna.Framework.Content
 			if (typeof(T).IsValueType)
 #endif
 			{
-				for (uint i = 0; i < count; i++)
+				for (uint i = 0; i < count; i += 1)
 				{
 					array[i] = input.ReadObject<T>(elementReader);
 				}
 			}
 			else
 			{
-				for (uint i = 0; i < count; i++)
+				for (uint i = 0; i < count; i += 1)
 				{
 					int readerType = input.Read7BitEncodedInt();
 					if (readerType > 0)
