@@ -1,10 +1,10 @@
 #region License
 /* FNA - XNA4 Reimplementation for Desktop Platforms
-* Copyright 2009-2014 Ethan Lee and the MonoGame Team
-*
-* Released under the Microsoft Public License.
-* See LICENSE for details.
-*/
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
 #endregion
 
 #region Assembly Microsoft.Xna.Framework.Storage.dll, v4.0.30319
