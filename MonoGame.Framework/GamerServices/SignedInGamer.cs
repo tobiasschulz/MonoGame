@@ -320,7 +320,13 @@ namespace Microsoft.Xna.Framework.GamerServices
 	{
 		public SignedInEventArgs ( SignedInGamer gamer )
 		{
-			
+			Gamer = gamer;
+		}
+
+		public Gamer Gamer
+		{
+			get;
+			private set;
 		}
 	}
 	
@@ -328,7 +334,13 @@ namespace Microsoft.Xna.Framework.GamerServices
 	{
 		public SignedOutEventArgs (SignedInGamer gamer )
 		{
-			
+			Gamer = gamer;
+		}
+
+		public Gamer Gamer
+		{
+			get;
+			private set;
 		}
 	}
 }
