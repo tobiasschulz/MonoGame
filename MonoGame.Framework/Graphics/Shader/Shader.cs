@@ -197,7 +197,7 @@ namespace Microsoft.Xna.Framework.Graphics
                     }
                     // replace the "uniform mat4" statement with an array of four vec4's and one global variable
                     string effectParameterName = lines[g].Split(new[]{"uniform mat4 "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
-                    string constantBufferName = "__ConstantBuffer__"+effectParameterName;
+                    string constantBufferName = "CB_"+effectParameterName;
                     _glslCode += "uniform vec4 " + constantBufferName + "[4]; ";
                     _glslCode += "mat4 " + effectParameterName + ";\n";
 
@@ -223,15 +223,89 @@ namespace Microsoft.Xna.Framework.Graphics
                         elements: EffectParameterCollection.Empty,
                         structMembers: EffectParameterCollection.Empty,
                         data: buffer
-                        );
+                    );
                     effectParameterList.Add(effectParameter);
                     
+                    // add the corresponding constant buffer
+                    var constantBuffer = new ConstantBuffer(
+                        device: GraphicsDevice,
+                        sizeInBytes: 64,
+                        parameterIndexes: new int[] { effectParameterList.Count - 1 },
+                        parameterOffsets: new int[] { 0 },
+                        name: constantBufferName
+                    );
+                    constantBuffersList.Add(constantBuffer);
+
+                    // add the constant buffer to the constant buffer array of this shader!
+                    int[] ourConstantBuffers = CBuffers;
+                    Array.Resize (ref ourConstantBuffers, ourConstantBuffers.Length + 1);
+                    ourConstantBuffers [ourConstantBuffers.Length - 1] = constantBuffersList.Count - 1;
+                    CBuffers = ourConstantBuffers;
+
+                    ++g;
+                }
+                // Add sampler and effect parameter
+                else if (lines[g].StartsWith("uniform sampler2D ") && lines[g].Contains(";"))
+                {
+                    string effectParameterName = lines[g].Split(new[]{"uniform sampler2D "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
+                    _glslCode += "uniform sampler2D " + effectParameterName + ";\n";
+                    
+                    var effectParameter = new EffectParameter(
+                        class_: EffectParameterClass.Object,
+                        type: EffectParameterType.Texture2D,
+                        name: effectParameterName,
+                        rowCount: 0,
+                        columnCount: 0,
+                        semantic: "",
+                        annotations: EffectAnnotationCollection.Empty,
+                        elements: EffectParameterCollection.Empty,
+                        structMembers: EffectParameterCollection.Empty,
+                        data: null
+                    );
+                    effectParameterList.Add(effectParameter);
+
+                    SamplerInfo sampler = new SamplerInfo ();
+                    sampler.name = effectParameterName;
+                    sampler.type = SamplerType.Sampler2D;
+                    sampler.textureSlot = SamplerList.Count;
+                    sampler.samplerSlot = SamplerList.Count;
+                    sampler.parameter = effectParameterList.Count - 1;
+                    SamplerList.Add (sampler);
+
+                    ++g;
+                }
+                // Add a vec4
+                else if (lines[g].StartsWith("uniform vec4 ") && lines[g].Contains(";"))
+                {
+                    string effectParameterName = lines[g].Split(new[]{"uniform vec4 "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
+                    _glslCode += "uniform vec4 " + effectParameterName + ";\n";
+
                     // add the corresponding effect parameter
-                    var constantBuffer = new ConstantBuffer(device: GraphicsDevice,
-                                                    sizeInBytes: 64,
-                                                    parameterIndexes: new int[] { effectParameterList.Count - 1 },
-                                                    parameterOffsets: new int[] { 0 },
-                                                    name: constantBufferName);
+                    var buffer = new float[4];
+                    for (var j = 0; j < buffer.Length; j++)
+                        buffer[j] = 0;
+                    var effectParameter = new EffectParameter(
+                        class_: EffectParameterClass.Vector,
+                        type: EffectParameterType.Single,
+                        name: effectParameterName,
+                        rowCount: 1,
+                        columnCount: 4,
+                        semantic: "",
+                        annotations: EffectAnnotationCollection.Empty,
+                        elements: EffectParameterCollection.Empty,
+                        structMembers: EffectParameterCollection.Empty,
+                        data: buffer
+                    );
+                    effectParameterList.Add(effectParameter);
+
+                    // add the corresponding constant buffer
+                    var constantBuffer = new ConstantBuffer(
+                        device: GraphicsDevice,
+                        sizeInBytes: 16,
+                        parameterIndexes: new int[] { effectParameterList.Count - 1 },
+                        parameterOffsets: new int[] { 0 },
+                        name: effectParameterName
+                    );
                     constantBuffersList.Add(constantBuffer);
 
                     // add the constant buffer to the constant buffer array of this shader!
