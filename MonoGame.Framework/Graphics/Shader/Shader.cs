@@ -141,14 +141,30 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
                 else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "Attribute", out command))
                 {
-                    Attribute attribute = new Attribute();
-                    attribute.name = EffectUtilities.ParseParam(command, "name", "");
-                    string usageStr = EffectUtilities.ParseParam(command, "usage", "");
-                    attribute.usage = (VertexElementUsage) Enum.Parse(typeof(VertexElementUsage), usageStr);
-                    attribute.index = EffectUtilities.ParseParam(command, "index", 0);
-                    attribute.format = (short) EffectUtilities.ParseParam(command, "format", 0);
-
-                    AttributeList.Add(attribute);
+                    int[] indices = EffectUtilities.ParseParam (command, "index", new int[] { 0 });
+                    if (indices.Length == 4) {
+                        for (int i = 0; i < 4; ++i) {
+                            Attribute attribute = new Attribute ();
+                            attribute.name = EffectUtilities.ParseParam (command, "name", "") + i;
+                            string usageStr = EffectUtilities.ParseParam (command, "usage", "");
+                            attribute.usage = (VertexElementUsage)Enum.Parse (typeof(VertexElementUsage), usageStr);
+                            attribute.index = indices [i];
+                            attribute.format = (short)EffectUtilities.ParseParam (command, "format", 0);
+                            AttributeList.Add (attribute);
+                        }
+                    }
+                    else if (indices.Length == 1) {
+                        Attribute attribute = new Attribute ();
+                        attribute.name = EffectUtilities.ParseParam (command, "name", "");
+                        string usageStr = EffectUtilities.ParseParam (command, "usage", "");
+                        attribute.usage = (VertexElementUsage)Enum.Parse (typeof(VertexElementUsage), usageStr);
+                        attribute.index = indices [0];
+                        attribute.format = (short)EffectUtilities.ParseParam (command, "format", 0);
+                        AttributeList.Add (attribute);
+                    }
+                    else {
+                        throw new ArgumentException ("Invalid Attribute: '"+lines[g]+"': There have to be 1 oder 4 indices!");
+                    }
                     ++g;
                 }
                 else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EndShader", out command))
@@ -259,8 +275,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 readableCode += "#monogame Attribute("+EffectUtilities.Params(
                     "name", _attributes[a].name,
                     "usage", _attributes[a].usage,
-                    "index", _attributes[a].index,
-                    "format", _attributes[a].format
+                    "index", _attributes[a].index
+                    // "format", _attributes[a].format // seems to be always 0
                     )+")\n";
             }
             
