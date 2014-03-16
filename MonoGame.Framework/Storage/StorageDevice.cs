@@ -40,11 +40,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.IO;
 
-#if WINRT
-using Windows.Storage;
-#else
 using System.Runtime.Remoting.Messaging;
-#endif
 
 namespace Microsoft.Xna.Framework.Storage
 {
@@ -95,11 +91,7 @@ namespace Microsoft.Xna.Framework.Storage
 				// I do not know if the DriveInfo is is implemented on Mac or not
 				// thus the try catch
 				try {
-#if WINRT
-                    return long.MaxValue;
-#else
                     return new DriveInfo(GetDevicePath).AvailableFreeSpace;
-#endif
                 }
 				catch (Exception) {
 					StorageDeviceHelper.Path = StorageRoot;
@@ -116,11 +108,7 @@ namespace Microsoft.Xna.Framework.Storage
 				// I do not know if the DriveInfo is is implemented on Mac or not
 				// thus the try catch
 				try {
-#if WINRT
-                    return true;
-#else
 					return new DriveInfo(GetDevicePath).IsReady;
-#endif
                 }
 				catch (Exception) {
 					return true;
@@ -137,13 +125,9 @@ namespace Microsoft.Xna.Framework.Storage
 				// I do not know if the DriveInfo is is implemented on Mac or not
 				// thus the try catch
 				try {
-#if WINRT
-                    return long.MaxValue;
-#else
 
 					// Not sure if this should be TotalSize or TotalFreeSize
 					return new DriveInfo(GetDevicePath).TotalSize;
-#endif
                 }
 				catch (Exception) {
 					StorageDeviceHelper.Path = StorageRoot;
@@ -179,12 +163,6 @@ namespace Microsoft.Xna.Framework.Storage
             return DeviceChanged != null;
         }
 
-#if WINRT
-        // Dirty trick to avoid the need to get the delegate from the IAsyncResult (can't be done in WinRT)
-        static Delegate showDelegate;
-        static Delegate containerDelegate;
-#endif
-
 		// Summary:
 		//     Begins the process for opening a StorageContainer containing any files for
 		//     the specified title.
@@ -209,9 +187,6 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			try {
 				OpenContainerAsynchronous AsynchronousOpen = new OpenContainerAsynchronous (Open);
-#if WINRT
-                containerDelegate = AsynchronousOpen;
-#endif
                 return AsynchronousOpen.BeginInvoke (displayName, callback, state);
 			} finally {
 			}
@@ -286,9 +261,6 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			var del = new ShowSelectorAsynchronousShowNoPlayer (Show);
 
-#if WINRT
-            showDelegate = del;
-#endif
 			return del.BeginInvoke(sizeInBytes, directoryCount, callback, state);
 		}
 
@@ -321,9 +293,6 @@ namespace Microsoft.Xna.Framework.Storage
 		public static IAsyncResult BeginShowSelector (PlayerIndex player, int sizeInBytes, int directoryCount, AsyncCallback callback, object state)
 		{
 			var del = new ShowSelectorAsynchronousShow (Show);
-#if WINRT
-            showDelegate = del;
-#endif
             return del.BeginInvoke(player, sizeInBytes, directoryCount, callback, state);
         }
 	
@@ -361,19 +330,6 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			StorageContainer returnValue = null;
 			try {
-#if WINRT
-                // AsyncResult does not exist in WinRT
-                var asyncResult = containerDelegate as OpenContainerAsynchronous;
-				if (asyncResult != null)
-				{
-					// Wait for the WaitHandle to become signaled.
-					result.AsyncWaitHandle.WaitOne();
-
-					// Call EndInvoke to retrieve the results.
-    				returnValue = asyncResult.EndInvoke(result);
-				}
-                containerDelegate = null;
-#else
 				// Retrieve the delegate.
 				AsyncResult asyncResult = result as AsyncResult;
 				if (asyncResult != null)
@@ -387,7 +343,6 @@ namespace Microsoft.Xna.Framework.Storage
 					if (asyncDelegate != null)
 						returnValue = asyncDelegate.EndInvoke(result);
 				}
-#endif
             }
             finally
             {
@@ -414,20 +369,12 @@ namespace Microsoft.Xna.Framework.Storage
 				try {
 					result.AsyncWaitHandle.WaitOne ();
 				} finally {
-#if !WINRT
-					result.AsyncWaitHandle.Close ();
-#endif
 				}
 			}
-#if WINRT
-            var del = showDelegate;
-            showDelegate = null;
-#else
 			// Retrieve the delegate.
 			AsyncResult asyncResult = (AsyncResult)result;
 
             var del = asyncResult.AsyncDelegate;
-#endif
 
 			if (del is ShowSelectorAsynchronousShow)
 				return (del as ShowSelectorAsynchronousShow).EndInvoke (result);
@@ -440,9 +387,6 @@ namespace Microsoft.Xna.Framework.Storage
 		internal static string StorageRoot
 		{
 			get {
-#if WINRT
-                return ApplicationData.Current.LocalFolder.Path; 
-#elif SDL2
                 if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
                 {
                     return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -473,11 +417,6 @@ namespace Microsoft.Xna.Framework.Storage
                     return osConfigDir;
                 }
                 throw new Exception("StorageDevice: SDL2 platform not handled!");
-#elif PSM
-				return "/Documents/";
-#else
-                return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-#endif
             }
 		}
 	}
