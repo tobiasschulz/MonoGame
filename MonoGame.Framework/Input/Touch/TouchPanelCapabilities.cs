@@ -64,20 +64,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
                 // XNA does not expose a pressure value, so let's assume it doesn't support it.
                 hasPressure = false;
 
-#if WINDOWS_STOREAPP
-                // Is a touch device present?
-                var caps = new Windows.Devices.Input.TouchCapabilities();
-                isConnected = caps.TouchPresent != 0;
-
-                // Iterate through all pointer devices and find the maximum number of concurrent touches possible
-                maximumTouchCount = 0;
-                var pointerDevices = Windows.Devices.Input.PointerDevice.GetPointerDevices();
-                foreach (var pointerDevice in pointerDevices)
-                    maximumTouchCount = Math.Max(maximumTouchCount, (int)pointerDevice.MaxContacts);
-#else
 		        isConnected = true;
 		        maximumTouchCount = 8;
-#endif
             }
 		}
 

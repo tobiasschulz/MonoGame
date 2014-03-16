@@ -42,10 +42,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-#if IOS
-using MonoTouch.MediaPlayer;
-#endif
-
 namespace Microsoft.Xna.Framework.Media
 {
 	public class MediaLibrary : IDisposable
@@ -72,54 +68,16 @@ namespace Microsoft.Xna.Framework.Media
         /*
 		public void SavePicture (string name, byte[] imageBuffer)
 		{
-#if IOS || ANDROID
-			throw new NotImplementedException();
-#else
 			//only is relivant on mobile devices...
 			throw new NotSupportedException ();
-#endif
 		}
 
 		public void SavePicture (string name, Stream source)
 		{
-#if IOS || ANDROID
-			throw new NotImplementedException();
-#else
 			//only is relivant on mobile devices...
 			throw new NotSupportedException ();
-#endif
 		}
 		*/
-
-#if IOS
-
-		public PlaylistCollection Playlists
-		{
-			get
-			{				
-				if (_playLists == null)
-				{
-					_playLists = new PlaylistCollection();
-					
-					MPMediaQuery playlists = new MPMediaQuery();
-					playlists.GroupingType = MPMediaGrouping.Playlist; 
-					for (int i=0;i<playlists.Collections.Length;i++)
-					{
-						MPMediaItemCollection item = playlists.Collections[i];					
-						Playlist list = new Playlist();
-						list.Name = playlists.Items[i].ValueForProperty(MPMediaPlaylistProperty.Name).ToString();
-						for (int k=0;k<item.Items.Length;k++)
-						{
-							TimeSpan time = TimeSpan.Parse(item.Items[k].ValueForProperty(MPMediaItemProperty.PlaybackDuration).ToString());
-							list.Duration += time;
-						}
-						_playLists.Add(list);
-					}
-				}
-				return _playLists;
-			}
-		}
-#endif
 
         public SongCollection Songs
 		{
