@@ -120,27 +120,25 @@ namespace Microsoft.Xna.Framework.Graphics
             CBuffers = constantBuffers;
             List<SamplerInfo> SamplerList = new List<SamplerInfo>();
             List<Attribute> AttributeList = new List<Attribute>();
+            string preMainCode = "";
             
-            while (g < lines.Length)
-            {
+            while (g < lines.Length) {
                 string command;
-                if (EffectUtilities.MatchesMetaDeclaration(lines[g], "Sampler", out command))
-                {
-                    SamplerInfo sampler = new SamplerInfo();
-                    sampler.name = EffectUtilities.ParseParam(command, "name", "");
-                    string typeStr = EffectUtilities.ParseParam(command, "type", "");
+                if (EffectUtilities.MatchesMetaDeclaration (lines [g], "Sampler", out command)) {
+                    SamplerInfo sampler = new SamplerInfo ();
+                    sampler.name = EffectUtilities.ParseParam (command, "name", "");
+                    string typeStr = EffectUtilities.ParseParam (command, "type", "");
                     sampler.type = typeStr == "Sampler1D" ? SamplerType.Sampler1D
                             : typeStr == "Sampler2D" ? SamplerType.Sampler2D
                             : typeStr == "SamplerCube" ? SamplerType.SamplerCube
                             : SamplerType.SamplerVolume;
-                    sampler.textureSlot = EffectUtilities.ParseParam(command, "textureSlot", 0);
-                    sampler.samplerSlot = EffectUtilities.ParseParam(command, "samplerSlot", 0);
-                    sampler.parameter = EffectUtilities.ParseParam(command, "parameter", 0);
-                    SamplerList.Add(sampler);
+                    sampler.textureSlot = EffectUtilities.ParseParam (command, "textureSlot", 0);
+                    sampler.samplerSlot = EffectUtilities.ParseParam (command, "samplerSlot", 0);
+                    sampler.parameter = EffectUtilities.ParseParam (command, "parameter", 0);
+                    SamplerList.Add (sampler);
                     ++g;
                 }
-                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "Attribute", out command))
-                {
+                else if (EffectUtilities.MatchesMetaDeclaration (lines [g], "Attribute", out command)) {
                     int[] indices = EffectUtilities.ParseParam (command, "index", new int[] { 0 });
                     if (indices.Length == 4) {
                         for (int i = 0; i < 4; ++i) {
@@ -163,20 +161,90 @@ namespace Microsoft.Xna.Framework.Graphics
                         AttributeList.Add (attribute);
                     }
                     else {
-                        throw new ArgumentException ("Invalid Attribute: '"+lines[g]+"': There have to be 1 oder 4 indices!");
+                        throw new ArgumentException ("Invalid Attribute: '" + lines [g] + "': There have to be 1 oder 4 indices!");
                     }
                     ++g;
                 }
-                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EndShader", out command))
-                {
+                else if (EffectUtilities.MatchesMetaDeclaration (lines [g], "EndShader", out command)) {
                     ++g;
                     break;
                 }
+                // "in mat4 name;" -> "in vec4 name0; in vec4 name1; in vec4 name2; in vec4 name3; mat4 name;"
+                else if (lines[g].StartsWith("in mat4 ") && lines[g].Contains(";"))
+                {
+                    // replace the "in mat4" statement with four "in vec4" statements and one global variable
+                    string name = lines[g].Split(new[]{"in mat4 "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
+                    for (int i = 0; i < 4; ++i) {
+                        _glslCode += "in vec4 " + name + i + "; ";
+                    }
+                    _glslCode += "mat4 " + name + ";\n";
+
+                    // construct code to generate the full matrix in the main method
+                    preMainCode += name + " = mat4 (";
+                    for (int i = 0; i < 4; ++i) {
+                        preMainCode += (i > 0 ? ", " : "") + name + i;
+                    }
+                    preMainCode += ");\n";
+
+                    ++g;
+                }
+                // "uniform mat4 name;" -> "uniform vec4 name[4]; mat4 name;"
+                else if (lines[g].StartsWith("uniform mat4 ") && lines[g].Contains(";"))
+                {
+                    if (lines [g].Contains ("[") && lines [g].Contains ("]")) {
+                        throw new ArgumentException ("Unform matrix arrays are unsupported! Use separate matrices! '" + lines [g] + "'");
+                    }
+                    // replace the "uniform mat4" statement with an array of four vec4's and one global variable
+                    string name = lines[g].Split(new[]{"uniform mat4 "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
+                    _glslCode += "uniform vec4 " + name + "[4]; ";
+                    _glslCode += "mat4 " + name + "M;\n";
+
+                    // construct code to generate the full matrix in the main method
+                    preMainCode += name + "M = mat4 (";
+                    for (int i = 0; i < 4; ++i) {
+                        preMainCode += (i > 0 ? ", " : "") + name + "[" + i + "]";
+                    }
+                    preMainCode += ");\n";
+
+                    ++g;
+                }
+                else if (lines[g].StartsWith("void main"))
+                {
+                    _glslCode += lines[g].Replace("void main", "void user_main") + "\n";
+                    ++g;
+                }
                 else {
-                    _glslCode += lines[g]+"\n";
+                    _glslCode += lines[g] + "\n";
                     ++g;
                 }
             }
+
+            if (stage == ShaderStage.Vertex) {
+                // see: https://github.com/flibitijibibo/MonoGame/blob/e9f61e3efbae6f11ebbf45012e7c692c8d0ee529/MonoGame.Framework/Graphics/GraphicsDevice.cs#L1209
+                _glslCode += @"
+uniform vec4 posFixup;
+void main ()
+{
+    " + preMainCode + @"
+    user_main();
+    
+    // https://github.com/flibitijibibo/MonoGame/blob/e9f61e3efbae6f11ebbf45012e7c692c8d0ee529/MonoGame.Framework/Graphics/GraphicsDevice.cs#L1209
+    gl_Position.y = gl_Position.y * posFixup.y;
+    gl_Position.xy += posFixup.zw * gl_Position.ww;
+}
+" + "\n";
+            }
+            else {
+                _glslCode += @"
+void main ()
+{
+    " + preMainCode + @"
+    user_main();
+}
+" + "\n";
+            }
+
+            Console.WriteLine (_glslCode);
 
             Samplers = SamplerList.ToArray();
             _attributes = AttributeList.ToArray();
