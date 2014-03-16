@@ -114,7 +114,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public ShaderStage Stage { get; private set; }
 		
-        internal Shader(GraphicsDevice device, ShaderStage stage, int[] constantBuffers, string[] lines, ref int g)
+        internal Shader(GraphicsDevice device, ShaderStage stage, int[] constantBuffers, string[] lines, ref int g,
+                        ref List<ConstantBuffer> constantBuffersList, ref List<EffectParameter> effectParameterList)
         {
             Stage = stage;
             CBuffers = constantBuffers;
@@ -195,16 +196,49 @@ namespace Microsoft.Xna.Framework.Graphics
                         throw new ArgumentException ("Unform matrix arrays are unsupported! Use separate matrices! '" + lines [g] + "'");
                     }
                     // replace the "uniform mat4" statement with an array of four vec4's and one global variable
-                    string name = lines[g].Split(new[]{"uniform mat4 "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
-                    _glslCode += "uniform vec4 " + name + "[4]; ";
-                    _glslCode += "mat4 " + name + "M;\n";
+                    string effectParameterName = lines[g].Split(new[]{"uniform mat4 "}, StringSplitOptions.None)[1].Split(new[]{';'})[0];
+                    string constantBufferName = "__ConstantBuffer__"+effectParameterName;
+                    _glslCode += "uniform vec4 " + constantBufferName + "[4]; ";
+                    _glslCode += "mat4 " + effectParameterName + ";\n";
 
                     // construct code to generate the full matrix in the main method
-                    preMainCode += name + "M = mat4 (";
+                    preMainCode += effectParameterName + " = mat4 (";
                     for (int i = 0; i < 4; ++i) {
-                        preMainCode += (i > 0 ? ", " : "") + name + "[" + i + "]";
+                        preMainCode += (i > 0 ? ", " : "") + constantBufferName + "[" + i + "]";
                     }
                     preMainCode += ");\n";
+
+                    // add the corresponding effect parameter
+                    var buffer = new float[4 * 4];
+                    for (var j = 0; j < buffer.Length; j++)
+                        buffer[j] = 0;
+                    var effectParameter = new EffectParameter(
+                        class_: EffectParameterClass.Matrix,
+                        type: EffectParameterType.Single,
+                        name: effectParameterName,
+                        rowCount: 4,
+                        columnCount: 4,
+                        semantic: "",
+                        annotations: EffectAnnotationCollection.Empty,
+                        elements: EffectParameterCollection.Empty,
+                        structMembers: EffectParameterCollection.Empty,
+                        data: buffer
+                        );
+                    effectParameterList.Add(effectParameter);
+                    
+                    // add the corresponding effect parameter
+                    var constantBuffer = new ConstantBuffer(device: GraphicsDevice,
+                                                    sizeInBytes: 64,
+                                                    parameterIndexes: new int[] { effectParameterList.Count - 1 },
+                                                    parameterOffsets: new int[] { 0 },
+                                                    name: constantBufferName);
+                    constantBuffersList.Add(constantBuffer);
+
+                    // add the constant buffer to the constant buffer array of this shader!
+                    int[] ourConstantBuffers = CBuffers;
+                    Array.Resize (ref ourConstantBuffers, ourConstantBuffers.Length + 1);
+                    ourConstantBuffers [ourConstantBuffers.Length - 1] = constantBuffersList.Count - 1;
+                    CBuffers = ourConstantBuffers;
 
                     ++g;
                 }
@@ -221,27 +255,14 @@ namespace Microsoft.Xna.Framework.Graphics
 
             if (stage == ShaderStage.Vertex) {
                 // see: https://github.com/flibitijibibo/MonoGame/blob/e9f61e3efbae6f11ebbf45012e7c692c8d0ee529/MonoGame.Framework/Graphics/GraphicsDevice.cs#L1209
-                _glslCode += @"
-uniform vec4 posFixup;
-void main ()
-{
-    " + preMainCode + @"
-    user_main();
-    
-    // https://github.com/flibitijibibo/MonoGame/blob/e9f61e3efbae6f11ebbf45012e7c692c8d0ee529/MonoGame.Framework/Graphics/GraphicsDevice.cs#L1209
-    gl_Position.y = gl_Position.y * posFixup.y;
-    gl_Position.xy += posFixup.zw * gl_Position.ww;
-}
-" + "\n";
+                _glslCode += "uniform vec4 posFixup; void main () {";
+                _glslCode += preMainCode;
+                _glslCode += "user_main();";
+                _glslCode += "gl_Position.y = gl_Position.y * posFixup.y; gl_Position.xy += posFixup.zw * gl_Position.ww;";
+                _glslCode += "}\n";
             }
             else {
-                _glslCode += @"
-void main ()
-{
-    " + preMainCode + @"
-    user_main();
-}
-" + "\n";
+                _glslCode += "void main () { " + preMainCode + " user_main(); }\n";
             }
 
             Console.WriteLine (_glslCode);

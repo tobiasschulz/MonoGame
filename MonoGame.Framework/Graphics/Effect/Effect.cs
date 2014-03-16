@@ -285,6 +285,12 @@ namespace Microsoft.Xna.Framework.Graphics
             List<EffectPass> PassesList = new List<EffectPass>();
             List<EffectTechnique> TechniquesList = new List<EffectTechnique>();
 
+            List<string> linesSorted = new List<string> ();
+            Func<string, bool> isParameterDeclaration = (line) => line.Contains ("ConstantBuffer") || line.Contains ("EffectParameter");
+            linesSorted.AddRange (from line in lines where isParameterDeclaration(line) select line);
+            linesSorted.AddRange (from line in lines where !isParameterDeclaration(line) select line);
+            lines = linesSorted.ToArray ();
+
             int g = 0;
             while (g < lines.Length)
             {
@@ -356,7 +362,9 @@ namespace Microsoft.Xna.Framework.Graphics
                         stage: stage,
                         constantBuffers: constantBuffers,
                         lines: lines,
-                        g: ref g
+                        g: ref g,
+                        constantBuffersList: ref ConstantBuffersList,
+                        effectParameterList: ref EffectParameterList
                     );
                     ShaderList.Add(shader);
                 }
