@@ -32,7 +32,7 @@ namespace Microsoft.Xna.Framework
 
         public static bool MatchesMetaDeclaration(string line, string commandName, out string command)
         {
-            string[] starts = new string[] { "#monogame " + commandName + "(", "#monogame " + commandName + " " };
+            string[] starts = new string[] { "#monogame " + commandName + "(", "#monogame " + commandName + " (", "#monogame " + commandName + " " };
             foreach (string start in starts)
             {
                 if (line.StartsWith(start))
