@@ -302,9 +302,9 @@ namespace Microsoft.Xna.Framework.Content
 
 			// FIXME: This may apply to more compressed formats!
 			if (	levelCount > 1 &&
-					(	convertedFormat == SurfaceFormat.Dxt1 ||
-						convertedFormat == SurfaceFormat.Dxt3 ||
-						convertedFormat == SurfaceFormat.Dxt5	)	)
+				(	convertedFormat == SurfaceFormat.Dxt1 ||
+					convertedFormat == SurfaceFormat.Dxt3 ||
+					convertedFormat == SurfaceFormat.Dxt5	)	)
 			{
 				texture.GenerateMipmaps();
 			}
