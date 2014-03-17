@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 
 #if OPENGL
 #if SDL2
@@ -339,7 +340,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 _glslCode += "void main () { " + preMainCode + " user_main(); }\n";
             }
 
-            Console.WriteLine (_glslCode);
+            //Console.WriteLine (_glslCode);
 
             Samplers = SamplerList.ToArray();
             _attributes = AttributeList.ToArray();
@@ -442,9 +443,13 @@ namespace Microsoft.Xna.Framework.Graphics
                     // "format", _attributes[a].format // seems to be always 0
                     )+")\n";
             }
+
+            string readableGlslCode = _glslCode;
+            // remove posFixup
+            readableGlslCode = string.Join("\n", from line in readableGlslCode.Split(new string []{"\n"}, StringSplitOptions.None) where !line.Contains("posFixup") select line);
             
             readableCode += "\n";
-            readableCode += _glslCode;
+            readableCode += readableGlslCode;
             readableCode += "\n";
             readableCode += "#monogame EndShader()\n";
 
