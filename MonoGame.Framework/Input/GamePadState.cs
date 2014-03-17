@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 /* FNA - XNA4 Reimplementation for Desktop Platforms
  * Copyright 2009-2014 Ethan Lee and the MonoGame Team
  *
@@ -117,10 +117,10 @@ namespace Microsoft.Xna.Framework.Input
         //
         // Parameters:
         //   leftThumbStick:
-        //     Left stick value. Each axis is clamped between −1.0 and 1.0.
+        //     Left stick value. Each axis is clamped between 1.0 and 1.0.
         //
         //   rightThumbStick:
-        //     Right stick value. Each axis is clamped between −1.0 and 1.0.
+        //     Right stick value. Each axis is clamped between 1.0 and 1.0.
         //
         //   leftTrigger:
         //     Left trigger value. This value is clamped between 0.0 and 1.0.
