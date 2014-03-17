@@ -11,35 +11,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-#if IOS
-using MonoTouch.UIKit;
-#elif ANDROID
-using Android.Views;
-#endif
-
 namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class GraphicsAdapter : IDisposable
     {
         private static ReadOnlyCollection<GraphicsAdapter> adapters;
         
-#if IOS
-		private UIScreen _screen;
-        internal GraphicsAdapter(UIScreen screen)
-        {
-            _screen = screen;
-        }
-#elif ANDROID
-        private View _view;
-        internal GraphicsAdapter(View screen)
-        {
-            _view = screen;
-        }
-#else
         internal GraphicsAdapter()
         {
         }
-#endif
         
         public void Dispose()
         {
@@ -49,7 +29,6 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             get
             {
-#if SDL2
                 SDL2.SDL.SDL_DisplayMode mode;
                 SDL2.SDL.SDL_GetCurrentDisplayMode(0, out mode);
                 return new DisplayMode(
@@ -57,16 +36,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     mode.h,
                     SurfaceFormat.Color
                 );
-#elif IOS
-                return new DisplayMode((int)(_screen.Bounds.Width * _screen.Scale),
-                       (int)(_screen.Bounds.Height * _screen.Scale),
-                       60,
-                       SurfaceFormat.Color);
-#elif ANDROID
-                return new DisplayMode(_view.Width, _view.Height, 60, SurfaceFormat.Color);
-#else
-                return new DisplayMode(800, 600, 60, SurfaceFormat.Color);
-#endif
             }
         }
 
@@ -78,15 +47,8 @@ namespace Microsoft.Xna.Framework.Graphics
         public static ReadOnlyCollection<GraphicsAdapter> Adapters {
             get {
                 if (adapters == null) {
-#if IOS
-					adapters = new ReadOnlyCollection<GraphicsAdapter>(
-						new GraphicsAdapter[] {new GraphicsAdapter(UIScreen.MainScreen)});
-#elif ANDROID
-                    adapters = new ReadOnlyCollection<GraphicsAdapter>(new GraphicsAdapter[] { new GraphicsAdapter(Game.Instance.Window) });
-#else
                     adapters = new ReadOnlyCollection<GraphicsAdapter>(
 						new GraphicsAdapter[] {new GraphicsAdapter()});
-#endif
                 }
                 return adapters;
             }
@@ -216,7 +178,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (supportedDisplayModes == null)
                 {
                     List<DisplayMode> modes = new List<DisplayMode>(new DisplayMode[] { CurrentDisplayMode, });
-#if SDL2
                     SDL2.SDL.SDL_DisplayMode filler = new SDL2.SDL.SDL_DisplayMode();
                     int numModes = SDL2.SDL.SDL_GetNumDisplayModes(0);
                     for (int i = 0; i < numModes; i += 1)
@@ -245,7 +206,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             )
                         );
                     }
-#endif
                     supportedDisplayModes = new DisplayModeCollection(modes);
                 }
                 return supportedDisplayModes;

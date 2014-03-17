@@ -47,42 +47,9 @@ namespace Microsoft.Xna.Framework.Graphics
             _arraySlice = (int)cubeMapFace;
         }
 
-#if DIRECTX
-
-        public RenderTargetBinding(RenderTarget3D renderTarget)
-        {
-            if (renderTarget == null)
-                throw new ArgumentNullException("renderTarget");
-
-            _renderTarget = renderTarget;
-            _arraySlice = 0;
-        }
-
-        public RenderTargetBinding(RenderTarget3D renderTarget, int arraySlice)
-        {
-            if (renderTarget == null)
-                throw new ArgumentNullException("renderTarget");
-            if (arraySlice < 0 || arraySlice >= renderTarget.Depth)
-                throw new ArgumentOutOfRangeException("arraySlice");
-
-            _renderTarget = renderTarget;
-            _arraySlice = arraySlice;
-        }
-
-#endif 
-
         public static implicit operator RenderTargetBinding(RenderTarget2D renderTarget)
         {
             return new RenderTargetBinding(renderTarget);
         }
-
-#if DIRECTX
-
-        public static implicit operator RenderTargetBinding(RenderTarget3D renderTarget)
-        {
-            return new RenderTargetBinding(renderTarget);
-        }
-
-#endif
 	}
 }
