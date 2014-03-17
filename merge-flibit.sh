@@ -10,4 +10,4 @@ git push origin monogame-sdl2  -f
 git pull
 git checkout -f mgsdl2-glshader
 git pull
-git merge monogame-sdl2 && git commit -a && git push origin mgsdl2-glshader
+git merge monogame-sdl2 && (git commit -a && git push origin mgsdl2-glshader)
