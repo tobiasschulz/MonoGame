@@ -1,3 +1,12 @@
+#region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+#endregion
+
 using System;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -5,8 +14,10 @@ namespace Microsoft.Xna.Framework.Content
 {
 	public class TextureReader : ContentTypeReader<Texture>
 	{
-		protected internal override Texture Read(ContentReader reader, Texture existingInstance)
-		{
+		protected internal override Texture Read(
+			ContentReader reader,
+			Texture existingInstance
+		) {
 			return existingInstance;
 		}
 	}

@@ -1,7 +1,14 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -23,8 +30,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
-
+#endregion
 
 using System;
 using System.Collections.Generic;
@@ -32,15 +38,17 @@ using System.Text;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    internal class StringReader : ContentTypeReader<String>
-    {
-        internal StringReader()
-        {
-        }
+	internal class StringReader : ContentTypeReader<String>
+	{
+		internal StringReader()
+		{
+		}
 
-        protected internal override string Read(ContentReader input, string existingInstance)
-        {
-            return input.ReadString();
-        }
-    }
+		protected internal override string Read(
+			ContentReader input,
+			string existingInstance
+		) {
+			return input.ReadString();
+		}
+	}
 }

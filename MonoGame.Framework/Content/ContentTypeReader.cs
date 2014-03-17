@@ -1,7 +1,14 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -23,167 +30,119 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
+#endregion
 
 using System;
 using System.IO;
 
-#if ANDROID
-using System.Linq;
-using System.Collections.Generic;
-#endif
-
-#if WINRT
-using Windows.Storage;
-#endif
 
 namespace Microsoft.Xna.Framework.Content
 {
-    public abstract class ContentTypeReader
-    {
-        #region Private Member Variables
+	public abstract class ContentTypeReader
+	{
+#region Private Member Variables
 
-        private Type targetType;
-#if ANDROID
-		// Keep this static so we only call Game.Activity.Assets.List() once
-		// No need to call it for each file if the list will never change.
-		// We do need one file list per folder though.
-		static Dictionary<string, string[]> filesInFolders = new Dictionary<string,string[]>();
-#endif
+		private Type targetType;
 
-        #endregion Private Member Variables
+#endregion Private Member Variables
 
 
-        #region Public Properties
+#region Public Properties
 
-        public Type TargetType
-        {
-            get { return this.targetType; }
-        }
+		public Type TargetType
+		{
+			get
+			{
+				return this.targetType;
+			}
+		}
 
-        public virtual int TypeVersion
-        {
-            get { return 0; }   // The default version (unless overridden) is zero
-        }
+		public virtual int TypeVersion
+		{
+			// The default version (unless overridden) is zero
+			get
+			{
+				return 0;
+			}
+		}
 
-        #endregion Public Properties
-
-
-        #region Protected Constructors
-
-        protected ContentTypeReader(Type targetType)
-        {
-            this.targetType = targetType;
-        }
-
-        #endregion Protected Constructors
+#endregion Public Properties
 
 
-        #region Protected Methods
+#region Protected Constructors
 
-        protected internal virtual void Initialize(ContentTypeReaderManager manager)
-        {
-            // Do nothing. Are we supposed to add ourselves to the manager?
-        }
+		protected ContentTypeReader(Type targetType)
+		{
+			this.targetType = targetType;
+		}
 
-        protected internal abstract object Read(ContentReader input, object existingInstance);
+#endregion Protected Constructors
 
-        #endregion Protected Methods
 
-        #region Internal Static Helper Methods
-#if ANDROID
-        internal static string Normalize(string fileName, string[] extensions)
-        {
-            int index = fileName.LastIndexOf(Path.DirectorySeparatorChar);
-            string path = string.Empty;
-            string file = fileName;
-            if (index >= 0)
-            {
-                file = fileName.Substring(index + 1, fileName.Length - index - 1);
-                path = fileName.Substring(0, index);
-            }
+#region Protected Methods
 
-            // Only read the assets file list once
-            string[] files = null;
-            if (!filesInFolders.TryGetValue(path, out files))
-            {
-                files = Game.Activity.Assets.List(path);
-                filesInFolders[path] = files;
-            }
+		protected internal virtual void Initialize(ContentTypeReaderManager manager)
+		{
+			// Do nothing. Are we supposed to add ourselves to the manager?
+		}
 
-            if (files.Any(s => s == file))
-                return fileName;
+		protected internal abstract object Read(ContentReader input, object existingInstance);
 
-			// FirstOrDefault returns null as the default if the file is not found. This crashed Path.Combine so check
-			// for it first.
-			string file2 = files.FirstOrDefault(s => extensions.Any(ext => s.ToLower() == (file.ToLower() + ext)));
-			if (String.IsNullOrEmpty(file2))
-				return null;
-            return Path.Combine(path, file2);
-        }
-#else
+#endregion Protected Methods
+
+#region Internal Static Helper Methods
 		public static string Normalize(string fileName, string[] extensions)
 		{
-#if WINRT
-            if (MetroHelper.AppDataFileExists(fileName))
-                return fileName;
-#else
-            if (File.Exists(fileName))
+			if (File.Exists(fileName))
+			{
 				return fileName;
-#endif
-			
-            foreach (string ext in extensions)
-            {
-			    // Concat the file name with valid extensions
-                string fileNamePlusExt = fileName + ext;
-
-#if WINRT
-                if (MetroHelper.AppDataFileExists(fileNamePlusExt))
-                    return fileNamePlusExt;
-#else
-			    if (File.Exists(fileNamePlusExt))
-				    return fileNamePlusExt;
-#endif
-            }
-			
-			return null;
-		}
-#endif
-        #endregion
-    }
-
-    public abstract class ContentTypeReader<T> : ContentTypeReader
-    {
-        #region Protected Constructors
-
-        protected ContentTypeReader()
-            : base(typeof(T))
-        {
-            // Nothing
-        }
-
-        #endregion Protected Constructors
-
-
-        #region Protected Methods
-
-        protected internal override object Read(ContentReader input, object existingInstance)
-        {
-			// as per the documentation http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.content.contenttypereader.read.aspx
-			// existingInstance
-			// The object receiving the data, or null if a new instance of the object should be created.
-			if (existingInstance == null) {
-				return this.Read (input, default(T));
-			} 
-			else {
-				return this.Read (input, (T)existingInstance);
 			}
 
-		//return Read(input, (T)existingInstance);
-        }
+			foreach (string ext in extensions)
+			{
+				// Concat the file name with valid extensions
+				string fileNamePlusExt = fileName + ext;
+				if (File.Exists(fileNamePlusExt))
+				{
+					return fileNamePlusExt;
+				}
+			}
+			return null;
+		}
+#endregion
+	}
 
-        protected internal abstract T Read(ContentReader input, T existingInstance);
+	public abstract class ContentTypeReader<T> : ContentTypeReader
+	{
+#region Protected Constructors
 
-        #endregion Protected Methods
-    }
+		protected ContentTypeReader() : base(typeof(T))
+		{
+			// Nothing
+		}
+
+#endregion Protected Constructors
+
+#region Protected Methods
+
+		protected internal override object Read(ContentReader input, object existingInstance)
+		{
+			/* As per the documentation http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.content.contenttypereader.read.aspx
+			 * existingInstance
+			 * The object receiving the data, or null if a new instance of the object should be created.
+			 */
+			if (existingInstance == null)
+			{
+				return this.Read(input, default(T));
+			}
+			else
+			{
+				return this.Read(input, (T) existingInstance);
+			}
+		}
+
+		protected internal abstract T Read(ContentReader input, T existingInstance);
+
+#endregion Protected Methods
+	}
 }

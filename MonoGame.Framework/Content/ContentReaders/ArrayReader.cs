@@ -1,7 +1,14 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -23,56 +30,59 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
+#endregion
 
 using System;
-#if WINRT
-using System.Reflection;
-#endif
 
 namespace Microsoft.Xna.Framework.Content
 {
-    public class ArrayReader<T> : ContentTypeReader<T[]>
-    {
-        ContentTypeReader elementReader;
+	public class ArrayReader<T> : ContentTypeReader<T[]>
+	{
+		ContentTypeReader elementReader;
 
-        public ArrayReader()
-        {
-        }
+		public ArrayReader()
+		{
+		}
 
-        protected internal override void Initialize(ContentTypeReaderManager manager)
+		protected internal override void Initialize(ContentTypeReaderManager manager)
 		{
 			Type readerType = typeof(T);
 			elementReader = manager.GetTypeReader(readerType);
-        }
+		}
 
-        protected internal override T[] Read(ContentReader input, T[] existingInstance)
-        {
-            uint count = input.ReadUInt32();
-            T[] array = existingInstance;
-            if (array == null)
-                array = new T[count];
-
-#if WINRT
-            if (typeof(T).GetTypeInfo().IsValueType)
-#else
-            if (typeof(T).IsValueType)
-#endif
+		protected internal override T[] Read(ContentReader input, T[] existingInstance)
+		{
+			uint count = input.ReadUInt32();
+			T[] array = existingInstance;
+			if (array == null)
 			{
-                for (uint i = 0; i < count; i++)
-                {
-                	array[i] = input.ReadObject<T>(elementReader);
-                }
+				array = new T[count];
+			}
+
+			if (typeof(T).IsValueType)
+			{
+				for (uint i = 0; i < count; i += 1)
+				{
+					array[i] = input.ReadObject<T>(elementReader);
+				}
 			}
 			else
 			{
-                for (uint i = 0; i < count; i++)
-                {
-                    int readerType = input.Read7BitEncodedInt();
-                	array[i] = readerType > 0 ? input.ReadObject<T>(input.TypeReaders[readerType - 1]) : default(T);
-                }
+				for (uint i = 0; i < count; i += 1)
+				{
+					int readerType = input.Read7BitEncodedInt();
+					if (readerType > 0)
+					{
+						array[i] = input.ReadObject<T>(
+							input.TypeReaders[readerType - 1]
+						);
+					}
+					else {
+						array[i] = default(T);
+					}
+				}
 			}
-            return array;
-        }
-    }
+			return array;
+		}
+	}
 }
