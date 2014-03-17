@@ -376,7 +376,9 @@ namespace Microsoft.Xna.Framework.Content
 			else if ((typeof(T) == typeof(SoundEffect)))
 			{
 				using (Stream s = TitleContainer.OpenStream(assetName))
+				{
 					return SoundEffect.FromStream(s);
+				}
 			}
 			else if ((typeof(T) == typeof(Video)))
 			{
