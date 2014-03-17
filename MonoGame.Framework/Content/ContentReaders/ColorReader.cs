@@ -5,8 +5,6 @@
  * Released under the Microsoft Public License.
  * See LICENSE for details.
  */
-
-/* Author: Kenneth James Pouncey */
 #endregion
 
 using System;
@@ -26,8 +24,9 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			Color existingInstance
 		) {
-			// Read RGBA as four separate bytes to make sure we
-			// comply with XNB format document
+			/* Read RGBA as four separate bytes to make sure we
+			 * comply with XNB format document
+			 */
 			byte r = input.ReadByte();
 			byte g = input.ReadByte();
 			byte b = input.ReadByte();

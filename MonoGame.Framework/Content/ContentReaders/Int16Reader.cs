@@ -5,8 +5,6 @@
  * Released under the Microsoft Public License.
  * See LICENSE for details.
  */
-
-/* Author: Kenneth James Pouncey */
 #endregion
 
 using System;

@@ -34,12 +34,13 @@ namespace Microsoft.Xna.Framework.Content
 				);
 			}
 
-			// TODO: This process generates alot of duplicate VertexDeclarations
-			// which in turn complicates other systems trying to share GPU resources
-			// like DX11 vertex input layouts.
-			//
-			// We should consider caching vertex declarations here and returning
-			// previously created declarations when they are in our cache.
+			/* TODO: This process generates alot of duplicate VertexDeclarations
+			 * which in turn complicates other systems trying to share GPU resources
+			 * like DX11 vertex input layouts.
+			 *
+			 * We should consider caching vertex declarations here and returning
+			 * previously created declarations when they are in our cache.
+			 */
 			return new VertexDeclaration(vertexStride, elements);
 		}
 	}

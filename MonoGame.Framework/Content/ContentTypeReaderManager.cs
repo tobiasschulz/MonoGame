@@ -72,11 +72,14 @@ namespace Microsoft.Xna.Framework.Content
 		internal ContentTypeReader[] LoadAssetReaders()
 		{
 #pragma warning disable 0219, 0649
-			// Trick to prevent the linker removing the code, but not actually execute the code
+			/* Trick to prevent the linker removing the code, but not actually execute the code
+			 * FIXME: Do we really need this in FNA?
+			 */
 			if (falseflag)
 			{
-				// Dummy variables required for it to work on iDevices ** DO NOT DELETE **
-				// This forces the classes not to be optimized out when deploying to iDevices
+				/* Dummy variables required for it to work on iDevices ** DO NOT DELETE **
+				 * This forces the classes not to be optimized out when deploying to iDevices
+				 */
 				ByteReader hByteReader = new ByteReader();
 				SByteReader hSByteReader = new SByteReader();
 				DateTimeReader hDateTimeReader = new DateTimeReader();
@@ -122,12 +125,14 @@ namespace Microsoft.Xna.Framework.Content
 			// The first content byte i read tells me the number of content readers in this XNB file
 			numberOfReaders = _reader.Read7BitEncodedInt();
 			contentReaders = new ContentTypeReader[numberOfReaders];
-			// For each reader in the file, we read out the length of the string which contains the type of the reader,
-			// then we read out the string. Finally we instantiate an instance of that reader using reflection
+			/* For each reader in the file, we read out the length of the string which contains the type of the reader,
+			 * then we read out the string. Finally we instantiate an instance of that reader using reflection
+			 */
 			for (int i = 0; i < numberOfReaders; i += 1)
 			{
-				// This string tells us what reader we need to decode the following data
-				// string readerTypeString = reader.ReadString();
+				/* This string tells us what reader we need to decode the following data
+				 * string readerTypeString = reader.ReadString();
+				 */
 				string originalReaderTypeString = _reader.ReadString();
 				Func<ContentTypeReader> readerFunc;
 				if (typeCreators.TryGetValue(originalReaderTypeString, out readerFunc))
@@ -148,8 +153,9 @@ namespace Microsoft.Xna.Framework.Content
 						}
 						catch (TargetInvocationException ex)
 						{
-							// If you are getting here, the Mono runtime is most likely not able to JIT the type.
-							// In particular, MonoTouch needs help instantiating types that are only defined in strings in Xnb files.
+							/* If you are getting here, the Mono runtime is most likely not able to JIT the type.
+							 * In particular, MonoTouch needs help instantiating types that are only defined in strings in Xnb files.
+							 */
 							throw new InvalidOperationException(
 								"Failed to get default constructor for ContentTypeReader.\n" +
 								"To work around, add a creation function to\n" +
@@ -170,8 +176,9 @@ namespace Microsoft.Xna.Framework.Content
 						);
 					}
 				}
-				// I think the next 4 bytes refer to the "Version" of the type reader,
-				// although it always seems to be zero
+				/* I think the next 4 bytes refer to the "Version" of the type reader,
+				 * although it always seems to be zero
+				 */
 				_reader.ReadInt32();
 			}
 			return contentReaders;
@@ -192,7 +199,7 @@ namespace Microsoft.Xna.Framework.Content
 		/// </returns>
 		public static string PrepareType(string type)
 		{
-			//Needed to support nested types
+			// Needed to support nested types
 			int count = type.Split(
 				new[] {"[["},
 				StringSplitOptions.None
@@ -206,7 +213,7 @@ namespace Microsoft.Xna.Framework.Content
 					"[$1]"
 				);
 			}
-			//Handle non generic types
+			// Handle non generic types
 			if (preparedType.Contains("PublicKeyToken"))
 			{
 				preparedType = Regex.Replace(
@@ -232,8 +239,9 @@ namespace Microsoft.Xna.Framework.Content
 			);
 			return preparedType;
 		}
-		// Static map of type names to creation functions. Required as iOS requires all
-		// types at compile time
+		/* Static map of type names to creation functions. Required as iOS requires all
+		 * types at compile time
+		 */
 		private static Dictionary<string, Func<ContentTypeReader>> typeCreators =
 			new Dictionary<string, Func<ContentTypeReader>>();
 		/// <summary>

@@ -76,7 +76,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			PropertyInfo property = member as PropertyInfo;
 			FieldInfo field = member as FieldInfo;
-			// properties must have public get and set
+			// Properties must have public get and set
 			if (property != null &&
 				(property.CanWrite == false ||
 				 property.CanRead == false) )
@@ -94,10 +94,9 @@ namespace Microsoft.Xna.Framework.Content
 				     (setMethod != null &&
 				      setMethod.GetParameters().Length > 0) )
 				{
-					/*
-					 * This is presumably a property like this[indexer] and this
+					/* This is presumably a property like this[indexer] and this
 					 * should not get involved in the object deserialization
-					 * */
+					 */
 					return;
 				}
 			}
@@ -132,7 +131,7 @@ namespace Microsoft.Xna.Framework.Content
 						return;
 					}
 
-					// evolutional: Added check to skip initialise only fields
+					// Evolutional: Added check to skip initialise only fields
 					if (field.IsInitOnly)
 					{
 						return;
@@ -162,8 +161,9 @@ namespace Microsoft.Xna.Framework.Content
 				{
 					/* Default */
 
-					// evolutional: Fix. We can get here and still be NULL,
-					// exit gracefully
+					/* Evolutional: Fix. We can get here and still be NULL,
+					 * exit gracefully
+					 */
 					if (reader == null)
 					{
 						return;
@@ -176,8 +176,9 @@ namespace Microsoft.Xna.Framework.Content
 				}
 				else
 				{
-					// Private fields can be serialized if they have
-					// ContentSerializerAttribute added to them
+					/* Private fields can be serialized if they have
+					 * ContentSerializerAttribute added to them
+					 */
 					if (field.IsPrivate == false || attr2 != null)
 					{
 						field.SetValue(parent, obj2);

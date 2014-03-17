@@ -25,11 +25,12 @@ namespace Microsoft.Xna.Framework.Content
 		public static PropertyInfo[] GetAllProperties(this Type type)
 		{
 
-			// Sometimes, overridden properties of abstract classes can show up even with
-			// BindingFlags.DeclaredOnly is passed to GetProperties. Make sure that
-			// all properties in this list are defined in this class by comparing
-			// its get method with that of it's base class. If they're the same
-			// Then it's an overridden property.
+			/* Sometimes, overridden properties of abstract classes can show up even with
+			 * BindingFlags.DeclaredOnly is passed to GetProperties. Make sure that
+			 * all properties in this list are defined in this class by comparing
+			 * its get method with that of its base class. If they're the same
+			 * Then it's an overridden property.
+			 */
 			BindingFlags attrs = (
 				BindingFlags.NonPublic |
 				BindingFlags.Public |

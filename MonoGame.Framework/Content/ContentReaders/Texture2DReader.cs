@@ -8,7 +8,7 @@
 
 /*
 MIT License
-Copyright ? 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -139,7 +139,7 @@ namespace Microsoft.Xna.Framework.Content
 				{
 					continue;
 				}
-				//Convert the image data if required
+				// Convert the image data if required
 				switch (surfaceFormat)
 				{
 				case SurfaceFormat.Dxt1:
@@ -245,16 +245,16 @@ namespace Microsoft.Xna.Framework.Content
 									levelData,
 									y * pitch + x * bytesPerPixel
 								);
-								//R:=W
+								// R:=W
 								levelData[y * pitch + x * 4] =
 									(byte) (((color >> 16) & 0xff));
-								//G:=V
+								// G:=V
 								levelData[y * pitch + x * 4 + 1] =
 									(byte) (((color >> 8) & 0xff));
-								//B:=U
+								// B:=U
 								levelData[y * pitch + x * 4 + 2] =
 									(byte) (((color) & 0xff));
-								//A:=Q
+								// A:=Q
 								levelData[y * pitch + x * 4 + 3] =
 									(byte) (((color >> 24) & 0xff));
 							}

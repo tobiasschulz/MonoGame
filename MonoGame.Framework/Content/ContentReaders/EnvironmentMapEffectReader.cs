@@ -19,10 +19,8 @@ namespace Microsoft.Xna.Framework.Content
 			EnvironmentMapEffect existingInstance
 		) {
 			EnvironmentMapEffect effect = new EnvironmentMapEffect(input.GraphicsDevice);
-			effect.Texture =
-				input.ReadExternalReference<Texture>() as Texture2D;
-			effect.EnvironmentMap =
-				input.ReadExternalReference<TextureCube>() as TextureCube;
+			effect.Texture = input.ReadExternalReference<Texture>() as Texture2D;
+			effect.EnvironmentMap = input.ReadExternalReference<TextureCube>() as TextureCube;
 			effect.EnvironmentMapAmount = input.ReadSingle();
 			effect.EnvironmentMapSpecular = input.ReadVector3();
 			effect.FresnelFactor = input.ReadSingle();

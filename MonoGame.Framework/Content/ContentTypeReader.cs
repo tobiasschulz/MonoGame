@@ -127,9 +127,10 @@ namespace Microsoft.Xna.Framework.Content
 
 		protected internal override object Read(ContentReader input, object existingInstance)
 		{
-			// as per the documentation http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.content.contenttypereader.read.aspx
-			// existingInstance
-			// The object receiving the data, or null if a new instance of the object should be created.
+			/* As per the documentation http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.content.contenttypereader.read.aspx
+			 * existingInstance
+			 * The object receiving the data, or null if a new instance of the object should be created.
+			 */
 			if (existingInstance == null)
 			{
 				return this.Read(input, default(T));

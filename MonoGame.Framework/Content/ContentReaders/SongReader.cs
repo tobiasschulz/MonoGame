@@ -38,10 +38,11 @@ namespace Microsoft.Xna.Framework.Content
 				);
 				// Add the relative path to the external reference
 				Uri dst = new Uri(src, path);
-				// The uri now contains the path to the external reference within
-				// the content manager
-				// Get the local path and skip the first character
-				// (the path separator)
+				/* The uri now contains the path to the external reference within
+				 * the content manager
+				 * Get the local path and skip the first character
+				 * (the path separator)
+				 */
 				path = dst.LocalPath.Substring(1);
 				// Adds the ContentManager's RootDirectory
 				path = Path.Combine(

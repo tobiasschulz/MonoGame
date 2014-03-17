@@ -5,8 +5,6 @@
  * Released under the Microsoft Public License.
  * See LICENSE for details.
  */
-
-/* Author: Kenneth James Pouncey */
 #endregion
 
 using System;
@@ -25,11 +23,12 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			TimeSpan existingInstance
 		) {
-			// Could not find any information on this really but from
-			// all the searching it looks like the constructor of number
-			// of ticks is long so I have placed that here for now.
-			// long is a Int64 so we read with 64
-			// <Duration>PT2S</Duration>
+			/* Could not find any information on this really but from
+			 * all the searching it looks like the constructor of number
+			 * of ticks is long so I have placed that here for now.
+			 * long is a Int64 so we read with 64
+			 * <Duration>PT2S</Duration>
+			 */
 			return new TimeSpan(input.ReadInt64());
 		}
 	}

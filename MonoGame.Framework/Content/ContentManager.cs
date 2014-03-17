@@ -56,8 +56,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			lock (ContentManagerLock)
 			{
-				// Check if the list contains this content manager already. Also take
-				// the opportunity to prune the list of any finalized content managers.
+				/* Check if the list contains this content manager already. Also take
+				 * the opportunity to prune the list of any finalized content managers.
+				 */
 				bool contains = false;
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
@@ -82,8 +83,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			lock (ContentManagerLock)
 			{
-				// Check if the list contains this content manager and remove it. Also
-				// take the opportunity to prune the list of any finalized content managers.
+				/* Check if the list contains this content manager and remove it. Also
+				 * take the opportunity to prune the list of any finalized content managers.
+				 */
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
 					WeakReference contentRef = ContentManagers[i];
@@ -99,8 +101,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			lock (ContentManagerLock)
 			{
-				// Reload the graphic assets of each content manager. Also take the
-				// opportunity to prune the list of any finalized content managers.
+				/* Reload the graphic assets of each content manager. Also take the
+				 * opportunity to prune the list of any finalized content managers.
+				 */
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
 					WeakReference contentRef = ContentManagers[i];
@@ -120,16 +123,18 @@ namespace Microsoft.Xna.Framework.Content
 			}
 		}
 
-		// Use C# destructor syntax for finalization code.
-		// This destructor will run only if the Dispose method
-		// does not get called.
-		// It gives your base class the opportunity to finalize.
-		// Do not provide destructors in types derived from this class.
+		/* Use C# destructor syntax for finalization code.
+		 * This destructor will run only if the Dispose method
+		 * does not get called.
+		 * It gives your base class the opportunity to finalize.
+		 * Do not provide destructors in types derived from this class.
+		 */
 		~ContentManager()
 		{
-			// Do not re-create Dispose clean-up code here.
-			// Calling Dispose(false) is optimal in terms of
-			// readability and maintainability.
+			/* Do not re-create Dispose clean-up code here.
+			 * Calling Dispose(false) is optimal in terms of
+			 * readability and maintainability.
+			 */
 			Dispose(false);
 		}
 
@@ -161,15 +166,17 @@ namespace Microsoft.Xna.Framework.Content
 		public void Dispose()
 		{
 			Dispose(true);
-			// Tell the garbage collector not to call the finalizer
-			// since all the cleanup will already be done.
+			/* Tell the garbage collector not to call the finalizer
+			 * since all the cleanup will already be done.
+			 */
 			GC.SuppressFinalize(this);
 			// Once disposed, content manager wont be used again
 			RemoveContentManager(this);
 		}
 
-		// If disposing is true, it was called explicitly and we should dispose managed objects.
-		// If disposing is false, it was called by the finalizer and managed objects should not be disposed.
+		/* If disposing is true, it was called explicitly and we should dispose managed objects.
+		 * If disposing is false, it was called by the finalizer and managed objects should not be disposed.
+		 */
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposed)
@@ -255,7 +262,7 @@ namespace Microsoft.Xna.Framework.Content
 			Stream stream = null;
 			try
 			{
-				//try load it traditionally
+				// Try to load it traditionally
 				stream = OpenStream(assetName);
 				// Try to load as XNB file
 				try
@@ -282,7 +289,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			catch (ContentLoadException ex)
 			{
-				//MonoGame try to load as a non-content file
+				// MonoGame try to load as a non-content file
 				assetName = TitleContainer.GetFilename(Path.Combine(RootDirectory, assetName));
 				assetName = Normalize<T>(assetName);
 				if (string.IsNullOrEmpty(assetName))
@@ -290,9 +297,10 @@ namespace Microsoft.Xna.Framework.Content
 					throw new ContentLoadException("Could not load " + originalAssetName + " asset as a non-content file!", ex);
 				}
 				result = ReadRawAsset<T>(assetName, originalAssetName);
-				// Because Raw Assets skip the ContentReader step, they need to have their
-				// disopsables recorded here. Doing it outside of this catch will
-				// result in disposables being logged twice.
+				/* Because Raw Assets skip the ContentReader step, they need to have their
+				 * disposables recorded here. Doing it outside of this catch will
+				 * result in disposables being logged twice.
+				 */
 				if (result is IDisposable)
 				{
 					if (recordDisposableObject != null)
@@ -359,7 +367,6 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			else if ((typeof(T) == typeof(SpriteFont)))
 			{
-				//result = new SpriteFont(Texture2D.FromFile(graphicsDeviceService.GraphicsDevice,assetName), null, null, null, 0, 0.0f, null, null);
 				throw new NotImplementedException();
 			}
 			else if ((typeof(T) == typeof(Song)))
@@ -389,13 +396,12 @@ namespace Microsoft.Xna.Framework.Content
 
 		private ContentReader GetContentReaderFromXnb(string originalAssetName, ref Stream stream, BinaryReader xnbReader, Action<IDisposable> recordDisposableObject)
 		{
-			// The first 4 bytes should be the "XNB" header. i use that to detect an invalid file
+			// The first 4 bytes should be the "XNB" header.
 			byte x = xnbReader.ReadByte();
 			byte n = xnbReader.ReadByte();
 			byte b = xnbReader.ReadByte();
 			byte platform = xnbReader.ReadByte();
-			if (
-				x != 'X' || n != 'N' || b != 'B' ||
+			if (	x != 'X' || n != 'N' || b != 'B' ||
 				!(targetPlatformIdentifiers.Contains((char) platform)) )
 			{
 				throw new ContentLoadException("Asset does not appear to be a valid XNB file. Did you process your content for Windows?");
@@ -412,12 +418,13 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader reader;
 			if (compressed)
 			{
-				//decompress the xnb
-				//thanks to ShinAli (https://bitbucket.org/alisci01/xnbdecompressor)
+				/* Decompress the xnb
+				 * Thanks to ShinAli (https://bitbucket.org/alisci01/xnbdecompressor)
+				 */
 				int compressedSize = xnbLength - 14;
 				int decompressedSize = xnbReader.ReadInt32();
 				MemoryStream decompressedStream = new MemoryStream(decompressedSize);
-				// default window size for XNB encoded files is 64Kb (need 16 bits to represent it)
+				// Default window size for XNB encoded files is 64Kb (need 16 bits to represent it)
 				LzxDecoder dec = new LzxDecoder(16);
 				int decodedBytes = 0;
 				long startPos = stream.Position;
@@ -425,19 +432,20 @@ namespace Microsoft.Xna.Framework.Content
 
 				while (pos - startPos < compressedSize)
 				{
-					// the compressed stream is seperated into blocks that will decompress
-					// into 32Kb or some other size if specified.
-					// normal, 32Kb output blocks will have a short indicating the size
-					// of the block before the block starts
-					// blocks that have a defined output will be preceded by a byte of value
-					// 0xFF (255), then a short indicating the output size and another
-					// for the block size
-					// all shorts for these cases are encoded in big endian order
+					/* The compressed stream is seperated into blocks that will decompress
+					 * into 32kB or some other size if specified.
+					 * Normal, 32kB output blocks will have a short indicating the size
+					 * of the block before the block starts.
+					 * Blocks that have a defined output will be preceded by a byte of value
+					 * 0xFF (255), then a short indicating the output size and another
+					 * for the block size.
+					 * All shorts for these cases are encoded in big endian order.
+					 */
 					int hi = stream.ReadByte();
 					int lo = stream.ReadByte();
 					int block_size = (hi << 8) | lo;
-					int frame_size = 0x8000; // frame size is 32Kb by default
-					// does this block define a frame size?
+					int frame_size = 0x8000; // Frame size is 32kB by default
+					// Does this block define a frame size?
 					if (hi == 0xFF)
 					{
 						hi = lo;
@@ -452,7 +460,7 @@ namespace Microsoft.Xna.Framework.Content
 					{
 						pos += 2;
 					}
-					// either says there is nothing to decode
+					// Either says there is nothing to decode
 					if (block_size == 0 || frame_size == 0)
 					{
 						break;
@@ -460,8 +468,9 @@ namespace Microsoft.Xna.Framework.Content
 					dec.Decompress(stream, block_size, decompressedStream, frame_size);
 					pos += block_size;
 					decodedBytes += frame_size;
-					// reset the position of the input just incase the bit buffer
-					// read in some unused bytes
+					/* Reset the position of the input just in case the bit buffer
+					 * read in some unused bytes
+					 */
 					stream.Seek(pos, SeekOrigin.Begin);
 				}
 				if (decompressedStream.Position != decompressedSize)
@@ -496,8 +505,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			Debug.Assert(disposable != null, "The disposable is null!");
 
-			// Avoid recording disposable objects twice. ReloadAsset will try to record the disposables again.
-			// We don't know which asset recorded which disposable so just guard against storing multiple of the same instance.
+			/* Avoid recording disposable objects twice. ReloadAsset will try to record the disposables again.
+			 * We don't know which asset recorded which disposable so just guard against storing multiple of the same instance.
+			 */
 			if (!disposableAssets.Contains(disposable))
 			{
 				disposableAssets.Add(disposable);
@@ -549,9 +559,8 @@ namespace Microsoft.Xna.Framework.Content
 			Stream stream = null;
 			try
 			{
-				//try load it traditionally
+				// Try to load it traditionally
 				stream = OpenStream(assetName);
-
 				// Try to load as XNB file
 				try
 				{
@@ -576,7 +585,6 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException)
 			{
 				// Try to reload as a non-xnb file.
-
 				assetName = TitleContainer.GetFilename(Path.Combine(RootDirectory, assetName));
 				assetName = Normalize<T>(assetName);
 				ReloadRawAsset(currentAsset, assetName, originalAssetName);

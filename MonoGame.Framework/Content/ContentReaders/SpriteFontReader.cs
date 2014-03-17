@@ -62,8 +62,9 @@ namespace Microsoft.Xna.Framework.Content
 				// Read the texture into the existing texture instance
 				input.ReadObject<Texture2D>(existingInstance._texture);
 
-				// discard the rest of the SpriteFont data as we are only
-				// reloading GPU resources for now
+				/* Discard the rest of the SpriteFont data as we are only
+				 * reloading GPU resources for now
+				 */
 				input.ReadObject<List<Rectangle>>();
 				input.ReadObject<List<Rectangle>>();
 				input.ReadObject<List<char>>();
