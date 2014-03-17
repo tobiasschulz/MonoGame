@@ -9,15 +9,6 @@
 
 using System;
 
-#if WINDOWS_STOREAPP
-using Windows.UI.Xaml.Controls;
-#endif
-
-#if IOS
-using MonoTouch.UIKit;
-using Microsoft.Xna.Framework.Input.Touch;
-#endif
-
 namespace Microsoft.Xna.Framework.Graphics
 {
     public class PresentationParameters : IDisposable
@@ -86,11 +77,6 @@ namespace Microsoft.Xna.Framework.Graphics
             set { deviceWindowHandle = value; }
         }
 
-#if WINDOWS_STOREAPP
-        [CLSCompliant(false)]
-        public SwapChainBackgroundPanel SwapChainPanel { get; set; }
-#endif
-
         public DepthFormat DepthStencilFormat
         {
             get { return depthStencilFormat; }
@@ -101,23 +87,10 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 			get
             {
-#if WINRT
-                // Always return true for Windows 8
-                return true;
-#else
 				 return isFullScreen;
-#endif
             }
             set
             {
-#if !WINRT
-                // If we are not on windows 8 set the value otherwise ignore it.
-				isFullScreen = value;				
-#endif
-#if IOS
-				UIApplication.SharedApplication.StatusBarHidden = isFullScreen;
-#endif
-
 			}
         }
 		
@@ -145,31 +118,10 @@ namespace Microsoft.Xna.Framework.Graphics
         public void Clear()
         {
             backBufferFormat = SurfaceFormat.Color;
-#if IOS
-			// Mainscreen.Bounds does not account for the device's orientation. it ALWAYS assumes portrait
-			var width = (int)(UIScreen.MainScreen.Bounds.Width * UIScreen.MainScreen.Scale);
-			var height = (int)(UIScreen.MainScreen.Bounds.Height * UIScreen.MainScreen.Scale);
-			
-			// Flip the dimentions if we need to.
-			if (TouchPanel.DisplayOrientation == DisplayOrientation.LandscapeLeft ||
-			    TouchPanel.DisplayOrientation == DisplayOrientation.LandscapeRight)
-			{
-				width = height;
-				height = (int)(UIScreen.MainScreen.Bounds.Width * UIScreen.MainScreen.Scale);
-			}
-			
-			backBufferWidth = width;
-            backBufferHeight = height;
-#else
             backBufferWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
             backBufferHeight = GraphicsDeviceManager.DefaultBackBufferHeight;     
-#endif
             deviceWindowHandle = IntPtr.Zero;
-#if IOS
-			isFullScreen = UIApplication.SharedApplication.StatusBarHidden;
-#else
             // isFullScreen = false;
-#endif
             depthStencilFormat = DepthFormat.None;
             multiSampleCount = 0;
             PresentationInterval = PresentInterval.Default;

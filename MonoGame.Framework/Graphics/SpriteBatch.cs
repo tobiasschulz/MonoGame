@@ -100,10 +100,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			if (_sortMode != SpriteSortMode.Immediate)
 				Setup();
-#if PSM   
-            GraphicsDevice.BlendState = _blendState;
-            _blendState.ApplyState(GraphicsDevice);
-#endif
             
             _batcher.DrawBatch(_sortMode);
         }
@@ -120,14 +116,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			var vp = gd.Viewport;
 
 		    Matrix projection;
-#if PSM || DIRECTX
-            Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, -1, 0, out projection);
-#else
             // GL requires a half pixel offset to match DX.
             Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1, out projection);
             projection.M41 += -0.5f * projection.M11;
             projection.M42 += -0.5f * projection.M22;
-#endif
             Matrix.Multiply(ref _matrix, ref projection, out projection);
 
             _matrixTransform.SetValue(projection);
