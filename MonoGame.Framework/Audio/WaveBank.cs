@@ -5,6 +5,11 @@
  * Released under the Microsoft Public License.
  * See LICENSE for details.
  */
+
+/* The XACT WaveBank work contains information from unxwb, authored by
+ * Luigi Auriemma, and was used with his permission.
+ * http://aluigi.altervista.org/
+ */
 #endregion
 
 using System;
