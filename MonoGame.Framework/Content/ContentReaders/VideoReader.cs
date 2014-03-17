@@ -16,15 +16,9 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class VideoReader : ContentTypeReader<Video>
 	{
-#if SDL2
 		static string[] supportedExtensions = new string[] {
 			".ogv", ".ogg"
 		};
-#else
-		static string[] supportedExtensions = new string[] {
-			".mp4", ".mov", ".avi", ".m4v"
-		};
-#endif
 
 		internal static string Normalize(string fileName)
 		{

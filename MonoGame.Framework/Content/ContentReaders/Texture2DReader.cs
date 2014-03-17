@@ -183,7 +183,6 @@ namespace Microsoft.Xna.Framework.Content
 				case SurfaceFormat.Bgra5551:
 					{
 						levelData = reader.ReadBytes(levelDataSizeInBytes);
-#if OPENGL
 						// Shift the channels to suit OPENGL
 						int offset = 0;
 						for (int y = 0; y < levelHeight; y += 1)
@@ -205,13 +204,11 @@ namespace Microsoft.Xna.Framework.Content
 								offset += 2;
 							}
 						}
-#endif
 					}
 					break;
 				case SurfaceFormat.Bgra4444:
 					{
 						levelData = reader.ReadBytes(levelDataSizeInBytes);
-#if OPENGL
 						// Shift the channels to suit OPENGL
 						int offset = 0;
 						for (int y = 0; y < levelHeight; y += 1)
@@ -233,7 +230,6 @@ namespace Microsoft.Xna.Framework.Content
 								offset += 2;
 							}
 						}
-#endif
 					}
 					break;
 				case SurfaceFormat.NormalizedByte4:

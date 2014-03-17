@@ -16,11 +16,7 @@ namespace Microsoft.Xna.Framework.Content
 {
 	internal class SongReader : ContentTypeReader<Song>
 	{
-#if SDL2
 		static string[] supportedExtensions = new string[] { ".flac", ".ogg" };
-#else
-		static string[] supportedExtensions = new string[] { ".mp3" };
-#endif
 
 		internal static string Normalize(string fileName)
 		{
