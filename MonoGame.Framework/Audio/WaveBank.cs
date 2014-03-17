@@ -7,7 +7,8 @@
  */
 
 /* The XACT WaveBank work contains information from unxwb, authored by
- * Luigi Auriemma: http://aluigi.altervista.org/
+ * Luigi Auriemma, and was used with his permission.
+ * http://aluigi.altervista.org/
  */
 #endregion
 
