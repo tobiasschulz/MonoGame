@@ -81,7 +81,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Clone(cloneSource);
 		}
 
-        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode)
+        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode, string effectName)
             : this(graphicsDevice)
 		{
 			// By default we currently cache all unique byte streams
@@ -118,7 +118,28 @@ namespace Microsoft.Xna.Framework.Graphics
                 cloneSource = new Effect(graphicsDevice);
                 using (var stream = new MemoryStream(effectCode))
                 using (var reader = new BinaryReader(stream))
-                    cloneSource.ReadEffect(reader);
+                    cloneSource.ReadEffect(reader, effectName);
+
+                // Cache the effect for later in its original unmodified state.
+                EffectCache.Add(effectKey, cloneSource);
+            }
+
+            // Clone it.
+            _isClone = true;
+            Clone(cloneSource);
+        }
+
+        public Effect (GraphicsDevice graphicsDevice, string effectCode, string effectName)
+            : this(graphicsDevice)
+        {
+            var effectKey = MonoGame.Utilities.Hash.ComputeHash(System.Text.Encoding.ASCII.GetBytes(effectCode));
+            Effect cloneSource;
+            if (!EffectCache.TryGetValue(effectKey, out cloneSource))
+            {
+                // Create one.
+                cloneSource = new Effect(graphicsDevice);
+                string[] lines = EffectUtilities.SplitLines(effectCode);
+                cloneSource.ReadEffect(lines, effectName);
 
                 // Cache the effect for later in its original unmodified state.
                 EffectCache.Add(effectKey, cloneSource);
@@ -162,6 +183,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Take a reference to the original shader list.
             _shaders = cloneSource._shaders;
+            EffectName = cloneSource.EffectName;
         }
 
         /// <summary>
@@ -251,8 +273,168 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if !PSM
 
-		private void ReadEffect (BinaryReader reader)
-		{
+        private string EffectName = "";
+        
+        private void ReadEffect (string[] lines, string effectName)
+        {
+            EffectName = effectName;
+
+            List<ConstantBuffer> ConstantBuffersList = new List<ConstantBuffer>();
+            List<EffectParameter> EffectParameterList = new List<EffectParameter>();
+            List<Shader> ShaderList = new List<Shader>();
+            List<EffectPass> PassesList = new List<EffectPass>();
+            List<EffectTechnique> TechniquesList = new List<EffectTechnique>();
+
+            List<string> linesSorted = new List<string> ();
+            Func<string, bool> isParameterDeclaration = (line) => line.Contains ("ConstantBuffer") || line.Contains ("EffectParameter");
+            linesSorted.AddRange (from line in lines where isParameterDeclaration(line) select line);
+            linesSorted.AddRange (from line in lines where !isParameterDeclaration(line) select line);
+            lines = linesSorted.ToArray ();
+
+            int g = 0;
+            while (g < lines.Length)
+            {
+                string command;
+                if (EffectUtilities.MatchesMetaDeclaration(lines[g], "ConstantBuffer", out command))
+                {
+                    var buffer = new ConstantBuffer(device: GraphicsDevice,
+                                                    sizeInBytes: EffectUtilities.ParseParam(command, "sizeInBytes", 0),
+                                                    parameterIndexes: EffectUtilities.ParseParam(command, "parameters", new int[] { }),
+                                                    parameterOffsets: EffectUtilities.ParseParam(command, "offsets", new int[] { }),
+                                                    name: EffectUtilities.ParseParam(command, "name", ""));
+                    ConstantBuffersList.Add(buffer);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectParameter", out command))
+                {
+                    string classStr = EffectUtilities.ParseParam(command, "class", "");
+                    EffectParameterClass class_ = (EffectParameterClass)Enum.Parse(typeof(EffectParameterClass), classStr);
+                    string typeStr = EffectUtilities.ParseParam(command, "type", "");
+                    EffectParameterType type = (EffectParameterType)Enum.Parse(typeof(EffectParameterType), typeStr);
+                    int rows = EffectUtilities.ParseParam(command, "rows", 0);
+                    int columns = EffectUtilities.ParseParam(command, "columns", 0);
+                    object data = null;
+                    //if (elements.Count == 0 && structMembers.Count == 0)
+                    switch (type)
+                    {                       
+                        case EffectParameterType.Bool:
+                            case EffectParameterType.Int32:
+                            case EffectParameterType.Single:
+                        {
+                            var buffer = new float[rows * columns];
+                            for (var j = 0; j < buffer.Length; j++)
+                                buffer[j] = 0;
+                            data = buffer;
+                            break;                          
+                        }
+                        case EffectParameterType.String:
+                            // TODO: We have not investigated what a string
+                            // type should do in the parameter list.  Till then
+                            // throw to let the user know.
+                            throw new NotSupportedException();
+                        default:
+                            break;
+                    }
+
+                    var parameter = new EffectParameter(
+                        class_: class_,
+                        type: type,
+                        name: EffectUtilities.ParseParam(command, "name", ""),
+                        rowCount: rows,
+                        columnCount: columns,
+                        semantic: EffectUtilities.ParseParam(command, "semantic", ""),
+                        annotations: EffectAnnotationCollection.Empty,
+                        elements: EffectParameterCollection.Empty,
+                        structMembers: EffectParameterCollection.Empty,
+                        data: data
+                        );
+                    EffectParameterList.Add(parameter);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "BeginShader", out command))
+                {
+                    string stageStr = EffectUtilities.ParseParam(command, "stage", "");
+                    ShaderStage stage = stageStr.ToLower() == "vertex" ? ShaderStage.Vertex : ShaderStage.Pixel;
+                    int[] constantBuffers = EffectUtilities.ParseParam(command, "constantBuffers", new int[] { });
+                    ++g;
+                    Shader shader = new Shader(
+                        device: GraphicsDevice,
+                        stage: stage,
+                        constantBuffers: constantBuffers,
+                        lines: lines,
+                        g: ref g,
+                        constantBuffersList: ref ConstantBuffersList,
+                        effectParameterList: ref EffectParameterList
+                    );
+                    ShaderList.Add(shader);
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectPass", out command))
+                {
+                    int vertexIndex = EffectUtilities.ParseParam(command, "vertexShader", -1);
+                    int pixelIndex = EffectUtilities.ParseParam(command, "pixelShader", -1);
+                    if (vertexIndex == -1) {
+                        throw new ArgumentException("No vertexShader specified: " + command);
+                    }
+                    if (pixelIndex == -1) {
+                        throw new ArgumentException("No pixelShader specified: " + command);
+                    }
+                    if (vertexIndex >= ShaderList.Count) {
+                        throw new ArgumentException("The EffectPass has be to be specified after (Vertex-)Shader #"+vertexIndex
+                                                    +" (shader count so far: "+ ShaderList.Count);
+                    }
+                    if (pixelIndex >= ShaderList.Count) {
+                        throw new ArgumentException("The EffectPass has be to be specified after (Pixel-)Shader #"+vertexIndex
+                                                    +" (shader count so far: "+ ShaderList.Count);
+                    }
+                    EffectPass pass = new EffectPass(
+                        effect: this,
+                        name: EffectUtilities.ParseParam(command, "name", ""),
+                        vertexShader: ShaderList[vertexIndex],
+                        pixelShader: ShaderList[pixelIndex],
+                        blendState: null,
+                        depthStencilState: null,
+                        rasterizerState: null,
+                        annotations: EffectAnnotationCollection.Empty
+                    );
+                    PassesList.Add(pass);
+                    ++g;
+                }
+                else if (EffectUtilities.MatchesMetaDeclaration(lines[g], "EffectTechnique", out command))
+                {
+                    string name = EffectUtilities.ParseParam(command, "name", "");
+                    TechniquesList.Add(new EffectTechnique(this, name, new EffectPassCollection(PassesList.ToArray()), EffectAnnotationCollection.Empty));
+                    PassesList = new List<EffectPass>();
+                    ++g;
+                }
+                else
+                {
+                    throw new ArgumentException("Shader Parsing failed: unknown line "+g+": "+lines[g]);
+                }
+            }
+
+            ConstantBuffers = ConstantBuffersList.ToArray();
+            Parameters = new EffectParameterCollection(EffectParameterList.ToArray());
+            _shaders = ShaderList.ToArray();
+            if (TechniquesList.Count > 0)
+            {
+                CurrentTechnique = TechniquesList[0];
+            }
+            else if (PassesList.Count > 0)
+            {
+                TechniquesList.Add(new EffectTechnique(this, "DefaultTechnique", new EffectPassCollection(PassesList.ToArray()), EffectAnnotationCollection.Empty));
+                PassesList = new List<EffectPass>();
+            }
+            else
+            {
+                throw new ArgumentException("No Techniques found!");
+            }
+            Techniques = new EffectTechniqueCollection(TechniquesList.ToArray());
+        }
+        
+        private void ReadEffect (BinaryReader reader, string effectName)
+        {
+            string readableCode = "";
+
 			// Check the header to make sure the file and version is correct!
 			var header = new string (reader.ReadChars (MGFXHeader.Length));
 			var version = (int)reader.ReadByte ();
@@ -302,16 +484,31 @@ namespace Microsoft.Xna.Framework.Graphics
 				                                offsets,
 				                                name);
                 ConstantBuffers[c] = buffer;
+
+                readableCode += "#monogame ConstantBuffer("+EffectUtilities.Params(
+                    "name", name,
+                    "sizeInBytes", sizeInBytes,
+                    "parameters", EffectUtilities.Join(parameters),
+                    "offsets", EffectUtilities.Join(offsets)
+                )+")\n";
             }
+
+            readableCode += "\n";
 
             // Read in all the shader objects.
             var shaders = (int)reader.ReadByte();
             _shaders = new Shader[shaders];
             for (var s = 0; s < shaders; s++)
-                _shaders[s] = new Shader(GraphicsDevice, reader);
+            {
+                if (s > 0)
+                    readableCode += "\n";
+                _shaders[s] = new Shader(GraphicsDevice, reader, ref readableCode);
+            }
+            
+            readableCode += "\n";
 
             // Read in the parameters.
-            Parameters = ReadParameters(reader);
+            Parameters = ReadParameters(reader, ref readableCode);
 
             // Read the techniques.
             var techniqueCount = (int)reader.ReadByte();
@@ -322,13 +519,26 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 var annotations = ReadAnnotations(reader);
 
-                var passes = ReadPasses(reader, this, _shaders);
+                var passes = ReadPasses(reader, this, _shaders, ref readableCode);
 
                 techniques[t] = new EffectTechnique(this, name, passes, annotations);
+
+                readableCode += "#monogame EffectTechnique("+EffectUtilities.Params(
+                    "name", name
+                    )+")\n";
             }
 
             Techniques = new EffectTechniqueCollection(techniques);
             CurrentTechnique = Techniques[0];
+
+            EffectUtilities.ReadableEffectCode[effectName] = readableCode;
+            EffectName = effectName;
+        }
+
+        public string EffectCode {
+            get {
+                return EffectUtilities.ReadableEffectCode[EffectName];
+            }
         }
 
         private static EffectAnnotationCollection ReadAnnotations(BinaryReader reader)
@@ -344,7 +554,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return new EffectAnnotationCollection(annotations);
         }
 
-        private static EffectPassCollection ReadPasses(BinaryReader reader, Effect effect, Shader[] shaders)
+        private static EffectPassCollection ReadPasses(BinaryReader reader, Effect effect, Shader[] shaders, ref string readableCode)
         {
             var count = (int)reader.ReadByte();
             var passes = new EffectPass[count];
@@ -359,12 +569,14 @@ namespace Microsoft.Xna.Framework.Graphics
                 var shaderIndex = (int)reader.ReadByte();
                 if (shaderIndex != 255)
                     vertexShader = shaders[shaderIndex];
+                int vertexIndex = shaderIndex;
 
                 // Get the pixel shader.
                 Shader pixelShader = null;
                 shaderIndex = (int)reader.ReadByte();
                 if (shaderIndex != 255)
                     pixelShader = shaders[shaderIndex];
+                int pixelIndex = shaderIndex;
 
 				BlendState blend = null;
 				DepthStencilState depth = null;
@@ -420,16 +632,32 @@ namespace Microsoft.Xna.Framework.Graphics
 						ScissorTestEnable = reader.ReadBoolean(),
 						SlopeScaleDepthBias = reader.ReadSingle(),
 					};
-				}
+                }
+
+                readableCode += "#monogame EffectPass("+EffectUtilities.Params(
+                    "name", name,
+                    "vertexShader", vertexIndex,
+                    "pixelShader", pixelIndex
+                    //"BlendState", blend,
+                    //"DepthStencilState", depth,
+                    //"RasterizerState", raster
+                    )+")\n";
 
                 passes[i] = new EffectPass(effect, name, vertexShader, pixelShader, blend, depth, raster, annotations);
 			}
 
             return new EffectPassCollection(passes);
-		}
+        }
 
-		private static EffectParameterCollection ReadParameters(BinaryReader reader)
-		{
+        private static EffectParameterCollection ReadParameters(BinaryReader reader, ref string readableCode)
+        {
+            List<string> fake = null;
+            return ReadParameters(reader, ref readableCode, ref fake);
+        }
+
+        private static EffectParameterCollection ReadParameters(BinaryReader reader, ref string readableCode,
+                                                                ref List<string> readableParameterContent)
+        {
 			var count = (int)reader.ReadByte();			
             if (count == 0)
                 return EffectParameterCollection.Empty;
@@ -444,9 +672,11 @@ namespace Microsoft.Xna.Framework.Graphics
 				var annotations = ReadAnnotations(reader);
 				var rowCount = (int)reader.ReadByte();
 				var columnCount = (int)reader.ReadByte();
-
-				var elements = ReadParameters(reader);
-				var structMembers = ReadParameters(reader);
+                
+                List<string> readableElements = new List<string>();
+                var elements = ReadParameters(reader, ref readableCode, ref readableElements);
+                List<string> readableStructMembers = new List<string>();
+                var structMembers = ReadParameters(reader, ref readableCode, ref readableStructMembers);
 
 				object data = null;
 				if (elements.Count == 0 && structMembers.Count == 0)
@@ -495,6 +725,35 @@ namespace Microsoft.Xna.Framework.Graphics
 				parameters[i] = new EffectParameter(
 					class_, type, name, rowCount, columnCount, semantic, 
 					annotations, elements, structMembers, data);
+
+                if (readableParameterContent == null)
+                {
+                    readableCode += "#monogame EffectParameter(" + EffectUtilities.Params(
+                        "name", name,
+                        "class", class_,
+                        "type", type,
+                        "semantic", semantic,
+                        "rows", rowCount,
+                        "columns", columnCount,
+                        "elements", EffectUtilities.Join(readableElements),
+                        "structMembers", EffectUtilities.Join(readableStructMembers)
+                    ) + ")\n";
+                }
+                else
+                {
+                    readableParameterContent.Add(
+                        "EffectParameter<" + EffectUtilities.Params(
+                        "name", name,
+                        "class", class_,
+                        "type", type,
+                        "semantic", semantic,
+                        "rowCount", rowCount,
+                        "columnCount", columnCount,
+                        "elements", EffectUtilities.Join(readableElements),
+                        "structMembers", EffectUtilities.Join(readableStructMembers)
+                        )+">"
+                    );
+                }
 			}
 
 			return new EffectParameterCollection(parameters);

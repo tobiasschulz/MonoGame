@@ -245,7 +245,7 @@ namespace Microsoft.Xna.Framework.Graphics
         /// Creates a new DualTextureEffect with default parameter settings.
         /// </summary>
         public DualTextureEffect(GraphicsDevice device)
-            : base(device, Bytecode)
+            : base(device, Bytecode, "DualTextureEffect")
         {
             CacheEffectParameters();
         }

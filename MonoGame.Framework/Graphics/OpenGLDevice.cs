@@ -1448,7 +1448,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				if (hasARB)
 				{
-					GL.DeleteFramebuffers(1, ref handle);
+                    try {
+					    GL.DeleteFramebuffers(1, ref handle);
+                    } catch (AccessViolationException) {
+                    }
 				}
 				else
 				{
