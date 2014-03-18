@@ -317,7 +317,18 @@ namespace Microsoft.Xna.Framework
 			SDL.SDL_DisableScreenSaver();
 
 			// We hide the mouse cursor by default.
-			platform.IsMouseVisible = false;
+			if (platform.IsMouseVisible)
+			{
+				platform.IsMouseVisible = false;
+			}
+			else
+			{
+				/* Since IsMouseVisible is already false, OnMouseVisibleChanged
+				 * will NOT be called! So we get to do it ourselves.
+				 * -flibit
+				 */
+				SDL.SDL_ShowCursor(0);
+			}
 
 			// OSX has some fancy fullscreen features, let's use them!
 			if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
@@ -462,12 +473,6 @@ namespace Microsoft.Xna.Framework
 						{
 							Mouse.INTERNAL_WindowWidth = evt.window.data1;
 							Mouse.INTERNAL_WindowHeight = evt.window.data2;
-
-							/* Ensure the cursor visibility remains as intended!
-							 * Some desktops (including OSX) aren't too bright about this.
-							 * -flibit
-							 */
-							SDL.SDL_ShowCursor(Game.Platform.IsMouseVisible ? 1 : 0);
 						}
 
 						// Mouse Focus
