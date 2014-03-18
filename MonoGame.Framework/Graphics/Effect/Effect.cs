@@ -81,7 +81,7 @@ namespace Microsoft.Xna.Framework.Graphics
             Clone(cloneSource);
 		}
 
-        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode, string effectName)
+        public Effect (GraphicsDevice graphicsDevice, byte[] effectCode, string effectName = "")
             : this(graphicsDevice)
 		{
 			// By default we currently cache all unique byte streams
