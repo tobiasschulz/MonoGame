@@ -46,19 +46,6 @@ namespace Microsoft.Xna.Framework.Content
 			return arr.Any(s => s == search);
 		}
 
-<<<<<<< HEAD
-        protected internal override Effect Read(ContentReader input, Effect existingInstance)
-        {
-            int count = input.ReadInt32();
-            
-            var effect = new Effect(input.GraphicsDevice, input.ReadBytes(count), input.AssetName);
-            effect.Name = input.AssetName;
-            
-            return effect;
-        }
-    }
-}
-=======
 		protected internal override Effect Read(
 			ContentReader input,
 			Effect existingInstance
@@ -70,4 +57,3 @@ namespace Microsoft.Xna.Framework.Content
 		}
 	}
 }
->>>>>>> monogame-sdl2
