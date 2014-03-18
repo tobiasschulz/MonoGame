@@ -455,13 +455,19 @@ namespace Microsoft.Xna.Framework
 							Mouse.INTERNAL_WindowWidth = evt.window.data1;
 							Mouse.INTERNAL_WindowHeight = evt.window.data2;
 
-							// Should be called on user resize only, NOT ApplyChanges!.
+							// Should be called on user resize only, NOT ApplyChanges!
 							OnClientSizeChanged();
 						}
 						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
 						{
 							Mouse.INTERNAL_WindowWidth = evt.window.data1;
 							Mouse.INTERNAL_WindowHeight = evt.window.data2;
+
+							/* Ensure the cursor visibility remains as intended!
+							 * Some desktops (including OSX) aren't too bright about this.
+							 * -flibit
+							 */
+							SDL.SDL_ShowCursor(Game.Platform.IsMouseVisible ? 1 : 0);
 						}
 
 						// Mouse Focus
