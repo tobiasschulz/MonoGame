@@ -1,7 +1,14 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -23,21 +30,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
+#endregion
 
 using System;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    internal class QuaternionReader : ContentTypeReader<Quaternion>
-    {
-        internal QuaternionReader()
-        {
-        }
+	internal class QuaternionReader : ContentTypeReader<Quaternion>
+	{
+		internal QuaternionReader()
+		{
+		}
 
-        protected internal override Quaternion Read(ContentReader input, Quaternion existingInstance)
-        {
-            return input.ReadQuaternion();
-        }
-    }
+		protected internal override Quaternion Read(
+			ContentReader input,
+			Quaternion existingInstance
+		) {
+			return input.ReadQuaternion();
+		}
+	}
 }

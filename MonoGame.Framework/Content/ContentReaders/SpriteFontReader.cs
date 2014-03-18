@@ -1,7 +1,14 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -23,8 +30,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
-
+#endregion
 
 using System;
 using System.Collections.Generic;
@@ -34,57 +40,69 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    internal class SpriteFontReader : ContentTypeReader<SpriteFont>
-    {
-        internal SpriteFontReader()
-        {
-        }
+	internal class SpriteFontReader : ContentTypeReader<SpriteFont>
+	{
+		internal SpriteFontReader()
+		{
+		}
 
-        static string[] supportedExtensions = new string[] { ".spritefont" };
+		static string[] supportedExtensions = new string[] { ".spritefont" };
 
-        internal static string Normalize(string fileName)
-        {
-            return Normalize(fileName, supportedExtensions);
-        }
-	
-        protected internal override SpriteFont Read(ContentReader input, SpriteFont existingInstance)
-        {
-            if (existingInstance != null)
-            {
-                // Read the texture into the existing texture instance
-                input.ReadObject<Texture2D>(existingInstance._texture);
-                
-                // discard the rest of the SpriteFont data as we are only reloading GPU resources for now
-                input.ReadObject<List<Rectangle>>();
-                input.ReadObject<List<Rectangle>>();
-                input.ReadObject<List<char>>();
-                input.ReadInt32();
-                input.ReadSingle();
-                input.ReadObject<List<Vector3>>();
-                if (input.ReadBoolean())
-                {
-                    input.ReadChar();
-                }
+		internal static string Normalize(string fileName)
+		{
+			return Normalize(fileName, supportedExtensions);
+		}
 
-                return existingInstance;
-            }
-            else
-            {
-                // Create a fresh SpriteFont instance
-                Texture2D texture = input.ReadObject<Texture2D>();
-                List<Rectangle> glyphs = input.ReadObject<List<Rectangle>>();
-                List<Rectangle> cropping = input.ReadObject<List<Rectangle>>();
-                List<char> charMap = input.ReadObject<List<char>>();
-                int lineSpacing = input.ReadInt32();
-                float spacing = input.ReadSingle();
-                List<Vector3> kerning = input.ReadObject<List<Vector3>>();
-                char? defaultCharacter = null;
-                if (input.ReadBoolean())
-                {
-                    defaultCharacter = new char?(input.ReadChar());
-                }
-                return new SpriteFont(texture, glyphs, cropping, charMap, lineSpacing, spacing, kerning, defaultCharacter);
-            }
-        }
-    }
+		protected internal override SpriteFont Read(
+			ContentReader input,
+			SpriteFont existingInstance
+		) {
+			if (existingInstance != null)
+			{
+				// Read the texture into the existing texture instance
+				input.ReadObject<Texture2D>(existingInstance._texture);
+
+				/* Discard the rest of the SpriteFont data as we are only
+				 * reloading GPU resources for now
+				 */
+				input.ReadObject<List<Rectangle>>();
+				input.ReadObject<List<Rectangle>>();
+				input.ReadObject<List<char>>();
+				input.ReadInt32();
+				input.ReadSingle();
+				input.ReadObject<List<Vector3>>();
+				if (input.ReadBoolean())
+				{
+					input.ReadChar();
+				}
+				return existingInstance;
+			}
+			else
+			{
+				// Create a fresh SpriteFont instance
+				Texture2D texture = input.ReadObject<Texture2D>();
+				List<Rectangle> glyphs = input.ReadObject<List<Rectangle>>();
+				List<Rectangle> cropping = input.ReadObject<List<Rectangle>>();
+				List<char> charMap = input.ReadObject<List<char>>();
+				int lineSpacing = input.ReadInt32();
+				float spacing = input.ReadSingle();
+				List<Vector3> kerning = input.ReadObject<List<Vector3>>();
+				char? defaultCharacter = null;
+				if (input.ReadBoolean())
+				{
+					defaultCharacter = new char?(input.ReadChar());
+				}
+				return new SpriteFont(
+					texture,
+					glyphs,
+					cropping,
+					charMap,
+					lineSpacing,
+					spacing,
+					kerning,
+					defaultCharacter
+				);
+			}
+		}
+	}
 }

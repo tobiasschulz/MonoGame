@@ -91,7 +91,11 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             set
             {
+<<<<<<< HEAD
             	isFullScreen = value;
+=======
+				 isFullScreen = value;
+>>>>>>> monogame-sdl2
 			}
         }
 		

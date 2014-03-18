@@ -1,7 +1,14 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -36,14 +43,16 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class CharReader : ContentTypeReader<char>
-    {
-        internal CharReader()
-        {
-        }
+	{
+		internal CharReader()
+		{
+		}
 
-        protected internal override char Read(ContentReader input, char existingInstance)
-        {
-            return input.ReadChar();
-        }
-    }
+		protected internal override char Read(
+			ContentReader input,
+			char existingInstance
+		) {
+			return input.ReadChar();
+		}
+	}
 }

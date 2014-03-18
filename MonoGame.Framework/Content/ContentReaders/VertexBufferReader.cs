@@ -1,7 +1,14 @@
-﻿#region License
+#region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (c) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -23,24 +30,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
+#endregion
 
 using System;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
-    class VertexBufferReader : ContentTypeReader<VertexBuffer>
-    {
-        protected internal override VertexBuffer Read(ContentReader input, VertexBuffer existingInstance)
-        {
-            var declaration = input.ReadRawObject<VertexDeclaration>();
-            var vertexCount = (int)input.ReadUInt32();
-            var data = input.ReadBytes(vertexCount * declaration.VertexStride);
+	class VertexBufferReader : ContentTypeReader<VertexBuffer>
+	{
+		protected internal override VertexBuffer Read(
+			ContentReader input,
+			VertexBuffer existingInstance
+		) {
+			VertexDeclaration declaration = input.ReadRawObject<VertexDeclaration>();
+			int vertexCount = (int) input.ReadUInt32();
+			byte[] data = input.ReadBytes(vertexCount * declaration.VertexStride);
 
-            var buffer = new VertexBuffer( input.GraphicsDevice, declaration, vertexCount, BufferUsage.None );
-            buffer.SetData( data );
-            return buffer;
-        }
-    }
+			VertexBuffer buffer = new VertexBuffer(
+				input.GraphicsDevice,
+				declaration,
+				vertexCount,
+				BufferUsage.None
+			);
+			buffer.SetData(data);
+			return buffer;
+		}
+	}
 }
