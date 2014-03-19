@@ -42,10 +42,6 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 
-#if OPENGL
-using OpenTK.Graphics.OpenGL;
-#endif
-
 namespace Microsoft.Xna.Framework
 {
     public class GraphicsDeviceManager : IGraphicsDeviceService, IDisposable, IGraphicsDeviceManager
