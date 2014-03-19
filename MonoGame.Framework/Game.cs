@@ -72,10 +72,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
-#if WINRT
-using System.Threading.Tasks;
-using Windows.ApplicationModel.Activation;
-#endif
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -139,12 +135,6 @@ namespace Microsoft.Xna.Framework
             Platform.Deactivated += OnDeactivated;
             _services.AddService(typeof(GamePlatform), Platform);
 
-#if WINDOWS_STOREAPP
-            Platform.ViewStateChanged += Platform_ApplicationViewChanged;
-#endif
-
-#if SDL2
-            
             // Set the window title.
             // TODO: Get the title from the WindowsPhoneManifest.xml for WP7 projects.
             string windowTitle = string.Empty;
@@ -164,7 +154,6 @@ namespace Microsoft.Xna.Framework
             }
 
             Window.Title = windowTitle;
-#endif
         }
 
         ~Game()
@@ -220,36 +209,14 @@ namespace Microsoft.Xna.Framework
                         Platform.Activated -= OnActivated;
                         Platform.Deactivated -= OnDeactivated;
                         _services.RemoveService(typeof(GamePlatform));
-#if WINDOWS_STOREAPP
-                        Platform.ViewStateChanged -= Platform_ApplicationViewChanged;
-#endif
                         Platform.Dispose();
                         Platform = null;
                     }
 
                     Effect.FlushCache();
                     ContentTypeReaderManager.ClearTypeCreators();
-
-#if WINDOWS_PHONE
-                    TouchPanel.ResetState();                    
-#endif
-
-#if WINDOWS_MEDIA_SESSION
-                    Media.MediaManagerState.CheckShutdown();
-#endif
-
-#if DIRECTX
-                    SoundEffect.Shutdown();
-
-                    BlendState.ResetStates();
-                    DepthStencilState.ResetStates();
-                    RasterizerState.ResetStates();
-                    SamplerState.ResetStates();
-#endif
                 }
-#if ANDROID
-                Activity = null;
-#endif
+
                 _isDisposed = true;
                 _instance = null;
             }
@@ -270,10 +237,6 @@ namespace Microsoft.Xna.Framework
 
         #region Properties
 
-#if ANDROID
-		[CLSCompliant(false)]
-        public static AndroidGameActivity Activity { get; set; }
-#endif
         private static Game _instance = null;
         internal static Game Instance { get { return Game._instance; } }
 
@@ -356,19 +319,11 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-#if ANDROID
-		[CLSCompliant(false)]
-        public AndroidGameWindow Window
-        {
-            get { return Platform.Window; }
-        }
-#else
 		[CLSCompliant(false)]
         public GameWindow Window
         {
             get { return Platform.Window; }
         }
-#endif
 
         #endregion Properties
 
@@ -391,16 +346,6 @@ namespace Microsoft.Xna.Framework
         public event EventHandler<EventArgs> Deactivated;
         public event EventHandler<EventArgs> Disposed;
         public event EventHandler<EventArgs> Exiting;
-
-#if WINDOWS_STOREAPP
-        [CLSCompliant(false)]
-        public event EventHandler<ViewStateChangedEventArgs> ApplicationViewChanged;
-#endif
-
-#if WINRT
-        [CLSCompliant(false)]
-        public ApplicationExecutionState PreviousExecutionState { get; internal set; }
-#endif
 
         #endregion
 
@@ -517,11 +462,8 @@ namespace Microsoft.Xna.Framework
                 // NOTE: While sleep can be inaccurate in general it is 
                 // accurate enough for frame limiting purposes if some
                 // fluctuation is an acceptable result.
-#if WINRT
-                Task.Delay(sleepTime).Wait();
-#else
                 System.Threading.Thread.Sleep(sleepTime);
-#endif
+
                 goto RetryTick;
             }
 
@@ -677,14 +619,6 @@ namespace Microsoft.Xna.Framework
 			DoExiting();
         }
 
-#if WINDOWS_STOREAPP
-        private void Platform_ApplicationViewChanged(object sender, ViewStateChangedEventArgs e)
-        {
-            AssertNotDisposed();
-            Raise(ApplicationViewChanged, e);
-        }
-#endif
-
         #endregion Event Handlers
 
         #region Internal Methods
@@ -774,22 +708,7 @@ namespace Microsoft.Xna.Framework
 		{
 			OnExiting(this, EventArgs.Empty);
 			UnloadContent();
-
-#if DIRECTX
-		    SoundEffect.Shutdown();
-#endif
-
-#if WINDOWS_MEDIA_SESSION
-            Media.MediaManagerState.CheckShutdown();
-#endif
 		}
-
-        internal void ResizeWindow(bool changed)
-        {
-#if WINDOWS && DIRECTX
-            ((MonoGame.Framework.WinFormsGamePlatform)Platform).ResetWindowBounds(changed);
-#endif
-        }
 
         #endregion Internal Methods
 
