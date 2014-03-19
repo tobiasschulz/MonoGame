@@ -86,9 +86,7 @@ namespace Microsoft.Xna.Framework
         #region Construction/Destruction
         public static GamePlatform Create(Game game)
         {
-#if SDL2
             return new SDL2_GamePlatform(game);
-#endif
         }
 
         protected GamePlatform(Game game)

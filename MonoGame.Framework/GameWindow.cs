@@ -132,8 +132,6 @@ namespace Microsoft.Xna.Framework {
 		public event EventHandler<EventArgs> OrientationChanged;
 		public event EventHandler<EventArgs> ScreenDeviceNameChanged;
 
-#if SDL2
-
 		/// <summary>
 		/// Use this event to retrieve text for objects like textbox's.
 		/// This event is not raised by noncharacter keys.
@@ -145,7 +143,6 @@ namespace Microsoft.Xna.Framework {
 		/// This event is only supported on the Windows DirectX and SDL2 platforms.
 		/// </remarks>
 		public event EventHandler<TextInputEventArgs> TextInput;
-#endif
 
 		#endregion Events
 
@@ -189,13 +186,11 @@ namespace Microsoft.Xna.Framework {
 				ScreenDeviceNameChanged (this, EventArgs.Empty);
 		}
 
-#if SDL2
 		protected void OnTextInput(object sender, TextInputEventArgs e)
 		{
 			if (TextInput != null)
 				TextInput(sender, e);
 		}
-#endif
 
 		protected internal abstract void SetSupportedOrientations (DisplayOrientation orientations);
 		protected abstract void SetTitle (string title);

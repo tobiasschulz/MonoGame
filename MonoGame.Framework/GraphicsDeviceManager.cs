@@ -80,16 +80,8 @@ namespace Microsoft.Xna.Framework
 
             _supportedOrientations = DisplayOrientation.Default;
 
-#if SDL2
             _preferredBackBufferHeight = DefaultBackBufferHeight;
             _preferredBackBufferWidth = DefaultBackBufferWidth;
-#else
-            // Preferred buffer width/height is used to determine default supported orientations,
-            // so set the default values to match Xna behaviour of landscape only by default.
-            // Note also that it's using the device window dimensions.
-            _preferredBackBufferWidth = Math.Max(_game.Window.ClientBounds.Height, _game.Window.ClientBounds.Width);
-            _preferredBackBufferHeight = Math.Min(_game.Window.ClientBounds.Height, _game.Window.ClientBounds.Width);
-#endif
 
             _preferredBackBufferFormat = SurfaceFormat.Color;
             _preferredDepthStencilFormat = DepthFormat.Depth24;
@@ -209,7 +201,6 @@ namespace Microsoft.Xna.Framework
             if (_graphicsDevice == null)
                 return;
 
-#if SDL2
             // Notify DeviceResetting EventHandlers
             OnDeviceResetting(null);
             GraphicsDevice.OnDeviceResetting();
@@ -244,21 +235,7 @@ namespace Microsoft.Xna.Framework
             // Notify DeviceReset EventHandlers
             OnDeviceReset(null);
             GraphicsDevice.OnDeviceReset();
-#else
 
-            // Ensure the presentation parameter orientation and buffer size matches the window
-            _graphicsDevice.PresentationParameters.DisplayOrientation = _game.Window.CurrentOrientation;
-
-            // Set the presentation parameters' actual buffer size to match the orientation
-            bool isLandscape = (0 != (_game.Window.CurrentOrientation & (DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight)));
-            int w = PreferredBackBufferWidth;
-            int h = PreferredBackBufferHeight;
-
-            _graphicsDevice.PresentationParameters.BackBufferWidth = isLandscape ? Math.Max(w, h) : Math.Min(w, h);
-            _graphicsDevice.PresentationParameters.BackBufferHeight = isLandscape ? Math.Min(w, h) : Math.Max(w, h);
-
-            ResetClientBounds();
-#endif
 
             // Set the new display size on the touch panel.
             //
@@ -275,13 +252,8 @@ namespace Microsoft.Xna.Framework
             var presentationParameters = new PresentationParameters();
             presentationParameters.DepthStencilFormat = DepthFormat.Depth24;
 
-#if SDL2
             // It's bad practice to start fullscreen.
             presentationParameters.IsFullScreen = false;
-#else
-            // Set "full screen"  as default
-            presentationParameters.IsFullScreen = true;
-#endif // SDL2
 
             // TODO: Implement multisampling (aka anti-aliasing) for all platforms!
             if (PreparingDeviceSettings != null)

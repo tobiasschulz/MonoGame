@@ -135,8 +135,6 @@ namespace Microsoft.Xna.Framework
             Platform.Deactivated += OnDeactivated;
             _services.AddService(typeof(GamePlatform), Platform);
 
-#if SDL2
-            
             // Set the window title.
             // TODO: Get the title from the WindowsPhoneManifest.xml for WP7 projects.
             string windowTitle = string.Empty;
@@ -156,7 +154,6 @@ namespace Microsoft.Xna.Framework
             }
 
             Window.Title = windowTitle;
-#endif
         }
 
         ~Game()
@@ -712,10 +709,6 @@ namespace Microsoft.Xna.Framework
 			OnExiting(this, EventArgs.Empty);
 			UnloadContent();
 		}
-
-        internal void ResizeWindow(bool changed)
-        {
-        }
 
         #endregion Internal Methods
 

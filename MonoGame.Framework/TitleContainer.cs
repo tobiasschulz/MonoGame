@@ -47,12 +47,7 @@ namespace Microsoft.Xna.Framework
     {
         static TitleContainer() 
         {
-#if SDL2
             Location = AppDomain.CurrentDomain.BaseDirectory;
-#else
-            Location = string.Empty;
-#endif
-
         }
 
         static internal string Location { get; private set; }
