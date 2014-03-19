@@ -114,15 +114,13 @@ namespace Microsoft.Xna.Framework
 			else 
 			{
 				item = new PerformanceItem();
-#if !WINRT
-    			var stackTrace = new StackTrace();
+
+                var stackTrace = new StackTrace();
     			var stackFrame = stackTrace.GetFrame(1);
     			MethodBase methodBase = stackFrame.GetMethod();
 
 				item.Name = "ID: " + Name+" In " + methodBase.ReflectedType.ToString()+"::"+methodBase.Name;
-#else
-                item.Name = "ID: " + Name;
-#endif
+
                 item.PreviousTime = DateTime.Now.Ticks;
                 _list.Add(Name,item);
 			}			

@@ -42,16 +42,8 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input.Touch;
 
-#if GLES
-using OpenTK.Graphics.ES20;
-#elif OPENGL
+#if OPENGL
 using OpenTK.Graphics.OpenGL;
-#elif WINDOWS_STOREAPP
-using Windows.UI.Xaml.Controls;
-#endif
-
-#if ANDROID
-using Android.Views;
 #endif
 
 namespace Microsoft.Xna.Framework
@@ -75,9 +67,7 @@ namespace Microsoft.Xna.Framework
 			get { return _synchronizedWithVerticalRetrace; }
 		}
 
-#if !WINRT
         private bool _wantFullScreen = false;
-#endif
         public static readonly int DefaultBackBufferHeight = 480;
         public static readonly int DefaultBackBufferWidth = 800;
 
@@ -219,64 +209,7 @@ namespace Microsoft.Xna.Framework
             if (_graphicsDevice == null)
                 return;
 
-#if WINDOWS_PHONE
-            // Display orientation is always portrait on WP8
-            _graphicsDevice.PresentationParameters.DisplayOrientation = DisplayOrientation.Portrait;
-#elif WINDOWS_STOREAPP
-
-            // TODO:  Does this need to occur here?
-            _game.Window.SetSupportedOrientations(_supportedOrientations);
-
-            _graphicsDevice.PresentationParameters.BackBufferFormat = _preferredBackBufferFormat;
-            _graphicsDevice.PresentationParameters.BackBufferWidth = _preferredBackBufferWidth;
-            _graphicsDevice.PresentationParameters.BackBufferHeight = _preferredBackBufferHeight;
-            _graphicsDevice.PresentationParameters.DepthStencilFormat = _preferredDepthStencilFormat;
-            _graphicsDevice.PresentationParameters.IsFullScreen = false;
-            
-            // TODO: We probably should be resetting the whole device
-            // if this changes as we are targeting a different 
-            // hardware feature level.
-            _graphicsDevice.GraphicsProfile = GraphicsProfile;
-
-			// The graphics device can use a XAML panel or a window
-			// to created the default swapchain target.
-            if (SwapChainPanel != null)
-            {
-                _graphicsDevice.PresentationParameters.DeviceWindowHandle = IntPtr.Zero;
-                _graphicsDevice.PresentationParameters.SwapChainPanel = SwapChainPanel;
-            }
-            else
-            {
-                _graphicsDevice.PresentationParameters.DeviceWindowHandle = _game.Window.Handle;
-                _graphicsDevice.PresentationParameters.SwapChainPanel = null;
-            }
-
-            // Update the back buffer.
-            _graphicsDevice.CreateSizeDependentResources();
-            _graphicsDevice.ApplyRenderTargets(null);
-
-#elif WINDOWS && DIRECTX
-
-            _graphicsDevice.PresentationParameters.BackBufferFormat = _preferredBackBufferFormat;
-            _graphicsDevice.PresentationParameters.BackBufferWidth = _preferredBackBufferWidth;
-            _graphicsDevice.PresentationParameters.BackBufferHeight = _preferredBackBufferHeight;
-            _graphicsDevice.PresentationParameters.DepthStencilFormat = _preferredDepthStencilFormat;
-            _graphicsDevice.PresentationParameters.PresentationInterval = _synchronizedWithVerticalRetrace ? PresentInterval.Default : PresentInterval.Immediate;
-            _graphicsDevice.PresentationParameters.IsFullScreen = false;
-
-            // TODO: We probably should be resetting the whole 
-            // device if this changes as we are targeting a different
-            // hardware feature level.
-            _graphicsDevice.GraphicsProfile = GraphicsProfile;
-
-            _graphicsDevice.PresentationParameters.DeviceWindowHandle = _game.Window.Handle;
-
-            // Update the back buffer.
-            _graphicsDevice.CreateSizeDependentResources();
-            _graphicsDevice.ApplyRenderTargets(null);
-
-            _game.ResizeWindow(false);
-#elif SDL2
+#if SDL2
             // Notify DeviceResetting EventHandlers
             OnDeviceResetting(null);
             GraphicsDevice.OnDeviceResetting();
@@ -313,10 +246,6 @@ namespace Microsoft.Xna.Framework
             GraphicsDevice.OnDeviceReset();
 #else
 
-#if ANDROID
-            // Trigger a change in orientation in case the supported orientations have changed
-            _game.Window.SetOrientation(_game.Window.CurrentOrientation, false);
-#endif
             // Ensure the presentation parameter orientation and buffer size matches the window
             _graphicsDevice.PresentationParameters.DisplayOrientation = _game.Window.CurrentOrientation;
 
@@ -346,36 +275,6 @@ namespace Microsoft.Xna.Framework
             var presentationParameters = new PresentationParameters();
             presentationParameters.DepthStencilFormat = DepthFormat.Depth24;
 
-#if WINDOWS || WINRT
-            _game.Window.SetSupportedOrientations(_supportedOrientations);
-
-            presentationParameters.BackBufferFormat = _preferredBackBufferFormat;
-            presentationParameters.BackBufferWidth = _preferredBackBufferWidth;
-            presentationParameters.BackBufferHeight = _preferredBackBufferHeight;
-            presentationParameters.DepthStencilFormat = _preferredDepthStencilFormat;
-
-            presentationParameters.IsFullScreen = false;
-#if WINDOWS_PHONE
-
-#elif WINRT
-			// The graphics device can use a XAML panel or a window
-			// to created the default swapchain target.
-            if (SwapChainPanel != null)
-            {
-                presentationParameters.DeviceWindowHandle = IntPtr.Zero;
-                presentationParameters.SwapChainPanel = SwapChainPanel;
-            }
-            else
-            {
-                presentationParameters.DeviceWindowHandle = _game.Window.Handle;
-                presentationParameters.SwapChainPanel = null;
-            }
-#else
-            presentationParameters.DeviceWindowHandle = _game.Window.Handle;
-#endif
-
-#else
-
 #if SDL2
             // It's bad practice to start fullscreen.
             presentationParameters.IsFullScreen = false;
@@ -383,8 +282,6 @@ namespace Microsoft.Xna.Framework
             // Set "full screen"  as default
             presentationParameters.IsFullScreen = true;
 #endif // SDL2
-
-#endif // WINDOWS || WINRT
 
             // TODO: Implement multisampling (aka anti-aliasing) for all platforms!
             if (PreparingDeviceSettings != null)
@@ -438,11 +335,6 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-#if WINDOWS_STOREAPP
-        [CLSCompliant(false)]
-        public SwapChainBackgroundPanel SwapChainPanel { get; set; }
-#endif
-
         public GraphicsProfile GraphicsProfile { get; set; }
 
         public GraphicsDevice GraphicsDevice
@@ -457,44 +349,20 @@ namespace Microsoft.Xna.Framework
         {
             get
             {
-#if WINRT
-                return true;
-#else
                 if (_graphicsDevice != null)
                     return _graphicsDevice.PresentationParameters.IsFullScreen;
                 else
                     return _wantFullScreen;
-#endif
             }
             set
             {
-#if WINRT
-                // Just ignore this as it is not relevant on Windows 8
-#else
                 _wantFullScreen = value;
                 if (_graphicsDevice != null)
                 {
                     _graphicsDevice.PresentationParameters.IsFullScreen = value;
-#if ANDROID
-                    ForceSetFullScreen();
-#endif
                 }
-#endif
             }
         }
-
-#if ANDROID
-        internal void ForceSetFullScreen()
-        {
-            if (IsFullScreen)
-			{
-				Game.Activity.Window.ClearFlags(Android.Views.WindowManagerFlags.ForceNotFullscreen);
-                Game.Activity.Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-			}
-            else
-                Game.Activity.Window.SetFlags(WindowManagerFlags.ForceNotFullscreen, WindowManagerFlags.ForceNotFullscreen);
-        }
-#endif
 
         public bool PreferMultiSampling
         {
@@ -597,60 +465,6 @@ namespace Microsoft.Xna.Framework
         /// </summary>
         internal void ResetClientBounds()
         {
-#if ANDROID
-            float preferredAspectRatio = (float)PreferredBackBufferWidth /
-                                         (float)PreferredBackBufferHeight;
-            float displayAspectRatio = (float)GraphicsDevice.DisplayMode.Width / 
-                                       (float)GraphicsDevice.DisplayMode.Height;
-
-            float adjustedAspectRatio = preferredAspectRatio;
-
-            if ((preferredAspectRatio > 1.0f && displayAspectRatio < 1.0f) ||
-                (preferredAspectRatio < 1.0f && displayAspectRatio > 1.0f))
-            {
-                // Invert preferred aspect ratio if it's orientation differs from the display mode orientation.
-                // This occurs when user sets preferredBackBufferWidth/Height and also allows multiple supported orientations
-                adjustedAspectRatio = 1.0f / preferredAspectRatio;
-            }
-
-            const float EPSILON = 0.00001f;
-            var newClientBounds = new Rectangle();
-            if (displayAspectRatio > (adjustedAspectRatio + EPSILON))
-            {
-                // Fill the entire height and reduce the width to keep aspect ratio
-                newClientBounds.Height = _graphicsDevice.DisplayMode.Height;
-                newClientBounds.Width = (int)(newClientBounds.Height * adjustedAspectRatio);
-                newClientBounds.X = (_graphicsDevice.DisplayMode.Width - newClientBounds.Width) / 2;
-            }
-            else if (displayAspectRatio < (adjustedAspectRatio - EPSILON))
-            {
-                // Fill the entire width and reduce the height to keep aspect ratio
-                newClientBounds.Width = _graphicsDevice.DisplayMode.Width;
-                newClientBounds.Height = (int)(newClientBounds.Width / adjustedAspectRatio);
-                newClientBounds.Y = (_graphicsDevice.DisplayMode.Height - newClientBounds.Height) / 2;
-            }
-            else
-            {
-                // Set the ClientBounds to match the DisplayMode
-                newClientBounds.Width = GraphicsDevice.DisplayMode.Width;
-                newClientBounds.Height = GraphicsDevice.DisplayMode.Height;
-            }
-
-            // Ensure buffer size is reported correctly
-            _graphicsDevice.PresentationParameters.BackBufferWidth = newClientBounds.Width;
-            _graphicsDevice.PresentationParameters.BackBufferHeight = newClientBounds.Height;
-
-            // Set the veiwport so the (potentially) resized client bounds are drawn in the middle of the screen
-            _graphicsDevice.Viewport = new Viewport(newClientBounds.X, -newClientBounds.Y, newClientBounds.Width, newClientBounds.Height);
-
-            _game.Window.ClientBounds = newClientBounds;
-
-            // Touch panel needs latest buffer size for scaling
-            TouchPanel.DisplayWidth = newClientBounds.Width;
-            TouchPanel.DisplayHeight = newClientBounds.Height;
-
-            Android.Util.Log.Debug("MonoGame", "GraphicsDeviceManager.ResetClientBounds: newClientBounds=" + newClientBounds.ToString());
-#endif
         }
 
     }

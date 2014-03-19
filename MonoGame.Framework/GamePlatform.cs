@@ -70,10 +70,6 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 using System;
 
-#if WINRT
-using Windows.UI.ViewManagement;
-#endif
-
 namespace Microsoft.Xna.Framework
 {
     abstract class GamePlatform : IDisposable
@@ -92,18 +88,6 @@ namespace Microsoft.Xna.Framework
         {
 #if SDL2
             return new SDL2_GamePlatform(game);
-#elif IOS
-            return new iOSGamePlatform(game);
-#elif ANDROID
-            return new AndroidGamePlatform(game);
-#elif PSM
-			return new PSSGamePlatform(game);
-#elif WINDOWS && DIRECTX
-            return new MonoGame.Framework.WinFormsGamePlatform(game);
-#elif WINDOWS_PHONE
-            return new MonoGame.Framework.WindowsPhone.WindowsPhoneGamePlatform(game);
-#elif WINRT
-            return new MetroGamePlatform(game);
 #endif
         }
 
@@ -165,50 +149,6 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-#if WINDOWS_STOREAPP
-        private ApplicationViewState _viewState;
-        public ApplicationViewState ViewState
-        {
-            get { return _viewState; }
-            set
-            {
-                if (_viewState == value)
-                    return;
-
-                Raise(ViewStateChanged, new ViewStateChangedEventArgs(value));
-
-                _viewState = value;
-            }
-        }
-#endif
-
-#if ANDROID
-        private AndroidGameWindow _window;
-        public AndroidGameWindow Window
-        {
-            get { return _window; }
-            protected set
-            {
-                if (_window == null)
-                    TouchPanel.PrimaryWindow = value;
-
-                _window = value;
-            }
-        }
-#elif PSM
-        private PSSGameWindow _window;
-        public PSSGameWindow Window
-        {
-            get { return _window; }
-            protected set
-            {
-                if (_window == null)
-                    TouchPanel.PrimaryWindow = value;
-
-                _window = value;
-            }
-        }
-#else
         private GameWindow _window;
         public GameWindow Window
         {
@@ -226,7 +166,6 @@ namespace Microsoft.Xna.Framework
                 _window = value;
             }
         }
-#endif
   
         public virtual bool VSyncEnabled
         {
@@ -245,10 +184,6 @@ namespace Microsoft.Xna.Framework
         public event EventHandler<EventArgs> AsyncRunLoopEnded;
         public event EventHandler<EventArgs> Activated;
         public event EventHandler<EventArgs> Deactivated;
-
-#if WINDOWS_STOREAPP
-        public event EventHandler<ViewStateChangedEventArgs> ViewStateChanged;
-#endif
 
         private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
             where TEventArgs : EventArgs
@@ -284,9 +219,6 @@ namespace Microsoft.Xna.Framework
             {
                 var graphicsDeviceManager = Game.Services.GetService(typeof(IGraphicsDeviceManager)) as IGraphicsDeviceManager;			   
                 graphicsDeviceManager.CreateDevice();
-#if ANDROID
-                Window.TouchEnabled = true;
-#endif
             }
         }
 

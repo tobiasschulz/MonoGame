@@ -80,14 +80,6 @@ namespace Microsoft.Xna.Framework {
 
 		public abstract Rectangle ClientBounds { get; }
 
-#if WINDOWS && DIRECTX
-        /// <summary>
-        /// The location of this window on the desktop, eg: global coordinate space
-        /// which stretches across all screens.
-        /// </summary>
-        public abstract Point Position { get; set; }
-#endif
-
 		public abstract DisplayOrientation CurrentOrientation { get; }
 
 		public abstract IntPtr Handle { get; }
@@ -128,10 +120,8 @@ namespace Microsoft.Xna.Framework {
 
         protected GameWindow()
         {
-#if !ANDROID
             // TODO: Fix the AndroidGameWindow!
             TouchPanelState = new TouchPanelState(this);
-#endif
         }
 
 		#endregion Properties
@@ -142,7 +132,7 @@ namespace Microsoft.Xna.Framework {
 		public event EventHandler<EventArgs> OrientationChanged;
 		public event EventHandler<EventArgs> ScreenDeviceNameChanged;
 
-#if SDL2 || (WINDOWS && DIRECTX)
+#if SDL2
 
 		/// <summary>
 		/// Use this event to retrieve text for objects like textbox's.
@@ -199,7 +189,7 @@ namespace Microsoft.Xna.Framework {
 				ScreenDeviceNameChanged (this, EventArgs.Empty);
 		}
 
-#if SDL2 || (WINDOWS && DIRECTX)
+#if SDL2
 		protected void OnTextInput(object sender, TextInputEventArgs e)
 		{
 			if (TextInput != null)
@@ -210,14 +200,5 @@ namespace Microsoft.Xna.Framework {
 		protected internal abstract void SetSupportedOrientations (DisplayOrientation orientations);
 		protected abstract void SetTitle (string title);
 
-#if DIRECTX && WINDOWS
-        public static GameWindow Create(Game game, int width, int height)
-        {
-            var window = new MonoGame.Framework.WinFormsGameWindow((MonoGame.Framework.WinFormsGamePlatform)game.Platform);
-            window.Initialize(width, height);
-
-            return window;
-        }
-#endif
     }
 }
