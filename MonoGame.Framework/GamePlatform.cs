@@ -86,6 +86,15 @@ namespace Microsoft.Xna.Framework
         #region Construction/Destruction
         public static GamePlatform Create(Game game)
         {
+            /* I suspect you may have an urge to put an #if in here for new
+             * GamePlatform implementations.
+             *
+             * DON'T.
+             *
+             * Determine this at runtime, or load dynamically.
+             * No amount of whining will get me to budge on this.
+             * -flibit
+             */
             return new SDL2_GamePlatform(game);
         }
 
