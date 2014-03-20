@@ -43,7 +43,13 @@ namespace Microsoft.Xna.Framework.Storage
 		PlayerIndex? player;
 
 		int directoryCount;
-		private int DirectoryCount { get { return this.directoryCount; } }
+		private int DirectoryCount
+		{
+			get
+			{
+				return this.directoryCount;
+			}
+		}
 
 		StorageContainer storageContainer;
 
@@ -62,13 +68,17 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns the amount of free space.
 		/// </summary>
-		public long FreeSpace {
-			get {
+		public long FreeSpace
+		{
+			get
+			{
 				// I do not know if the DriveInfo is is implemented on Mac or not thus the try catch.
-				try {
+				try
+				{
 					return new DriveInfo(GetDevicePath).AvailableFreeSpace;
 				}
-				catch (Exception) {
+				catch (Exception)
+				{
 					StorageDeviceHelper.Path = StorageRoot;
 					return StorageDeviceHelper.FreeSpace;
 				}
@@ -78,13 +88,17 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns true if device is connected, false otherwise.
 		/// </summary>
-		public bool IsConnected {
-			get {
+		public bool IsConnected
+		{
+			get
+			{
 				// I do not know if the DriveInfo is is implemented on Mac or not thus the try catch.
-				try {
+				try
+				{
 					return new DriveInfo(GetDevicePath).IsReady;
 				}
-				catch (Exception) {
+				catch (Exception)
+				{
 					return true;
 				}
 			}
@@ -93,16 +107,18 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns the total size of device.
 		/// </summary>
-		public long TotalSpace {
-			get {
-
+		public long TotalSpace
+		{
+			get
+			{
 				// I do not know if the DriveInfo is is implemented on Mac or not thus the try catch.
-				try {
-
+				try
+				{
 					// Not sure if this should be TotalSize or TotalFreeSize.
 					return new DriveInfo(GetDevicePath).TotalSize;
 				}
-				catch (Exception) {
+				catch (Exception)
+				{
 					StorageDeviceHelper.Path = StorageRoot;
 					return StorageDeviceHelper.TotalSpace;
 				}
@@ -112,15 +128,17 @@ namespace Microsoft.Xna.Framework.Storage
 
 		string GetDevicePath
 		{
-			get {
+			get
+			{
 				/* We may not need to store the StorageContainer in the future
 				 * when we get DeviceChanged events working.
 				 */
-				if (storageContainer == null) 
+				if (storageContainer == null)
 				{
 					return StorageRoot;
 				}
-				else {
+				else
+				{
 					return storageContainer._storagePath;
 				}
 			}
@@ -154,10 +172,13 @@ namespace Microsoft.Xna.Framework.Storage
 
 		private IAsyncResult OpenContainer(string displayName, AsyncCallback callback, object state)
 		{
-			try {
+			try
+			{
 				OpenContainerAsynchronous AsynchronousOpen = new OpenContainerAsynchronous(Open);
 				return AsynchronousOpen.BeginInvoke(displayName, callback, state);
-			} finally {
+			}
+			finally
+			{
 			}
 		}
 
@@ -253,7 +274,8 @@ namespace Microsoft.Xna.Framework.Storage
 		public StorageContainer EndOpenContainer(IAsyncResult result)
 		{
 			StorageContainer returnValue = null;
-			try {
+			try
+			{
 				// Retrieve the delegate.
 				AsyncResult asyncResult = result as AsyncResult;
 				if (asyncResult != null)
@@ -265,7 +287,7 @@ namespace Microsoft.Xna.Framework.Storage
 					result.AsyncWaitHandle.WaitOne();
 
 					// Call EndInvoke to retrieve the results.
-					if (asyncDelegate != null) 
+					if (asyncDelegate != null)
 					{
 						returnValue = asyncDelegate.EndInvoke(result);
 					}
@@ -289,12 +311,15 @@ namespace Microsoft.Xna.Framework.Storage
 		public static StorageDevice EndShowSelector(IAsyncResult result)
 		{
 
-			if (!result.IsCompleted) 
+			if (!result.IsCompleted)
 			{
 				// Wait for the WaitHandle to become signaled.
-				try {
+				try
+				{
 					result.AsyncWaitHandle.WaitOne();
-				} finally {
+				}
+				finally
+				{
 				}
 			}
 			// Retrieve the delegate.
@@ -318,7 +343,8 @@ namespace Microsoft.Xna.Framework.Storage
 
 		internal static string StorageRoot
 		{
-			get {
+			get
+			{
 				if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
 				{
 					return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);

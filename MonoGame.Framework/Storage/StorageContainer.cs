@@ -74,7 +74,7 @@ namespace Microsoft.Xna.Framework.Storage
 			_storagePath = Path.Combine(saved, name);
 
 			string playerSave = string.Empty;
-			if (playerIndex.HasValue) 
+			if (playerIndex.HasValue)
 			{
 				playerSave = Path.Combine(_storagePath, "Player" + (int) playerIndex.Value);
 			}
@@ -94,14 +94,19 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns display name of the title.
 		/// </summary>
-		public string DisplayName {
-			get { return _name; }
+		public string DisplayName
+		{
+			get
+			{
+				return _name;
+			}
 		}
 
 		/// <summary>
 		/// Gets a bool value indicating whether the instance has been disposed.
 		/// </summary>
-		public bool IsDisposed { 
+		public bool IsDisposed
+		{
 			get;
 			private set;
 		}
@@ -109,8 +114,12 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns the <see cref="StorageDevice"/> that holds logical files for the container.
 		/// </summary>
-		public StorageDevice StorageDevice {
-			get {return _device; }
+		public StorageDevice StorageDevice
+		{
+			get
+			{
+				return _device;
+			}
 		}
 
 		// TODO: Implement the Disposing function.  Find sample first.

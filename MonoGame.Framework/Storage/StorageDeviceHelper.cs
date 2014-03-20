@@ -26,12 +26,14 @@ namespace Microsoft.Xna.Framework.Storage
 		/// </summary>
 		internal static string Path
 		{
-			get {
+			get
+			{
 				return path;
 			}
 
-			set {
-				if (path != value ) 
+			set
+			{
+				if (path != value )
 				{
 					path = value;
 				}
@@ -40,7 +42,8 @@ namespace Microsoft.Xna.Framework.Storage
 
 		internal static long FreeSpace
 		{
-			get {
+			get
+			{
 				long free = 0;
 				return free;
 			}
@@ -48,7 +51,8 @@ namespace Microsoft.Xna.Framework.Storage
 
 		internal static long TotalSpace
 		{
-			get {
+			get
+			{
 				long space = 0;
 				return space;
 			}
