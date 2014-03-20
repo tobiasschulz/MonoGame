@@ -1,11 +1,4 @@
 #region License
-/* FNA - XNA4 Reimplementation for Desktop Platforms
- * Copyright 2009-2014 Ethan Lee and the MonoGame Team
- *
- * Released under the Microsoft Public License.
- * See LICENSE for details.
- */
-
 /* LzxDecoder.cs - C# port of libmsport's lzxd.c
  * Copyright 2003-2004 Stuart Caie
  * Copyright 2011 Ali Scissons
