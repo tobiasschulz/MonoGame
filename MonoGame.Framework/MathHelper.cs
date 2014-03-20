@@ -8,7 +8,7 @@
 
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (C) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -274,7 +274,7 @@ namespace Microsoft.Xna.Framework
         }
 	 
         /// <summary>
-        /// Reduces a given angle to a value between π and -π.
+/// Reduces a given angle to a value between pi and -pi.
         /// </summary>
         /// <param name="angle">The angle to reduce, in radians.</param>
         /// <returns>The new angle, in radians.</returns>
