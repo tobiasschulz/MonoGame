@@ -95,7 +95,7 @@ namespace Microsoft.Xna.Framework.Storage
 		#region Private Delegates
 
 		// The delegate must have the same signature as the method it will call asynchronously.
-		private delegate StorageDevice ShowSelectorAsynchronousShow(
+		private delegate StorageDevice ShowSelectorAsynchronous(
 			PlayerIndex? player,
 			int sizeInBytes,
 			int directoryCount
@@ -239,7 +239,7 @@ namespace Microsoft.Xna.Framework.Storage
 			AsyncCallback callback,
 			object state
 		) {
-			ShowSelectorAsynchronousShow del = new ShowSelectorAsynchronousShow(Show);
+			ShowSelectorAsynchronous del = new ShowSelectorAsynchronous(Show);
 			return del.BeginInvoke(null, sizeInBytes, directoryCount, callback, state);
 		}
 
@@ -259,7 +259,7 @@ namespace Microsoft.Xna.Framework.Storage
 			AsyncCallback callback,
 			object state
 		) {
-			ShowSelectorAsynchronousShow del = new ShowSelectorAsynchronousShow(Show);
+			ShowSelectorAsynchronous del = new ShowSelectorAsynchronous(Show);
 			return del.BeginInvoke(player, sizeInBytes, directoryCount, callback, state);
 		}
 
@@ -287,9 +287,9 @@ namespace Microsoft.Xna.Framework.Storage
 
 			Object del = (AsyncResult) asyncResult.AsyncDelegate;
 
-			if (del is ShowSelectorAsynchronousShow)
+			if (del is ShowSelectorAsynchronous)
 			{
-				return (del as ShowSelectorAsynchronousShow).EndInvoke (result);
+				return (del as ShowSelectorAsynchronous).EndInvoke(result);
 			}
 			else
 			{
