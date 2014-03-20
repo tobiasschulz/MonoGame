@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 /* FNA - XNA4 Reimplementation for Desktop Platforms
  * Copyright 2009-2014 Ethan Lee and the MonoGame Team
  *
@@ -8,7 +8,7 @@
 
 /*
 MIT License
-Copyright Â© 2006 The Mono.Xna Team
+Copyright (C) 2006 The Mono.Xna Team
 
 All rights reserved.
 
