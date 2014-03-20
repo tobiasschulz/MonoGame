@@ -75,7 +75,7 @@ namespace Microsoft.Xna.Framework.Storage
 
 		#endregion
 
-		#region Public Events
+		#region Events
 
 		/// <summary>
 		/// Fired when a device is removed or inserted.
