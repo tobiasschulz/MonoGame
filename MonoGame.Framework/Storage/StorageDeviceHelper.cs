@@ -12,44 +12,49 @@ using System;
 namespace Microsoft.Xna.Framework.Storage
 {
 	/// <summary>
-    /// This is a helper class to obtain the native file system information.
+	/// This is a helper class to obtain the native file system information.
 	/// </summary>
-    /// <remarks>Look at the Mac implementation.</remarks>
+	/// <remarks>Look at the Mac implementation.</remarks>
 	internal class StorageDeviceHelper
 	{
 		static string path = string.Empty;
-		
-		static StorageDeviceHelper () { }
 
-        /// <summary>
-        /// Gets or sets path for root of the <see cref="StorageDevice"/>.
-        /// </summary>
-		internal static string Path 
+		static StorageDeviceHelper() { }
+
+		/// <summary>
+		/// Gets or sets path for root of the <see cref="StorageDevice"/>.
+		/// </summary>
+		internal static string Path
 		{
-			get {
+			get
+			{
 				return path;
 			}
-			
-			set {
-				if (path != value ) {
+
+			set
+			{
+				if (path != value )
+				{
 					path = value;
 				}
 			}
 		}
-		
-		internal static long FreeSpace 
+
+		internal static long FreeSpace
 		{
-			get {
+			get
+			{
 				long free = 0;
 				return free;
 			}
 		}
 
-		internal static long TotalSpace 
+		internal static long TotalSpace
 		{
-			get {
+			get
+			{
 				long space = 0;
-				return space;				
+				return space;
 			}
 		}
 	}
