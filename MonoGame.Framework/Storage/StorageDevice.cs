@@ -7,9 +7,6 @@
  */
 #endregion
 
-#region Assembly Microsoft.Xna.Framework.Storage.dll, v4.0.30319
-// C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Storage.dll
-#endregion
 using Microsoft.Xna.Framework;
 using System;
 using System.IO;
@@ -141,21 +138,13 @@ namespace Microsoft.Xna.Framework.Storage
 			return DeviceChanged != null;
 		}
 
-		/* Summary:
-		 *     Begins the process for opening a StorageContainer containing any files for
-		 *     the specified title.
-		 * 
-		 * Parameters:
-		 *   displayName:
-		 *     A constant human-readable string that names the file.
-		 * 
-		 *   callback:
-		 *     An AsyncCallback that represents the method called when the operation is
-		 *     complete.
-		 * 
-		 *   state:
-		 *     A user-created object used to uniquely identify the request, or null.
-		 */
+		/// <summary>
+		/// Begins the open for a StorageContainer.
+		/// </summary>
+		/// <returns>The open StorageContainer.</returns>
+		/// <param name="displayName">Name of file.</param>
+		/// <param name="callback">Method to call on completion.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
 		public IAsyncResult BeginOpenContainer(string displayName, AsyncCallback callback,
 			object state)
 		{
@@ -179,68 +168,38 @@ namespace Microsoft.Xna.Framework.Storage
 			return storageContainer;
 		}
 
-
-		/* Summary:
-		 *     Begins the process for displaying the storage device selector user interface,
-		 *     and for specifying a callback implemented when the player chooses a device.
-		 *     Reference page contains links to related code samples.
-		 * 
-		 * Parameters:
-		 *   callback:
-		 *     An AsyncCallback that represents the method called when the player chooses
-		 *     a device.
-		 * 
-		 *   state:
-		 *     A user-created object used to uniquely identify the request, or null.
-		 */
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
 		public static IAsyncResult BeginShowSelector(AsyncCallback callback, object state)
 		{
 			return BeginShowSelector(0, 0, callback, state);
 		}
 
-		/* Summary:
-		 *     Begins the process for displaying the storage device selector user interface;
-		 *     specifies the callback implemented when the player chooses a device. Reference
-		 *     page contains links to related code samples.
-		 * 
-		 * Parameters:
-		 *   player:
-		 *     The PlayerIndex that represents the player who requested the save operation.
-		 *     On Windows, the only valid option is PlayerIndex.One.
-		 * 
-		 *   callback:
-		 *     An AsyncCallback that represents the method called when the player chooses
-		 *     a device.
-		 * 
-		 *   state:
-		 *     A user-created object used to uniquely identify the request, or null.
-		 */
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
 		public static IAsyncResult BeginShowSelector(PlayerIndex player, AsyncCallback callback,
 			object state)
 		{
 			return BeginShowSelector(player, 0, 0, callback, state);
 		}
 
-		/* Summary:
-		 *     Begins the process for displaying the storage device selector user interface,
-		 *     and for specifying the size of the data to be written to the storage device
-		 *     and the callback implemented when the player chooses a device. Reference
-		 *     page contains links to related code samples.
-		 * 
-		 * Parameters:
-		 *   sizeInBytes:
-		 *     The size, in bytes, of data to write to the storage device.
-		 * 
-		 *   directoryCount:
-		 *     The number of directories to write to the storage device.
-		 * 
-		 *   callback:
-		 *     An AsyncCallback that represents the method called when the player chooses
-		 *     a device.
-		 * 
-		 *   state:
-		 *     A user-created object used to uniquely identify the request, or null.
-		 */
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
+		/// <param name="directoryCount">Number of directories to write.</param>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
 		public static IAsyncResult BeginShowSelector(int sizeInBytes, int directoryCount,
 			AsyncCallback callback, object state)
 		{
@@ -249,31 +208,15 @@ namespace Microsoft.Xna.Framework.Storage
 			return del.BeginInvoke(sizeInBytes, directoryCount, callback, state);
 		}
 
-		/* Summary:
-		 *     Begins the process for displaying the storage device selector user interface,
-		 *     for specifying the player who requested the save operation, for setting the
-		 *     size of data to be written to the storage device, and for naming the callback
-		 *     implemented when the player chooses a device. Reference page contains links
-		 *     to related code samples.
-		 * 
-		 * Parameters:
-		 *   player:
-		 *     The PlayerIndex that represents the player who requested the save operation.
-		 *     On Windows, the only valid option is PlayerIndex.One.
-		 * 
-		 *   sizeInBytes:
-		 *     The size, in bytes, of the data to write to the storage device.
-		 * 
-		 *   directoryCount:
-		 *     The number of directories to write to the storage device.
-		 * 
-		 *   callback:
-		 *     An AsyncCallback that represents the method called when the player chooses
-		 *     a device.
-		 * 
-		 *   state:
-		 *     A user-created object used to uniquely identify the request, or null.
-		 */
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
+		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
+		/// <param name="directoryCount">Number of directories to write.</param>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
 		public static IAsyncResult BeginShowSelector(PlayerIndex player, int sizeInBytes,
 			int directoryCount, AsyncCallback callback, object state)
 		{
@@ -302,13 +245,11 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 		*/
 
-		/* Summary:
-		 *   Ends the process for opening a StorageContainer.
-		 *
-		 * Parameters:
-		 *   result:
-		 *     The IAsyncResult returned from BeginOpenContainer.
-		 */
+		/// <summary>
+		/// Ends the open container process.
+		/// </summary>
+		/// <returns>The open StorageContainer.</returns>
+		/// <param name="result">Result of BeginOpenContainer.</param>
 		public StorageContainer EndOpenContainer(IAsyncResult result)
 		{
 			StorageContainer returnValue = null;
@@ -340,14 +281,11 @@ namespace Microsoft.Xna.Framework.Storage
 
 		}
 
-		/* Summary:
-		 *     Ends the display of the storage selector user interface. Reference page contains
-		 *     links to related code samples.
-		 * 
-		 * Parameters:
-		 *   result:
-		 *     The IAsyncResult returned from BeginShowSelector.
-		 */
+		/// <summary>
+		/// Ends the show selector user interface display.
+		/// </summary>
+		/// <returns>The storage device.</returns>
+		/// <param name="result">The result of BeginShowSelector.</param>
 		public static StorageDevice EndShowSelector(IAsyncResult result)
 		{
 

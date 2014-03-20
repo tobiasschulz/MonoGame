@@ -16,14 +16,14 @@ using System.IO;
 
 namespace Microsoft.Xna.Framework.Storage
 {
-	/*	Implementation on Windows
+	/* Implementation on Windows
 	 *
-	 *	User storage is in the My Documents folder of the user who is currently logged in, in the
-	 *  SavedGames folder. A subfolder is created for each game according to the titleName passed
-	 *  to the BeginOpenContainer method.  When no PlayerIndex is specified, content is saved in
-	 *  the AllPlayers folder. When a PlayerIndex is specified, the content is saved in the Player1,
-	 *  Player2, Player3, or Player4 folder, depending on which PlayerIndex was passed to
-	 *  BeginShowSelector.
+	 * User storage is in the My Documents folder of the user who is currently logged in, in the
+	 * SavedGames folder. A subfolder is created for each game according to the titleName passed
+	 * to the BeginOpenContainer method.  When no PlayerIndex is specified, content is saved in
+	 * the AllPlayers folder. When a PlayerIndex is specified, the content is saved in the Player1,
+	 * Player2, Player3, or Player4 folder, depending on which PlayerIndex was passed to
+	 * BeginShowSelector.
 	 */
 
 	/// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(name))
 			{
-				throw new ArgumentNullException ("A title name has to be provided in parameter name.");
+				throw new ArgumentNullException("A title name has to be provided in parameter name.");
 			}
 
 			_device = device;
@@ -62,7 +62,7 @@ namespace Microsoft.Xna.Framework.Storage
 				saved = Path.Combine(StorageDevice.StorageRoot, "SavedGames");
 			}
 			else if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") ||
-						SDL2_GamePlatform.OSVersion.Equals("Linux") )
+					SDL2_GamePlatform.OSVersion.Equals("Linux") )
 			{
 				// Unix systems are expected to have a dedicated userdata folder.
 				saved = StorageDevice.StorageRoot;
@@ -101,13 +101,15 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Gets a bool value indicating whether the instance has been disposed.
 		/// </summary>
-		public bool IsDisposed { get; private set; }
+		public bool IsDisposed { 
+			get;
+			private set;
+		}
 
 		/// <summary>
 		/// Returns the <see cref="StorageDevice"/> that holds logical files for the container.
 		/// </summary>
 		public StorageDevice StorageDevice {
-
 			get {return _device; }
 		}
 
@@ -132,7 +134,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(directory))
 			{
-				throw new ArgumentNullException ("Parameter directory must contain a value.");
+				throw new ArgumentNullException("Parameter directory must contain a value.");
 			}
 
 			// Relative, so combine with our path.
@@ -151,7 +153,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(file))
 			{
-				throw new ArgumentNullException ("Parameter file must contain a value.");
+				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
 			// Relative, so combine with our path.
@@ -169,7 +171,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(directory))
 			{
-				throw new ArgumentNullException ("Parameter directory must contain a value.");
+				throw new ArgumentNullException("Parameter directory must contain a value.");
 			}
 
 			// Relative, so combine with our path.
@@ -187,7 +189,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(file))
 			{
-				throw new ArgumentNullException ("Parameter file must contain a value.");
+				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
 			// Relative, so combine with our path.
@@ -207,7 +209,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(directory))
 			{
-				throw new ArgumentNullException ("Parameter directory must contain a value.");
+				throw new ArgumentNullException("Parameter directory must contain a value.");
 			}
 
 			// Relative, so combine with our path.
@@ -235,7 +237,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(file))
 			{
-				throw new ArgumentNullException ("Parameter file must contain a value.");
+				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
 			// Relative, so combine with our path.
@@ -286,7 +288,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(searchPattern))
 			{
-				throw new ArgumentNullException ("Parameter searchPattern must contain a value.");
+				throw new ArgumentNullException("Parameter searchPattern must contain a value.");
 			}
 
 			return Directory.GetFiles(_storagePath, searchPattern);
@@ -330,7 +332,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			if (string.IsNullOrEmpty(file))
 			{
-				throw new ArgumentNullException ("Parameter file must contain a value.");
+				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
 			// Relative, so combine with our path.
