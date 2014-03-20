@@ -1,78 +1,15 @@
 #region License
-/*
-Microsoft Public License (Ms-PL)
-MonoGame - Copyright © 2009-2011 The MonoGame Team
-
-All rights reserved.
-
-This license governs use of the accompanying software. If you use the software,
-you accept this license. If you do not accept the license, do not use the
-software.
-
-1. Definitions
-
-The terms "reproduce," "reproduction," "derivative works," and "distribution"
-have the same meaning here as under U.S. copyright law.
-
-A "contribution" is the original software, or any additions or changes to the
-software.
-
-A "contributor" is any person that distributes its contribution under this
-license.
-
-"Licensed patents" are a contributor's patent claims that read directly on its
-contribution.
-
-2. Grant of Rights
-
-(A) Copyright Grant- Subject to the terms of this license, including the
-license conditions and limitations in section 3, each contributor grants you a
-non-exclusive, worldwide, royalty-free copyright license to reproduce its
-contribution, prepare derivative works of its contribution, and distribute its
-contribution or any derivative works that you create.
-
-(B) Patent Grant- Subject to the terms of this license, including the license
-conditions and limitations in section 3, each contributor grants you a
-non-exclusive, worldwide, royalty-free license under its licensed patents to
-make, have made, use, sell, offer for sale, import, and/or otherwise dispose of
-its contribution in the software or derivative works of the contribution in the
-software.
-
-3. Conditions and Limitations
-
-(A) No Trademark License- This license does not grant you rights to use any
-contributors' name, logo, or trademarks.
-
-(B) If you bring a patent claim against any contributor over patents that you
-claim are infringed by the software, your patent license from such contributor
-to the software ends automatically.
-
-(C) If you distribute any portion of the software, you must retain all
-copyright, patent, trademark, and attribution notices that are present in the
-software.
-
-(D) If you distribute any portion of the software in source code form, you may
-do so only under this license by including a complete copy of this license with
-your distribution. If you distribute any portion of the software in compiled or
-object code form, you may only do so under a license that complies with this
-license.
-
-(E) The software is licensed "as-is." You bear the risk of using it. The
-contributors give no express warranties, guarantees or conditions. You may have
-additional consumer rights under your local laws which this license cannot
-change. To the extent permitted under your local laws, the contributors exclude
-the implied warranties of merchantability, fitness for a particular purpose and
-non-infringement.
-*/
-#endregion License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+#endregion
 
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 using System;
-
-#if WINRT
-using Windows.UI.ViewManagement;
-#endif
 
 namespace Microsoft.Xna.Framework
 {
@@ -90,21 +27,16 @@ namespace Microsoft.Xna.Framework
         #region Construction/Destruction
         public static GamePlatform Create(Game game)
         {
-#if SDL2
+            /* I suspect you may have an urge to put an #if in here for new
+             * GamePlatform implementations.
+             *
+             * DON'T.
+             *
+             * Determine this at runtime, or load dynamically.
+             * No amount of whining will get me to budge on this.
+             * -flibit
+             */
             return new SDL2_GamePlatform(game);
-#elif IOS
-            return new iOSGamePlatform(game);
-#elif ANDROID
-            return new AndroidGamePlatform(game);
-#elif PSM
-			return new PSSGamePlatform(game);
-#elif WINDOWS && DIRECTX
-            return new MonoGame.Framework.WinFormsGamePlatform(game);
-#elif WINDOWS_PHONE
-            return new MonoGame.Framework.WindowsPhone.WindowsPhoneGamePlatform(game);
-#elif WINRT
-            return new MetroGamePlatform(game);
-#endif
         }
 
         protected GamePlatform(Game game)
@@ -165,50 +97,6 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-#if WINDOWS_STOREAPP
-        private ApplicationViewState _viewState;
-        public ApplicationViewState ViewState
-        {
-            get { return _viewState; }
-            set
-            {
-                if (_viewState == value)
-                    return;
-
-                Raise(ViewStateChanged, new ViewStateChangedEventArgs(value));
-
-                _viewState = value;
-            }
-        }
-#endif
-
-#if ANDROID
-        private AndroidGameWindow _window;
-        public AndroidGameWindow Window
-        {
-            get { return _window; }
-            protected set
-            {
-                if (_window == null)
-                    TouchPanel.PrimaryWindow = value;
-
-                _window = value;
-            }
-        }
-#elif PSM
-        private PSSGameWindow _window;
-        public PSSGameWindow Window
-        {
-            get { return _window; }
-            protected set
-            {
-                if (_window == null)
-                    TouchPanel.PrimaryWindow = value;
-
-                _window = value;
-            }
-        }
-#else
         private GameWindow _window;
         public GameWindow Window
         {
@@ -226,7 +114,6 @@ namespace Microsoft.Xna.Framework
                 _window = value;
             }
         }
-#endif
   
         public virtual bool VSyncEnabled
         {
@@ -245,10 +132,6 @@ namespace Microsoft.Xna.Framework
         public event EventHandler<EventArgs> AsyncRunLoopEnded;
         public event EventHandler<EventArgs> Activated;
         public event EventHandler<EventArgs> Deactivated;
-
-#if WINDOWS_STOREAPP
-        public event EventHandler<ViewStateChangedEventArgs> ViewStateChanged;
-#endif
 
         private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
             where TEventArgs : EventArgs
@@ -284,9 +167,6 @@ namespace Microsoft.Xna.Framework
             {
                 var graphicsDeviceManager = Game.Services.GetService(typeof(IGraphicsDeviceManager)) as IGraphicsDeviceManager;			   
                 graphicsDeviceManager.CreateDevice();
-#if ANDROID
-                Window.TouchEnabled = true;
-#endif
             }
         }
 

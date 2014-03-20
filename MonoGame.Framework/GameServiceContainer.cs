@@ -1,4 +1,11 @@
 #region License
+/* FNA - XNA4 Reimplementation for Desktop Platforms
+ * Copyright 2009-2014 Ethan Lee and the MonoGame Team
+ *
+ * Released under the Microsoft Public License.
+ * See LICENSE for details.
+ */
+
 /*
 MIT License
 Copyright � 2006 The Mono.Xna Team
@@ -23,12 +30,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#endregion License
+#endregion
 
 using System;
-#if WINRT
-using System.Reflection;
-#endif
 using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework
@@ -48,11 +52,7 @@ namespace Microsoft.Xna.Framework
                 throw new ArgumentNullException("type");
             if (provider == null)
                 throw new ArgumentNullException("provider");
-#if WINRT
-            if (!type.GetTypeInfo().IsAssignableFrom(provider.GetType().GetTypeInfo()))
-#else
             if (!type.IsAssignableFrom(provider.GetType()))
-#endif
                 throw new ArgumentException("The provider does not match the specified service type!");
 
             services.Add(type, provider);

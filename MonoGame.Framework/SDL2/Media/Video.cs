@@ -7,10 +7,13 @@
  */
 #endregion
 
-#region VideoPlayer Graphics Define
-#if SDL2
+#region VIDEOPLAYER_OPENGL Option
+/* By default we use a small fragment shader to perform the YUV-RGBA conversion.
+ * If for some reason you need to use the software converter in TheoraPlay,
+ * comment out this define.
+ * -flibit
+ */
 #define VIDEOPLAYER_OPENGL
-#endif
 #endregion
 
 using System;
