@@ -7,29 +7,14 @@
  */
 #endregion
 
-using Microsoft.Xna.Framework;
+#region Using Statements
 using System;
 using System.IO;
-
 using System.Runtime.Remoting.Messaging;
+#endregion
 
 namespace Microsoft.Xna.Framework.Storage
 {
-
-	// The delegate must have the same signature as the method it will call asynchronously.
-	public delegate StorageDevice ShowSelectorAsynchronousShow(PlayerIndex player, int sizeInBytes,
-		int directoryCount);
-
-	/* The MonoTouch AOT cannot deal with nullable types in a delegate (or
-	 * at least not the straightforward implementation), so we define two
-	 * delegate types.
-	 */
-	public delegate StorageDevice ShowSelectorAsynchronousShowNoPlayer(int sizeInBytes,
-		int directoryCount);
-
-	// The delegate must have the same signature as the method it will call asynchronously.
-	public delegate StorageContainer OpenContainerAsynchronous(string displayName);
-
 	/// <summary>
 	/// Exposes a storage device for storing user data.
 	/// </summary>
@@ -39,31 +24,7 @@ namespace Microsoft.Xna.Framework.Storage
 	/// </remarks>
 	public sealed class StorageDevice
 	{
-
-		PlayerIndex? player;
-
-		int directoryCount;
-		private int DirectoryCount
-		{
-			get
-			{
-				return this.directoryCount;
-			}
-		}
-
-		StorageContainer storageContainer;
-
-		/// <summary>
-		/// Creates a new <see cref="StorageDevice"/> instance.
-		/// </summary>
-		/// <param name="player">The playerIndex of the player.</param>
-		/// <param name="sizeInBytes">Size of the storage device.</param>
-		/// <param name="directoryCount"></param>
-		internal StorageDevice(PlayerIndex? player, int sizeInBytes, int directoryCount)
-		{
-			this.player = player;
-			this.directoryCount = directoryCount;
-		}
+		#region Public Properties
 
 		/// <summary>
 		/// Returns the amount of free space.
@@ -72,16 +33,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// I do not know if the DriveInfo is is implemented on Mac or not thus the try catch.
-				try
-				{
-					return new DriveInfo(GetDevicePath).AvailableFreeSpace;
-				}
-				catch (Exception)
-				{
-					StorageDeviceHelper.Path = StorageRoot;
-					return StorageDeviceHelper.FreeSpace;
-				}
+				return new DriveInfo(GetDevicePath()).AvailableFreeSpace;
 			}
 		}
 
@@ -92,15 +44,7 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// I do not know if the DriveInfo is is implemented on Mac or not thus the try catch.
-				try
-				{
-					return new DriveInfo(GetDevicePath).IsReady;
-				}
-				catch (Exception)
-				{
-					return true;
-				}
+				return new DriveInfo(GetDevicePath()).IsReady;
 			}
 		}
 
@@ -111,50 +55,73 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// I do not know if the DriveInfo is is implemented on Mac or not thus the try catch.
-				try
-				{
-					// Not sure if this should be TotalSize or TotalFreeSize.
-					return new DriveInfo(GetDevicePath).TotalSize;
-				}
-				catch (Exception)
-				{
-					StorageDeviceHelper.Path = StorageRoot;
-					return StorageDeviceHelper.TotalSpace;
-				}
-
+				return new DriveInfo(GetDevicePath()).TotalSize;
 			}
 		}
 
-		string GetDevicePath
-		{
-			get
-			{
-				/* We may not need to store the StorageContainer in the future
-				 * when we get DeviceChanged events working.
-				 */
-				if (storageContainer == null)
-				{
-					return StorageRoot;
-				}
-				else
-				{
-					return storageContainer._storagePath;
-				}
-			}
-		}
+		#endregion
 
-		// TODO: Implement DeviceChanged when we having the graphical implementation.
+		#region Internal Variables
+
+		internal static readonly string storageRoot = GetStorageRoot();
+
+		#endregion
+
+		#region Private Variables
+
+		private PlayerIndex? devicePlayer;
+
+		private StorageContainer deviceContainer;
+
+		#endregion
+
+		#region Public Events
 
 		/// <summary>
 		/// Fired when a device is removed or inserted.
 		/// </summary>
 		public static event EventHandler<EventArgs> DeviceChanged;
 
-		private bool SuppressEventHandlerWarningsUntilEventsAreProperlyImplemented()
+		private void OnDeviceChanged()
 		{
-			return DeviceChanged != null;
+			if (DeviceChanged != null)
+			{
+				DeviceChanged(this, null);
+			}
 		}
+
+		#endregion
+
+		#region Private Delegates
+
+		// The delegate must have the same signature as the method it will call asynchronously.
+		private delegate StorageDevice ShowSelectorAsynchronousShow(
+			PlayerIndex? player,
+			int sizeInBytes,
+			int directoryCount
+		);
+
+		// The delegate must have the same signature as the method it will call asynchronously.
+		private delegate StorageContainer OpenContainerAsynchronous(string displayName);
+
+		#endregion
+
+		#region Internal Constructors
+
+		/// <summary>
+		/// Creates a new <see cref="StorageDevice"/> instance.
+		/// </summary>
+		/// <param name="player">The playerIndex of the player.</param>
+		/// <param name="sizeInBytes">Size of the storage device.</param>
+		/// <param name="directoryCount"></param>
+		internal StorageDevice(PlayerIndex? player, int sizeInBytes, int directoryCount)
+		{
+			devicePlayer = player;
+		}
+
+		#endregion
+
+		#region Public OpenContainer Methods
 
 		/// <summary>
 		/// Begins the open for a StorageContainer.
@@ -163,15 +130,11 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <param name="displayName">Name of file.</param>
 		/// <param name="callback">Method to call on completion.</param>
 		/// <param name="state">Request identifier object for callback (can be null).</param>
-		public IAsyncResult BeginOpenContainer(string displayName, AsyncCallback callback,
-			object state)
-		{
-			return OpenContainer(displayName, callback, state);
-
-		}
-
-		private IAsyncResult OpenContainer(string displayName, AsyncCallback callback, object state)
-		{
+		public IAsyncResult BeginOpenContainer(
+			string displayName,
+			AsyncCallback callback,
+			object state
+		) {
 			try
 			{
 				OpenContainerAsynchronous AsynchronousOpen = new OpenContainerAsynchronous(Open);
@@ -179,92 +142,9 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 			finally
 			{
+				// Hmm....
 			}
 		}
-
-		// Private method to handle the creation of the StorageDevice.
-		private StorageContainer Open(string displayName)
-		{
-			storageContainer = new StorageContainer(this, displayName, this.player);
-			return storageContainer;
-		}
-
-		/// <summary>
-		/// Begin process to display the StorageDevice selector UI.
-		/// </summary>
-		/// <returns>The show selector.</returns>
-		/// <param name="callback">Method to invoke when device is selected by player.</param>
-		/// <param name="state">Request identifier object for callback (can be null).</param>
-		public static IAsyncResult BeginShowSelector(AsyncCallback callback, object state)
-		{
-			return BeginShowSelector(0, 0, callback, state);
-		}
-
-		/// <summary>
-		/// Begin process to display the StorageDevice selector UI.
-		/// </summary>
-		/// <returns>The show selector.</returns>
-		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
-		/// <param name="callback">Method to invoke when device is selected by player.</param>
-		/// <param name="state">Request identifier object for callback (can be null).</param>
-		public static IAsyncResult BeginShowSelector(PlayerIndex player, AsyncCallback callback,
-			object state)
-		{
-			return BeginShowSelector(player, 0, 0, callback, state);
-		}
-
-		/// <summary>
-		/// Begin process to display the StorageDevice selector UI.
-		/// </summary>
-		/// <returns>The show selector.</returns>
-		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
-		/// <param name="directoryCount">Number of directories to write.</param>
-		/// <param name="callback">Method to invoke when device is selected by player.</param>
-		/// <param name="state">Request identifier object for callback (can be null).</param>
-		public static IAsyncResult BeginShowSelector(int sizeInBytes, int directoryCount,
-			AsyncCallback callback, object state)
-		{
-			ShowSelectorAsynchronousShowNoPlayer del = new ShowSelectorAsynchronousShowNoPlayer(Show);
-
-			return del.BeginInvoke(sizeInBytes, directoryCount, callback, state);
-		}
-
-		/// <summary>
-		/// Begin process to display the StorageDevice selector UI.
-		/// </summary>
-		/// <returns>The show selector.</returns>
-		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
-		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
-		/// <param name="directoryCount">Number of directories to write.</param>
-		/// <param name="callback">Method to invoke when device is selected by player.</param>
-		/// <param name="state">Request identifier object for callback (can be null).</param>
-		public static IAsyncResult BeginShowSelector(PlayerIndex player, int sizeInBytes,
-			int directoryCount, AsyncCallback callback, object state)
-		{
-			ShowSelectorAsynchronousShow del = new ShowSelectorAsynchronousShow(Show);
-			return del.BeginInvoke(player, sizeInBytes, directoryCount, callback, state);
-		}
-
-		// Private method to handle the creation of the StorageDevice.
-		private static StorageDevice Show(PlayerIndex player, int sizeInBytes, int directoryCount)
-		{
-			return new StorageDevice(player, sizeInBytes, directoryCount);
-		}
-
-		private static StorageDevice Show(int sizeInBytes, int directoryCount)
-		{
-			return new StorageDevice(null, sizeInBytes, directoryCount);
-		}
-
-		/*
-		// Parameters:
-		//   titleName:
-		//     The name of the storage container to delete.
-		public void DeleteContainer(string titleName)
-		{
-			throw new NotImplementedException();
-		}
-		*/
 
 		/// <summary>
 		/// Ends the open container process.
@@ -300,7 +180,87 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			return returnValue;
+		}
 
+		#endregion
+
+		#region Public ShowSelector Methods
+
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
+		public static IAsyncResult BeginShowSelector(
+			AsyncCallback callback,
+			object state
+		) {
+			return BeginShowSelector(
+				0,
+				0,
+				callback,
+				state
+			);
+		}
+
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
+		public static IAsyncResult BeginShowSelector(
+			PlayerIndex player,
+			AsyncCallback callback,
+			object state
+		) {
+			return BeginShowSelector(
+				player,
+				0,
+				0,
+				callback,
+				state
+			);
+		}
+
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
+		/// <param name="directoryCount">Number of directories to write.</param>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
+		public static IAsyncResult BeginShowSelector(
+			int sizeInBytes,
+			int directoryCount,
+			AsyncCallback callback,
+			object state
+		) {
+			ShowSelectorAsynchronousShow del = new ShowSelectorAsynchronousShow(Show);
+			return del.BeginInvoke(null, sizeInBytes, directoryCount, callback, state);
+		}
+
+		/// <summary>
+		/// Begin process to display the StorageDevice selector UI.
+		/// </summary>
+		/// <returns>The show selector.</returns>
+		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
+		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
+		/// <param name="directoryCount">Number of directories to write.</param>
+		/// <param name="callback">Method to invoke when device is selected by player.</param>
+		/// <param name="state">Request identifier object for callback (can be null).</param>
+		public static IAsyncResult BeginShowSelector(
+			PlayerIndex player,
+			int sizeInBytes,
+			int directoryCount,
+			AsyncCallback callback,
+			object state
+		) {
+			ShowSelectorAsynchronousShow del = new ShowSelectorAsynchronousShow(Show);
+			return del.BeginInvoke(player, sizeInBytes, directoryCount, callback, state);
 		}
 
 		/// <summary>
@@ -310,7 +270,6 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <param name="result">The result of BeginShowSelector.</param>
 		public static StorageDevice EndShowSelector(IAsyncResult result)
 		{
-
 			if (!result.IsCompleted)
 			{
 				// Wait for the WaitHandle to become signaled.
@@ -322,6 +281,7 @@ namespace Microsoft.Xna.Framework.Storage
 				{
 				}
 			}
+
 			// Retrieve the delegate.
 			AsyncResult asyncResult = (AsyncResult) result;
 
@@ -331,51 +291,99 @@ namespace Microsoft.Xna.Framework.Storage
 			{
 				return (del as ShowSelectorAsynchronousShow).EndInvoke (result);
 			}
-			else if (del is ShowSelectorAsynchronousShowNoPlayer)
-			{
-				return (del as ShowSelectorAsynchronousShowNoPlayer).EndInvoke (result);
-			}
 			else
 			{
 				throw new ArgumentException("result");
 			}
 		}
 
-		internal static string StorageRoot
+		#endregion
+
+		#region Public StorageContainer Delete Method
+
+		// Parameters:
+		//   titleName:
+		//     The name of the storage container to delete.
+		public void DeleteContainer(string titleName)
 		{
-			get
-			{
-				if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
-				{
-					return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-				}
-				if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
-				{
-					string osConfigDir = Environment.GetEnvironmentVariable("HOME");
-					if (String.IsNullOrEmpty(osConfigDir))
-					{
-						return "."; // Oh well.
-					}
-					osConfigDir += "/Library/Application Support";
-					return osConfigDir;
-				}
-				if (SDL2_GamePlatform.OSVersion.Equals("Linux"))
-				{
-					// Assuming a non-OSX Unix platform will follow the XDG. Which it should.
-					string osConfigDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-					if (String.IsNullOrEmpty(osConfigDir))
-					{
-						osConfigDir = Environment.GetEnvironmentVariable("HOME");
-						if (String.IsNullOrEmpty(osConfigDir))
-						{
-							return ".";	// Oh well.
-						}
-						osConfigDir += "/.local/share";
-					}
-					return osConfigDir;
-				}
-				throw new Exception("StorageDevice: SDL2 platform not handled!");
-			}
+			throw new NotImplementedException();
 		}
+
+		#endregion
+
+		#region Private OpenContainer Async Method
+
+		// Private method to handle the creation of the StorageDevice.
+		private StorageContainer Open(string displayName)
+		{
+			deviceContainer = new StorageContainer(this, displayName, devicePlayer);
+			return deviceContainer;
+		}
+
+		#endregion
+
+		#region Private ShowSelector Async Method
+
+		// Private method to handle the creation of the StorageDevice.
+		private static StorageDevice Show(PlayerIndex? player, int sizeInBytes, int directoryCount)
+		{
+			return new StorageDevice(player, sizeInBytes, directoryCount);
+		}
+
+		#endregion
+
+		#region Private Directory Path Method
+
+		private string GetDevicePath()
+		{
+			/* We may not need to store the StorageContainer in the future
+			 * when we get DeviceChanged events working.
+			 */
+			if (deviceContainer == null)
+			{
+				return storageRoot;
+			}
+			return deviceContainer.storagePath;
+		}
+
+		#endregion
+
+		#region Private Static OS User Directory Path Method
+
+		private static string GetStorageRoot()
+		{
+			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+			{
+				return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			}
+			if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			{
+				string osConfigDir = Environment.GetEnvironmentVariable("HOME");
+				if (String.IsNullOrEmpty(osConfigDir))
+				{
+					return "."; // Oh well.
+				}
+				osConfigDir += "/Library/Application Support";
+				return osConfigDir;
+			}
+			if (SDL2_GamePlatform.OSVersion.Equals("Linux"))
+			{
+				// Assuming a non-OSX Unix platform will follow the XDG. Which it should.
+				string osConfigDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+				if (String.IsNullOrEmpty(osConfigDir))
+				{
+					osConfigDir = Environment.GetEnvironmentVariable("HOME");
+					if (String.IsNullOrEmpty(osConfigDir))
+					{
+						return ".";	// Oh well.
+					}
+					osConfigDir += "/.local/share";
+				}
+				return osConfigDir;
+			}
+			throw new Exception("StorageDevice: SDL2 platform not handled!");
+		}
+
+		#endregion
 	}
 }

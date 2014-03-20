@@ -391,7 +391,6 @@
     <Compile Include="GamerServices\SignedInGamer.cs" />
     <Compile Include="GamerServices\Guide.cs" />
     <Compile Include="GamerServices\MonoGameGamerServicesHelper.cs" />
-    <Compile Include="Storage\StorageDeviceHelper.cs" />
     <Compile Include="GamerServices\GuideAlreadyVisibleException.cs" />
     <Compile Include="Graphics\Vertices\VertexBufferBinding.cs" />
     <Compile Include="Audio\CueData.cs" />

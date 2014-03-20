@@ -7,12 +7,10 @@
  */
 #endregion
 
-#region Assembly Microsoft.Xna.Framework.Storage.dll, v4.0.30319
-// C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Storage.dll
-#endregion
-using Microsoft.Xna.Framework;
+#region Using Statements
 using System;
 using System.IO;
+#endregion
 
 namespace Microsoft.Xna.Framework.Storage
 {
@@ -35,71 +33,15 @@ namespace Microsoft.Xna.Framework.Storage
 	/// </remarks>
 	public class StorageContainer : IDisposable
 	{
-		internal readonly string _storagePath;
-		private readonly StorageDevice _device;
-		private readonly string _name;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Microsoft.Xna.Framework.Storage.StorageContainer"/> class.
-		/// </summary>
-		/// <param name='device'>The attached storage-device.</param>
-		/// <param name='name'> name.</param>
-		/// <param name='playerIndex'>The player index of the player to save the data.</param>
-		internal StorageContainer(StorageDevice device, string name, PlayerIndex? playerIndex)
-		{
-			if (string.IsNullOrEmpty(name))
-			{
-				throw new ArgumentNullException("A title name has to be provided in parameter name.");
-			}
-
-			_device = device;
-			_name = name;
-
-			// From the examples the root is based on MyDocuments folder
-			string saved;
-			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
-			{
-				saved = Path.Combine(StorageDevice.StorageRoot, "SavedGames");
-			}
-			else if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") ||
-					SDL2_GamePlatform.OSVersion.Equals("Linux") )
-			{
-				// Unix systems are expected to have a dedicated userdata folder.
-				saved = StorageDevice.StorageRoot;
-			}
-			else
-			{
-				throw new Exception("StorageContainer: SDL2 platform not handled!");
-			}
-			_storagePath = Path.Combine(saved, name);
-
-			string playerSave = string.Empty;
-			if (playerIndex.HasValue)
-			{
-				playerSave = Path.Combine(_storagePath, "Player" + (int) playerIndex.Value);
-			}
-
-			if (!string.IsNullOrEmpty(playerSave))
-			{
-				_storagePath = Path.Combine(_storagePath, "Player" + (int)playerIndex);
-			}
-
-			// Create the "device", if need be.
-			if (!Directory.Exists(_storagePath))
-			{
-				Directory.CreateDirectory(_storagePath);
-			}
-		}
+		#region Public Properties
 
 		/// <summary>
 		/// Returns display name of the title.
 		/// </summary>
 		public string DisplayName
 		{
-			get
-			{
-				return _name;
-			}
+			get;
+			private set;
 		}
 
 		/// <summary>
@@ -116,13 +58,19 @@ namespace Microsoft.Xna.Framework.Storage
 		/// </summary>
 		public StorageDevice StorageDevice
 		{
-			get
-			{
-				return _device;
-			}
+			get;
+			private set;
 		}
 
-		// TODO: Implement the Disposing function.  Find sample first.
+		#endregion
+
+		#region Internal Variables
+
+		internal readonly string storagePath;
+
+		#endregion
+
+		#region Events
 
 		/// <summary>
 		/// Fired when <see cref="Dispose"/> is called or object if finalized or collected by the
@@ -130,10 +78,84 @@ namespace Microsoft.Xna.Framework.Storage
 		/// </summary>
 		public event EventHandler<EventArgs> Disposing;
 
-		private bool SuppressEventHandlerWarningsUntilEventsAreProperlyImplemented()
-		{
-			return Disposing != null;
+		#endregion
+
+		#region Internal Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Microsoft.Xna.Framework.Storage.StorageContainer"/> class.
+		/// </summary>
+		/// <param name='device'>The attached storage-device.</param>
+		/// <param name='name'> name.</param>
+		/// <param name='playerIndex'>The player index of the player to save the data.</param>
+		internal StorageContainer(
+			StorageDevice device,
+			string name,
+			PlayerIndex? playerIndex
+		) {
+			if (string.IsNullOrEmpty(name))
+			{
+				throw new ArgumentNullException("A title name has to be provided in parameter name.");
+			}
+
+			StorageDevice = device;
+			DisplayName = name;
+
+			// From the examples the root is based on MyDocuments folder
+			string saved;
+			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+			{
+				saved = Path.Combine(StorageDevice.storageRoot, "SavedGames");
+			}
+			else if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") ||
+					SDL2_GamePlatform.OSVersion.Equals("Linux") )
+			{
+				// Unix systems are expected to have a dedicated userdata folder.
+				saved = StorageDevice.storageRoot;
+			}
+			else
+			{
+				throw new Exception("StorageContainer: SDL2 platform not handled!");
+			}
+			storagePath = Path.Combine(saved, name);
+
+			string playerSave = string.Empty;
+			if (playerIndex.HasValue)
+			{
+				playerSave = Path.Combine(storagePath, "Player" + (int) playerIndex.Value);
+			}
+
+			if (!string.IsNullOrEmpty(playerSave))
+			{
+				storagePath = Path.Combine(storagePath, "Player" + (int)playerIndex);
+			}
+
+			// Create the "device", if need be.
+			if (!Directory.Exists(storagePath))
+			{
+				Directory.CreateDirectory(storagePath);
+			}
 		}
+
+		#endregion
+
+		#region Public Dispose Method
+
+		/// <summary>
+		/// Disposes un-managed objects referenced by this object.
+		/// </summary>
+		public void Dispose()
+		{
+			if (Disposing != null)
+			{
+				Disposing(this, null);
+			}
+			IsDisposed = true;
+		}
+
+		#endregion
+
+		#region Public Create Methods
 
 		/// <summary>
 		/// Creates a new directory in the storage-container.
@@ -147,7 +169,7 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			// Relative, so combine with our path.
-			string dirPath = Path.Combine(_storagePath, directory);
+			string dirPath = Path.Combine(storagePath, directory);
 
 			// Now let's try to create it.
 			Directory.CreateDirectory(dirPath);
@@ -166,11 +188,15 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			// Relative, so combine with our path.
-			string filePath= Path.Combine(_storagePath, file);
+			string filePath = Path.Combine(storagePath, file);
 
 			// Return a new file with read/write access.
 			return File.Create(filePath);
 		}
+
+		#endregion
+
+		#region Public Delete Methods
 
 		/// <summary>
 		/// Deletes specified directory for the storage-container.
@@ -184,7 +210,7 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			// Relative, so combine with our path.
-			string dirPath = Path.Combine(_storagePath, directory);
+			string dirPath = Path.Combine(storagePath, directory);
 
 			// Now let's try to delete it.
 			Directory.Delete(dirPath);
@@ -202,12 +228,15 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			// Relative, so combine with our path.
-			string filePath= Path.Combine(_storagePath, file);
+			string filePath = Path.Combine(storagePath, file);
 
 			// Now let's try to delete it.
 			File.Delete(filePath);
 		}
 
+		#endregion
+
+		#region Public Exists Methods
 
 		/// <summary>
 		/// Returns true if specified path exists in the storage-container, false otherwise.
@@ -222,19 +251,9 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			// Relative, so combine with our path.
-			string dirPath = Path.Combine(_storagePath, directory);
+			string dirPath = Path.Combine(storagePath, directory);
 
 			return Directory.Exists(dirPath);
-		}
-
-		/// <summary>
-		/// Disposes un-managed objects referenced by this object.
-		/// </summary>
-		public void Dispose()
-		{
-
-			// Fill this in when we figure out what we should be disposing.
-			IsDisposed = true;
 		}
 
 		/// <summary>
@@ -250,11 +269,15 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 
 			// Relative, so combine with our path.
-			string filePath= Path.Combine(_storagePath, file);
+			string filePath = Path.Combine(storagePath, file);
 
 			// Return a new file with read/write access.
 			return File.Exists(filePath);
 		}
+
+		#endregion
+
+		#region Public GetNames Methods
 
 		/// <summary>
 		/// Returns list of directory names in the storage-container.
@@ -262,10 +285,9 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <returns>List of directory names.</returns>
 		public string[] GetDirectoryNames()
 		{
-			return Directory.GetDirectories(_storagePath);
+			return Directory.GetDirectories(storagePath);
 		}
 
-		/*
 		/// <summary>
 		/// Returns list of directory names with given search pattern.
 		/// </summary>
@@ -275,9 +297,13 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <returns>List of matched directory names.</returns>
 		public string[] GetDirectoryNames(string searchPattern)
 		{
-			throw new NotImplementedException();
+			if (string.IsNullOrEmpty(searchPattern))
+			{
+				throw new ArgumentNullException("Parameter searchPattern must contain a value.");
+			}
+
+			return Directory.GetDirectories(storagePath, searchPattern);
 		}
-		*/
 
 		/// <summary>
 		/// Returns list of file names in the storage-container.
@@ -285,7 +311,7 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <returns>List of file names.</returns>
 		public string[] GetFileNames()
 		{
-			return Directory.GetFiles(_storagePath);
+			return Directory.GetFiles(storagePath);
 		}
 
 		/// <summary>
@@ -300,9 +326,12 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter searchPattern must contain a value.");
 			}
 
-			return Directory.GetFiles(_storagePath, searchPattern);
+			return Directory.GetFiles(storagePath, searchPattern);
 		}
 
+		#endregion
+
+		#region Public OpenFile Methods
 
 		/// <summary>
 		/// Opens a file contained in storage-container.
@@ -310,9 +339,16 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <param name="file">Relative path of the file.</param>
 		/// <param name="fileMode"><see cref="FileMode"/> that specifies how the file is opened.</param>
 		/// <returns><see cref="Stream"/> object for the opened file.</returns>
-		public Stream OpenFile(string file, FileMode fileMode)
-		{
-			return OpenFile(file, fileMode, FileAccess.ReadWrite, FileShare.ReadWrite);
+		public Stream OpenFile(
+			string file,
+			FileMode fileMode
+		) {
+			return OpenFile(
+				file,
+				fileMode,
+				FileAccess.ReadWrite,
+				FileShare.ReadWrite
+			);
 		}
 
 		/// <summary>
@@ -322,9 +358,17 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <param name="fileMode"><see cref="FileMode"/> that specifies how the file is opened.</param>
 		/// <param name="fileAccess"><see cref="FileAccess"/> that specifies access mode.</param>
 		/// <returns><see cref="Stream"/> object for the opened file.</returns>
-		public Stream OpenFile(string file, FileMode fileMode, FileAccess fileAccess)
-		{
-			return OpenFile(file, fileMode, fileAccess, FileShare.ReadWrite);
+		public Stream OpenFile(
+			string file,
+			FileMode fileMode,
+			FileAccess fileAccess
+		) {
+			return OpenFile(
+				file,
+				fileMode,
+				fileAccess,
+				FileShare.ReadWrite
+			);
 		}
 
 		/// <summary>
@@ -336,18 +380,23 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <param name="fileShare">A bitwise combination of <see cref="FileShare"/>
 		/// enumeration values that specifies access modes for other stream objects.</param>
 		/// <returns><see cref="Stream"/> object for the opened file.</returns>
-		public Stream OpenFile(string file, FileMode fileMode, FileAccess fileAccess,
-			FileShare fileShare)
-		{
+		public Stream OpenFile(
+			string file,
+			FileMode fileMode,
+			FileAccess fileAccess,
+			FileShare fileShare
+		) {
 			if (string.IsNullOrEmpty(file))
 			{
 				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
 			// Relative, so combine with our path.
-			string filePath= Path.Combine(_storagePath, file);
+			string filePath = Path.Combine(storagePath, file);
 
 			return File.Open(filePath, fileMode, fileAccess, fileShare);
 		}
+
+		#endregion
 	}
 }
