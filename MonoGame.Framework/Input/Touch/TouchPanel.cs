@@ -22,7 +22,11 @@ namespace Microsoft.Xna.Framework.Input.Touch
     /// </summary>
     public static class TouchPanel
     {
+        #region Internal Static Variables
         internal static GameWindow PrimaryWindow;
+        #endregion
+
+        #region Public Static Methods
 
         /// <summary>
         /// Gets the current state of the touch panel.
@@ -41,16 +45,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
         public static TouchPanelCapabilities GetCapabilities()
         {
             return PrimaryWindow.TouchPanelState.GetCapabilities();
-        }
-
-        internal static void AddEvent(int id, TouchLocationState state, Vector2 position)
-        {
-            AddEvent(id, state, position, false);
-        }
-
-        internal static void AddEvent(int id, TouchLocationState state, Vector2 position, bool isMouse)
-        {
-            PrimaryWindow.TouchPanelState.AddEvent(id, state, position, isMouse);
         }
 
         /// <summary>
@@ -127,5 +121,22 @@ namespace Microsoft.Xna.Framework.Input.Touch
         {
             get { return PrimaryWindow.TouchPanelState.IsGestureAvailable; }
         }
+
+        #endregion // Public Static Methods
+
+        #region Internal Static Methods
+
+        internal static void AddEvent(int id, TouchLocationState state, Vector2 position)
+        {
+            AddEvent(id, state, position, false);
+        }
+
+        internal static void AddEvent(int id, TouchLocationState state, Vector2 position, bool isMouse)
+        {
+            PrimaryWindow.TouchPanelState.AddEvent(id, state, position, isMouse);
+        }
+
+        #endregion
+
     }
 }
