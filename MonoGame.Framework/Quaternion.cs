@@ -8,7 +8,7 @@
 
 /*
 MIT License
-Copyright © 2006 The Mono.Xna Team
+Copyright (C) 2006 The Mono.Xna Team
 
 All rights reserved.
 
@@ -99,7 +99,7 @@ namespace Microsoft.Xna.Framework
 			result.W = quaternion1.W + quaternion2.W;
         }
 		
-		//Funcion añadida Syderis
+		//Funcion a?adida Syderis
 		public static Quaternion Concatenate(Quaternion value1, Quaternion value2)
 		{
 			 Quaternion quaternion;
@@ -123,7 +123,7 @@ namespace Microsoft.Xna.Framework
 
 		}
 		
-		//Añadida por Syderis
+		//A?adida por Syderis
 		public static void Concatenate(ref Quaternion value1, ref Quaternion value2, out Quaternion result)
 		{
 		    float x = value2.X;
@@ -144,7 +144,7 @@ namespace Microsoft.Xna.Framework
 		    result.W = (w * num) - num9;
 		}
 		
-		//Añadida por Syderis
+		//A?adida por Syderis
 		public void Conjugate()
 		{
 			this.X = -this.X;
@@ -152,7 +152,7 @@ namespace Microsoft.Xna.Framework
 			this.Z = -this.Z;
 		}
 		
-		//Añadida por Syderis
+		//A?adida por Syderis
 		public static Quaternion Conjugate(Quaternion value)
 		{
 			Quaternion quaternion;
@@ -163,7 +163,7 @@ namespace Microsoft.Xna.Framework
 			return quaternion;
 		}
 		
-		//Añadida por Syderis
+		//A?adida por Syderis
 		public static void Conjugate(ref Quaternion value, out Quaternion result)
 		{
 			result.X = -value.X;
