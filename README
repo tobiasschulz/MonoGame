@@ -9,6 +9,18 @@ License
 -------
 MG-SDL2 is released under the Microsoft Public License. See LICENSE for details.
 
+MG-SDL2 uses code from the Mono.Xna project, released under the MIT license.
+See monoxna.LICENSE for details.
+
+MG-SDL2 uses code from the SilverSprite project, released under the MIT license.
+See silversprite.LICENSE for details.
+
+MG-SDL2 uses code from the libmspack project, released under a dual MSPL/LGPL
+license. See lzxdecoder.LICENSE for details.
+
+MG-SDL2 uses code from the unxwb project, specially released under the MonoGame
+project license. See unxwb.LICENSE for details.
+
 Roadmap
 -------
 To see the current roadmap for MonoGame-SDL2, see the Github issues page:
