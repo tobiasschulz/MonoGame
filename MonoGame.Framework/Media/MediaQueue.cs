@@ -71,7 +71,11 @@ namespace Microsoft.Xna.Framework.Media
 			}
 			else
 			{
-				_activeSongIndex = (int) MathHelper.Clamp(_activeSongIndex + direction, 0, songs.Count - 1);
+				_activeSongIndex = (int) MathHelper.Clamp(
+					_activeSongIndex + direction,
+					0,
+					songs.Count - 1
+				);
 			}
 
 			return songs[_activeSongIndex];

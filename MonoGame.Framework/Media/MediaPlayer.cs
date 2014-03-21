@@ -52,7 +52,9 @@ namespace Microsoft.Xna.Framework.Media
 				_isMuted = value;
 
 				if (_queue.Count == 0)
+				{
 					return;
+				}
 
 				float newVolume = value ? 0.0f : _volume;
 				_queue.SetVolume(newVolume);
