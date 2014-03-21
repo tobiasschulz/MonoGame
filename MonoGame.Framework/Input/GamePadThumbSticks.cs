@@ -7,23 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework;
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
     public struct GamePadThumbSticks
     {
-        public enum GateType
-        {
-            None,
-            Round,
-            Square
-        };
-        public static GateType Gate = GateType.Round;
 
-        Vector2 left;
-        Vector2 right;
+        #region Public Properties
 
         public Vector2 Left
         {
@@ -82,11 +76,39 @@ namespace Microsoft.Xna.Framework.Input
             }
         }
 
-		public GamePadThumbSticks(Vector2 leftPosition, Vector2 rightPosition):this()
+        #endregion
+
+        #region Public Variables and GateType Enum
+
+        public enum GateType
+        {
+            None,
+            Round,
+            Square
+        };
+
+        public static GateType Gate = GateType.Round;
+
+        #endregion
+
+        #region Private Variables
+
+        Vector2 left;
+        Vector2 right;
+
+        #endregion
+
+        #region Public Constructor
+
+        public GamePadThumbSticks(Vector2 leftPosition, Vector2 rightPosition):this()
 		{
 			Left = leftPosition;
 			Right = rightPosition;
 		}
+
+        #endregion
+
+        #region Internal Methods
 
         internal void ApplyDeadZone(GamePadDeadZone dz, float size)
         {
@@ -112,6 +134,10 @@ namespace Microsoft.Xna.Framework.Input
                     break;
             }
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Determines whether two specified instances of <see cref="GamePadThumbSticks"/> are equal.
@@ -150,5 +176,8 @@ namespace Microsoft.Xna.Framework.Input
         {
             return this.Left.GetHashCode () + 37 * this.Right.GetHashCode ();
         }
+
+        #endregion
+
     }
 }

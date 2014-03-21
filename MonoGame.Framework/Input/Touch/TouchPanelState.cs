@@ -7,15 +7,93 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input.Touch
 {
     public class TouchPanelState
     {
+
+        #region Public Properties
+
+        /// <summary>
+        /// The window handle of the touch panel. Purely for Xna compatibility.
+        /// </summary>
+        public IntPtr WindowHandle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display height of the touch panel.
+        /// </summary>
+        public int DisplayHeight
+        {
+            get
+            {
+                return _displaySize.Y;
+            }
+            set
+            {
+                _displaySize.Y = value;
+                UpdateTouchScale();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the display orientation of the touch panel.
+        /// </summary>
+        public DisplayOrientation DisplayOrientation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display width of the touch panel.
+        /// </summary>
+        public int DisplayWidth
+        {
+            get
+            {
+                return _displaySize.X;
+            }
+            set
+            {
+                _displaySize.X = value;
+                UpdateTouchScale();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets enabled gestures.
+        /// </summary>
+        public GestureType EnabledGestures { get; set; }
+
+        public bool EnableMouseTouchPoint { get; set; }
+
+        public bool EnableMouseGestures { get; set; }
+
+        /// <summary>
+        /// Returns true if a touch gesture is available.
+        /// </summary>
+        public bool IsGestureAvailable
+        {
+            get
+            {
+                // Process the pending gesture events.
+                while (_gestureEvents.Count > 0)
+                {
+                    var stateChanged = Refresh(true, _gestureState, _gestureEvents);
+                    UpdateGestures(stateChanged);
+                }
+
+                return GestureList.Count > 0;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
         /// <summary>
         /// The maximum number of events to allow in the touch or gesture event lists.
         /// </summary>
@@ -68,21 +146,61 @@ namespace Microsoft.Xna.Framework.Input.Touch
         /// </summary>
         private readonly Dictionary<int, int> _touchIds = new Dictionary<int, int>();
 
-        internal readonly Queue<GestureSample> GestureList = new Queue<GestureSample>();
-
         private TouchPanelCapabilities Capabilities = new TouchPanelCapabilities();
 
-        internal readonly GameWindow Window;
+        #endregion
 
+        #region Gesture Recognition Private Variables
+
+        /// <summary>
+        /// Maximum distance a touch location can wiggle and 
+        /// not be considered to have moved.
+        /// </summary>
+        private const float TapJitterTolerance = 35.0f;
+
+        private static readonly TimeSpan _maxTicksToProcessHold = TimeSpan.FromMilliseconds(1024);
+
+        /// <summary>
+        /// The pinch touch locations.
+        /// </summary>
+        private readonly TouchLocation[] _pinchTouch = new TouchLocation[2];
+
+        /// <summary>
+        /// If true the pinch touch locations are valid and
+        /// a pinch gesture has begun.
+        /// </summary>
+        private bool _pinchGestureStarted;
+
+        /// <summary>
+        /// Used to disable emitting of tap gestures.
+        /// </summary>
+        bool _tapDisabled;
+
+        /// <summary>
+        /// Used to disable emitting of hold gestures.
+        /// </summary>
+        bool _holdDisabled;
+
+        private TouchLocation _lastTap;
+
+        private GestureType _dragGestureStarted = GestureType.None;
+
+        #endregion
+
+        #region Internal Variables and Constructor
+
+        internal readonly Queue<GestureSample> GestureList = new Queue<GestureSample>();
+
+        internal readonly GameWindow Window;
+        
         internal TouchPanelState(GameWindow window)
         {
             Window = window;
         }
 
-        /// <summary>
-        /// The window handle of the touch panel. Purely for Xna compatibility.
-        /// </summary>
-        public IntPtr WindowHandle { get; set; }
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns capabilities of touch panel device.
@@ -93,6 +211,30 @@ namespace Microsoft.Xna.Framework.Input.Touch
             Capabilities.Initialize();
             return Capabilities;
         }
+
+        public TouchCollection GetState()
+        {
+            // Process the touch state.
+            var consumeState = true;
+            while (Refresh(consumeState, _touchState, _touchEvents))
+                consumeState = false;
+
+            return new TouchCollection(_touchState.ToArray());
+        }
+
+        /// <summary>
+        /// Returns the next available gesture on touch panel device.
+        /// </summary>
+        /// <returns><see cref="GestureSample"/></returns>
+        public GestureSample ReadGesture()
+        {
+            // Return the next gesture.
+            return GestureList.Dequeue();
+        }
+
+        #endregion
+
+        #region Internal Methods
 
         internal bool Refresh(bool consumeState, List<TouchLocation> state, List<TouchLocation> events)
         {
@@ -173,16 +315,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             return stateChanged;
         }
 
-        public TouchCollection GetState()
-        {
-            // Process the touch state.
-            var consumeState = true;
-            while (Refresh(consumeState, _touchState, _touchEvents))
-                consumeState = false;
-
-            return new TouchCollection(_touchState.ToArray());
-        }
-
         internal void AddEvent(int id, TouchLocationState state, Vector2 position)
         {
             AddEvent(id, state, position, false);
@@ -253,16 +385,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
                 _touchIds.Remove(id);
         }
 
-        private void UpdateTouchScale()
-        {
-            // Get the window size.
-            var windowSize = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height);
-
-            // Recalculate the touch scale.
-            _touchScale = new Vector2(  _displaySize.X / windowSize.X,
-                                        _displaySize.Y / windowSize.Y);
-        }
-
         /// <summary>
         /// This will release all touch locations.  It should only be 
         /// called on platforms where touch state is reset all at once.
@@ -289,116 +411,28 @@ namespace Microsoft.Xna.Framework.Input.Touch
             _touchIds.Clear();
         }
 
-        /// <summary>
-        /// Gets or sets the display height of the touch panel.
-        /// </summary>
-        public int DisplayHeight
+        #endregion
+
+        #region Private Methods
+
+        private void UpdateTouchScale()
         {
-            get
-            {
-                return _displaySize.Y;
-            }
-            set
-            {
-                _displaySize.Y = value;
-                UpdateTouchScale();
-            }
+            // Get the window size.
+            var windowSize = new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height);
+
+            // Recalculate the touch scale.
+            _touchScale = new Vector2(_displaySize.X / windowSize.X,
+                                        _displaySize.Y / windowSize.Y);
         }
 
-        /// <summary>
-        /// Gets or sets the display orientation of the touch panel.
-        /// </summary>
-        public DisplayOrientation DisplayOrientation { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Gets or sets the display width of the touch panel.
-        /// </summary>
-        public int DisplayWidth
-        {
-            get
-            {
-                return _displaySize.X;
-            }
-            set
-            {
-                _displaySize.X = value;
-                UpdateTouchScale();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets enabled gestures.
-        /// </summary>
-        public GestureType EnabledGestures { get; set; }
-
-        public bool EnableMouseTouchPoint { get; set; }
-
-        public bool EnableMouseGestures { get; set; }
-
-        /// <summary>
-        /// Returns true if a touch gesture is available.
-        /// </summary>
-        public bool IsGestureAvailable
-        {
-            get
-            {
-                // Process the pending gesture events.
-                while (_gestureEvents.Count > 0)
-                {
-                    var stateChanged = Refresh(true, _gestureState, _gestureEvents);
-                    UpdateGestures(stateChanged);
-                }
-
-                return GestureList.Count > 0;
-            }
-        }
-
-        /// <summary>
-        /// Returns the next available gesture on touch panel device.
-        /// </summary>
-        /// <returns><see cref="GestureSample"/></returns>
-        public GestureSample ReadGesture()
-        {
-            // Return the next gesture.
-            return GestureList.Dequeue();
-        }
-
-        #region Gesture Recognition
-
-        /// <summary>
-        /// Maximum distance a touch location can wiggle and 
-        /// not be considered to have moved.
-        /// </summary>
-        private const float TapJitterTolerance = 35.0f;
-
-        private static readonly TimeSpan _maxTicksToProcessHold = TimeSpan.FromMilliseconds(1024);
-
-        /// <summary>
-        /// The pinch touch locations.
-        /// </summary>
-        private readonly TouchLocation[] _pinchTouch = new TouchLocation[2];
-
-        /// <summary>
-        /// If true the pinch touch locations are valid and
-        /// a pinch gesture has begun.
-        /// </summary>
-        private bool _pinchGestureStarted;
+        #region Gesture Recognition Private Methods
 
         private bool GestureIsEnabled(GestureType gestureType)
         {
             return (EnabledGestures & gestureType) != 0;
         }
-
-        /// <summary>
-        /// Used to disable emitting of tap gestures.
-        /// </summary>
-        bool _tapDisabled;
-
-        /// <summary>
-        /// Used to disable emitting of hold gestures.
-        /// </summary>
-        bool _holdDisabled;
-
 
         private void UpdateGestures(bool stateChanged)
         {
@@ -620,8 +654,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             return true;
         }
 
-        private TouchLocation _lastTap;
-
         private void ProcessTap(TouchLocation touch)
         {
             if (!GestureIsEnabled(GestureType.Tap) || _tapDisabled)
@@ -650,8 +682,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
                 Vector2.Zero, Vector2.Zero);
             GestureList.Enqueue(tap);
         }
-
-        private GestureType _dragGestureStarted = GestureType.None;
 
         private void ProcessDrag(TouchLocation touch)
         {

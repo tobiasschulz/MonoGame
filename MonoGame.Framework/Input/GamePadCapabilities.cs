@@ -13,6 +13,9 @@ namespace Microsoft.Xna.Framework.Input
 {
     public struct GamePadCapabilities
     {
+
+        #region Public Properties
+
         public bool IsConnected { get; internal set; }
 
 		public bool HasAButton { get; internal set; }
@@ -64,6 +67,9 @@ namespace Microsoft.Xna.Framework.Input
 		public bool HasVoiceSupport { get; internal set; }
 
         public GamePadType GamePadType { get; internal set; }
+
+        #endregion
+
     }
 }
 

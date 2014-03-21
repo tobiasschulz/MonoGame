@@ -7,8 +7,10 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
@@ -16,8 +18,15 @@ namespace Microsoft.Xna.Framework.Input
     /// Allows getting keystrokes from keyboard.
     /// </summary>
 	public static class Keyboard
-	{
+    {
+        
+        #region Private Static Variables
+
         static List<Keys> _keys;
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns the current keyboard state.
@@ -27,7 +36,11 @@ namespace Microsoft.Xna.Framework.Input
 		{
             return new KeyboardState(_keys);
 		}
-		
+
+        #endregion
+
+        #region Public Static Methods
+
         /// <summary>
         /// Returns the current keyboard state for a given player.
         /// </summary>
@@ -39,9 +52,16 @@ namespace Microsoft.Xna.Framework.Input
             return new KeyboardState(_keys);
 		}
 
+        #endregion
+
+        #region Internal Static Methods
+
         internal static void SetKeys(List<Keys> keys)
         {
             _keys = keys;
         }
-	}
+
+        #endregion
+
+    }
 }

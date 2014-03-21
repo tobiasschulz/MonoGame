@@ -12,7 +12,9 @@ using System;
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct GamePadDPad
-	{
+    {
+        #region Public Properties
+
         public ButtonState Down
         {
             get;
@@ -34,6 +36,10 @@ namespace Microsoft.Xna.Framework.Input
             internal set;
         }
 
+        #endregion
+
+        #region Public Constructor
+
         public GamePadDPad(ButtonState upValue, ButtonState downValue, ButtonState leftValue, ButtonState rightValue)
             : this()
         {
@@ -42,6 +48,11 @@ namespace Microsoft.Xna.Framework.Input
             Left = leftValue;
             Right = rightValue;
         }
+
+        #endregion
+
+        #region Internal Constructor
+
         internal GamePadDPad(Buttons b)
             : this()
         {
@@ -54,6 +65,10 @@ namespace Microsoft.Xna.Framework.Input
             if ((b & Buttons.DPadUp) == Buttons.DPadUp)
                 Up = ButtonState.Pressed;
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Determines whether two specified instances of <see cref="GamePadDPad"/> are equal.
@@ -98,5 +113,8 @@ namespace Microsoft.Xna.Framework.Input
                 (this.Right == ButtonState.Pressed ? 4 : 0) +
                 (this.Up    == ButtonState.Pressed ? 8 : 0);
         }
-	}
+
+        #endregion
+
+    }
 }

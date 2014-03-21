@@ -28,7 +28,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         private static readonly TouchLocation[] emptyCollection = new TouchLocation[0];
 
-		#region Properties
+		#region Public Properties
 
         /// <summary>
         /// States if a touch screen is available.
@@ -36,6 +36,52 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		public bool IsConnected { get { return _isConnected; } }
 
 		#endregion
+
+        #region Public IList<TouchLocation> Properties
+
+        /// <summary>
+        /// States if touch collection is read only.
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Returns the number of <see cref="TouchLocation"/> items that exist in the collection.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                if (_collection == null)
+                    return 0;
+                return _collection.Length;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the item at the specified index of the collection.
+        /// </summary>
+        /// <param name="index">Position of the item.</param>
+        /// <returns><see cref="TouchLocation"/></returns>
+        public TouchLocation this[int index]
+        {
+            get
+            {
+                if (_collection == null)
+                    throw new ArgumentOutOfRangeException("index");
+                return _collection[index];
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        #endregion
+
+        #region Public Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TouchCollection"/> with a pre-determined set of touch locations.
@@ -46,6 +92,10 @@ namespace Microsoft.Xna.Framework.Input.Touch
             _isConnected = true;
             _collection = touches;
         }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns <see cref="TouchLocation"/> specified by ID.
@@ -74,15 +124,9 @@ namespace Microsoft.Xna.Framework.Input.Touch
             return false;
 		}
 
-        #region IList<TouchLocation>
+        #endregion
 
-        /// <summary>
-        /// States if touch collection is read only.
-        /// </summary>
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
+        #region Public IList<TouchLocation> Methods
 
         /// <summary>
         /// Returns the index of the first occurrence of specified <see cref="TouchLocation"/> item in the collection.
@@ -119,25 +163,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
         public void RemoveAt(int index)
         {
             throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Gets or sets the item at the specified index of the collection.
-        /// </summary>
-        /// <param name="index">Position of the item.</param>
-        /// <returns><see cref="TouchLocation"/></returns>
-        public TouchLocation this[int index]
-        {
-            get
-            {
-                if (_collection == null)
-                    throw new ArgumentOutOfRangeException("index");
-                return _collection[index];
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
         }
 
         /// <summary>
@@ -187,19 +212,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
         }
 
         /// <summary>
-        /// Returns the number of <see cref="TouchLocation"/> items that exist in the collection.
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                if (_collection == null)
-                    return 0;
-                return _collection.Length;
-            }
-        }
-
-        /// <summary>
         /// Removes the specified <see cref="TouchLocation"/> item from the collection.
         /// </summary>
         /// <param name="item">The <see cref="TouchLocation"/> item to remove.</param>
@@ -232,6 +244,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             return _collection.GetEnumerator();
         }
 
-        #endregion // IList<TouchLocation>
+        #endregion
     }
 }

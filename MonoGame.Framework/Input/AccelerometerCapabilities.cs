@@ -11,6 +11,9 @@ namespace Microsoft.Xna.Framework.Input
 {
     public struct AccelerometerCapabilities
     {
+
+        #region Public Properties
+
         public bool IsConnected
         {
             get
@@ -18,6 +21,7 @@ namespace Microsoft.Xna.Framework.Input
 				return true;
             }
         }
+
         public bool HasXAxis
         {
             get
@@ -25,6 +29,7 @@ namespace Microsoft.Xna.Framework.Input
 				return true;
             }
         }
+
         public bool HasYAxis
         {
             get
@@ -32,6 +37,7 @@ namespace Microsoft.Xna.Framework.Input
 				return true;
             }
         }
+
         public bool HasZAxis
         {
             get
@@ -39,6 +45,7 @@ namespace Microsoft.Xna.Framework.Input
 				return true;
             }
         }
+
         public float MaximumAcceleration
         {
             get
@@ -47,6 +54,7 @@ namespace Microsoft.Xna.Framework.Input
 				return 1.0f;
             }
         }
+
         public float MinimumAcceleration
         {
             get
@@ -55,6 +63,7 @@ namespace Microsoft.Xna.Framework.Input
 				return 0.0f;
             }
         }
+
         public float AccelerationResolution
         {
             get
@@ -63,6 +72,9 @@ namespace Microsoft.Xna.Framework.Input
 				return 1.0f;
             }
         }
+
+        #endregion
+
     }
 }
 
