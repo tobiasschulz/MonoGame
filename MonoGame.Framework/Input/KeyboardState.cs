@@ -15,14 +15,134 @@ namespace Microsoft.Xna.Framework.Input
     /// Holds the state of keystrokes by a keyboard.
     /// </summary>
 	public struct KeyboardState
-	{
-        // Used for the common situation where GetPressedKeys will return an empty array
-        static Keys[] empty = new Keys[0];
+    {
 
-        #region Key Data
+        #region Public Properties
+
+        /// <summary>
+        /// Returns the state of a specified key.
+        /// </summary>
+        /// <param name="key">The key to query.</param>
+        /// <returns>The state of the key.</returns>
+        public KeyState this[Keys key]
+        {
+            get { return InternalGetKey(key) ? KeyState.Down : KeyState.Up; }
+        }
+
+        #endregion
+
+        #region Private Variables
 
         // Array of 256 bits:
         uint keys0, keys1, keys2, keys3, keys4, keys5, keys6, keys7;
+
+        #endregion
+
+        #region Private Static Variables
+
+        // Used for the common situation where GetPressedKeys will return an empty array
+        static Keys[] empty = new Keys[0];
+
+        #endregion
+
+        #region Public Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyboardState"/> class.
+        /// </summary>
+        /// <param name="keys">List of keys to be flagged as pressed on initialization.</param>
+        public KeyboardState(params Keys[] keys)
+        {
+            keys0 = 0;
+            keys1 = 0;
+            keys2 = 0;
+            keys3 = 0;
+            keys4 = 0;
+            keys5 = 0;
+            keys6 = 0;
+            keys7 = 0;
+
+            if (keys != null)
+                foreach (Keys k in keys)
+                    InternalSetKey(k);
+        }
+
+        #endregion
+
+        #region Internal Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyboardState"/> class.
+        /// </summary>
+        /// <param name="keys">List of keys to be flagged as pressed on initialization.</param>
+        internal KeyboardState(List<Keys> keys)
+        {
+            keys0 = 0;
+            keys1 = 0;
+            keys2 = 0;
+            keys3 = 0;
+            keys4 = 0;
+            keys5 = 0;
+            keys6 = 0;
+            keys7 = 0;
+
+            if (keys != null)
+                foreach (Keys k in keys)
+                    InternalSetKey(k);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets whether given key is currently being pressed.
+        /// </summary>
+        /// <param name="key">The key to query.</param>
+        /// <returns>true if the key is pressed; false otherwise.</returns>
+        public bool IsKeyDown(Keys key)
+        {
+            return InternalGetKey(key);
+        }
+
+        /// <summary>
+        /// Gets whether given key is currently being not pressed.
+        /// </summary>
+        /// <param name="key">The key to query.</param>
+        /// <returns>true if the key is not pressed; false otherwise.</returns>
+        public bool IsKeyUp(Keys key)
+        {
+            return !InternalGetKey(key);
+        }
+
+        /// <summary>
+        /// Returns an array of values holding keys that are currently being pressed.
+        /// </summary>
+        /// <returns>The keys that are currently being pressed.</returns>
+        public Keys[] GetPressedKeys()
+        {
+            uint count = CountBits(keys0) + CountBits(keys1) + CountBits(keys2) + CountBits(keys3)
+                    + CountBits(keys4) + CountBits(keys5) + CountBits(keys6) + CountBits(keys7);
+            if (count == 0)
+                return empty;
+            Keys[] keys = new Keys[count];
+
+            int index = 0;
+            if (keys0 != 0) index = AddKeysToArray(keys0, 0 * 32, keys, index);
+            if (keys1 != 0) index = AddKeysToArray(keys1, 1 * 32, keys, index);
+            if (keys2 != 0) index = AddKeysToArray(keys2, 2 * 32, keys, index);
+            if (keys3 != 0) index = AddKeysToArray(keys3, 3 * 32, keys, index);
+            if (keys4 != 0) index = AddKeysToArray(keys4, 4 * 32, keys, index);
+            if (keys5 != 0) index = AddKeysToArray(keys5, 5 * 32, keys, index);
+            if (keys6 != 0) index = AddKeysToArray(keys6, 6 * 32, keys, index);
+            if (keys7 != 0) index = AddKeysToArray(keys7, 7 * 32, keys, index);
+
+            return keys;
+        }
+
+        #endregion
+
+        #region Private Methods
 
         bool InternalGetKey(Keys key)
         {
@@ -91,131 +211,7 @@ namespace Microsoft.Xna.Framework.Input
 
         #endregion
 
-
-        #region XNA Interface
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KeyboardState"/> class.
-        /// </summary>
-        /// <param name="keys">List of keys to be flagged as pressed on initialization.</param>
-        internal KeyboardState(List<Keys> keys)
-        {
-            keys0 = 0;
-            keys1 = 0;
-            keys2 = 0;
-            keys3 = 0;
-            keys4 = 0;
-            keys5 = 0;
-            keys6 = 0;
-            keys7 = 0;
-
-            if (keys != null)
-                foreach (Keys k in keys)
-                    InternalSetKey(k);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KeyboardState"/> class.
-        /// </summary>
-        /// <param name="keys">List of keys to be flagged as pressed on initialization.</param>
-        public KeyboardState(params Keys[] keys)
-        {
-            keys0 = 0;
-            keys1 = 0;
-            keys2 = 0;
-            keys3 = 0;
-            keys4 = 0;
-            keys5 = 0;
-            keys6 = 0;
-            keys7 = 0;
-
-            if (keys != null)
-                foreach (Keys k in keys)
-                    InternalSetKey(k);
-        }
-
-        /// <summary>
-        /// Returns the state of a specified key.
-        /// </summary>
-        /// <param name="key">The key to query.</param>
-        /// <returns>The state of the key.</returns>
-        public KeyState this[Keys key]
-        {
-            get { return InternalGetKey(key) ? KeyState.Down : KeyState.Up; }
-        }
-
-        /// <summary>
-        /// Gets whether given key is currently being pressed.
-        /// </summary>
-        /// <param name="key">The key to query.</param>
-        /// <returns>true if the key is pressed; false otherwise.</returns>
-        public bool IsKeyDown(Keys key)
-        {
-            return InternalGetKey(key);
-        }
-
-        /// <summary>
-        /// Gets whether given key is currently being not pressed.
-        /// </summary>
-        /// <param name="key">The key to query.</param>
-        /// <returns>true if the key is not pressed; false otherwise.</returns>
-        public bool IsKeyUp(Keys key)
-        {
-            return !InternalGetKey(key);
-        }
-
-        #endregion
-
-
-        #region GetPressedKeys()
-
-        private static uint CountBits(uint v)
-        {
-            // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-            v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
-            v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
-            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
-        }
-
-        private static int AddKeysToArray(uint keys, int offset, Keys[] pressedKeys, int index)
-        {
-            for (int i = 0; i < 32; i++)
-            {
-                if ((keys & (1 << i)) != 0)
-                    pressedKeys[index++] = (Keys)(offset + i);
-            }
-            return index;
-        }
-
-        /// <summary>
-        /// Returns an array of values holding keys that are currently being pressed.
-        /// </summary>
-        /// <returns>The keys that are currently being pressed.</returns>
-        public Keys[] GetPressedKeys()
-        {
-            uint count = CountBits(keys0) + CountBits(keys1) + CountBits(keys2) + CountBits(keys3)
-                    + CountBits(keys4) + CountBits(keys5) + CountBits(keys6) + CountBits(keys7);
-            if (count == 0)
-                return empty;
-            Keys[] keys = new Keys[count];
-
-            int index = 0;
-            if (keys0 != 0) index = AddKeysToArray(keys0, 0 * 32, keys, index);
-            if (keys1 != 0) index = AddKeysToArray(keys1, 1 * 32, keys, index);
-            if (keys2 != 0) index = AddKeysToArray(keys2, 2 * 32, keys, index);
-            if (keys3 != 0) index = AddKeysToArray(keys3, 3 * 32, keys, index);
-            if (keys4 != 0) index = AddKeysToArray(keys4, 4 * 32, keys, index);
-            if (keys5 != 0) index = AddKeysToArray(keys5, 5 * 32, keys, index);
-            if (keys6 != 0) index = AddKeysToArray(keys6, 6 * 32, keys, index);
-            if (keys7 != 0) index = AddKeysToArray(keys7, 7 * 32, keys, index);
-
-            return keys;
-        }
-
-        #endregion
-
-
-        #region Objet and Equality
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Gets the hash code for <see cref="KeyboardState"/> instance.
@@ -263,6 +259,28 @@ namespace Microsoft.Xna.Framework.Input
         public override bool Equals(object obj)
         {
             return obj is KeyboardState && this == (KeyboardState)obj;
+        }
+
+        #endregion
+
+        #region Private Static Methods
+
+        private static uint CountBits(uint v)
+        {
+            // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
+            v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
+            v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+        }
+
+        private static int AddKeysToArray(uint keys, int offset, Keys[] pressedKeys, int index)
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                if ((keys & (1 << i)) != 0)
+                    pressedKeys[index++] = (Keys)(offset + i);
+            }
+            return index;
         }
 
         #endregion

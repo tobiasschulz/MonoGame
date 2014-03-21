@@ -12,8 +12,9 @@ using System;
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct GamePadTriggers
-	{
-        float left, right;
+    {
+
+        #region Public Properties
 
         public float Left
         {
@@ -26,11 +27,25 @@ namespace Microsoft.Xna.Framework.Input
             internal set { right = MathHelper.Clamp(value, 0f, 1f); }
         }
 
+        #endregion
+
+        #region Private Variables
+
+        float left, right;
+
+        #endregion
+
+        #region Public Constructor
+
         public GamePadTriggers(float leftTrigger, float rightTrigger):this()
         {
             Left = leftTrigger;
             Right = rightTrigger;
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Determines whether two specified instances of <see cref="GamePadTriggers"/> are equal.
@@ -69,5 +84,8 @@ namespace Microsoft.Xna.Framework.Input
         {
             return this.Left.GetHashCode() + this.Right.GetHashCode();
         }
-	}
+
+        #endregion
+
+    }
 }

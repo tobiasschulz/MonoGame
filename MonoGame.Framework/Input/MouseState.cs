@@ -15,13 +15,132 @@ namespace Microsoft.Xna.Framework.Input
     /// Represents a mouse state with cursor position and button press information.
     /// </summary>
 	public struct MouseState
-	{
-		int _x, _y;
+    {
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets horizontal position of the cursor.
+        /// </summary>
+        public int X
+        {
+            get
+            {
+                return _x;
+            }
+            internal set
+            {
+                _x = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets vertical position of the cursor.
+        /// </summary>
+        public int Y
+        {
+            get
+            {
+                return _y;
+            }
+            internal set
+            {
+                _y = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets cursor position.
+        /// </summary>
+        public Point Position
+        {
+            get { return new Point(_x, _y); }
+        }
+
+        /// <summary>
+        /// Gets state of the left mouse button.
+        /// </summary>
+        public ButtonState LeftButton
+        {
+            get
+            {
+                return _leftButton;
+            }
+            internal set { _leftButton = value; }
+        }
+
+        /// <summary>
+        /// Gets state of the middle mouse button.
+        /// </summary>
+        public ButtonState MiddleButton
+        {
+            get
+            {
+                return _middleButton;
+            }
+            internal set { _middleButton = value; }
+        }
+
+        /// <summary>
+        /// Gets state of the right mouse button.
+        /// </summary>
+        public ButtonState RightButton
+        {
+            get
+            {
+                return _rightButton;
+            }
+            internal set { _rightButton = value; }
+        }
+
+        /// <summary>
+        /// Returns cumulative scroll wheel value since the game start.
+        /// </summary>
+        public int ScrollWheelValue
+        {
+            get
+            {
+                return _scrollWheelValue;
+            }
+            internal set { _scrollWheelValue = value; }
+        }
+
+        /// <summary>
+        /// Gets state of the XButton1.
+        /// </summary>
+        public ButtonState XButton1
+        {
+            get
+            {
+                return ButtonState.Released;
+            }
+        }
+
+        /// <summary>
+        /// Gets state of the XButton2.
+        /// </summary>
+        public ButtonState XButton2
+        {
+            get
+            {
+                return ButtonState.Released;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
+        int _x, _y;
 		int _scrollWheelValue;
 		ButtonState _leftButton;
 		ButtonState _rightButton;
 		ButtonState _middleButton;
-		
+
+        #endregion
+
+        #region Public Constructor
+
         /// <summary>
         /// Initializes a new instance of the MouseState.
         /// </summary>
@@ -51,7 +170,11 @@ namespace Microsoft.Xna.Framework.Input
 			_middleButton = middleButton;
 			_rightButton = rightButton;
 		}
-		
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
         /// <summary>
         /// Compares whether two MouseState instances are equal.
         /// </summary>
@@ -100,95 +223,8 @@ namespace Microsoft.Xna.Framework.Input
             return base.GetHashCode();
         }
 
-        /// <summary>
-        /// Gets horizontal position of the cursor.
-        /// </summary>
-		public int X {
-			get {
-				return _x;
-			}
-			internal set {
-				_x = value;
-			}
-		}
+        #endregion
 
-        /// <summary>
-        /// Gets vertical position of the cursor.
-        /// </summary>
-		public int Y {
-			get {
-				return _y;
-			}
-			internal set {
-				_y = value;
-			}
-		}
-
-        /// <summary>
-        /// Gets cursor position.
-        /// </summary>
-        public Point Position
-        {
-            get{return new Point(_x,_y);}   
-        }
-
-        /// <summary>
-        /// Gets state of the left mouse button.
-        /// </summary>
-		public ButtonState LeftButton { 
-			get {
-				return _leftButton;
-			}
-			internal set { _leftButton = value; }
-		}
-
-        /// <summary>
-        /// Gets state of the middle mouse button.
-        /// </summary>
-		public ButtonState MiddleButton { 
-			get {
-				return _middleButton;
-			}
-			internal set { _middleButton = value; }			
-		}
-
-        /// <summary>
-        /// Gets state of the right mouse button.
-        /// </summary>
-		public ButtonState RightButton { 
-			get {
-				return _rightButton;
-			}
-			internal set { _rightButton = value; }
-		}
-
-        /// <summary>
-        /// Returns cumulative scroll wheel value since the game start.
-        /// </summary>
-		public int ScrollWheelValue { 
-			get {
-				return _scrollWheelValue;
-			}
-			internal set { _scrollWheelValue = value; }
-		}
-
-        /// <summary>
-        /// Gets state of the XButton1.
-        /// </summary>
-		public ButtonState XButton1 { 
-			get {
-				return ButtonState.Released;
-			}
-		}
-
-        /// <summary>
-        /// Gets state of the XButton2.
-        /// </summary>
-		public ButtonState XButton2 { 
-			get {
-				return ButtonState.Released;
-			}
-		}
-	}
+    }
 }
 
