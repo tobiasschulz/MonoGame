@@ -11,11 +11,11 @@ using System;
 
 namespace Microsoft.Xna.Framework.Media
 {
-    public enum MediaState
-    {
-        Stopped,
-        Playing,
-        Paused
-    }
+	public enum MediaState
+	{
+		Stopped,
+		Playing,
+		Paused
+	}
 }
 
