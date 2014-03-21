@@ -28,14 +28,6 @@ namespace Microsoft.Xna.Framework.Media
 		public void Dispose()
 		{
 		}
-
-		/*public SongCollection Songs
-		{
-			get
-			{
-			}
-		}
-		*/
 	}
 }
 

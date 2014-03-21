@@ -61,19 +61,9 @@ namespace Microsoft.Xna.Framework.Media
 			}
 		}
 
-		private static bool _isRepeating;
-
-		public static bool IsRepeating
-		{
-			get
-			{
-				return _isRepeating;
-			}
-
-			set
-			{
-				_isRepeating = value;
-			}
+		public static bool IsRepeating {
+			get;
+			set;
 		}
 
 		public static bool IsShuffled

@@ -15,17 +15,9 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public class MediaLibrary : IDisposable
 	{
-		private PlaylistCollection _playLists = null;
-		private PlaylistCollection PlayLists
-		{
-			get
-			{
-				return _playLists;
-			}
-			set
-			{
-				_playLists = value;
-			}
+		private PlaylistCollection PlayLists {
+			get;
+			set;
 		}
 
 		public MediaLibrary()
@@ -39,6 +31,19 @@ namespace Microsoft.Xna.Framework.Media
 		public void Dispose()
 		{
 		}
+
+		public void SavePicture (string name, byte[] imageBuffer)
+		{
+			// Only is relivant on mobile devices, should throw error on desktops.
+			throw new NotSupportedException ();
+		}
+
+		public void SavePicture (string name, Stream source)
+		{
+			// Only is relivant on mobile devices, should throw error on desktops.
+			throw new NotSupportedException ();
+		}
+
 
 		public SongCollection Songs
 		{

@@ -41,8 +41,10 @@ namespace Microsoft.Xna.Framework.Media
 
 		public static IList<MediaSource> GetAvailableMediaSources()
 		{
-			MediaSource[] result = { new MediaSource("DumpMediaSource",
-						 MediaSourceType.LocalDevice) };
+			MediaSource[] result = 
+			{ 
+				new MediaSource("DummyMediaSource", MediaSourceType.LocalDevice)
+			};
 
 			return result;
 		}
