@@ -8,14 +8,14 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Xna.Framework.Media
 {
 	public class MediaLibrary : IDisposable
 	{
-		private PlaylistCollection PlayLists {
+		private PlaylistCollection PlayLists
+		{
 			get;
 			set;
 		}
@@ -32,16 +32,16 @@ namespace Microsoft.Xna.Framework.Media
 		{
 		}
 
-		public void SavePicture (string name, byte[] imageBuffer)
+		public void SavePicture(string name, byte[] imageBuffer)
 		{
-			// Only is relivant on mobile devices, should throw error on desktops.
-			throw new NotSupportedException ();
+			// On XNA4, this fails on Windows/Xbox. Only Phone is supported.
+			throw new NotSupportedException();
 		}
 
-		public void SavePicture (string name, Stream source)
+		public void SavePicture(string name, Stream source)
 		{
-			// Only is relivant on mobile devices, should throw error on desktops.
-			throw new NotSupportedException ();
+			// On XNA4, this fails on Windows/Xbox. Only Phone is supported.
+			throw new NotSupportedException();
 		}
 
 
@@ -49,10 +49,13 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			get
 			{
+				/* This is meant to return a pre-made collection, based on the
+				 * WMP library.
+				 * -flibit
+				 */
 				return new SongCollection();
 			}
 		}
 
 	}
 }
-

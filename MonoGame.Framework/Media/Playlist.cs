@@ -16,13 +16,19 @@ namespace Microsoft.Xna.Framework.Media
 		public TimeSpan Duration
 		{
 			get;
-			internal set;
+			private set;
 		}
 
 		public string Name
 		{
 			get;
-			internal set;
+			private set;
+		}
+
+		internal Playlist(TimeSpan duration, string name)
+		{
+			Duration = duration;
+			Name = name;
 		}
 
 		public void Dispose()
@@ -30,4 +36,3 @@ namespace Microsoft.Xna.Framework.Media
 		}
 	}
 }
-

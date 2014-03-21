@@ -15,11 +15,17 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public class SongCollection : ICollection<Song>, IEnumerable<Song>, IEnumerable, IDisposable
 	{
-		private bool isReadOnly = false;
-		private List<Song> innerlist = new List<Song>();
+		private List<Song> innerlist;
+
+		internal SongCollection()
+		{
+			IsReadOnly = false;
+			innerlist = new List<Song>();
+		}
 
 		public void Dispose()
 		{
+			innerlist.Clear();
 		}
 
 		public IEnumerator<Song> GetEnumerator()
@@ -42,10 +48,8 @@ namespace Microsoft.Xna.Framework.Media
 
 		public bool IsReadOnly
 		{
-			get
-			{
-				return isReadOnly;
-			}
+			get;
+			private set;
 		}
 
 		public Song this[int index]
@@ -118,4 +122,3 @@ namespace Microsoft.Xna.Framework.Media
 		}
 	}
 }
-

@@ -7,36 +7,28 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class MediaSource
 	{
-		private MediaSourceType _type;
-		private string _name;
-
 		internal MediaSource(string name, MediaSourceType type)
 		{
-			_name = name;
-			_type = type;
+			Name = name;
+			MediaSourceType = type;
 		}
 
-		public Microsoft.Xna.Framework.Media.MediaSourceType MediaSourceType
+		public MediaSourceType MediaSourceType
 		{
-			get
-			{
-				return _type;
-			}
+			get;
+			private set;
 		}
 
 		public string Name
 		{
-			get
-			{
-				return _name;
-			}
+			get;
+			private set;
 		}
 
 		public static IList<MediaSource> GetAvailableMediaSources()

@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Media
 {
 	public enum MediaState
@@ -18,4 +16,3 @@ namespace Microsoft.Xna.Framework.Media
 		Paused
 	}
 }
-

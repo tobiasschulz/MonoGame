@@ -16,11 +16,17 @@ namespace Microsoft.Xna.Framework.Media
 	public sealed class PlaylistCollection	: ICollection<Playlist>, IEnumerable<Playlist>,
 						  IEnumerable, IDisposable
 	{
-		private bool isReadOnly = false;
-		private List<Playlist> innerlist = new List<Playlist>();
+		private List<Playlist> innerlist;
+
+		internal PlaylistCollection()
+		{
+			IsReadOnly = false;
+			innerlist = new List<Playlist>();
+		}
 
 		public void Dispose()
 		{
+			innerlist.Clear();
 		}
 
 		public IEnumerator<Playlist> GetEnumerator()
@@ -43,10 +49,8 @@ namespace Microsoft.Xna.Framework.Media
 
 		public bool IsReadOnly
 		{
-			get
-			{
-				return isReadOnly;
-			}
+			get;
+			private set;
 		}
 
 		public Playlist this[int index]
