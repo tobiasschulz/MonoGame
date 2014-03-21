@@ -37,7 +37,51 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
 		#endregion
 
-        #region Constructor
+        #region Public IList<TouchLocation> Properties
+
+        /// <summary>
+        /// States if touch collection is read only.
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Returns the number of <see cref="TouchLocation"/> items that exist in the collection.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                if (_collection == null)
+                    return 0;
+                return _collection.Length;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the item at the specified index of the collection.
+        /// </summary>
+        /// <param name="index">Position of the item.</param>
+        /// <returns><see cref="TouchLocation"/></returns>
+        public TouchLocation this[int index]
+        {
+            get
+            {
+                if (_collection == null)
+                    throw new ArgumentOutOfRangeException("index");
+                return _collection[index];
+            }
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        #endregion
+
+        #region Public Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TouchCollection"/> with a pre-determined set of touch locations.
@@ -82,53 +126,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         #endregion
 
-        #region Implements IList<TouchLocation>
-
-        #region Public Properties
-
-        /// <summary>
-        /// States if touch collection is read only.
-        /// </summary>
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Returns the number of <see cref="TouchLocation"/> items that exist in the collection.
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                if (_collection == null)
-                    return 0;
-                return _collection.Length;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the item at the specified index of the collection.
-        /// </summary>
-        /// <param name="index">Position of the item.</param>
-        /// <returns><see cref="TouchLocation"/></returns>
-        public TouchLocation this[int index]
-        {
-            get
-            {
-                if (_collection == null)
-                    throw new ArgumentOutOfRangeException("index");
-                return _collection[index];
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
+        #region Public IList<TouchLocation> Methods
 
         /// <summary>
         /// Returns the index of the first occurrence of specified <see cref="TouchLocation"/> item in the collection.
@@ -246,8 +244,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
             return _collection.GetEnumerator();
         }
 
-        #endregion // Public Methods
-
-        #endregion // IList<TouchLocation>
+        #endregion
     }
 }

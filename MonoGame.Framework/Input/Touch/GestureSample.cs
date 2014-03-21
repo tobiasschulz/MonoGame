@@ -102,7 +102,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
         
         #endregion
 
-        #region Constructor
+        #region Public Constructor
 
         /// <summary>
         /// Initializes a new <see cref="GestureSample"/>.

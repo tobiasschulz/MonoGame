@@ -22,8 +22,11 @@ namespace Microsoft.Xna.Framework.Input.Touch
     /// </summary>
     public static class TouchPanel
     {
+
         #region Internal Static Variables
+
         internal static GameWindow PrimaryWindow;
+
         #endregion
 
         #region Public Static Methods
@@ -122,7 +125,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
             get { return PrimaryWindow.TouchPanelState.IsGestureAvailable; }
         }
 
-        #endregion // Public Static Methods
+        #endregion
 
         #region Internal Static Methods
 

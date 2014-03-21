@@ -109,7 +109,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         #endregion
 		
-		#region Constructors
+		#region Public Constructors
 
         public TouchLocation(int id, TouchLocationState state, Vector2 position)
             : this(id, state, position, TouchLocationState.Invalid, Vector2.Zero)
@@ -183,6 +183,53 @@ namespace Microsoft.Xna.Framework.Input.Touch
         
         #endregion
 
+        #region Public IEquatable Methods and Operator Overrides
+
+        public override int GetHashCode()
+        {
+            return _id;
+        }
+
+        public override string ToString()
+        {
+            return "Touch id:" + _id + " state:" + _state + " position:" + _position + " pressure:" + _pressure + " prevState:" + _previousState + " prevPosition:" + _previousPosition + " previousPressure:" + _previousPressure;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is TouchLocation)
+                return Equals((TouchLocation)obj);
+
+            return false;
+        }
+
+        public bool Equals(TouchLocation other)
+        {
+            return _id.Equals(other._id) &&
+                    _position.Equals(other._position) &&
+                    _previousPosition.Equals(other._previousPosition);
+        }
+
+        public static bool operator !=(TouchLocation value1, TouchLocation value2)
+        {
+            return value1._id != value2._id ||
+                    value1._state != value2._state ||
+                    value1._position != value2._position ||
+                    value1._previousState != value2._previousState ||
+                    value1._previousPosition != value2._previousPosition;
+        }
+
+        public static bool operator ==(TouchLocation value1, TouchLocation value2)
+        {
+            return value1._id == value2._id &&
+                    value1._state == value2._state &&
+                    value1._position == value2._position &&
+                    value1._previousState == value2._previousState &&
+                    value1._previousPosition == value2._previousPosition;
+        }
+
+        #endregion
+
         #region Internal Methods
 
         /// <summary>
@@ -241,53 +288,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
             // Return true if the state actually changed.
             return _state != _previousState || delta.LengthSquared() > 0.001f;
-        }
-
-        #endregion
-
-        #region IEquatable and Overrides
-
-        public override int GetHashCode()
-        {
-            return _id;
-        }
-
-        public override string ToString()
-        {
-            return "Touch id:" + _id + " state:" + _state + " position:" + _position + " pressure:" + _pressure + " prevState:" + _previousState + " prevPosition:" + _previousPosition + " previousPressure:" + _previousPressure;
-        }
-
-        public override bool Equals(object obj)
-        {
-			if (obj is TouchLocation)
-				return Equals((TouchLocation)obj);
-
-			return false;
-		}
-
-        public bool Equals(TouchLocation other)
-        {
-            return  _id.Equals(other._id) &&
-                    _position.Equals(other._position) &&
-                    _previousPosition.Equals(other._previousPosition);
-        }
-
-        public static bool operator !=(TouchLocation value1, TouchLocation value2)
-        {
-            return value1._id != value2._id ||
-                    value1._state != value2._state ||
-                    value1._position != value2._position ||
-                    value1._previousState != value2._previousState ||
-                    value1._previousPosition != value2._previousPosition;
-        }
-
-        public static bool operator ==(TouchLocation value1, TouchLocation value2)
-        {
-            return value1._id == value2._id &&
-                    value1._state == value2._state &&
-                    value1._position == value2._position &&
-                    value1._previousState == value2._previousState &&
-                    value1._previousPosition == value2._previousPosition;
         }
 
         #endregion

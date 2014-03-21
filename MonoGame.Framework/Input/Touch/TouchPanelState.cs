@@ -90,7 +90,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
             }
         }
 
-        #endregion // Public Properties
+        #endregion
 
         #region Private Variables
 
@@ -147,6 +147,43 @@ namespace Microsoft.Xna.Framework.Input.Touch
         private readonly Dictionary<int, int> _touchIds = new Dictionary<int, int>();
 
         private TouchPanelCapabilities Capabilities = new TouchPanelCapabilities();
+
+        #endregion
+
+        #region Gesture Recognition Private Variables
+
+        /// <summary>
+        /// Maximum distance a touch location can wiggle and 
+        /// not be considered to have moved.
+        /// </summary>
+        private const float TapJitterTolerance = 35.0f;
+
+        private static readonly TimeSpan _maxTicksToProcessHold = TimeSpan.FromMilliseconds(1024);
+
+        /// <summary>
+        /// The pinch touch locations.
+        /// </summary>
+        private readonly TouchLocation[] _pinchTouch = new TouchLocation[2];
+
+        /// <summary>
+        /// If true the pinch touch locations are valid and
+        /// a pinch gesture has begun.
+        /// </summary>
+        private bool _pinchGestureStarted;
+
+        /// <summary>
+        /// Used to disable emitting of tap gestures.
+        /// </summary>
+        bool _tapDisabled;
+
+        /// <summary>
+        /// Used to disable emitting of hold gestures.
+        /// </summary>
+        bool _holdDisabled;
+
+        private TouchLocation _lastTap;
+
+        private GestureType _dragGestureStarted = GestureType.None;
 
         #endregion
 
@@ -390,46 +427,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
         #endregion
 
-        #region Gesture Recognition
-
-        #region Private Variables
-
-        /// <summary>
-        /// Maximum distance a touch location can wiggle and 
-        /// not be considered to have moved.
-        /// </summary>
-        private const float TapJitterTolerance = 35.0f;
-
-        private static readonly TimeSpan _maxTicksToProcessHold = TimeSpan.FromMilliseconds(1024);
-
-        /// <summary>
-        /// The pinch touch locations.
-        /// </summary>
-        private readonly TouchLocation[] _pinchTouch = new TouchLocation[2];
-
-        /// <summary>
-        /// If true the pinch touch locations are valid and
-        /// a pinch gesture has begun.
-        /// </summary>
-        private bool _pinchGestureStarted;
-
-        /// <summary>
-        /// Used to disable emitting of tap gestures.
-        /// </summary>
-        bool _tapDisabled;
-
-        /// <summary>
-        /// Used to disable emitting of hold gestures.
-        /// </summary>
-        bool _holdDisabled;
-
-        private TouchLocation _lastTap;
-
-        private GestureType _dragGestureStarted = GestureType.None;
-
-        #endregion // Private Variables
-
-        #region Private Methods
+        #region Gesture Recognition Private Methods
 
         private bool GestureIsEnabled(GestureType gestureType)
         {
@@ -792,9 +790,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
             _holdDisabled = true;
         }
 
-        #endregion // Private Methods
-
-        #endregion // Gesture Recognition
+        #endregion
 
     }
 }
