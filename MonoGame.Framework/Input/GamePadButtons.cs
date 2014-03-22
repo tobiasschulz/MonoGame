@@ -13,7 +13,8 @@ namespace Microsoft.Xna.Framework.Input
 {
     public struct GamePadButtons
     {
-        internal Buttons buttons;
+
+        #region Public Properties
 
         public ButtonState A
         {
@@ -22,6 +23,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.A) == Buttons.A) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState B
         {
             get
@@ -29,6 +31,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.B) == Buttons.B) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState Back
         {
             get
@@ -36,6 +39,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.Back) == Buttons.Back) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState X
         {
             get
@@ -43,6 +47,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.X) == Buttons.X) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState Y
         {
             get
@@ -50,6 +55,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.Y) == Buttons.Y) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState Start
         {
             get
@@ -57,6 +63,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.Start) == Buttons.Start) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState LeftShoulder
         {
             get
@@ -64,6 +71,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.LeftShoulder) == Buttons.LeftShoulder) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState LeftStick
         {
             get
@@ -71,6 +79,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.LeftStick) == Buttons.LeftStick) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState RightShoulder
         {
             get
@@ -78,6 +87,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.RightShoulder) == Buttons.RightShoulder) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState RightStick
         {
             get
@@ -85,6 +95,7 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.RightStick) == Buttons.RightStick) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
+
         public ButtonState BigButton
         {
             get
@@ -92,17 +103,36 @@ namespace Microsoft.Xna.Framework.Input
                 return ((buttons & Buttons.BigButton) == Buttons.BigButton) ? ButtonState.Pressed : ButtonState.Released;
             }
         }
-		
+
+        #endregion
+
+        #region Internal Variables
+
+        internal Buttons buttons;
+
+        #endregion
+
+        #region Public Constructor
+
         public GamePadButtons(Buttons buttons)
         {
             this.buttons = buttons;
         }
+
+        #endregion
+
+        #region Internal Constructor
+
         internal GamePadButtons(params Buttons[] buttons)
             : this()
         {
             foreach (Buttons b in buttons)
                 this.buttons |= b;
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Determines whether two specified instances of <see cref="GamePadButtons"/> are equal.
@@ -136,10 +166,13 @@ namespace Microsoft.Xna.Framework.Input
             return (obj is GamePadButtons) && (this == (GamePadButtons)obj);
         }
 
-		public override int GetHashCode ()
-		{
-			return (int)this.buttons;
-		}
+        public override int GetHashCode()
+        {
+            return (int)this.buttons;
+        }
+
+        #endregion
+
     }
 }
 

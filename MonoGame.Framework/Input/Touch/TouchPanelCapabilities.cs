@@ -18,25 +18,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
     /// </summary>
     public struct TouchPanelCapabilities
     {
-		private bool hasPressure;
-		private bool isConnected;
-		private int maximumTouchCount;
-        private bool initialized;
 
-        internal void Initialize()
-        {
-            if (!initialized)
-            {
-                initialized = true;
-
-                // There does not appear to be a way of finding out if a touch device supports pressure.
-                // XNA does not expose a pressure value, so let's assume it doesn't support it.
-                hasPressure = false;
-
-		        isConnected = true;
-		        maximumTouchCount = 8;
-            }
-		}
+        #region Public Properties
 
         public bool HasPressure
         {
@@ -67,5 +50,34 @@ namespace Microsoft.Xna.Framework.Input.Touch
                 return maximumTouchCount;
             }
         }
+
+        #endregion
+
+        #region Private Variables
+        private bool hasPressure;
+		private bool isConnected;
+		private int maximumTouchCount;
+        private bool initialized;
+        #endregion
+
+        #region Internal Initialize Method
+
+        internal void Initialize()
+        {
+            if (!initialized)
+            {
+                initialized = true;
+
+                // There does not appear to be a way of finding out if a touch device supports pressure.
+                // XNA does not expose a pressure value, so let's assume it doesn't support it.
+                hasPressure = false;
+
+		        isConnected = true;
+		        maximumTouchCount = 8;
+            }
+        }
+
+        #endregion
+
     }
 }

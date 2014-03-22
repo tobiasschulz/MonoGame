@@ -7,8 +7,10 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework;
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input.Touch
 {
@@ -17,15 +19,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
     /// </summary>
     public struct GestureSample
     {
-        // attributes
-		private GestureType _gestureType;
-		private TimeSpan _timestamp;
-		private Vector2 _position;
-		private Vector2 _position2;
-		private Vector2 _delta;
-		private Vector2 _delta2;
-		
-		#region Properties
+
+        #region Public Properties
 
         /// <summary>
         /// Gets the type of the gesture.
@@ -92,8 +87,23 @@ namespace Microsoft.Xna.Framework.Input.Touch
 				return this._delta2;
             }
         }
-		#endregion
 		
+        #endregion
+
+        #region Private Variables
+
+        // attributes
+        private GestureType _gestureType;
+        private TimeSpan _timestamp;
+        private Vector2 _position;
+        private Vector2 _position2;
+        private Vector2 _delta;
+        private Vector2 _delta2;
+        
+        #endregion
+
+        #region Public Constructor
+
         /// <summary>
         /// Initializes a new <see cref="GestureSample"/>.
         /// </summary>
@@ -112,6 +122,9 @@ namespace Microsoft.Xna.Framework.Input.Touch
 			this._delta = delta;
 			this._delta2 = delta2;
         }
+
+        #endregion
+
     }
 }
 

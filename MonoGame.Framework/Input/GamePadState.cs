@@ -7,8 +7,10 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework;
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
@@ -19,6 +21,9 @@ namespace Microsoft.Xna.Framework.Input
     //     links to related code samples.
     public struct GamePadState
     {
+
+        #region Public Properties
+
         //
         // Summary:
         //     Indicates whether the Xbox 360 Controller is connected. Reference page contains
@@ -75,14 +80,27 @@ namespace Microsoft.Xna.Framework.Input
             internal set;
         }
 
-	private static GamePadState initializedGamePadState = new GamePadState();
+        #endregion
 
-	internal static GamePadState InitializedState
-	{
-		get {
-				return initializedGamePadState;
-		}
-	}
+        #region Internal Properties
+
+        internal static GamePadState InitializedState
+        {
+            get
+            {
+                return initializedGamePadState;
+            }
+        }
+
+        #endregion
+
+        #region Private Static Variables
+
+        private static GamePadState initializedGamePadState = new GamePadState();
+
+        #endregion
+
+        #region Public Constructors
 
         //
         // Summary:
@@ -110,6 +128,7 @@ namespace Microsoft.Xna.Framework.Input
             DPad = dPad;
 			IsConnected = true;
         }
+
         //
         // Summary:
         //     Initializes a new instance of the GamePadState class with the specified stick,
@@ -134,7 +153,41 @@ namespace Microsoft.Xna.Framework.Input
             : this(new GamePadThumbSticks(leftThumbStick, rightThumbStick), new GamePadTriggers(leftTrigger, rightTrigger), new GamePadButtons(buttons), new GamePadDPad())
         {
         }
-  
+
+        #endregion
+
+        #region Public Methods
+
+        //
+        // Summary:
+        //     Determines whether specified input device buttons are pressed in this GamePadState.
+        //
+        // Parameters:
+        //   button:
+        //     Buttons to query. Specify a single button, or combine multiple buttons using
+        //     a bitwise OR operation.
+        public bool IsButtonDown(Buttons button)
+        {
+            return (GetVirtualButtons() & button) == button;
+        }
+        //
+        // Summary:
+        //     Determines whether specified input device buttons are up (not pressed) in
+        //     this GamePadState.
+        //
+        // Parameters:
+        //   button:
+        //     Buttons to query. Specify a single button, or combine multiple buttons using
+        //     a bitwise OR operation.
+        public bool IsButtonUp(Buttons button)
+        {
+            return (GetVirtualButtons() & button) != button;
+        }
+
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
         /// Gets the button mask along with 'virtual buttons' like LeftThumbstickLeft.
         /// </summary>
@@ -165,32 +218,10 @@ namespace Microsoft.Xna.Framework.Input
             
             return result;
         }
-        
-        //
-        // Summary:
-        //     Determines whether specified input device buttons are pressed in this GamePadState.
-        //
-        // Parameters:
-        //   button:
-        //     Buttons to query. Specify a single button, or combine multiple buttons using
-        //     a bitwise OR operation.
-        public bool IsButtonDown(Buttons button)
-        {
-            return (GetVirtualButtons() & button) == button;
-        }
-        //
-        // Summary:
-        //     Determines whether specified input device buttons are up (not pressed) in
-        //     this GamePadState.
-        //
-        // Parameters:
-        //   button:
-        //     Buttons to query. Specify a single button, or combine multiple buttons using
-        //     a bitwise OR operation.
-        public bool IsButtonUp(Buttons button)
-        {
-            return (GetVirtualButtons() & button) != button;
-        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         //
         // Summary:
@@ -246,5 +277,8 @@ namespace Microsoft.Xna.Framework.Input
         {
             return base.ToString();
         }
+
+        #endregion
+
     }
 }

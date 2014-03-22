@@ -8,171 +8,199 @@
 #endregion
 
 using System;
-using Microsoft.Xna.Framework.Audio;
-using System.Linq;
 
 namespace Microsoft.Xna.Framework.Media
 {
     public static class MediaPlayer
     {
-		// Need to hold onto this to keep track of how many songs
-		// have played when in shuffle mode
-		private static int _numSongsInQueuePlayed = 0;
-		private static MediaState _state = MediaState.Stopped;
-		private static float _volume = 1.0f;
-		private static bool _isMuted = false;
-		private static readonly MediaQueue _queue = new MediaQueue();
+		/* Need to hold onto this to keep track of how many songs
+		 * have played when in shuffle mode.
+		 */
+		private static int numSongsInQueuePlayed = 0;
 
 		public static event EventHandler<EventArgs> ActiveSongChanged;
 
-        static MediaPlayer()
-        {
-        }
-
-        #region Properties
-
-        public static MediaQueue Queue { get { return _queue; } }
-		
-		public static bool IsMuted
-        {
-            get { return _isMuted; }
-            set
-            {
-				_isMuted = value;
-
-                if (_queue.Count == 0)
-					return;
-				
-				var newVolume = value ? 0.0f : _volume;
-                _queue.SetVolume(newVolume);
-            }
-        }
-
-        private static bool _isRepeating;
-
-        public static bool IsRepeating 
-        {
-            get
-            {
-                return _isRepeating;
-            }
-
-            set
-            {
-                _isRepeating = value;
-
-            }
-        }
-
-        public static bool IsShuffled { get; set; }
-
-        public static bool IsVisualizationEnabled { get { return false; } }
-
-        public static TimeSpan PlayPosition
-        {
-            get
-            {		
-				if (_queue.ActiveSong == null)
-					return TimeSpan.Zero;
-
-				return _queue.ActiveSong.Position;
-            }
-        }
-
-        public static MediaState State
-        {
-            get { return _state; }
-            private set
-            {
-                if (_state != value)
-                {
-                    _state = value;
-                    if (MediaStateChanged != null)
-                        MediaStateChanged (null, EventArgs.Empty);
-                }
-            }
-        }
-        public static event EventHandler<EventArgs> MediaStateChanged;
-
-        public static bool GameHasControl
-        {
-            get
-            {
-                // TODO: Fix me!
-                return true;
-            }
-        }
-		
-
-        public static float Volume
-        {
-            get { return _volume; }
-			set 
-			{       
-				_volume = value;
-
-                if (_queue.ActiveSong == null)
-					return;
-
-                _queue.SetVolume(_isMuted ? 0.0f : value);
-			}
-        }
-		
-		#endregion
-		
-        public static void Pause()
-        {
-            if (State != MediaState.Playing || _queue.ActiveSong == null)
-                return;
-
-            _queue.ActiveSong.Pause();
-
-            State = MediaState.Paused;
-        }
-		
-		/// <summary>
-		/// Play clears the current playback queue, and then queues up the specified song for playback. 
-		/// Playback starts immediately at the beginning of the song.
-		/// </summary>
-        public static void Play(Song song)
-        {                        
-            _queue.Clear();
-            _numSongsInQueuePlayed = 0;
-            _queue.Add(song);
-			_queue.ActiveSongIndex = 0;
-            
-            PlaySong(song);
-        }
-		
-		public static void Play(SongCollection collection, int index = 0)
+		static MediaPlayer()
 		{
-            _queue.Clear();
-            _numSongsInQueuePlayed = 0;
-
-			foreach(var song in collection)
-				_queue.Add(song);
-			
-			_queue.ActiveSongIndex = index;
-			
-			PlaySong(_queue.ActiveSong);
+			Queue = new MediaQueue();
 		}
 
-        private static void PlaySong(Song song)
-        {
-            song.SetEventHandler(OnSongFinishedPlaying);			
-			song.Volume = _isMuted ? 0.0f : _volume;
-			song.Play();
-            State = MediaState.Playing;
-        }
+		#region Properties
 
-        internal static void OnSongFinishedPlaying(object sender, EventArgs args)
+		public static MediaQueue Queue 
 		{
-			// TODO: Check args to see if song sucessfully played
-			_numSongsInQueuePlayed++;
-			
-			if (_numSongsInQueuePlayed >= _queue.Count)
+			get;
+			private set;
+		}
+
+		private static bool INTERNAL_isMuted = false;
+		public static bool IsMuted
+		{
+			get
 			{
-				_numSongsInQueuePlayed = 0;
+				return INTERNAL_isMuted;
+			}
+
+			set
+			{
+				INTERNAL_isMuted = value;
+
+				if (Queue.Count == 0)
+				{
+					return;
+				}
+
+				Queue.SetVolume(value ? 0.0f : Volume);
+			}
+		}
+
+		public static bool IsRepeating
+		{
+			get;
+			set;
+		}
+
+		public static bool IsShuffled
+		{
+			get;
+			set;
+		}
+
+		public static bool IsVisualizationEnabled
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public static TimeSpan PlayPosition
+		{
+			get
+			{
+				if (Queue.ActiveSong == null)
+				{
+					return TimeSpan.Zero;
+				}
+
+				return Queue.ActiveSong.Position;
+			}
+		}
+
+		private static MediaState INTERNAL_state = MediaState.Stopped;
+		public static MediaState State
+		{
+			get
+			{
+				return INTERNAL_state;
+			}
+
+			private set
+			{
+				if (INTERNAL_state != value)
+				{
+					INTERNAL_state = value;
+					if (MediaStateChanged != null)
+					{
+						MediaStateChanged(null, EventArgs.Empty);
+					}
+				}
+			}
+		}
+
+		public static event EventHandler<EventArgs> MediaStateChanged;
+
+		public static bool GameHasControl
+		{
+			get
+			{
+				/* This is based on whether or not the player is playing custom
+				 * music, rather than yours.
+				 * -flibit
+				 */
+				return true;
+			}
+		}
+
+		private static float INTERNAL_volume = 1.0f;
+		public static float Volume
+		{
+			get
+			{
+				return INTERNAL_volume;
+			}
+			set
+			{
+				INTERNAL_volume = value;
+
+				if (Queue.ActiveSong == null)
+				{
+					return;
+				}
+
+				Queue.SetVolume(IsMuted ? 0.0f : value);
+			}
+		}
+
+		#endregion
+
+		public static void Pause()
+		{
+			if (State != MediaState.Playing || Queue.ActiveSong == null)
+			{
+				return;
+			}
+
+			Queue.ActiveSong.Pause();
+
+			State = MediaState.Paused;
+		}
+
+		/// <summary>
+		/// Play clears the current playback queue, and then queues up the specified song for playback.
+		/// Playback starts immediately at the beginning of the song.
+		/// </summary>
+		public static void Play(Song song)
+		{
+			Queue.Clear();
+			numSongsInQueuePlayed = 0;
+			Queue.Add(song);
+			Queue.ActiveSongIndex = 0;
+
+			PlaySong(song);
+		}
+
+		public static void Play(SongCollection collection, int index = 0)
+		{
+			Queue.Clear();
+			numSongsInQueuePlayed = 0;
+
+			foreach (Song song in collection)
+			{
+				Queue.Add(song);
+			}
+
+			Queue.ActiveSongIndex = index;
+
+			PlaySong(Queue.ActiveSong);
+		}
+
+		private static void PlaySong(Song song)
+		{
+			song.SetEventHandler(OnSongFinishedPlaying);
+			song.Volume = IsMuted ? 0.0f : Volume;
+			song.Play();
+			State = MediaState.Playing;
+		}
+
+		internal static void OnSongFinishedPlaying(object sender, EventArgs args)
+		{
+			// TODO: Check args to see if song sucessfully played.
+			numSongsInQueuePlayed += 1;
+
+			if (numSongsInQueuePlayed >= Queue.Count)
+			{
+				numSongsInQueuePlayed = 0;
 				if (!IsRepeating)
 				{
 					Stop();
@@ -186,54 +214,63 @@ namespace Microsoft.Xna.Framework.Media
 				}
 			}
 
-			
 			MoveNext();
 		}
 
-        public static void Resume()
-        {
-            if (State != MediaState.Paused)
-                return;
+		public static void Resume()
+		{
+			if (State != MediaState.Paused)
+			{
+				return;
+			}
 
-			_queue.ActiveSong.Resume();
+			Queue.ActiveSong.Resume();
 			State = MediaState.Playing;
-        }
+		}
 
-        public static void Stop()
-        {
-            if (State == MediaState.Stopped)
-                return;
+		public static void Stop()
+		{
+			if (State == MediaState.Stopped)
+			{
+				return;
+			}
 
-			// Loop through so that we reset the PlayCount as well
-			foreach(var song in Queue.Songs)
-				_queue.ActiveSong.Stop();
+			// Loop through so that we reset the PlayCount as well.
+			foreach (Song song in Queue.Songs)
+			{
+				Queue.ActiveSong.Stop();
+			}
+
 			State = MediaState.Stopped;
 		}
-		
+
 		public static void MoveNext()
 		{
 			NextSong(1);
 		}
-		
+
 		public static void MovePrevious()
 		{
 			NextSong(-1);
 		}
-		
+
 		private static void NextSong(int direction)
 		{
-			var nextSong = _queue.GetNextSong(direction, IsShuffled);
+			Song nextSong = Queue.GetNextSong(direction, IsShuffled);
 
-            if (nextSong == null)
-                Stop();
-            else
-                PlaySong(nextSong);
+			if (nextSong == null)
+			{
+				Stop();
+			}
+			else
+			{
+				PlaySong(nextSong);
+			}
 
-            if (ActiveSongChanged != null)
-            {
-                ActiveSongChanged.Invoke(null, null);
-            }
+			if (ActiveSongChanged != null)
+			{
+				ActiveSongChanged.Invoke(null, null);
+			}
 		}
-    }
+	}
 }
-

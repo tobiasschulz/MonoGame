@@ -7,13 +7,11 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Media
 {
- 	public enum MediaSourceType
-    {
-        LocalDevice = 0,
-        WindowsMediaConnect = 4
-    }
+	public enum MediaSourceType
+	{
+		LocalDevice = 0,
+		WindowsMediaConnect = 4
+	}
 }

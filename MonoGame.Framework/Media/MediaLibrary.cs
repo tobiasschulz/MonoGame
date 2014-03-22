@@ -8,55 +8,54 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Xna.Framework.Media
 {
 	public class MediaLibrary : IDisposable
 	{
-		private PlaylistCollection _playLists = null;
 		private PlaylistCollection PlayLists
 		{
-			get { return _playLists; }
-			set { _playLists = value; }
+			get;
+			set;
 		}
 
-		public MediaLibrary ()
+		public MediaLibrary()
 		{
 		}
-		
-		public MediaLibrary (MediaSource mediaSource)
+
+		public MediaLibrary(MediaSource mediaSource)
 		{
 		}
-		
+
 		public void Dispose()
 		{
 		}
-		
-        /*
-		public void SavePicture (string name, byte[] imageBuffer)
+
+		public void SavePicture(string name, byte[] imageBuffer)
 		{
-			//only is relivant on mobile devices...
-			throw new NotSupportedException ();
+			// On XNA4, this fails on Windows/Xbox. Only Phone is supported.
+			throw new NotSupportedException();
 		}
 
-		public void SavePicture (string name, Stream source)
+		public void SavePicture(string name, Stream source)
 		{
-			//only is relivant on mobile devices...
-			throw new NotSupportedException ();
+			// On XNA4, this fails on Windows/Xbox. Only Phone is supported.
+			throw new NotSupportedException();
 		}
-		*/
 
-        public SongCollection Songs
+
+		public SongCollection Songs
 		{
 			get
 			{
+				/* This is meant to return a pre-made collection, based on the
+				 * WMP library.
+				 * -flibit
+				 */
 				return new SongCollection();
 			}
 		}
-		
-		
+
 	}
 }
-

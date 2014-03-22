@@ -11,31 +11,28 @@ using System;
 
 namespace Microsoft.Xna.Framework.Media
 {
-    public sealed class Playlist : IDisposable
-    {
-        public TimeSpan Duration
-        {
-            get;
-			internal set;
-        }
+	public sealed class Playlist : IDisposable
+	{
+		public TimeSpan Duration
+		{
+			get;
+			private set;
+		}
 
-        public string Name
-        {
-            get;
-			internal set;
-        }
+		public string Name
+		{
+			get;
+			private set;
+		}
+
+		internal Playlist(TimeSpan duration, string name)
+		{
+			Duration = duration;
+			Name = name;
+		}
 
 		public void Dispose()
-        {
-        }
-
-		
-        /*public SongCollection Songs
-        {
-            get
-            {
-            }
-        }*/
-    }
+		{
+		}
+	}
 }
-
