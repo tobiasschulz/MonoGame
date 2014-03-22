@@ -16,42 +16,7 @@ namespace Microsoft.Xna.Framework.Media
 	public sealed class PlaylistCollection	: ICollection<Playlist>, IEnumerable<Playlist>,
 						  IEnumerable, IDisposable
 	{
-		private List<Playlist> innerlist;
-
-		internal PlaylistCollection()
-		{
-			IsReadOnly = false;
-			innerlist = new List<Playlist>();
-		}
-
-		public void Dispose()
-		{
-			innerlist.Clear();
-		}
-
-		public IEnumerator<Playlist> GetEnumerator()
-		{
-			return innerlist.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return innerlist.GetEnumerator();
-		}
-
-		public int Count
-		{
-			get
-			{
-				return innerlist.Count;
-			}
-		}
-
-		public bool IsReadOnly
-		{
-			get;
-			private set;
-		}
+		#region Public Properties
 
 		public Playlist this[int index]
 		{
@@ -112,6 +77,20 @@ namespace Microsoft.Xna.Framework.Media
 			innerlist.CopyTo(array, arrayIndex);
 		}
 
+		public int Count
+		{
+			get
+			{
+				return innerlist.Count;
+			}
+		}
+
+		public bool IsReadOnly
+		{
+			get;
+			private set;
+		}
+
 		public int IndexOf(Playlist item)
 		{
 			return innerlist.IndexOf(item);
@@ -121,5 +100,43 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			return innerlist.Remove(item);
 		}
+
+		#endregion
+
+		#region Private Variables
+
+		private List<Playlist> innerlist;
+
+		#endregion
+
+		#region Internal Constructor and Public Dispose Method
+
+		internal PlaylistCollection()
+		{
+			IsReadOnly = false;
+			innerlist = new List<Playlist>();
+		}
+
+		public void Dispose()
+		{
+			innerlist.Clear();
+		}
+
+		#endregion
+
+		#region Public Methods
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return innerlist.GetEnumerator();
+		}
+
+		public IEnumerator<Playlist> GetEnumerator()
+		{
+			return innerlist.GetEnumerator();
+		}
+
+		#endregion
+
 	}
 }

@@ -14,13 +14,7 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class MediaQueue
 	{
-		List<Song> songs = new List<Song>();
-		private Random random = new Random();
-
-		public MediaQueue()
-		{
-			ActiveSongIndex = -1;
-		}
+		#region Public Properties
 
 		public Song ActiveSong
 		{
@@ -40,6 +34,10 @@ namespace Microsoft.Xna.Framework.Media
 			get;
 			set;
 		}
+
+		#endregion
+
+		#region Internal Properties
 
 		internal int Count
 		{
@@ -75,6 +73,31 @@ namespace Microsoft.Xna.Framework.Media
 			return songs[ActiveSongIndex];
 		}
 
+		#endregion
+
+		#region Private Variables
+
+		private List<Song> songs = new List<Song>();
+		private Random random = new Random();
+
+		#endregion
+
+		#region Public Constructor
+
+		public MediaQueue()
+		{
+			ActiveSongIndex = -1;
+		}
+
+		#endregion
+
+		#region Internal Methods
+
+		internal void Add(Song song)
+		{
+			songs.Add(song);
+		}
+
 		internal void Clear()
 		{
 			Song song;
@@ -95,11 +118,6 @@ namespace Microsoft.Xna.Framework.Media
 			}
 		}
 
-		internal void Add(Song song)
-		{
-			songs.Add(song);
-		}
-
 		internal void Stop()
 		{
 			int count = songs.Count;
@@ -108,5 +126,8 @@ namespace Microsoft.Xna.Framework.Media
 				songs[i].Stop();
 			}
 		}
+
+		#endregion
+
 	}
 }
