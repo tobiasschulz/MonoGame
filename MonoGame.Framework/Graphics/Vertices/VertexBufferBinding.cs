@@ -11,15 +11,8 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public struct VertexBufferBinding
     {
-        static VertexBufferBinding _none = new VertexBufferBinding(null);
-        VertexBuffer _vertexBuffer;
-        int _vertexOffset;
-        int _instanceFrequency;
 
-        /// <summary>
-        /// A null vertex buffer binding for unused vertex buffer slots.
-        /// </summary>
-        static internal VertexBufferBinding None { get { return _none; } }
+        #region Public Properties
 
         /// <summary>
         /// Gets the instance frequency. A value of 0 means no instancing.
@@ -35,6 +28,33 @@ namespace Microsoft.Xna.Framework.Graphics
         /// Gets the offset in bytes from the beginning of the vertex buffer to the first vertex to use.
         /// </summary>
         public int VertexOffset { get { return _vertexOffset; } }
+
+        #endregion
+
+        #region Internal Static Properties
+
+        /// <summary>
+        /// A null vertex buffer binding for unused vertex buffer slots.
+        /// </summary>
+        static internal VertexBufferBinding None { get { return _none; } }
+
+        #endregion
+
+        #region Private Variables
+
+        VertexBuffer _vertexBuffer;
+        int _vertexOffset;
+        int _instanceFrequency;
+
+        #endregion
+
+        #region Private Static Variables
+
+        static VertexBufferBinding _none = new VertexBufferBinding(null);
+
+        #endregion
+
+        #region Public Constructors
 
         /// <summary>
         /// Creates an instance of VertexBufferBinding.
@@ -71,5 +91,8 @@ namespace Microsoft.Xna.Framework.Graphics
             _vertexOffset = vertexOffset;
             _instanceFrequency = instanceFrequency;
         }
+
+        #endregion
+
     }
 }

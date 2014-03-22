@@ -216,6 +216,52 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
+        #region Public SetData Methods
+
+        public void SetData<T>(T[] data) where T : struct
+        {
+            SetDataInternal<T>(
+                0,
+                data,
+                0,
+                data.Length,
+                SetDataOptions.None
+            );
+        }
+
+        public void SetData<T>(
+            T[] data,
+            int startIndex,
+            int elementCount
+        ) where T : struct
+        {
+            SetDataInternal<T>(
+                0,
+                data,
+                startIndex,
+                elementCount,
+                SetDataOptions.None
+            );
+        }
+
+        public void SetData<T>(
+            int offsetInBytes,
+            T[] data,
+            int startIndex,
+            int elementCount
+        ) where T : struct
+        {
+            SetDataInternal<T>(
+                offsetInBytes,
+                data,
+                startIndex,
+                elementCount,
+                SetDataOptions.None
+            );
+        }
+
+        #endregion
+
 		#region Internal Master GetData Method
 
 		private void GetBufferData<T>(
@@ -251,50 +297,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
-		}
-
-		#endregion
-
-		#region Public SetData Methods
-
-		public void SetData<T>(T[] data) where T : struct
-		{
-			SetDataInternal<T>(
-				0,
-				data,
-				0,
-				data.Length,
-				SetDataOptions.None
-			);
-		}
-
-		public void SetData<T>(
-			T[] data,
-			int startIndex,
-			int elementCount
-		) where T : struct {
-			SetDataInternal<T>(
-				0,
-				data,
-				startIndex,
-				elementCount,
-				SetDataOptions.None
-			);
-		}
-
-		public void SetData<T>(
-			int offsetInBytes,
-			T[] data,
-			int startIndex,
-			int elementCount
-		) where T : struct {
-			SetDataInternal<T>(
-				offsetInBytes,
-				data,
-				startIndex,
-				elementCount,
-				SetDataOptions.None
-			);
 		}
 
 		#endregion

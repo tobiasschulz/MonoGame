@@ -7,11 +7,12 @@
  */
 #endregion
 
-using System;
-
+#region Using Statements
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -20,23 +21,8 @@ namespace Microsoft.Xna.Framework.Graphics
 	// but I'm not sure we want to use Vector3s if we don't have to.
     internal struct VertexPosition2ColorTexture : IVertexType
 	{
-		public Vector2 Position;
-		public Color Color;
-		public Vector2 TextureCoordinate;
 
-        public static readonly VertexDeclaration VertexDeclaration;
-		
-		public VertexPosition2ColorTexture ( Vector2 position, Color color, Vector2 texCoord )
-		{
-			Position = position;
-			Color = color;
-			TextureCoordinate = texCoord;
-		}
-		
-		public static int GetSize()
-		{
-				return sizeof(float)*4+sizeof(uint);
-	    }
+        #region Private Properties
 
         VertexDeclaration IVertexType.VertexDeclaration
         {
@@ -45,6 +31,60 @@ namespace Microsoft.Xna.Framework.Graphics
                 return VertexDeclaration;
             }
         }
+
+        #endregion
+
+        #region Public Fields
+        
+        public Vector2 Position;
+		public Color Color;
+		public Vector2 TextureCoordinate;
+
+        #endregion
+
+        #region Public Static Fields
+
+        public static readonly VertexDeclaration VertexDeclaration;
+
+        #endregion
+
+        #region Private Static Constructor
+
+        static VertexPosition2ColorTexture()
+        {
+
+            var elements = new VertexElement[] 
+            { 
+                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0), 
+                new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0), 
+                new VertexElement(12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) 
+            };
+            VertexDeclaration = new VertexDeclaration(elements);
+        }
+
+        #endregion
+
+        #region Public Constructor
+
+        public VertexPosition2ColorTexture ( Vector2 position, Color color, Vector2 texCoord )
+		{
+			Position = position;
+			Color = color;
+			TextureCoordinate = texCoord;
+		}
+
+        #endregion
+
+        #region Public Static Methods
+
+        public static int GetSize()
+		{
+				return sizeof(float)*4+sizeof(uint);
+	    }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         public override int GetHashCode()
         {
@@ -78,18 +118,8 @@ namespace Microsoft.Xna.Framework.Graphics
             return (this == ((VertexPosition2ColorTexture)obj));
         }
 
-        static VertexPosition2ColorTexture()
-        {
+        #endregion
 
-            var elements = new VertexElement[] 
-            { 
-                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0), 
-                new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0), 
-                new VertexElement(12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) 
-            };
-            VertexDeclaration = new VertexDeclaration(elements);
-        }
     }
  
 }
-

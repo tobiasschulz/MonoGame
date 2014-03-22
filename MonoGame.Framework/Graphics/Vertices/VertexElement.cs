@@ -13,10 +13,8 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public struct VertexElement
     {
-        internal int _offset;
-        internal VertexElementFormat _format;
-        internal VertexElementUsage _usage;
-        internal int _usageIndex;
+
+        #region Public Properties
 
         public int Offset
         {
@@ -53,7 +51,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 this._usage = value;
             }
         }
-        
+
         public int UsageIndex
         {
             get
@@ -65,7 +63,20 @@ namespace Microsoft.Xna.Framework.Graphics
                 this._usageIndex = value;
             }
         }
-        
+
+        #endregion
+
+        #region Internal Varialbes
+
+        internal int _offset;
+        internal VertexElementFormat _format;
+        internal VertexElementUsage _usage;
+        internal int _usageIndex;
+
+        #endregion
+
+        #region Public Constructor
+
         public VertexElement(int offset, VertexElementFormat elementFormat, VertexElementUsage elementUsage, int usageIndex)
         {
             this._offset = offset;
@@ -73,6 +84,10 @@ namespace Microsoft.Xna.Framework.Graphics
             this._format = elementFormat;
             this._usage = elementUsage;
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         public override int GetHashCode()
         {
@@ -107,6 +122,8 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             return !(left == right);
         }
+
+        #endregion
 
     }
 }

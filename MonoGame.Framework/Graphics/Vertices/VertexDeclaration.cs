@@ -7,28 +7,51 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public class VertexDeclaration : GraphicsResource
-	{
-		private VertexElement[] _elements;
-        private int _vertexStride;
+    {
 
-        Dictionary<int, VertexDeclarationAttributeInfo> shaderAttributeInfo = new Dictionary<int, VertexDeclarationAttributeInfo>();
+        #region Public Properties
+
+        public int VertexStride
+        {
+            get
+            {
+                return _vertexStride;
+            }
+        }
+
+        #endregion
+
+        #region Private Properties
 
         /// <summary>
         /// A hash value which can be used to compare declarations.
         /// </summary>
         internal int HashKey { get; private set; }
 
+        #endregion
 
-		public VertexDeclaration(params VertexElement[] elements)
+        #region Private Variables
+
+        private VertexElement[] _elements;
+        private int _vertexStride;
+
+        Dictionary<int, VertexDeclarationAttributeInfo> shaderAttributeInfo = new Dictionary<int, VertexDeclarationAttributeInfo>();
+
+        #endregion
+
+        #region Public Constructors
+
+        public VertexDeclaration(params VertexElement[] elements)
             : this( GetVertexStride(elements), elements)
 		{
 		}
@@ -54,68 +77,21 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-		private static int GetVertexStride(VertexElement[] elements)
-		{
-			int max = 0;
-			for (var i = 0; i < elements.Length; i++)
-			{
-                var start = elements[i].Offset + elements[i].VertexElementFormat.GetTypeSize();
-				if (max < start)
-					max = start;
-			}
+        #endregion
 
-			return max;
-		}
+        #region Public Methods
 
-        /// <summary>
-        /// Returns the VertexDeclaration for Type.
-        /// </summary>
-        /// <param name="vertexType">A value type which implements the IVertexType interface.</param>
-        /// <returns>The VertexDeclaration.</returns>
-        /// <remarks>
-        /// Prefer to use VertexDeclarationCache when the declaration lookup
-        /// can be performed with a templated type.
-        /// </remarks>
-		internal static VertexDeclaration FromType(Type vertexType)
-		{
-			if (vertexType == null)
-				throw new ArgumentNullException("vertexType", "Cannot be null");
-
-            if (!vertexType.IsValueType)
-            {
-				throw new ArgumentException("vertexType", "Must be value type");
-			}
-
-            var type = Activator.CreateInstance(vertexType) as IVertexType;
-			if (type == null)
-			{
-				throw new ArgumentException("vertexData does not inherit IVertexType");
-			}
-
-            var vertexDeclaration = type.VertexDeclaration;
-			if (vertexDeclaration == null)
-			{
-				throw new Exception("VertexDeclaration cannot be null");
-			}
-
-			return vertexDeclaration;
-		}
-        
         public VertexElement[] GetVertexElements()
-		{
-			return (VertexElement[])_elements.Clone();
-		}
+        {
+            return (VertexElement[])_elements.Clone();
+        }
 
-		public int VertexStride
-		{
-			get
-			{
-				return _vertexStride;
-			}
-		}
+        #endregion
 
-		internal void Apply(Shader shader, IntPtr offset, int divisor = 0)
-		{
+        #region Internal Methods
+
+        internal void Apply(Shader shader, IntPtr offset, int divisor = 0)
+        {
             VertexDeclarationAttributeInfo attrInfo;
             int shaderHash = shader.GetHashCode();
             if (!shaderAttributeInfo.TryGetValue(shaderHash, out attrInfo))
@@ -155,10 +131,69 @@ namespace Microsoft.Xna.Framework.Graphics
                     element.VertexAttribPointerType,
                     element.Normalized,
                     VertexStride,
-                    (IntPtr) (offset.ToInt64() + element.Offset)
+                    (IntPtr)(offset.ToInt64() + element.Offset)
                 );
             }
+        }
+
+        #endregion
+
+        #region Internal Static Methods
+
+        /// <summary>
+        /// Returns the VertexDeclaration for Type.
+        /// </summary>
+        /// <param name="vertexType">A value type which implements the IVertexType interface.</param>
+        /// <returns>The VertexDeclaration.</returns>
+        /// <remarks>
+        /// Prefer to use VertexDeclarationCache when the declaration lookup
+        /// can be performed with a templated type.
+        /// </remarks>
+        internal static VertexDeclaration FromType(Type vertexType)
+        {
+            if (vertexType == null)
+                throw new ArgumentNullException("vertexType", "Cannot be null");
+
+            if (!vertexType.IsValueType)
+            {
+                throw new ArgumentException("vertexType", "Must be value type");
+            }
+
+            var type = Activator.CreateInstance(vertexType) as IVertexType;
+            if (type == null)
+            {
+                throw new ArgumentException("vertexData does not inherit IVertexType");
+            }
+
+            var vertexDeclaration = type.VertexDeclaration;
+            if (vertexDeclaration == null)
+            {
+                throw new Exception("VertexDeclaration cannot be null");
+            }
+
+            return vertexDeclaration;
+        }
+
+        #endregion
+
+        #region Private Static Methods
+
+        private static int GetVertexStride(VertexElement[] elements)
+		{
+			int max = 0;
+			for (var i = 0; i < elements.Length; i++)
+			{
+                var start = elements[i].Offset + elements[i].VertexElementFormat.GetTypeSize();
+				if (max < start)
+					max = start;
+			}
+
+			return max;
 		}
+
+        #endregion
+
+        #region Private Class VertexDeclarationAttributeInfo
 
         /// <summary>
         /// Vertex attribute information for a particular shader/vertex declaration combination.
@@ -184,5 +219,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 Elements = new List<Element>();
             }
         }
+
+        #endregion
+
     }
 }
