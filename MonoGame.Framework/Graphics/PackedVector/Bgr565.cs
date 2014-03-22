@@ -16,14 +16,34 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
     /// </summary>
     public struct Bgr565 : IPackedVector<UInt16>, IEquatable<Bgr565>, IPackedVector
     {
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets and sets the packed value.
+        /// </summary>
+        [CLSCompliant(false)]
+        public UInt16 PackedValue
+        {
+            get
+            {
+                return _packedValue;
+            }
+            set
+            {
+                _packedValue = value;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
         UInt16 _packedValue;
 
-        private static UInt16 Pack(float x, float y, float z)
-        {
-            return (UInt16)((((int)(MathHelper.Clamp(x, 0, 1) * 31.0f) & 0x1F) << 11) |
-                (((int)(MathHelper.Clamp(y, 0, 1) * 63.0f) & 0x3F) << 5) |
-                ((int)(MathHelper.Clamp(z, 0, 1) * 31.0f) & 0x1F));
-        }
+        #endregion
+
+        #region Public Constructors
 
         /// <summary>
         /// Creates a new instance of Bgr565.
@@ -45,21 +65,9 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             _packedValue = Pack(vector.X, vector.Y, vector.Z);
         }
 
-        /// <summary>
-        /// Gets and sets the packed value.
-        /// </summary>
-        [CLSCompliant(false)]
-        public UInt16 PackedValue
-        {
-            get
-            {
-                return _packedValue;
-            }
-            set
-            {
-                _packedValue = value;
-            }
-        }
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Gets the packed vector in Vector3 format.
@@ -72,6 +80,10 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
                 (float)((_packedValue & 0x1F) * (1.0f / 31.0f))
                 );
         }
+
+        #endregion
+
+        #region Private Methods
 
         /// <summary>
         /// Sets the packed vector from a Vector4.
@@ -92,6 +104,10 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         {
             return new Vector4(ToVector3(), 1.0f);
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Compares an object with the packed vector.
@@ -142,5 +158,19 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         {
             return lhs._packedValue != rhs._packedValue;
         }
+
+        #endregion
+
+        #region Private Static Methods
+
+        private static UInt16 Pack(float x, float y, float z)
+        {
+            return (UInt16)((((int)(MathHelper.Clamp(x, 0, 1) * 31.0f) & 0x1F) << 11) |
+                (((int)(MathHelper.Clamp(y, 0, 1) * 63.0f) & 0x3F) << 5) |
+                ((int)(MathHelper.Clamp(z, 0, 1) * 31.0f) & 0x1F));
+        }
+
+        #endregion
+
     }
 }

@@ -7,13 +7,18 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
     internal class HalfTypeHelper
     {
+
+        #region Private Struct uif
+
         [StructLayout(LayoutKind.Explicit)]
         private struct uif
         {
@@ -24,6 +29,10 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             [FieldOffset(0)]
             public uint u;
         }
+
+        #endregion
+
+        #region Internal Static Methods
 
         internal static UInt16 Convert(float f)
         {
@@ -118,5 +127,8 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             uif.u = rst;
             return uif.f;
         }
+
+        #endregion
+
     }
 }

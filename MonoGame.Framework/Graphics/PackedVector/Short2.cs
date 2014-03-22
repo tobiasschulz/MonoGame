@@ -12,10 +12,34 @@ using System;
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
 	public struct Short2 : IPackedVector<uint>, IEquatable<Short2>
-	{
-		private uint _short2Packed;
+    {
 
-		public Short2 (Vector2 vector)
+        #region Public Properties
+
+        [CLSCompliant(false)]
+        public uint PackedValue
+        {
+            get
+            {
+                return _short2Packed;
+            }
+            set
+            {
+                _short2Packed = value;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
+        private uint _short2Packed;
+
+        #endregion
+
+        #region Public Constructors
+
+        public Short2 (Vector2 vector)
 		{
 			_short2Packed = PackInTwo (vector.X, vector.Y);
 		}
@@ -25,7 +49,40 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 			_short2Packed = PackInTwo (x, y);
 		}
 
-		public static bool operator !=(Short2 a, Short2 b)
+        #endregion
+
+        #region Public Methods
+
+        public Vector2 ToVector2()
+        {
+            var v2 = new Vector2();
+            v2.X = (short)(_short2Packed & 0xFFFF);
+            v2.Y = (short)(_short2Packed >> 0x10);
+            return v2;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        void IPackedVector.PackFromVector4(Vector4 vector)
+        {
+            _short2Packed = Short2.PackInTwo(vector.X, vector.Y);
+        }
+
+        Vector4 IPackedVector.ToVector4()
+        {
+            var v4 = new Vector4(0, 0, 0, 1);
+            v4.X = (short)(_short2Packed & 0xFFFF);
+            v4.Y = (short)(_short2Packed >> 0x10);
+            return v4;
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
+        public static bool operator !=(Short2 a, Short2 b)
 		{
 			return a.PackedValue != b.PackedValue;
 		}
@@ -35,20 +92,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 			return a.PackedValue == b.PackedValue;
 		}
 
-        [CLSCompliant(false)]
-		public uint PackedValue
-        { 
-			get
-            { 
-				return _short2Packed; 
-			} 
-			set
-            { 
-				_short2Packed = value; 
-			} 
-		}
-
-		public override bool Equals (object obj)
+        public override bool Equals (object obj)
 		{
             if (obj is Short2)
                 return this == (Short2)obj;
@@ -70,15 +114,11 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             return _short2Packed.ToString("x8");
 		}
 
-		public Vector2 ToVector2 ()
-		{
-			var v2 = new Vector2 ();
-			v2.X = (short)(_short2Packed & 0xFFFF);
-			v2.Y = (short)(_short2Packed >> 0x10);
-			return v2;
-		}
+        #endregion
 
-		private static uint PackInTwo (float vectorX, float vectorY)
+        #region Private Static Methods
+
+        private static uint PackInTwo (float vectorX, float vectorY)
 		{
 			const float maxPos = 0x7FFF; // Largest two byte positive number 0xFFFF >> 1; 
 			const float minNeg = ~(int)maxPos; // two's complement
@@ -90,17 +130,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 			return (word2 | word1);
 		}
 
-		void IPackedVector.PackFromVector4 (Vector4 vector)
-		{
-			_short2Packed = Short2.PackInTwo (vector.X, vector.Y);
-		}
+        #endregion
 
-		Vector4 IPackedVector.ToVector4 ()
-		{
-			var v4 = new Vector4 (0,0,0,1);
-			v4.X = (short)(_short2Packed & 0xFFFF);
-			v4.Y = (short)(_short2Packed >> 0x10);
-			return v4;
-		}
-	}
+    }
 }

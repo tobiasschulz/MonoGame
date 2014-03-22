@@ -12,28 +12,9 @@ using System;
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
 	public struct NormalizedShort2 : IPackedVector<uint>, IEquatable<NormalizedShort2>
-	{
-		private uint short2Packed;
+    {
 
-        public NormalizedShort2(Vector2 vector)
-		{
-            short2Packed = PackInTwo(vector.X, vector.Y);
-		}
-
-        public NormalizedShort2(float x, float y)
-		{
-            short2Packed = PackInTwo(x, y);
-		}
-
-        public static bool operator !=(NormalizedShort2 a, NormalizedShort2 b)
-		{
-			return !a.Equals (b);
-		}
-
-        public static bool operator ==(NormalizedShort2 a, NormalizedShort2 b)
-		{
-			return a.Equals (b);
-		}
+        #region Public Properties
 
         [CLSCompliant(false)]
         public uint PackedValue
@@ -45,10 +26,77 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             set
             {
                 short2Packed = value;
-            } 
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
+        private uint short2Packed;
+
+        #endregion
+
+        #region Public Constructors
+
+        public NormalizedShort2(Vector2 vector)
+		{
+            short2Packed = PackInTwo(vector.X, vector.Y);
 		}
 
-		public override bool Equals (object obj)
+        public NormalizedShort2(float x, float y)
+		{
+            short2Packed = PackInTwo(x, y);
+		}
+
+        #endregion
+
+        #region Public Methods
+
+        public Vector2 ToVector2()
+        {
+            const float maxVal = 0x7FFF;
+
+            var v2 = new Vector2();
+            v2.X = ((short)(short2Packed & 0xFFFF)) / maxVal;
+            v2.Y = (short)(short2Packed >> 0x10) / maxVal;
+            return v2;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        void IPackedVector.PackFromVector4(Vector4 vector)
+        {
+            short2Packed = PackInTwo(vector.X, vector.Y);
+        }
+
+        Vector4 IPackedVector.ToVector4()
+        {
+            const float maxVal = 0x7FFF;
+
+            var v4 = new Vector4(0, 0, 0, 1);
+            v4.X = ((short)((short2Packed >> 0x00) & 0xFFFF)) / maxVal;
+            v4.Y = ((short)((short2Packed >> 0x10) & 0xFFFF)) / maxVal;
+            return v4;
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
+        public static bool operator !=(NormalizedShort2 a, NormalizedShort2 b)
+		{
+			return !a.Equals (b);
+		}
+
+        public static bool operator ==(NormalizedShort2 a, NormalizedShort2 b)
+		{
+			return a.Equals (b);
+		}
+
+        public override bool Equals (object obj)
 		{
             return (obj is NormalizedShort2) && Equals((NormalizedShort2)obj);
 		}
@@ -68,17 +116,11 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             return short2Packed.ToString("X");
 		}
 
-		public Vector2 ToVector2 ()
-		{
-            const float maxVal = 0x7FFF;
+        #endregion
 
-			var v2 = new Vector2 ();
-            v2.X = ((short)(short2Packed & 0xFFFF)) / maxVal;
-            v2.Y = (short)(short2Packed >> 0x10) / maxVal;
-			return v2;
-		}
+        #region Private Static Methods
 
-		private static uint PackInTwo (float vectorX, float vectorY)
+        private static uint PackInTwo (float vectorX, float vectorY)
 		{
 			const float maxPos = 0x7FFF;
             const float minNeg = -maxPos;
@@ -91,19 +133,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 			return (word2 | word1);
 		}
 
-		void IPackedVector.PackFromVector4 (Vector4 vector)
-		{
-            short2Packed = PackInTwo(vector.X, vector.Y);
-		}
+        #endregion
 
-		Vector4 IPackedVector.ToVector4 ()
-		{
-            const float maxVal = 0x7FFF;
-
-			var v4 = new Vector4 (0,0,0,1);
-            v4.X = ((short)((short2Packed >> 0x00) & 0xFFFF)) / maxVal;
-            v4.Y = ((short)((short2Packed >> 0x10) & 0xFFFF)) / maxVal;
-			return v4;
-		}
-	}
+    }
 }

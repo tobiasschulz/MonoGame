@@ -13,12 +13,8 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
     public struct HalfSingle : IPackedVector<UInt16>, IEquatable<HalfSingle>, IPackedVector
     {
-        UInt16 packedValue;
 
-        public HalfSingle(float single)
-        {
-            packedValue = HalfTypeHelper.Convert(single);
-        }
+        #region Public Properties
 
         [CLSCompliant(false)]
         public ushort PackedValue
@@ -33,10 +29,33 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             }
         }
 
+        #endregion
+
+        #region Private Variables
+
+        UInt16 packedValue;
+
+        #endregion
+
+        #region Public Constructors
+
+        public HalfSingle(float single)
+        {
+            packedValue = HalfTypeHelper.Convert(single);
+        }
+
+        #endregion
+
+        #region Public Methods
+
         public float ToSingle()
         {
             return HalfTypeHelper.Convert(this.packedValue);
         }
+
+        #endregion
+
+        #region Private Methods
 
         void IPackedVector.PackFromVector4(Vector4 vector)
         {
@@ -47,6 +66,10 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         {
             return new Vector4(this.ToSingle(), 0f, 0f, 1f);
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         public override bool Equals(object obj)
         {
@@ -82,5 +105,8 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         {
             return lhs.packedValue != rhs.packedValue;
         }
+
+        #endregion
+
     }
 }

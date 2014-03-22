@@ -16,7 +16,35 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
     /// </summary>
     public struct HalfVector4 : IPackedVector<ulong>, IPackedVector, IEquatable<HalfVector4>
     {
+
+        #region Public Properties
+
+        /// <summary>
+        /// Directly gets or sets the packed representation of the value.
+        /// </summary>
+        /// <value>The packed representation of the value.</value>
+        [CLSCompliant(false)]
+        public ulong PackedValue
+        {
+            get
+            {
+                return packedValue;
+            }
+            set
+            {
+                packedValue = value;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
         ulong packedValue;
+
+        #endregion
+
+        #region Public Constructors
 
         /// <summary>
         /// Initializes a new instance of the HalfVector4 structure.
@@ -40,28 +68,9 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             packedValue = PackHelper(ref vector);
         }
 
-        /// <summary>
-        /// Sets the packed representation from a Vector4.
-        /// </summary>
-        /// <param name="vector">The vector to create the packed representation from.</param>
-        void IPackedVector.PackFromVector4(Vector4 vector)
-        {
-            packedValue = PackHelper(ref vector);
-        }
+        #endregion
 
-        /// <summary>
-        /// Packs a vector into a ulong.
-        /// </summary>
-        /// <param name="vector">The vector containing the values to pack.</param>
-        /// <returns>The ulong containing the packed values.</returns>
-        static ulong PackHelper(ref Vector4 vector)
-        {
-            ulong num4 = (ulong)HalfTypeHelper.Convert(vector.X);
-            ulong num3 = ((ulong)HalfTypeHelper.Convert(vector.Y) << 0x10);
-            ulong num2 = ((ulong)HalfTypeHelper.Convert(vector.Z) << 0x20);
-            ulong num1 = ((ulong)HalfTypeHelper.Convert(vector.W) << 0x30);
-            return num4 | num3 | num2 | num1;
-        }
+        #region Public Methods
 
         /// <summary>
         /// Expands the packed representation into a Vector4.
@@ -76,22 +85,22 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
                 HalfTypeHelper.Convert((ushort)(packedValue >> 0x30)));
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// Directly gets or sets the packed representation of the value.
+        /// Sets the packed representation from a Vector4.
         /// </summary>
-        /// <value>The packed representation of the value.</value>
-        [CLSCompliant(false)]
-        public ulong PackedValue
+        /// <param name="vector">The vector to create the packed representation from.</param>
+        void IPackedVector.PackFromVector4(Vector4 vector)
         {
-            get
-            {
-                return packedValue;
-            }
-            set
-            {
-                packedValue = value;
-            }
+            packedValue = PackHelper(ref vector);
         }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         /// <summary>
         /// Returns a string representation of the current instance.
@@ -152,5 +161,26 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         {
             return !a.Equals(b);
         }
+
+        #endregion
+
+        #region Private Static Methods
+
+        /// <summary>
+        /// Packs a vector into a ulong.
+        /// </summary>
+        /// <param name="vector">The vector containing the values to pack.</param>
+        /// <returns>The ulong containing the packed values.</returns>
+        static ulong PackHelper(ref Vector4 vector)
+        {
+            ulong num4 = (ulong)HalfTypeHelper.Convert(vector.X);
+            ulong num3 = ((ulong)HalfTypeHelper.Convert(vector.Y) << 0x10);
+            ulong num2 = ((ulong)HalfTypeHelper.Convert(vector.Z) << 0x20);
+            ulong num1 = ((ulong)HalfTypeHelper.Convert(vector.W) << 0x30);
+            return num4 | num3 | num2 | num1;
+        }
+
+        #endregion
+
     }
 }
