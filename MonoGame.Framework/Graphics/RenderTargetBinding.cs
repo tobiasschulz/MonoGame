@@ -13,21 +13,32 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	// http://msdn.microsoft.com/en-us/library/ff434403.aspx
 	public struct RenderTargetBinding
-	{
-        private readonly Texture _renderTarget;
-        private readonly int _arraySlice;
+    {
 
-		public Texture RenderTarget 
+        #region Public Properties
+
+        public Texture RenderTarget
         {
-			get { return _renderTarget; }
-		}
+            get { return _renderTarget; }
+        }
 
         public int ArraySlice
         {
             get { return _arraySlice; }
         }
 
-		public RenderTargetBinding(RenderTarget2D renderTarget)
+        #endregion
+
+        #region Private Variables
+
+        private readonly Texture _renderTarget;
+        private readonly int _arraySlice;
+
+        #endregion
+
+        #region Public Constructors
+
+        public RenderTargetBinding(RenderTarget2D renderTarget)
 		{
 			if (renderTarget == null) 
 				throw new ArgumentNullException("renderTarget");
@@ -47,9 +58,16 @@ namespace Microsoft.Xna.Framework.Graphics
             _arraySlice = (int)cubeMapFace;
         }
 
+        #endregion
+
+        #region Public Static Conversion Operator
+
         public static implicit operator RenderTargetBinding(RenderTarget2D renderTarget)
         {
             return new RenderTargetBinding(renderTarget);
         }
-	}
+
+        #endregion
+
+    }
 }

@@ -13,9 +13,15 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class ResourceCreatedEventArgs : EventArgs
     {
+
+        #region Public Properties
+
         /// <summary>
         /// The newly created resource object.
         /// </summary>
         public Object Resource { get; internal set; }
+
+        #endregion
+
     }
 }

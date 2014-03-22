@@ -18,6 +18,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Texture3D : Texture
 	{
+
 		#region Public Properties
 
 		public int Width
@@ -251,5 +252,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
+
 	}
 }

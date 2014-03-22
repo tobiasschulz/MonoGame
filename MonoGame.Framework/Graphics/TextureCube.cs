@@ -18,6 +18,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class TextureCube : Texture
 	{
+
 		#region Public Properties
 
 		/// <summary>
@@ -272,5 +273,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
+
 	}
 }

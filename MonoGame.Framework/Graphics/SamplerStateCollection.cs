@@ -11,6 +11,23 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class SamplerStateCollection
 	{
+
+        #region Public Array Access Property
+
+        public SamplerState this[int index]
+        {
+            get
+            {
+                return samplers[index];
+            }
+            set
+            {
+                samplers[index] = value;
+            }
+        }
+
+        #endregion
+
 		#region Private Variables
 
 		private SamplerState[] samplers;
@@ -27,22 +44,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Public Array Access Method
-
-		public SamplerState this[int index]
-		{
-			get
-			{
-				return samplers[index];
-			}
-			set
-			{
-				samplers[index] = value;
-			}
-		}
-
-		#endregion
-
 		#region Internal Array Clear Method
 
 		internal void Clear()
@@ -54,5 +55,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
+
 	}
 }

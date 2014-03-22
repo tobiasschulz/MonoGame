@@ -22,6 +22,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Texture2D : Texture
 	{
+
 		#region Public Properties
 
 		public int Width
@@ -432,35 +433,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Public Texture2D Load Method
-
-		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
-		{
-			// Load the Stream into an SDL_RWops*
-			byte[] mem = new byte[stream.Length];
-			stream.Read(mem, 0, mem.Length);
-			IntPtr rwops = SDL.SDL_RWFromMem(mem, mem.Length);
-
-			// Load the SDL_Surface* from RWops, get the image data
-			IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
-			surface = INTERNAL_convertSurfaceFormat(surface);
-			int width = INTERNAL_getSurfaceWidth(surface);
-			int height = INTERNAL_getSurfaceHeight(surface);
-			byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
-			Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
-
-			// Create the Texture2D from the SDL_Surface
-			Texture2D result = new Texture2D(
-				graphicsDevice,
-				width,
-				height
-			);
-			result.SetData(pixels);
-			return result;
-		}
-
-		#endregion
-
 		#region Public Texture2D Save Methods
 
 		public void SaveAsJpeg(Stream stream, int width, int height)
@@ -620,5 +592,35 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
+
+        #region Public Static Texture2D Load Method
+
+        public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
+        {
+            // Load the Stream into an SDL_RWops*
+            byte[] mem = new byte[stream.Length];
+            stream.Read(mem, 0, mem.Length);
+            IntPtr rwops = SDL.SDL_RWFromMem(mem, mem.Length);
+
+            // Load the SDL_Surface* from RWops, get the image data
+            IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
+            surface = INTERNAL_convertSurfaceFormat(surface);
+            int width = INTERNAL_getSurfaceWidth(surface);
+            int height = INTERNAL_getSurfaceHeight(surface);
+            byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
+            Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
+
+            // Create the Texture2D from the SDL_Surface
+            Texture2D result = new Texture2D(
+                graphicsDevice,
+                width,
+                height
+            );
+            result.SetData(pixels);
+            return result;
+        }
+
+        #endregion
+
 	}
 }

@@ -7,16 +7,139 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework;
 using System;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
     [DataContract]
     public struct Viewport
     {
-		/// <summary>
+
+        #region Public Properties
+
+        [DataMember]
+        public int Height
+        {
+            get
+            {
+                return this.height;
+            }
+            set
+            {
+                height = value;
+            }
+        }
+
+        [DataMember]
+        public float MaxDepth
+        {
+            get
+            {
+                return this.maxDepth;
+            }
+            set
+            {
+                maxDepth = value;
+            }
+        }
+
+        [DataMember]
+        public float MinDepth
+        {
+            get
+            {
+                return this.minDepth;
+            }
+            set
+            {
+                minDepth = value;
+            }
+        }
+
+        [DataMember]
+        public int Width
+        {
+            get
+            {
+                return this.width;
+            }
+            set
+            {
+                width = value;
+            }
+        }
+
+        [DataMember]
+        public int Y
+        {
+            get
+            {
+                return this.y;
+
+            }
+            set
+            {
+                y = value;
+            }
+        }
+
+        [DataMember]
+        public int X
+        {
+            get { return x; }
+            set { x = value; }
+        }
+
+        public float AspectRatio
+        {
+            get
+            {
+                if ((height != 0) && (width != 0))
+                {
+                    return (((float)width) / ((float)height));
+                }
+                return 0f;
+            }
+        }
+
+        public Rectangle Bounds
+        {
+            get
+            {
+                Rectangle rectangle;
+                rectangle.X = x;
+                rectangle.Y = y;
+                rectangle.Width = width;
+                rectangle.Height = height;
+                return rectangle;
+            }
+
+            set
+            {
+                x = value.X;
+                y = value.Y;
+                width = value.Width;
+                height = value.Height;
+            }
+        }
+
+        public Rectangle TitleSafeArea
+        {
+            get
+            {
+                return new Rectangle(x, y, width, height);
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
+        /// <summary>
 		/// Attributes 
 		/// </summary>
 		private int x;
@@ -25,114 +148,12 @@ namespace Microsoft.Xna.Framework.Graphics
 		private int height;
 		private float minDepth;
 		private float maxDepth;
-		
-		#region Properties
-        [DataMember]
-        public int Height
-        {
-			get {
-				return this.height;
-			}
-			set {
-				height = value;
-			}
-		}
 
-        [DataMember]
-        public float MaxDepth
-        {
-			get {
-				return this.maxDepth;
-			}
-			set {
-				maxDepth = value;
-			}
-		}
+        #endregion
 
-        [DataMember]
-        public float MinDepth
-        {
-			get {
-				return this.minDepth;
-			}
-			set {
-				minDepth = value;
-			}
-		}
+        #region Public Constructors
 
-        [DataMember]
-        public int Width
-        {
-			get {
-				return this.width;
-			}
-			set {
-				width = value;
-			}
-		}
-
-        [DataMember]
-        public int Y
-        {
-			get {
-				return this.y;
-
-			}
-			set {
-				y = value;
-			}
-		}
-
-        [DataMember]
-        public int X 
-		{
-			get{ return x;}
-			set{ x = value;}
-		}
-		#endregion
-		
-		public float AspectRatio 
-		{
-			get
-			{
-				if ((height != 0) && (width != 0))
-				{
-					return (((float) width)/((float)height));
-				}
-				return 0f;
-			}
-		}
-		
-		public Rectangle Bounds 
-		{ 
-			get 
-			{
-				Rectangle rectangle;
-				rectangle.X = x;
-				rectangle.Y = y;
-				rectangle.Width = width;
-				rectangle.Height = height;
-				return rectangle;
-			}
-				
-			set
-			{				
-				x = value.X;
-				y = value.Y;
-				width = value.Width;
-				height = value.Height;
-			}
-		}
-		
-		public Rectangle TitleSafeArea 
-		{
-			get
-			{
-				return new Rectangle(x,y,width,height);
-			}
-		}
-		
-		public Viewport(int x, int y, int width, int height)
+        public Viewport(int x, int y, int width, int height)
 		{
 			this.x = x;
 		    this.y = y;
@@ -145,6 +166,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		public Viewport(Rectangle bounds) : this(bounds.X, bounds.Y, bounds.Width, bounds.Height)
 		{
 		}
+
+        #endregion
+
+        #region Public Methods
 
         public Vector3 Project(Vector3 source, Matrix projection, Matrix view, Matrix world)
         {
@@ -180,18 +205,28 @@ namespace Microsoft.Xna.Framework.Graphics
 		    return vector;
 
         }
-		
-		private static bool WithinEpsilon(float a, float b)
+
+        #endregion
+
+        #region Public Override for ToString Method
+
+        public override string ToString()
+        {
+            return "{X:" + x + " Y:" + y + " Width:" + width + " Height:" + height + " MinDepth:" + minDepth + " MaxDepth:" + maxDepth + "}";
+        }
+
+        #endregion
+
+        #region Private Static Methods
+
+        private static bool WithinEpsilon(float a, float b)
 		{
 		    float num = a - b;
 		    return ((-1.401298E-45f <= num) && (num <= float.Epsilon));
 		}
 
+        #endregion
 
-        public override string ToString ()
-	{
-	        return "{X:" + x + " Y:" + y + " Width:" + width + " Height:" + height + " MinDepth:" + minDepth + " MaxDepth:" + maxDepth + "}";
-	}
     }
 }
 

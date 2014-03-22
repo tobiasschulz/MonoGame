@@ -19,10 +19,13 @@ namespace Microsoft.Xna.Framework.Graphics
     /// </summary>
 	internal class SpriteBatcher
 	{
+
         /*
          * Note that this class is fundamental to high performance for SpriteBatch games. Please exercise
          * caution when making changes to this class.
          */
+
+        #region Private Variables
 
         /// <summary>
         /// Initialization size for the batch item list and queue.
@@ -59,7 +62,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private VertexPositionColorTexture[] _vertexArray;
 
-		public SpriteBatcher (GraphicsDevice device)
+        #endregion
+
+        #region Public Constructors
+
+        public SpriteBatcher (GraphicsDevice device)
 		{
             _device = device;
 
@@ -68,6 +75,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
             EnsureArrayCapacity(InitialBatchSize);
 		}
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Create an instance of SpriteBatchItem if there is none available in the free item queue. Otherwise,
@@ -84,6 +95,86 @@ namespace Microsoft.Xna.Framework.Graphics
             _batchItemList.Add(item);
             return item;
         }
+
+        /// <summary>
+        /// Sorts the batch items and then groups batch drawing into maximal allowed batch sets that do not
+        /// overflow the 16 bit array indices for vertices.
+        /// </summary>
+        /// <param name="sortMode">The type of depth sorting desired for the rendering.</param>
+        public void DrawBatch(SpriteSortMode sortMode)
+        {
+            // nothing to do
+            if (_batchItemList.Count == 0)
+                return;
+
+            // sort the batch items
+            switch (sortMode)
+            {
+                case SpriteSortMode.Texture:
+                    _batchItemList.Sort(CompareTexture);
+                    break;
+                case SpriteSortMode.FrontToBack:
+                    _batchItemList.Sort(CompareDepth);
+                    break;
+                case SpriteSortMode.BackToFront:
+                    _batchItemList.Sort(CompareReverseDepth);
+                    break;
+            }
+
+            // Determine how many iterations through the drawing code we need to make
+            int batchIndex = 0;
+            int batchCount = _batchItemList.Count;
+            // Iterate through the batches, doing short.MaxValue sets of vertices only.
+            while (batchCount > 0)
+            {
+                // setup the vertexArray array
+                var startIndex = 0;
+                var index = 0;
+                Texture2D tex = null;
+
+                int numBatchesToProcess = batchCount;
+                if (numBatchesToProcess > MaxBatchSize)
+                {
+                    numBatchesToProcess = MaxBatchSize;
+                }
+                EnsureArrayCapacity(numBatchesToProcess);
+                // Draw the batches
+                for (int i = 0; i < numBatchesToProcess; i++, batchIndex++)
+                {
+                    SpriteBatchItem item = _batchItemList[batchIndex];
+                    // if the texture changed, we need to flush and bind the new texture
+                    var shouldFlush = !ReferenceEquals(item.Texture, tex);
+                    if (shouldFlush)
+                    {
+                        FlushVertexArray(startIndex, index);
+
+                        tex = item.Texture;
+                        startIndex = index = 0;
+                        _device.Textures[0] = tex;
+                    }
+
+                    // store the SpriteBatchItem data in our vertexArray
+                    _vertexArray[index++] = item.vertexTL;
+                    _vertexArray[index++] = item.vertexTR;
+                    _vertexArray[index++] = item.vertexBL;
+                    _vertexArray[index++] = item.vertexBR;
+
+                    // Release the texture and return the item to the queue.
+                    item.Texture = null;
+                    _freeBatchItemQueue.Enqueue(item);
+                }
+                // flush the remaining vertexArray data
+                FlushVertexArray(startIndex, index);
+                // Update our batch count to continue the process of culling down
+                // large batches
+                batchCount -= numBatchesToProcess;
+            }
+            _batchItemList.Clear();
+        }
+
+        #endregion
+
+        #region Private Methods
 
         /// <summary>
         /// Resize and recreate the missing indices for the index and vertex position color buffers.
@@ -131,6 +222,33 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         /// <summary>
+        /// Sends the triangle list to the graphics device. Here is where the actual drawing starts.
+        /// </summary>
+        /// <param name="start">Start index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
+        /// <param name="end">End index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
+        private void FlushVertexArray(int start, int end)
+        {
+            if (start == end)
+                return;
+
+            var vertexCount = end - start;
+
+            _device.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleList,
+                _vertexArray,
+                0,
+                vertexCount,
+                _index,
+                0,
+                (vertexCount / 4) * 2,
+                VertexPositionColorTexture.VertexDeclaration);
+        }
+
+        #endregion
+
+        #region Private Static Methods
+
+        /// <summary>
         /// Reference comparison of the underlying Texture objects for each given SpriteBatchitem.
         /// </summary>
         /// <param name="a"></param>
@@ -163,105 +281,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			return b.Depth.CompareTo(a.Depth);
 		}
-		
-        /// <summary>
-        /// Sorts the batch items and then groups batch drawing into maximal allowed batch sets that do not
-        /// overflow the 16 bit array indices for vertices.
-        /// </summary>
-        /// <param name="sortMode">The type of depth sorting desired for the rendering.</param>
-		public void DrawBatch(SpriteSortMode sortMode)
-		{
-			// nothing to do
-			if ( _batchItemList.Count == 0 )
-				return;
-			
-			// sort the batch items
-			switch ( sortMode )
-			{
-			case SpriteSortMode.Texture :
-				_batchItemList.Sort( CompareTexture );
-				break;
-			case SpriteSortMode.FrontToBack :
-				_batchItemList.Sort ( CompareDepth );
-				break;
-			case SpriteSortMode.BackToFront :
-				_batchItemList.Sort ( CompareReverseDepth );
-				break;
-			}
 
-            // Determine how many iterations through the drawing code we need to make
-            int batchIndex = 0;
-            int batchCount = _batchItemList.Count;
-            // Iterate through the batches, doing short.MaxValue sets of vertices only.
-            while(batchCount > 0)
-            {
-                // setup the vertexArray array
-                var startIndex = 0;
-                var index = 0;
-                Texture2D tex = null;
+        #endregion
 
-                int numBatchesToProcess = batchCount;
-                if (numBatchesToProcess > MaxBatchSize)
-                {
-                    numBatchesToProcess = MaxBatchSize;
-                }
-                EnsureArrayCapacity(numBatchesToProcess);
-                // Draw the batches
-                for(int i = 0; i < numBatchesToProcess; i++, batchIndex++) 
-                {
-                    SpriteBatchItem item = _batchItemList[batchIndex];
-                    // if the texture changed, we need to flush and bind the new texture
-                    var shouldFlush = !ReferenceEquals(item.Texture, tex);
-                    if (shouldFlush)
-                    {
-                        FlushVertexArray(startIndex, index);
-
-                        tex = item.Texture;
-                        startIndex = index = 0;
-                        _device.Textures[0] = tex;
-                    }
-
-                    // store the SpriteBatchItem data in our vertexArray
-                    _vertexArray[index++] = item.vertexTL;
-                    _vertexArray[index++] = item.vertexTR;
-                    _vertexArray[index++] = item.vertexBL;
-                    _vertexArray[index++] = item.vertexBR;
-
-                    // Release the texture and return the item to the queue.
-                    item.Texture = null;
-                    _freeBatchItemQueue.Enqueue(item);
-                }
-                // flush the remaining vertexArray data
-                FlushVertexArray(startIndex, index);
-                // Update our batch count to continue the process of culling down
-                // large batches
-                batchCount -= numBatchesToProcess;
-            }
-			_batchItemList.Clear();
-		}
-				
-        /// <summary>
-        /// Sends the triangle list to the graphics device. Here is where the actual drawing starts.
-        /// </summary>
-        /// <param name="start">Start index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
-        /// <param name="end">End index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
-		private void FlushVertexArray( int start, int end )
-		{
-            if ( start == end )
-                return;
-
-            var vertexCount = end - start;
-
-            _device.DrawUserIndexedPrimitives(
-                PrimitiveType.TriangleList, 
-                _vertexArray, 
-                0,
-                vertexCount, 
-                _index, 
-                0, 
-                (vertexCount / 4) * 2, 
-                VertexPositionColorTexture.VertexDeclaration);
-		}
-	}
+    }
 }
 

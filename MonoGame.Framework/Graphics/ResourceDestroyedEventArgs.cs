@@ -13,6 +13,9 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class ResourceDestroyedEventArgs : EventArgs
     {
+
+        #region Public Properties
+
         /// <summary>
         /// The name of the destroyed resource.
         /// </summary>
@@ -22,5 +25,8 @@ namespace Microsoft.Xna.Framework.Graphics
         /// The resource manager tag of the destroyed resource.
         /// </summary>
         public Object Tag { get; internal set; }
+
+        #endregion
+
     }
 }
