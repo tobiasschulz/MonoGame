@@ -40,7 +40,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		#endregion
 
-		#region Public Constructors and Dispose Method
+		#region Public Constructors
 
 		public MediaLibrary()
 		{
@@ -49,6 +49,10 @@ namespace Microsoft.Xna.Framework.Media
 		public MediaLibrary(MediaSource mediaSource)
 		{
 		}
+
+		#endregion
+
+		#region Public Dispose Method
 
 		public void Dispose()
 		{

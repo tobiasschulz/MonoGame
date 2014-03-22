@@ -109,13 +109,17 @@ namespace Microsoft.Xna.Framework.Media
 
 		#endregion
 
-		#region Internal Constructor and Public Dispose Method
+		#region Internal Constructor
 
 		internal PlaylistCollection()
 		{
 			IsReadOnly = false;
 			innerlist = new List<Playlist>();
 		}
+
+		#endregion
+
+		#region Public Dispose Method
 
 		public void Dispose()
 		{
