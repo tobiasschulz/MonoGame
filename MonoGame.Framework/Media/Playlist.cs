@@ -13,6 +13,8 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class Playlist : IDisposable
 	{
+		#region Public Properties
+
 		public TimeSpan Duration
 		{
 			get;
@@ -25,14 +27,24 @@ namespace Microsoft.Xna.Framework.Media
 			private set;
 		}
 
+		#endregion
+
+		#region Internal Constructor
+
 		internal Playlist(TimeSpan duration, string name)
 		{
 			Duration = duration;
 			Name = name;
 		}
 
+		#endregion
+
+		#region Public Dispose Method
+
 		public void Dispose()
 		{
 		}
+
+		#endregion
 	}
 }

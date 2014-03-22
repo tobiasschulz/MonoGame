@@ -13,11 +13,7 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class MediaSource
 	{
-		internal MediaSource(string name, MediaSourceType type)
-		{
-			Name = name;
-			MediaSourceType = type;
-		}
+		#region Public Properties
 
 		public MediaSourceType MediaSourceType
 		{
@@ -31,6 +27,20 @@ namespace Microsoft.Xna.Framework.Media
 			private set;
 		}
 
+		#endregion
+
+		#region Internal Constructor
+
+		internal MediaSource(string name, MediaSourceType type)
+		{
+			Name = name;
+			MediaSourceType = type;
+		}
+
+		#endregion
+
+		#region Public Methods
+
 		public static IList<MediaSource> GetAvailableMediaSources()
 		{
 			MediaSource[] result = 
@@ -40,5 +50,7 @@ namespace Microsoft.Xna.Framework.Media
 
 			return result;
 		}
+
+		#endregion
 	}
 }
