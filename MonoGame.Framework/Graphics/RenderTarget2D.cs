@@ -9,7 +9,6 @@
 
 #region Using Statements
 using System;
-
 using OpenTK.Graphics.OpenGL;
 #endregion
 
@@ -17,6 +16,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class RenderTarget2D : Texture2D, IRenderTarget
 	{
+
 		#region Public Properties
 
 		public DepthFormat DepthStencilFormat
@@ -169,5 +169,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
+
 	}
 }
