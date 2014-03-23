@@ -52,7 +52,7 @@ namespace Microsoft.Xna.Framework.Media
 		internal SongCollection()
 		{
 			IsReadOnly = false;
-			innerList = new List<Song>();
+			innerlist = new List<Song>();
 		}
 
 		#endregion
