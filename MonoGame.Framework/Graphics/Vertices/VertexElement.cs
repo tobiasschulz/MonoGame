@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public struct VertexElement
     {
-
         #region Public Properties
 
         public int Offset
@@ -124,6 +123,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }

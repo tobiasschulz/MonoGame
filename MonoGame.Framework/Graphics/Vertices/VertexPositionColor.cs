@@ -19,7 +19,6 @@ namespace Microsoft.Xna.Framework.Graphics
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct VertexPositionColor : IVertexType
 	{
-
         #region Private Properties
 
         VertexDeclaration IVertexType.VertexDeclaration
@@ -104,6 +103,5 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         #endregion
-    
     }
 }

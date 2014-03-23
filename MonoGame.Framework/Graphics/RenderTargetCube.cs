@@ -154,6 +154,5 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
-
 	}
 }

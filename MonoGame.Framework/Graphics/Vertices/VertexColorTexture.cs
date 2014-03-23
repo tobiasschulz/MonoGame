@@ -19,7 +19,6 @@ namespace Microsoft.Xna.Framework.Graphics
 	[StructLayout(LayoutKind.Sequential, Pack=1)]
 	internal struct VertexColorTexture
     {
-
         #region Public Fields
 
         public Vector2 Vertex;
@@ -38,7 +37,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }
 

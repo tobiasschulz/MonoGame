@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
     public struct HalfSingle : IPackedVector<UInt16>, IEquatable<HalfSingle>, IPackedVector
     {
-
         #region Public Properties
 
         [CLSCompliant(false)]
@@ -107,6 +106,5 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         }
 
         #endregion
-
     }
 }

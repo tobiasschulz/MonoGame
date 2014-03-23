@@ -20,7 +20,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Model
     {
-
         #region Public Properties
 
         // Summary:
@@ -170,7 +169,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         #endregion
-
 	}
 
 	//// Summary:

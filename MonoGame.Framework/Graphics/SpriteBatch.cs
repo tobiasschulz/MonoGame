@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class SpriteBatch : GraphicsResource
     {
-
         #region Private Variables
 
         readonly SpriteBatcher _batcher;
@@ -516,7 +515,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }
 

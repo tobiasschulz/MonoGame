@@ -21,7 +21,6 @@ namespace Microsoft.Xna.Framework.Graphics
 	// but I'm not sure we want to use Vector3s if we don't have to.
     internal struct VertexPosition2ColorTexture : IVertexType
 	{
-
         #region Private Properties
 
         VertexDeclaration IVertexType.VertexDeclaration
@@ -119,7 +118,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
  
 }

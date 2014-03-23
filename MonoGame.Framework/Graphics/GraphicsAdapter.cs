@@ -17,7 +17,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class GraphicsAdapter : IDisposable
     {
-
         #region Public Properties
 
         public DisplayMode CurrentDisplayMode

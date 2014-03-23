@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {	
 	public abstract class GraphicsResource : IDisposable
     {
-
         #region Public Properties
 
         public GraphicsDevice GraphicsDevice
@@ -204,7 +203,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }
 

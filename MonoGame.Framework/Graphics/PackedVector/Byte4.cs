@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
     /// </summary>
     public struct Byte4 : IPackedVector<uint>, IEquatable<Byte4>, IPackedVector
     {
-
         #region Public Properties
 
         /// <summary>
@@ -188,7 +187,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         }
 
         #endregion
-
     }
 }
 

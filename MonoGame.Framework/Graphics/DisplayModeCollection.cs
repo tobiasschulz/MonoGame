@@ -42,7 +42,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class DisplayModeCollection : IEnumerable<DisplayMode>, IEnumerable
     {
-
         #region Public Properties
 
         public IEnumerable<DisplayMode> this[SurfaceFormat format]
@@ -96,6 +95,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }

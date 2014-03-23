@@ -22,7 +22,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Texture2D : Texture
 	{
-
 		#region Public Properties
 
 		public int Width
@@ -621,6 +620,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
 	}
 }

@@ -20,7 +20,6 @@ namespace Microsoft.Xna.Framework.Graphics
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VertexPositionNormalTexture : IVertexType
     {
-
         #region Private Properties
 
         VertexDeclaration IVertexType.VertexDeclaration
@@ -106,6 +105,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }

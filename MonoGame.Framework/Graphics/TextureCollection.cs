@@ -11,7 +11,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class TextureCollection
 	{
-
         #region Public Properties
 
         public Texture this[int index]
@@ -54,6 +53,5 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
-
 	}
 }

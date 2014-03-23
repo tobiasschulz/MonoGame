@@ -20,7 +20,6 @@ namespace Microsoft.Xna.Framework.Graphics
 	//     Represents a mesh that is part of a Model.
 	public sealed class ModelMesh
     {
-
         #region Public Properties
 
         // Summary:
@@ -117,7 +116,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 			Effects = new ModelEffectCollection(effects);
 		}*/
-
     }
 
 

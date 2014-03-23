@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
     internal class HalfTypeHelper
     {
-
         #region Private Struct uif
 
         [StructLayout(LayoutKind.Explicit)]
@@ -129,6 +128,5 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         }
 
         #endregion
-
     }
 }

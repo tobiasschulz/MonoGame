@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
     public struct NormalizedByte4 : IPackedVector<uint>, IEquatable<NormalizedByte4>
     {
-
         #region Public Properties
 
         [CLSCompliant(false)]
@@ -121,6 +120,5 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         }
 
         #endregion
-
     }
 }

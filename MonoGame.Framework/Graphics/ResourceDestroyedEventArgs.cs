@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class ResourceDestroyedEventArgs : EventArgs
     {
-
         #region Public Properties
 
         /// <summary>
@@ -27,6 +26,5 @@ namespace Microsoft.Xna.Framework.Graphics
         public Object Tag { get; internal set; }
 
         #endregion
-
     }
 }

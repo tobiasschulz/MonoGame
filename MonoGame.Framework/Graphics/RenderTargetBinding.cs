@@ -14,7 +14,6 @@ namespace Microsoft.Xna.Framework.Graphics
 	// http://msdn.microsoft.com/en-us/library/ff434403.aspx
 	public struct RenderTargetBinding
     {
-
         #region Public Properties
 
         public Texture RenderTarget
@@ -68,6 +67,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }

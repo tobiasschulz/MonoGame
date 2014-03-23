@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	internal class SpriteBatchItem
     {
-
         #region Public Fields
 
         public Texture2D Texture;
@@ -106,7 +105,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }
 

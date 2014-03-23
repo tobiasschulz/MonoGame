@@ -11,7 +11,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class SamplerStateCollection
 	{
-
         #region Public Array Access Property
 
         public SamplerState this[int index]
@@ -55,6 +54,5 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
-
 	}
 }

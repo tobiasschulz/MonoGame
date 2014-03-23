@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
     /// </summary>
     public struct HalfVector4 : IPackedVector<ulong>, IPackedVector, IEquatable<HalfVector4>
     {
-
         #region Public Properties
 
         /// <summary>
@@ -181,6 +180,5 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         }
 
         #endregion
-
     }
 }

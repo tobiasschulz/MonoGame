@@ -17,7 +17,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public abstract class Texture : GraphicsResource
 	{
-
 		#region Public Properties
 
 		public SurfaceFormat Format
@@ -220,6 +219,5 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
-
     }
 }

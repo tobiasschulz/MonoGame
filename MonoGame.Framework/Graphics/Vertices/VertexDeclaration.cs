@@ -18,7 +18,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public class VertexDeclaration : GraphicsResource
     {
-
         #region Public Properties
 
         public int VertexStride
@@ -221,6 +220,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }

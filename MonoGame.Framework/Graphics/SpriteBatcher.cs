@@ -19,7 +19,6 @@ namespace Microsoft.Xna.Framework.Graphics
     /// </summary>
 	internal class SpriteBatcher
 	{
-
         /*
          * Note that this class is fundamental to high performance for SpriteBatch games. Please exercise
          * caution when making changes to this class.
@@ -283,7 +282,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         #endregion
-
     }
 }
 

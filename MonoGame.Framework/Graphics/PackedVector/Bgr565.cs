@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
     /// </summary>
     public struct Bgr565 : IPackedVector<UInt16>, IEquatable<Bgr565>, IPackedVector
     {
-
         #region Public Properties
 
         /// <summary>
@@ -171,6 +170,5 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         }
 
         #endregion
-
     }
 }

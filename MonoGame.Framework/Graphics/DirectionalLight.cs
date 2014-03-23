@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class DirectionalLight
     {
-
         #region Public Properties
 
         public Vector3 DiffuseColor
@@ -134,7 +133,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         #endregion
-
     }
 }
 

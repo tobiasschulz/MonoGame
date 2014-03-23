@@ -20,7 +20,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 	public sealed class SpriteFont
     {
-
         #region Public Properties
 
         /// <summary>
@@ -421,6 +420,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }

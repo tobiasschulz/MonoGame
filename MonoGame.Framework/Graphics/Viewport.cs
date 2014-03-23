@@ -18,7 +18,6 @@ namespace Microsoft.Xna.Framework.Graphics
     [DataContract]
     public struct Viewport
     {
-
         #region Public Properties
 
         [DataMember]
@@ -226,7 +225,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         #endregion
-
     }
 }
 

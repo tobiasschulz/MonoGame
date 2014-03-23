@@ -16,7 +16,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	internal static class DxtUtil
     {
-
         #region Internal Static Methods
 
         internal static byte[] DecompressDxt1(byte[] imageData, int width, int height)
@@ -418,7 +417,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
         #endregion
-    
     }
 }
 

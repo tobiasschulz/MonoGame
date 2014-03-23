@@ -20,7 +20,6 @@ namespace Microsoft.Xna.Framework.Graphics
 	//     conceptual articles.
 	public sealed class ModelBone
     {
-
         #region Public Properties
 
         public List<ModelMesh> Meshes
@@ -108,7 +107,6 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 
 	//// Summary:

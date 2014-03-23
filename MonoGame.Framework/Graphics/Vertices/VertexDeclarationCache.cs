@@ -24,7 +24,6 @@ namespace Microsoft.Xna.Framework.Graphics
     internal class VertexDeclarationCache<T>
         where T : struct, IVertexType
     {
-
         #region Public Static Property
 
         static public VertexDeclaration VertexDeclaration
@@ -45,6 +44,5 @@ namespace Microsoft.Xna.Framework.Graphics
         static private VertexDeclaration _cached;
 
         #endregion
-
     }
 }

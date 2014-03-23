@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class PresentationParameters : IDisposable
     {
-
         #region Public Properties
 
         public SurfaceFormat BackBufferFormat
@@ -169,6 +168,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion Methods
-
     }
 }

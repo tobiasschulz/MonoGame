@@ -13,7 +13,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class ModelMeshPart
 	{
-
         #region Public Properties
 
         public Effect Effect
@@ -111,7 +110,6 @@ namespace Microsoft.Xna.Framework.Graphics
         internal ModelMesh parent;
 
         #endregion
-
     }
 
 	//// Summary:

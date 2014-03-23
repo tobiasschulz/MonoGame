@@ -46,7 +46,6 @@ namespace Microsoft.Xna.Framework.Graphics
     [DataContract]
     public class DisplayMode
     {
-
         #region Public Properties
 
         public float AspectRatio
@@ -146,6 +145,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
- 
     }
 }

@@ -11,7 +11,6 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public struct VertexBufferBinding
     {
-
         #region Public Properties
 
         /// <summary>
@@ -93,6 +92,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion
-
     }
 }
