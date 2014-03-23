@@ -7,16 +7,20 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Diagnostics;
-
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	[CLSCompliant(false)]
     public static class GraphicsExtensions
     {
+
+        #region Public Static Methods
+
         public static int OpenGLNumberOfElements(this VertexElementFormat elementFormat)
         {
             switch (elementFormat)
@@ -397,5 +401,8 @@ namespace Microsoft.Xna.Framework.Graphics
             }
             return 0;
         }
+
+        #endregion
+
     }
 }

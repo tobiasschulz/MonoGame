@@ -35,16 +35,48 @@ SOFTWARE.
 */
 #endregion License
 
+#region Using Statements
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
     [DataContract]
     public class DisplayMode
     {
-        #region Fields
+
+        #region Public Properties
+
+        public float AspectRatio
+        {
+            get { return (float)width / (float)height; }
+        }
+
+        public SurfaceFormat Format
+        {
+            get { return format; }
+        }
+
+        public int Height
+        {
+            get { return this.height; }
+        }
+
+        public int Width
+        {
+            get { return this.width; }
+        }
+
+        public Rectangle TitleSafeArea
+        {
+            get { return new Rectangle(0, 0, Width, Height); }
+        }
+
+        #endregion Properties
+
+        #region Private Fields
 
         private SurfaceFormat format;
         private int height;
@@ -52,31 +84,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion Fields
 
-        #region Properties
-        
-        public float AspectRatio {
-            get { return (float)width / (float)height; }
-        }
-
-        public SurfaceFormat Format {
-            get { return format; }
-        }
-
-        public int Height {
-            get { return this.height; }
-        }
-
-        public int Width {
-            get { return this.width; }
-        }
-        
-        public Rectangle TitleSafeArea {
-            get { return new Rectangle(0, 0, Width, Height); }    
-        }
-
-        #endregion Properties
-
-        #region Constructors
+        #region Internal Constructors
         
         internal DisplayMode(int width, int height, SurfaceFormat format)
         {
@@ -87,7 +95,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #endregion Constructors
 
-        #region Operators
+        #region Public Static Operators and Override Methods
 
         public static bool operator !=(DisplayMode left, DisplayMode right)
         {
@@ -122,10 +130,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 (left.width == right.width);
         }
 
-        #endregion Operators
-
-        #region Public Methods
-
         public override bool Equals(object obj)
         {
             return obj is DisplayMode && this == (DisplayMode)obj;
@@ -141,6 +145,7 @@ namespace Microsoft.Xna.Framework.Graphics
             return string.Format(CultureInfo.CurrentCulture, "{{Width:{0} Height:{1} Format:{2}}}", new object[] { this.width, this.height, this.Format });
         }
 
-        #endregion Public Methods
+        #endregion
+ 
     }
 }

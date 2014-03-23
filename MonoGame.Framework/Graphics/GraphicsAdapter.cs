@@ -7,23 +7,18 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
     public sealed class GraphicsAdapter : IDisposable
     {
-        private static ReadOnlyCollection<GraphicsAdapter> adapters;
-        
-        internal GraphicsAdapter()
-        {
-        }
-        
-        public void Dispose()
-        {
-        }
+
+        #region Public Properties
 
         public DisplayMode CurrentDisplayMode
         {
@@ -39,21 +34,100 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        public DisplayModeCollection SupportedDisplayModes
+        {
+            get
+            {
+
+                if (supportedDisplayModes == null)
+                {
+                    List<DisplayMode> modes = new List<DisplayMode>(new DisplayMode[] { CurrentDisplayMode, });
+                    SDL2.SDL.SDL_DisplayMode filler = new SDL2.SDL.SDL_DisplayMode();
+                    int numModes = SDL2.SDL.SDL_GetNumDisplayModes(0);
+                    for (int i = 0; i < numModes; i += 1)
+                    {
+                        SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
+
+                        // Check for dupes caused by varying refresh rates.
+                        bool dupe = false;
+                        foreach (DisplayMode mode in modes)
+                        {
+                            if (filler.w == mode.Width && filler.h == mode.Height)
+                            {
+                                dupe = true;
+                            }
+                        }
+                        if (dupe)
+                        {
+                            continue;
+                        }
+
+                        modes.Add(
+                            new DisplayMode(
+                                filler.w,
+                                filler.h,
+                                SurfaceFormat.Color // FIXME: Assumption!
+                            )
+                        );
+                    }
+                    supportedDisplayModes = new DisplayModeCollection(modes);
+                }
+                return supportedDisplayModes;
+            }
+        }
+
+        #endregion
+
+        #region Public Static Properties
+
         public static GraphicsAdapter DefaultAdapter
         {
             get { return Adapters[0]; }
         }
-        
-        public static ReadOnlyCollection<GraphicsAdapter> Adapters {
-            get {
-                if (adapters == null) {
+
+        public static ReadOnlyCollection<GraphicsAdapter> Adapters
+        {
+            get
+            {
+                if (adapters == null)
+                {
                     adapters = new ReadOnlyCollection<GraphicsAdapter>(
-						new GraphicsAdapter[] {new GraphicsAdapter()});
+                        new GraphicsAdapter[] { new GraphicsAdapter() });
                 }
                 return adapters;
             }
-        } 
-		
+        }
+
+        #endregion
+
+        #region Private Variables
+
+        private DisplayModeCollection supportedDisplayModes = null;
+
+        #endregion
+
+        #region Private Static Variables
+
+        private static ReadOnlyCollection<GraphicsAdapter> adapters;
+
+        #endregion
+
+        #region Internal Constructor
+
+        internal GraphicsAdapter()
+        {
+        }
+
+        #endregion
+
+        #region Public Dispose Method
+
+        public void Dispose()
+        {
+        }
+
+        #endregion
+
         /*
 		public bool QueryRenderTargetFormat(
 			GraphicsProfile graphicsProfile,
@@ -167,50 +241,6 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
         */
-
-        private DisplayModeCollection supportedDisplayModes = null;
-        
-        public DisplayModeCollection SupportedDisplayModes
-        {
-            get
-            {
-
-                if (supportedDisplayModes == null)
-                {
-                    List<DisplayMode> modes = new List<DisplayMode>(new DisplayMode[] { CurrentDisplayMode, });
-                    SDL2.SDL.SDL_DisplayMode filler = new SDL2.SDL.SDL_DisplayMode();
-                    int numModes = SDL2.SDL.SDL_GetNumDisplayModes(0);
-                    for (int i = 0; i < numModes; i += 1)
-                    {
-                        SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
-
-                        // Check for dupes caused by varying refresh rates.
-                        bool dupe = false;
-                        foreach (DisplayMode mode in modes)
-                        {
-                            if (filler.w == mode.Width && filler.h == mode.Height)
-                            {
-                                dupe = true;
-                            }
-                        }
-                        if (dupe)
-                        {
-                            continue;
-                        }
-
-                        modes.Add(
-                            new DisplayMode(
-                                filler.w,
-                                filler.h,
-                                SurfaceFormat.Color // FIXME: Assumption!
-                            )
-                        );
-                    }
-                    supportedDisplayModes = new DisplayModeCollection(modes);
-                }
-                return supportedDisplayModes;
-            }
-        }
 
         /*
         public int VendorId
