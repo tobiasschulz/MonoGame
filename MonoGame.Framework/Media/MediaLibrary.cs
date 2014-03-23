@@ -14,11 +14,33 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public class MediaLibrary : IDisposable
 	{
+		#region Public Properties
+
+		public SongCollection Songs
+		{
+			get
+			{
+				/* This is meant to return a pre-made collection, based on the
+				 * WMP library.
+				 * -flibit
+				 */
+				return new SongCollection();
+			}
+		}
+
+		#endregion
+
+		#region Private Properties
+
 		private PlaylistCollection PlayLists
 		{
 			get;
 			set;
 		}
+
+		#endregion
+
+		#region Public Constructors
 
 		public MediaLibrary()
 		{
@@ -28,9 +50,17 @@ namespace Microsoft.Xna.Framework.Media
 		{
 		}
 
+		#endregion
+
+		#region Public Dispose Method
+
 		public void Dispose()
 		{
 		}
+
+		#endregion
+
+		#region Public Methods
 
 		public void SavePicture(string name, byte[] imageBuffer)
 		{
@@ -44,18 +74,7 @@ namespace Microsoft.Xna.Framework.Media
 			throw new NotSupportedException();
 		}
 
-
-		public SongCollection Songs
-		{
-			get
-			{
-				/* This is meant to return a pre-made collection, based on the
-				 * WMP library.
-				 * -flibit
-				 */
-				return new SongCollection();
-			}
-		}
+		#endregion
 
 	}
 }

@@ -15,27 +15,14 @@ namespace Microsoft.Xna.Framework.Media
 {
 	public class SongCollection : ICollection<Song>, IEnumerable<Song>, IEnumerable, IDisposable
 	{
-		private List<Song> innerlist;
+		#region Public Properties
 
-		internal SongCollection()
+		public Song this[int index]
 		{
-			IsReadOnly = false;
-			innerlist = new List<Song>();
-		}
-
-		public void Dispose()
-		{
-			innerlist.Clear();
-		}
-
-		public IEnumerator<Song> GetEnumerator()
-		{
-			return innerlist.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return innerlist.GetEnumerator();
+			get
+			{
+				return innerlist[index];
+			}
 		}
 
 		public int Count
@@ -52,13 +39,34 @@ namespace Microsoft.Xna.Framework.Media
 			private set;
 		}
 
-		public Song this[int index]
+		#endregion
+
+		#region Private Variables
+
+		private List<Song> innerlist;
+
+		#endregion
+
+		#region Internal Constructor
+
+		internal SongCollection()
 		{
-			get
-			{
-				return innerlist[index];
-			}
+			IsReadOnly = false;
+			innerlist = new List<Song>();
 		}
+
+		#endregion
+
+		#region Public Dispose Method
+
+		public void Dispose()
+		{
+			innerlist.Clear();
+		}
+
+		#endregion
+
+		#region Public Methods
 
 		public void Add(Song item)
 		{
@@ -111,6 +119,16 @@ namespace Microsoft.Xna.Framework.Media
 			innerlist.CopyTo(array, arrayIndex);
 		}
 
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return innerlist.GetEnumerator();
+		}
+
+		public IEnumerator<Song> GetEnumerator()
+		{
+			return innerlist.GetEnumerator();
+		}
+
 		public int IndexOf(Song item)
 		{
 			return innerlist.IndexOf(item);
@@ -120,5 +138,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			return innerlist.Remove(item);
 		}
+
+		#endregion
 	}
 }
