@@ -101,7 +101,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// Apply the vertex attribute info
-			foreach (var element in attrInfo.Elements)
+			foreach (VertexDeclarationAttributeInfo.Element element in attrInfo.Elements)
 			{
 				OpenGLDevice.Instance.AttributeEnabled[element.AttributeLocation] = true;
 				OpenGLDevice.Instance.Attributes[element.AttributeLocation].Divisor.Set(divisor);
