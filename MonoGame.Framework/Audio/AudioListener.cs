@@ -7,14 +7,13 @@
  */
 #endregion
 
-using System;
-using Microsoft.Xna.Framework;
-
 namespace Microsoft.Xna.Framework.Audio
 {
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audiolistener.aspx
 	public class AudioListener
 	{
+		#region Public Properties
+
 		public Vector3 Forward
 		{
 			get;
@@ -40,6 +39,10 @@ namespace Microsoft.Xna.Framework.Audio
 			set;
 		}
 
+		#endregion
+
+		#region Public Constructor
+
 		public AudioListener()
 		{
 			Forward = Vector3.Forward;
@@ -47,5 +50,7 @@ namespace Microsoft.Xna.Framework.Audio
 			Up = Vector3.Up;
 			Velocity = Vector3.Zero;
 		}
+
+		#endregion
 	}
 }

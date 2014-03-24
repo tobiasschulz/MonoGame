@@ -7,13 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Audio
 {
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audioemitter.aspx
 	public class AudioEmitter
 	{
+		#region Public Properties
+
 		private float INTERNAL_dopplerScale;
 		public float DopplerScale
 		{
@@ -56,6 +60,10 @@ namespace Microsoft.Xna.Framework.Audio
 			set;
 		}
 
+		#endregion
+
+		#region Public Constructor
+
 		public AudioEmitter()
 		{
 			DopplerScale = 1.0f;
@@ -64,5 +72,7 @@ namespace Microsoft.Xna.Framework.Audio
 			Up = Vector3.Up;
 			Velocity = Vector3.Zero;
 		}
+
+		#endregion
 	}
 }

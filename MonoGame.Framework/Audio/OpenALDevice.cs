@@ -57,29 +57,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
-		private void CheckALError()
-		{
-			ALError err = AL.GetError();
-
-			if (err == ALError.NoError)
-			{
-				return;
-			}
-
-			System.Console.WriteLine("OpenAL Error: " + err);
-		}
-
-		private bool CheckALCError(string message)
-		{
-			AlcError err = Alc.GetError(alDevice);
-
-			if (err == AlcError.NoError)
-			{
-				return false;
-			}
-
-			throw new Exception(message + " - OpenAL Device Error: " + err);
-		}
+		#region Public Constructor
 
 		public OpenALDevice()
 		{
@@ -129,6 +107,10 @@ namespace Microsoft.Xna.Framework.Audio
 			Instance = this;
 		}
 
+		#endregion
+
+		#region Public Dispose Method
+
 		public void Dispose()
 		{
 			Alc.MakeContextCurrent(ContextHandle.Zero);
@@ -144,6 +126,10 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 			Instance = null;
 		}
+
+		#endregion
+
+		#region Public Update Methods
 
 		public void Update()
 		{
@@ -169,5 +155,35 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			}
 		}
+
+		#endregion
+
+		#region Private OpenAL Error Check Methods
+
+		private void CheckALError()
+		{
+			ALError err = AL.GetError();
+
+			if (err == ALError.NoError)
+			{
+				return;
+			}
+
+			System.Console.WriteLine("OpenAL Error: " + err);
+		}
+
+		private bool CheckALCError(string message)
+		{
+			AlcError err = Alc.GetError(alDevice);
+
+			if (err == AlcError.NoError)
+			{
+				return false;
+			}
+
+			throw new Exception(message + " - OpenAL Device Error: " + err);
+		}
+
+		#endregion
 	}
 }

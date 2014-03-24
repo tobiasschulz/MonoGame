@@ -16,10 +16,7 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.soundbank.aspx
 	public class SoundBank : IDisposable
 	{
-		private AudioEngine INTERNAL_baseEngine;
-
-		private List<string> INTERNAL_waveBankNames;
-		private Dictionary<string, CueData> INTERNAL_cueData;
+		#region Public Properties
 
 		public bool IsDisposed
 		{
@@ -27,7 +24,24 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
+		#endregion
+
+		#region Private Variables
+
+		private AudioEngine INTERNAL_baseEngine;
+
+		private List<string> INTERNAL_waveBankNames;
+		private Dictionary<string, CueData> INTERNAL_cueData;
+
+		#endregion
+
+		#region Disposing Event
+
 		public event EventHandler<EventArgs> Disposing;
+
+		#endregion
+
+		#region Public Constructor
 
 		public SoundBank(AudioEngine audioEngine, string filename)
 		{
@@ -355,15 +369,27 @@ namespace Microsoft.Xna.Framework.Audio
 			IsDisposed = false;
 		}
 
+		#endregion
+
+		#region Destructor
+
 		~SoundBank()
 		{
 			Dispose(true);
 		}
 
+		#endregion
+
+		#region Public Dispose Method
+
 		public void Dispose()
 		{
 			Dispose(false);
 		}
+
+		#endregion
+
+		#region Protected Dispose Method
 
 		protected void Dispose(bool disposing)
 		{
@@ -378,6 +404,10 @@ namespace Microsoft.Xna.Framework.Audio
 				IsDisposed = true;
 			}
 		}
+
+		#endregion
+
+		#region Public Methods
 
 		public Cue GetCue(string name)
 		{
@@ -441,5 +471,7 @@ namespace Microsoft.Xna.Framework.Audio
 			newCue.Apply3D(listener, emitter);
 			newCue.Play();
 		}
+
+		#endregion
 	}
 }

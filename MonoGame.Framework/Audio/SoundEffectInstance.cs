@@ -20,82 +20,6 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.soundeffectinstance.aspx
 	public class SoundEffectInstance : IDisposable
 	{
-		#region Private Variables: XNA Implementation
-
-		private SoundEffect INTERNAL_parentEffect;
-
-		/* MonoGame XACT wraps around SoundEffect for audio output.
-		 * Only problem: XACT pitch has no boundaries, SoundEffect does.
-		 * So, we're going to use this to tell the pitch clamp to STFU.
-		 * -flibit
-		 */
-		internal bool INTERNAL_isXACTSource = false;
-
-		#endregion
-
-		#region Private Variables: OpenAL Source, EffectSlot
-
-		protected int INTERNAL_alSource = -1;
-		private int INTERNAL_alEffectSlot = -1;
-
-		#endregion
-
-		#region Private Variables: 3D Audio
-
-		protected Vector3 position = new Vector3(0.0f, 0.0f, 0.1f);
-
-		// Used to prevent outdated positional audio data from being used
-		protected bool INTERNAL_positionalAudio = false;
-
-		#endregion
-
-		#region Private XNA-to-OpenAL Pitch Converter
-
-		private float INTERNAL_XNA_To_AL_Pitch(float xnaPitch)
-		{
-			/* XNA sets pitch bounds to [-1.0f, 1.0f], each end being one octave.
-			 * OpenAL's AL_PITCH boundaries are (0.0f, INF).
-			 * Consider the function f(x) = 2 ^ x
-			 * The domain is (-INF, INF) and the range is (0, INF).
-			 * 0.0f is the original pitch for XNA, 1.0f is the original pitch for OpenAL.
-			 * Note that f(0) = 1, f(1) = 2, f(-1) = 0.5, and so on.
-			 * XNA's pitch values are on the domain, OpenAL's are on the range.
-			 * Remember: the XNA limit is arbitrarily between two octaves on the domain.
-			 * To convert, we just plug XNA pitch into f(x).
-			 * -flibit
-			 */
-			if (!INTERNAL_isXACTSource && (xnaPitch < -1.0f || xnaPitch > 1.0f))
-			{
-				throw new Exception("XNA PITCH MUST BE WITHIN [-1.0f, 1.0f]!");
-			}
-			return (float) Math.Pow(2, xnaPitch);
-		}
-
-		#endregion
-
-		#region Constructors, Deconstructors, Dispose Method
-
-		internal SoundEffectInstance(SoundEffect parent)
-		{
-			INTERNAL_parentEffect = parent;
-		}
-
-		~SoundEffectInstance()
-		{
-			Dispose();
-		}
-
-		public virtual void Dispose()
-		{
-			if (!IsDisposed)
-			{
-				Stop(true);
-				IsDisposed = true;
-			}
-		}
-
-		#endregion
-
 		#region Public Properties
 
 		public bool IsDisposed
@@ -196,6 +120,90 @@ namespace Microsoft.Xna.Framework.Audio
 				{
 					AL.Source(INTERNAL_alSource, ALSourcef.Gain, INTERNAL_volume * SoundEffect.MasterVolume);
 				}
+			}
+		}
+
+		#endregion
+
+		#region Private Variables: XNA Implementation
+
+		private SoundEffect INTERNAL_parentEffect;
+
+		/* MonoGame XACT wraps around SoundEffect for audio output.
+		 * Only problem: XACT pitch has no boundaries, SoundEffect does.
+		 * So, we're going to use this to tell the pitch clamp to STFU.
+		 * -flibit
+		 */
+		internal bool INTERNAL_isXACTSource = false;
+
+		#endregion
+
+		#region Private Variables: OpenAL Source, EffectSlot
+
+		protected int INTERNAL_alSource = -1;
+		private int INTERNAL_alEffectSlot = -1;
+
+		#endregion
+
+		#region Private Variables: 3D Audio
+
+		protected Vector3 position = new Vector3(0.0f, 0.0f, 0.1f);
+
+		// Used to prevent outdated positional audio data from being used
+		protected bool INTERNAL_positionalAudio = false;
+
+		#endregion
+
+		#region Private XNA-to-OpenAL Pitch Converter
+
+		private float INTERNAL_XNA_To_AL_Pitch(float xnaPitch)
+		{
+			/* XNA sets pitch bounds to [-1.0f, 1.0f], each end being one octave.
+			 * OpenAL's AL_PITCH boundaries are (0.0f, INF).
+			 * Consider the function f(x) = 2 ^ x
+			 * The domain is (-INF, INF) and the range is (0, INF).
+			 * 0.0f is the original pitch for XNA, 1.0f is the original pitch for OpenAL.
+			 * Note that f(0) = 1, f(1) = 2, f(-1) = 0.5, and so on.
+			 * XNA's pitch values are on the domain, OpenAL's are on the range.
+			 * Remember: the XNA limit is arbitrarily between two octaves on the domain.
+			 * To convert, we just plug XNA pitch into f(x).
+			 * -flibit
+			 */
+			if (!INTERNAL_isXACTSource && (xnaPitch < -1.0f || xnaPitch > 1.0f))
+			{
+				throw new Exception("XNA PITCH MUST BE WITHIN [-1.0f, 1.0f]!");
+			}
+			return (float) Math.Pow(2, xnaPitch);
+		}
+
+		#endregion
+
+		#region Internal Constructor
+
+		internal SoundEffectInstance(SoundEffect parent)
+		{
+			INTERNAL_parentEffect = parent;
+		}
+
+		#endregion
+
+		#region Destructor
+
+		~SoundEffectInstance()
+		{
+			Dispose();
+		}
+
+		#endregion
+
+		#region Public Dispose Method
+
+		public virtual void Dispose()
+		{
+			if (!IsDisposed)
+			{
+				Stop(true);
+				IsDisposed = true;
 			}
 		}
 
