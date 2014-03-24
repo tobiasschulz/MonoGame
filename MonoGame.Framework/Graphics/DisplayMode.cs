@@ -43,107 +43,117 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [DataContract]
-    public class DisplayMode
-    {
-        #region Public Properties
+	[DataContract]
+	public class DisplayMode
+	{
+		#region Public Properties
 
-        public float AspectRatio
-        {
-            get { return (float)width / (float)height; }
-        }
+		public float AspectRatio
+		{
+			get
+			{
+				return (float) Width / (float) Height;
+			}
+		}
 
-        public SurfaceFormat Format
-        {
-            get { return format; }
-        }
+		public SurfaceFormat Format
+		{
+			get;
+			private set;
+		}
 
-        public int Height
-        {
-            get { return this.height; }
-        }
+		public int Height
+		{
+			get;
+			private set;
+		}
 
-        public int Width
-        {
-            get { return this.width; }
-        }
+		public int Width
+		{
+			get;
+			private set;
+		}
 
-        public Rectangle TitleSafeArea
-        {
-            get { return new Rectangle(0, 0, Width, Height); }
-        }
+		public Rectangle TitleSafeArea
+		{
+			get
+			{
+				return new Rectangle(0, 0, Width, Height);
+			}
+		}
 
-        #endregion Properties
+		#endregion
 
-        #region Private Fields
+		#region Internal Constructor
 
-        private SurfaceFormat format;
-        private int height;
-        private int width;
+		internal DisplayMode(int width, int height, SurfaceFormat format)
+		{
+			Width = width;
+			Height = height;
+			Format = format;
+		}
 
-        #endregion Fields
+		#endregion
 
-        #region Internal Constructors
-        
-        internal DisplayMode(int width, int height, SurfaceFormat format)
-        {
-            this.width = width;
-            this.height = height;
-            this.format = format;
-        }
+		#region Public Static Operators and Override Methods
 
-        #endregion Constructors
+		public static bool operator !=(DisplayMode left, DisplayMode right)
+		{
+			// If we don't do this cast to (object), we'll get a stack overflow.
+			object leftObj = (object) left;
+			object rightObj = (object) right;
+			if (leftObj == null && rightObj == null)
+			{
+				return false;
+			}
+			if (leftObj == null || rightObj == null)
+			{
+				return true;
+			}
+			return !(	(left.Format == right.Format) &&
+					(left.Height == right.Height) &&
+					(left.Width == right.Width)	);
+		}
 
-        #region Public Static Operators and Override Methods
+		public static bool operator ==(DisplayMode left, DisplayMode right)
+		{
+			if (left == null && right == null)
+			{
+				return true;
+			}
+			if (left == null || right == null)
+			{
+				return false;
+			}
+			return (	(left.Format == right.Format) &&
+					(left.Height == right.Height) &&
+					(left.Width == right.Width)	);
+		}
 
-        public static bool operator !=(DisplayMode left, DisplayMode right)
-        {
-            // If we don't do this cast to (object), we'll get a stack overflow.
-            object leftObj = (object) left;
-            object rightObj = (object) right;
-            if (leftObj == null && rightObj == null)
-            {
-                return false;
-            }
-            if (leftObj == null || rightObj == null)
-            {
-                return true;
-            }
-            return !((left.format == right.format) &&
-                (left.height == right.height) &&
-                (left.width == right.width));
-        }
+		public override bool Equals(object obj)
+		{
+			return obj is DisplayMode && this == (DisplayMode)obj;
+		}
 
-        public static bool operator ==(DisplayMode left, DisplayMode right)
-        {
-            if (left == null && right == null)
-            {
-                return true;
-            }
-            if (left == null || right == null)
-            {
-                return false;
-            }
-            return (left.format == right.format) &&
-                (left.height == right.height) &&
-                (left.width == right.width);
-        }
+		public override int GetHashCode()
+		{
+			return (Width.GetHashCode() ^ Height.GetHashCode() ^ Format.GetHashCode());
+		}
 
-        public override bool Equals(object obj)
-        {
-            return obj is DisplayMode && this == (DisplayMode)obj;
-        }
+		public override string ToString()
+		{
+			return string.Format(
+				CultureInfo.CurrentCulture,
+				"{{Width:{0} Height:{1} Format:{2}}}",
+				new object[]
+				{
+					Width,
+					Height,
+					Format
+				}
+			);
+		}
 
-        public override int GetHashCode()
-        {
-            return (this.width.GetHashCode() ^ this.height.GetHashCode() ^ this.format.GetHashCode());
-        }
-
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.CurrentCulture, "{{Width:{0} Height:{1} Format:{2}}}", new object[] { this.width, this.height, this.Format });
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 }

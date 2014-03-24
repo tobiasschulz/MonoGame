@@ -7,17 +7,14 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public enum SpriteSortMode
-    {
-        Deferred = 0,
-        Immediate = 1,
-        Texture = 2,
-        BackToFront = 3,
-        FrontToBack = 4
-    }
+	public enum SpriteSortMode
+	{
+		Deferred = 0,
+		Immediate = 1,
+		Texture = 2,
+		BackToFront = 3,
+		FrontToBack = 4
+	}
 }
-

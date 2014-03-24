@@ -7,17 +7,19 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [Flags]
-    public enum TextureUsage
-    {
-        Tiled = -2147483648,
+	[Flags]
+	public enum TextureUsage
+	{
+		Tiled = -2147483648,
 		None = 0,
 		Linear = 1073741824,
 		AutoGenerateMipMap = 1024
-    }
+	}
 }
 

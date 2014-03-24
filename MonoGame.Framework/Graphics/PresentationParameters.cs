@@ -11,162 +11,147 @@ using System;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public class PresentationParameters : IDisposable
-    {
-        #region Public Properties
+	public class PresentationParameters : IDisposable
+	{
+		#region Public Constants
 
-        public SurfaceFormat BackBufferFormat
-        {
-            get { return backBufferFormat; }
-            set { backBufferFormat = value; }
-        }
+		public const int DefaultPresentRate = 60;
 
-        public int BackBufferHeight
-        {
-            get { return backBufferHeight; }
-            set { backBufferHeight = value; }
-        }
+		#endregion
 
-        public int BackBufferWidth
-        {
-            get { return backBufferWidth; }
-            set { backBufferWidth = value; }
-        }
+		#region Public Properties
 
-        public Rectangle Bounds
-        {
-            get { return new Rectangle(0, 0, backBufferWidth, backBufferHeight); }
-        }
+		public SurfaceFormat BackBufferFormat
+		{
+			get;
+			set;
+		}
 
-        public IntPtr DeviceWindowHandle
-        {
-            get { return deviceWindowHandle; }
-            set { deviceWindowHandle = value; }
-        }
+		public int BackBufferHeight
+		{
+			get;
+			set;
+		}
 
-        public DepthFormat DepthStencilFormat
-        {
-            get { return depthStencilFormat; }
-            set { depthStencilFormat = value; }
-        }
+		public int BackBufferWidth
+		{
+			get;
+			set;
+		}
 
-        public bool IsFullScreen
-        {
-            get
-            {
-                return isFullScreen;
-            }
-            set
-            {
-                isFullScreen = value;
-            }
-        }
+		public Rectangle Bounds
+		{
+			get
+			{
+				return new Rectangle(0, 0, BackBufferWidth, BackBufferHeight);
+			}
+		}
 
-        public int MultiSampleCount
-        {
-            get { return multiSampleCount; }
-            set { multiSampleCount = value; }
-        }
+		public IntPtr DeviceWindowHandle
+		{
+			get;
+			set;
+		}
 
-        public PresentInterval PresentationInterval { get; set; }
+		public DepthFormat DepthStencilFormat
+		{
+			get;
+			set;
+		}
 
-        public DisplayOrientation DisplayOrientation
-        {
-            get;
-            set;
-        }
+		public bool IsFullScreen
+		{
+			get;
+			set;
+		}
 
-        public RenderTargetUsage RenderTargetUsage { get; set; }
+		public int MultiSampleCount
+		{
+			get;
+			set;
+		}
 
-        #endregion Properties
+		public PresentInterval PresentationInterval
+		{
+			get;
+			set;
+		}
 
-        #region Public Constants
+		public DisplayOrientation DisplayOrientation
+		{
+			get;
+			set;
+		}
 
-        public const int DefaultPresentRate = 60;
+		public RenderTargetUsage RenderTargetUsage
+		{
+			get;
+			set;
+		}
 
-        #endregion Constants
+		#endregion
 
-        #region Private Fields
+		#region Public Constructors
 
-        private DepthFormat depthStencilFormat;
-        private SurfaceFormat backBufferFormat;
-        private int backBufferHeight = GraphicsDeviceManager.DefaultBackBufferHeight;
-        private int backBufferWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
-        private IntPtr deviceWindowHandle;
-        private bool isFullScreen;
-        private int multiSampleCount;
-        private bool disposed;       	
+		public PresentationParameters()
+		{
+			BackBufferFormat = SurfaceFormat.Color;
+			BackBufferWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
+			BackBufferHeight = GraphicsDeviceManager.DefaultBackBufferHeight;
+			DeviceWindowHandle = IntPtr.Zero;
+			IsFullScreen = false; // FIXME: Is this the default?
+			DepthStencilFormat = DepthFormat.None;
+			MultiSampleCount = 0;
+			PresentationInterval = PresentInterval.Default;
+			DisplayOrientation = DisplayOrientation.Default;
+		}
 
-        #endregion Private Fields
+		#endregion
 
-        #region Public Constructors
+		#region Destructor
 
-        public PresentationParameters()
-        {
-            Clear();
-        }
+		~PresentationParameters()
+		{
+			Dispose(false);
+		}
 
-        #endregion Constructors
+		#endregion
 
-        #region Deconstructor Method
+		#region Public Dispose Method
 
-        ~PresentationParameters()
-        {
-            Dispose(false);
-        }
+		public void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Protected Dispose Method
 
-        public void Clear()
-        {
-            backBufferFormat = SurfaceFormat.Color;
-            backBufferWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
-            backBufferHeight = GraphicsDeviceManager.DefaultBackBufferHeight;     
-            deviceWindowHandle = IntPtr.Zero;
-            // isFullScreen = false;
-            depthStencilFormat = DepthFormat.None;
-            multiSampleCount = 0;
-            PresentationInterval = PresentInterval.Default;
-            DisplayOrientation = DisplayOrientation.Default;
-        }
+		protected virtual void Dispose(bool disposing)
+		{
+		}
 
-        public PresentationParameters Clone()
-        {
-            PresentationParameters clone = new PresentationParameters();
-            clone.backBufferFormat = this.backBufferFormat;
-            clone.backBufferHeight = this.backBufferHeight;
-            clone.backBufferWidth = this.backBufferWidth;
-            clone.deviceWindowHandle = this.deviceWindowHandle;
-            clone.disposed = this.disposed;
-            clone.IsFullScreen = this.IsFullScreen;
-            clone.depthStencilFormat = this.depthStencilFormat;
-            clone.multiSampleCount = this.multiSampleCount;
-            clone.PresentationInterval = this.PresentationInterval;
-            clone.DisplayOrientation = this.DisplayOrientation;
-            return clone;
-        }
+		#endregion
 
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		#region Public Methods
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                disposed = true;
-                if (disposing)
-                {
-                    // Dispose managed resources
-                }
-                // Dispose unmanaged resources
-            }
-        }
+		public PresentationParameters Clone()
+		{
+			PresentationParameters clone = new PresentationParameters();
+			clone.BackBufferFormat = BackBufferFormat;
+			clone.BackBufferHeight = BackBufferHeight;
+			clone.BackBufferWidth = BackBufferWidth;
+			clone.DeviceWindowHandle = DeviceWindowHandle;
+			clone.IsFullScreen = IsFullScreen;
+			clone.DepthStencilFormat = DepthStencilFormat;
+			clone.MultiSampleCount = MultiSampleCount;
+			clone.PresentationInterval = PresentationInterval;
+			clone.DisplayOrientation = DisplayOrientation;
+			return clone;
+		}
 
-        #endregion Methods
-    }
+		#endregion
+	}
 }

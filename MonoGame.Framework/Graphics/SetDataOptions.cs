@@ -7,16 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [Flags]
-    public enum SetDataOptions
-    { 
-        None = 0,
+	[Flags]
+	public enum SetDataOptions
+	{
+		None = 0,
 		Discard = 1,
-        NoOverwrite = 2
-    }
+		NoOverwrite = 2
+	}
 }
-

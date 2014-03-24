@@ -11,23 +11,23 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class TextureCollection
 	{
-        #region Public Properties
+		#region Public Array Access Property
 
-        public Texture this[int index]
-        {
-            get
-            {
-                return textures[index];
-            }
-            set
-            {
-                textures[index] = value;
-            }
-        }
+		public Texture this[int index]
+		{
+			get
+			{
+				return textures[index];
+			}
+			set
+			{
+				textures[index] = value;
+			}
+		}
 
-        #endregion
-        
-        #region Private Variables
+		#endregion
+
+		#region Private Variables
 
 		private readonly Texture[] textures;
 

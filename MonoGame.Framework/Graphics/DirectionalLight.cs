@@ -15,124 +15,129 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class DirectionalLight
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        public Vector3 DiffuseColor
-        {
-            get
-            {
-                return diffuseColor;
-            }
-            set
-            {
-                diffuseColor = value;
-                if (this.enabled && this.diffuseColorParameter != null)
-                    diffuseColorParameter.SetValue(diffuseColor);
-            }
-        }
-
-        public Vector3 Direction
-        {
-            get
-            {
-                return direction;
-            }
-            set
-            {
-                direction = value;
-                if (this.directionParameter != null)
-                    directionParameter.SetValue(direction);
-            }
-        }
-
-        public Vector3 SpecularColor
-        {
-            get
-            {
-                return specularColor;
-            }
-            set
-            {
-                specularColor = value;
-                if (this.enabled && this.specularColorParameter != null)
-                    specularColorParameter.SetValue(specularColor);
-            }
-        }
-        public bool Enabled
-        {
-            get { return enabled; }
-            set
-            {
-                if (this.enabled != value)
-                {
-                    this.enabled = value;
-                    if (this.enabled)
-                    {
-                        if (this.diffuseColorParameter != null)
-                        {
-                            this.diffuseColorParameter.SetValue(this.diffuseColor);
-                        }
-                        if (this.specularColorParameter != null)
-                        {
-                            this.specularColorParameter.SetValue(this.specularColor);
-                        }
-                    }
-                    else
-                    {
-                        if (this.diffuseColorParameter != null)
-                        {
-                            this.diffuseColorParameter.SetValue(Vector3.Zero);
-                        }
-                        if (this.specularColorParameter != null)
-                        {
-                            this.specularColorParameter.SetValue(Vector3.Zero);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        #endregion
-
-        #region Internal Variables
-
-        internal EffectParameter diffuseColorParameter;
-		internal EffectParameter directionParameter;
-		internal EffectParameter specularColorParameter;
-
-        #endregion
-
-        #region Private Variables
-
-        Vector3 diffuseColor;
-		Vector3 direction;
-		Vector3 specularColor;
-		bool enabled;
-
-        #endregion
-
-        #region Public Constructor
-
-        public DirectionalLight (EffectParameter directionParameter, EffectParameter diffuseColorParameter, EffectParameter specularColorParameter, DirectionalLight cloneSource)
+		private Vector3 INTERNAL_diffuseColor;
+		public Vector3 DiffuseColor
 		{
-			this.diffuseColorParameter = diffuseColorParameter;
-			this.directionParameter = directionParameter;
-			this.specularColorParameter = specularColorParameter;
-			if (cloneSource != null) {
-				this.diffuseColor = cloneSource.diffuseColor;
-				this.direction = cloneSource.direction;
-				this.specularColor = cloneSource.specularColor;
-				this.enabled = cloneSource.enabled;
-			} else {
-				this.diffuseColorParameter = diffuseColorParameter;
-				this.directionParameter = directionParameter;
-				this.specularColorParameter = specularColorParameter;
+			get
+			{
+				return INTERNAL_diffuseColor;
+			}
+			set
+			{
+				INTERNAL_diffuseColor = value;
+				if (Enabled && diffuseColorParameter != null)
+				{
+					diffuseColorParameter.SetValue(INTERNAL_diffuseColor);
+				}
 			}
 		}
 
-        #endregion
-    }
-}
+		private Vector3 INTERNAL_direction;
+		public Vector3 Direction
+		{
+			get
+			{
+				return INTERNAL_direction;
+			}
+			set
+			{
+				INTERNAL_direction = value;
+				if (directionParameter != null)
+				{
+					directionParameter.SetValue(INTERNAL_direction);
+				}
+			}
+		}
 
+		private Vector3 INTERNAL_specularColor;
+		public Vector3 SpecularColor
+		{
+			get
+			{
+				return INTERNAL_specularColor;
+			}
+			set
+			{
+				INTERNAL_specularColor = value;
+				if (Enabled && specularColorParameter != null)
+				{
+					specularColorParameter.SetValue(INTERNAL_specularColor);
+				}
+			}
+		}
+
+		private bool INTERNAL_enabled;
+		public bool Enabled
+		{
+			get
+			{
+				return INTERNAL_enabled;
+			}
+			set
+			{
+				if (INTERNAL_enabled != value)
+				{
+					INTERNAL_enabled = value;
+					if (INTERNAL_enabled)
+					{
+						if (diffuseColorParameter != null)
+						{
+							diffuseColorParameter.SetValue(DiffuseColor);
+						}
+						if (specularColorParameter != null)
+						{
+							specularColorParameter.SetValue(SpecularColor);
+						}
+					}
+					else
+					{
+						if (diffuseColorParameter != null)
+						{
+							diffuseColorParameter.SetValue(Vector3.Zero);
+						}
+						if (specularColorParameter != null)
+						{
+							specularColorParameter.SetValue(Vector3.Zero);
+						}
+					}
+				}
+
+			}
+		}
+
+		#endregion
+
+		#region Internal Variables
+
+		internal EffectParameter diffuseColorParameter;
+		internal EffectParameter directionParameter;
+		internal EffectParameter specularColorParameter;
+
+		#endregion
+
+		#region Public Constructor
+
+		public DirectionalLight(
+			EffectParameter directionParameter,
+			EffectParameter diffuseColorParameter,
+			EffectParameter specularColorParameter,
+			DirectionalLight cloneSource
+		) {
+			this.diffuseColorParameter = diffuseColorParameter;
+			this.directionParameter = directionParameter;
+			this.specularColorParameter = specularColorParameter;
+			if (cloneSource != null)
+			{
+				DiffuseColor = cloneSource.DiffuseColor;
+				Direction = cloneSource.Direction;
+				SpecularColor = cloneSource.SpecularColor;
+				Enabled = cloneSource.Enabled;
+			}
+		}
+
+		#endregion
+	}
+}

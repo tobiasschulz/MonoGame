@@ -15,194 +15,185 @@ using System.Collections.Generic;
 namespace Microsoft.Xna.Framework.Graphics
 {	
 	public abstract class GraphicsResource : IDisposable
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        public GraphicsDevice GraphicsDevice
-        {
-            get
-            {
-                return graphicsDevice;
-            }
+		public GraphicsDevice GraphicsDevice
+		{
+			get;
+			internal set;
+		}
 
-            internal set
-            {
-                graphicsDevice = value;
-            }
-        }
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
 
-        public bool IsDisposed
-        {
-            get
-            {
-                return disposed;
-            }
-        }
+		public string Name
+		{
+			get;
+			set;
+		}
 
-        public string Name { get; set; }
+		public Object Tag
+		{
+			get;
+			set;
+		}
 
-        public Object Tag { get; set; }
+		#endregion
 
-        #endregion
+		#region Private Static Variables
 
-        #region Private Variables
+		// Resources may be added to and removed from the list from many threads.
+		private static object resourcesLock = new object();
 
-        bool disposed;
+		// Use WeakReference for the global resources list as we do not know when a resource
+		// may be disposed and collected. We do not want to prevent a resource from being
+		// collected by holding a strong reference to it in this list.
+		private static List<WeakReference> resources = new List<WeakReference>();
 
-        // The GraphicsDevice property should only be accessed in Dispose(bool) if the disposing
-        // parameter is true. If disposing is false, the GraphicsDevice may or may not be
-        // disposed yet.
-        GraphicsDevice graphicsDevice;
+		#endregion
 
-        #endregion
+		#region Disposing Event
 
-        #region Private Static Variables
+		public event EventHandler<EventArgs> Disposing;
 
-        // Resources may be added to and removed from the list from many threads.
-        static object resourcesLock = new object();
+		#endregion
 
-        // Use WeakReference for the global resources list as we do not know when a resource
-        // may be disposed and collected. We do not want to prevent a resource from being
-        // collected by holding a strong reference to it in this list.
-        static List<WeakReference> resources = new List<WeakReference>();
+		#region Internal Constructor and Deconstructor
 
-        #endregion
+		internal GraphicsResource()
+		{
+			lock (resourcesLock)
+			{
+				resources.Add(new WeakReference(this));
+			}
+		}
 
-        #region Internal Constructor and Deconstructor
+		~GraphicsResource()
+		{
+			// Pass false so the managed objects are not released
+			// FIXME: How, I say, how in the fuck was this supposed to work? -flibit
+			// Dispose(false);
+		}
 
-        internal GraphicsResource()
-        {
-            lock (resourcesLock)
-            {
-                resources.Add(new WeakReference(this));
-            }
-        }
+		#endregion
 
-        ~GraphicsResource()
-        {
-            // Pass false so the managed objects are not released
-            // FIXME: How, I say, how in the fuck was this supposed to work? -flibit
-            // Dispose(false);
-        }
+		#region Public Dispose Method
 
-        #endregion
+		public void Dispose()
+		{
+			// Dispose of managed objects as well
+			Dispose(true);
+			// Since we have been manually disposed, do not call the finalizer on this object
+			GC.SuppressFinalize(this);
+		}
 
-        #region Events
+		#endregion
 
-        public event EventHandler<EventArgs> Disposing;
+		#region Public Methods
 
-        #endregion
+		public override string ToString()
+		{
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
+		}
 
-        #region Public Dispose Method
+		#endregion
 
-        public void Dispose()
-        {
-            // Dispose of managed objects as well
-            Dispose(true);
-            // Since we have been manually disposed, do not call the finalizer on this object
-            GC.SuppressFinalize(this);
-        }
+		#region Internal Methods
 
-        #endregion
+		/// <summary>
+		/// Called before the device is reset. Allows graphics resources to
+		/// invalidate their state so they can be recreated after the device reset.
+		/// Warning: This may be called after a call to Dispose() up until
+		/// the resource is garbage collected.
+		/// </summary>
+		internal protected virtual void GraphicsDeviceResetting()
+		{
 
-        #region Public Methods
+		}
 
-        public override string ToString()
-        {
-            return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
-        }
+		#endregion
 
-        #endregion
+		#region Protected Dispose Method
 
-        #region Internal Methods
+		/// <summary>
+		/// The method that derived classes should override to implement disposing of managed and native resources.
+		/// </summary>
+		/// <param name="disposing">True if managed objects should be disposed.</param>
+		/// <remarks>Native resources should always be released regardless of the value of the disposing parameter.</remarks>
+		protected virtual void Dispose(bool disposing)
+		{
+			// FIXME: What was this? No, really, what? -flibit
+			//if (!IsDisposed)
+			//{
+			//if (disposing)
+			//{
+			// Release managed objects
+			// ...
+			//}
 
-        /// <summary>
-        /// Called before the device is reset. Allows graphics resources to 
-        /// invalidate their state so they can be recreated after the device reset.
-        /// Warning: This may be called after a call to Dispose() up until
-        /// the resource is garbage collected.
-        /// </summary>
-        internal protected virtual void GraphicsDeviceResetting()
-        {
+			// Release native objects
+			// ...
 
-        }
+			// Do not trigger the event if called from the finalizer
+			if (disposing && Disposing != null)
+				Disposing(this, EventArgs.Empty);
 
-        #endregion
+			// Remove from the global list of graphics resources
+			lock (resourcesLock)
+			{
+				resources.Remove(new WeakReference(this));
+			}
 
-        #region Protected Dispose Method
+			GraphicsDevice = null;
+			IsDisposed = true;
+			//}
+		}
 
-        /// <summary>
-        /// The method that derived classes should override to implement disposing of managed and native resources.
-        /// </summary>
-        /// <param name="disposing">True if managed objects should be disposed.</param>
-        /// <remarks>Native resources should always be released regardless of the value of the disposing parameter.</remarks>
-        protected virtual void Dispose(bool disposing)
-        {
-            // FIXME: What was this? No, really, what? -flibit
-            //if (!disposed)
-            //{
-            //if (disposing)
-            //{
-            // Release managed objects
-            // ...
-            //}
+		#endregion
 
-            // Release native objects
-            // ...
+		#region Internal Static Methods
 
-            // Do not trigger the event if called from the finalizer
-            if (disposing && Disposing != null)
-                Disposing(this, EventArgs.Empty);
+		internal static void DoGraphicsDeviceResetting()
+		{
+			lock (resourcesLock)
+			{
+				foreach (WeakReference resource in resources)
+				{
+					object target = resource.Target;
+					if (target != null)
+					{
+						(target as GraphicsResource).GraphicsDeviceResetting();
+					}
+				}
 
-            // Remove from the global list of graphics resources
-            lock (resourcesLock)
-            {
-                resources.Remove(new WeakReference(this));
-            }
+				// Remove references to resources that have been garbage collected.
+				resources.RemoveAll(wr => !wr.IsAlive);
+			}
+		}
 
-            graphicsDevice = null;
-            disposed = true;
-            //}
-        }
+		/// <summary>
+		/// Dispose all graphics resources remaining in the global resources list.
+		/// </summary>
+		internal static void DisposeAll()
+		{
+			lock (resourcesLock)
+			{
+				foreach (WeakReference resource in resources)
+				{
+					object target = resource.Target;
+					if (target != null)
+					{
+						(target as IDisposable).Dispose();
+					}
+				}
+				resources.Clear();
+			}
+		}
 
-        #endregion
-
-        #region Internal Static Methods
-
-        internal static void DoGraphicsDeviceResetting()
-        {
-            lock (resourcesLock)
-            {
-                foreach (var resource in resources)
-                {
-                    var target = resource.Target;
-                    if (target != null)
-                        (target as GraphicsResource).GraphicsDeviceResetting();
-                }
-
-                // Remove references to resources that have been garbage collected.
-                resources.RemoveAll(wr => !wr.IsAlive);
-            }
-        }
-
-        /// <summary>
-        /// Dispose all graphics resources remaining in the global resources list.
-        /// </summary>
-        internal static void DisposeAll()
-        {
-            lock (resourcesLock)
-            {
-                foreach (var resource in resources)
-                {
-                    var target = resource.Target;
-                    if (target != null)
-                        (target as IDisposable).Dispose();
-                }
-                resources.Clear();
-            }
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 }
-

@@ -8,231 +8,165 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public class Model
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        // Summary:
-        //     Gets a collection of ModelBone objects which describe how each mesh in the
-        //     Meshes collection for this model relates to its parent mesh.
-        public ModelBoneCollection Bones { get; private set; }
-        //
-        // Summary:
-        //     Gets a collection of ModelMesh objects which compose the model. Each ModelMesh
-        //     in a model may be moved independently and may be composed of multiple materials
-        //     identified as ModelMeshPart objects.
-        public ModelMeshCollection Meshes { get; private set; }
-        //
-        // Summary:
-        //     Gets the root bone for this model.
-        public ModelBone Root { get; set; }
-        //
-        // Summary:
-        //     Gets or sets an object identifying this model.
-        public object Tag { get; set; }
-
-        #endregion
-
-        #region Private Properties
-
-        private GraphicsDevice GraphicsDevice { get { return this.graphicsDevice; } }
-
-        #endregion
-
-        #region Private Static Variables
-
-        private static Matrix[] sharedDrawBoneMatrices;
-
-        #endregion
-
-        #region Private Variables
-
-        private GraphicsDevice graphicsDevice;
-
-        #endregion
-
-        #region Public Constructors
-
-        public Model()
+		// Summary:
+		//	Gets a collection of ModelBone objects which describe how each mesh in the
+		//	Meshes collection for this model relates to its parent mesh.
+		public ModelBoneCollection Bones
 		{
+			get;
+			private set;
+		}
 
+		//
+		// Summary:
+		//	 Gets a collection of ModelMesh objects which compose the model. Each ModelMesh
+		//	 in a model may be moved independently and may be composed of multiple materials
+		//	 identified as ModelMeshPart objects.
+		public ModelMeshCollection Meshes
+		{
+			get;
+			private set;
+		}
+
+		//
+		// Summary:
+		//	 Gets the root bone for this model.
+		public ModelBone Root
+		{
+			get;
+			set;
+		}
+
+		//
+		// Summary:
+		//	 Gets or sets an object identifying this model.
+		public object Tag
+		{
+			get;
+			set;
+		}
+
+		#endregion
+
+		#region Private Static Variables
+
+		private static Matrix[] sharedDrawBoneMatrices;
+
+		#endregion
+
+		#region Public Constructors
+
+		public Model()
+		{
 		}
 
 		public Model(GraphicsDevice graphicsDevice, List<ModelBone> bones, List<ModelMesh> meshes)
 		{
-			// TODO: Complete member initialization
-			this.graphicsDevice = graphicsDevice;
-
 			Bones = new ModelBoneCollection(bones);
 			Meshes = new ModelMeshCollection(meshes);
 		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public void BuildHierarchy()
+		public void BuildHierarchy()
 		{
-			var globalScale = Matrix.CreateScale(0.01f);
+			Matrix globalScale = Matrix.CreateScale(0.01f);
 			
-			foreach(var node in this.Root.Children)
+			foreach (ModelBone node in Root.Children)
 			{
-				BuildHierarchy(node, this.Root.Transform * globalScale, 0);
+				BuildHierarchy(node, Root.Transform * globalScale, 0);
 			}
 		}
 
-        public void Draw(Matrix world, Matrix view, Matrix projection)
-        {
-            int boneCount = this.Bones.Count;
+		public void Draw(Matrix world, Matrix view, Matrix projection)
+		{
+			int boneCount = Bones.Count;
 
-            if (sharedDrawBoneMatrices == null ||
-                sharedDrawBoneMatrices.Length < boneCount)
-            {
-                sharedDrawBoneMatrices = new Matrix[boneCount];
-            }
+			if (sharedDrawBoneMatrices == null ||
+				sharedDrawBoneMatrices.Length < boneCount)
+			{
+				sharedDrawBoneMatrices = new Matrix[boneCount];
+			}
 
-            // Look up combined bone matrices for the entire model.            
-            CopyAbsoluteBoneTransformsTo(sharedDrawBoneMatrices);
+			// Look up combined bone matrices for the entire model.
+			CopyAbsoluteBoneTransformsTo(sharedDrawBoneMatrices);
 
-            // Draw the model.
-            foreach (ModelMesh mesh in Meshes)
-            {
-                foreach (Effect effect in mesh.Effects)
-                {
-                    IEffectMatrices effectMatricies = effect as IEffectMatrices;
-                    if (effectMatricies == null)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                    effectMatricies.World = sharedDrawBoneMatrices[mesh.ParentBone.Index] * world;
-                    effectMatricies.View = view;
-                    effectMatricies.Projection = projection;
-                }
+			// Draw the model.
+			foreach (ModelMesh mesh in Meshes)
+			{
+				foreach (Effect effect in mesh.Effects)
+				{
+					IEffectMatrices effectMatricies = effect as IEffectMatrices;
+					if (effectMatricies == null)
+					{
+						throw new InvalidOperationException();
+					}
+					effectMatricies.World = sharedDrawBoneMatrices[mesh.ParentBone.Index] * world;
+					effectMatricies.View = view;
+					effectMatricies.Projection = projection;
+				}
 
-                mesh.Draw();
-            }
-        }
+				mesh.Draw();
+			}
+		}
 
-        public void CopyAbsoluteBoneTransformsTo(Matrix[] destinationBoneTransforms)
-        {
-            if (destinationBoneTransforms == null)
-                throw new ArgumentNullException("destinationBoneTransforms");
-            if (destinationBoneTransforms.Length < this.Bones.Count)
-                throw new ArgumentOutOfRangeException("destinationBoneTransforms");
-            int count = this.Bones.Count;
-            for (int index1 = 0; index1 < count; ++index1)
-            {
-                ModelBone modelBone = (this.Bones)[index1];
-                if (modelBone.Parent == null)
-                {
-                    destinationBoneTransforms[index1] = modelBone.transform;
-                }
-                else
-                {
-                    int index2 = modelBone.Parent.Index;
-                    Matrix.Multiply(ref modelBone.transform, ref destinationBoneTransforms[index2], out destinationBoneTransforms[index1]);
-                }
-            }
-        }
+		public void CopyAbsoluteBoneTransformsTo(Matrix[] destinationBoneTransforms)
+		{
+			if (destinationBoneTransforms == null)
+			{
+				throw new ArgumentNullException("destinationBoneTransforms");
+			}
+			if (destinationBoneTransforms.Length < Bones.Count)
+			{
+				throw new ArgumentOutOfRangeException("destinationBoneTransforms");
+			}
 
-        #endregion
+			int count = Bones.Count;
+			for (int index1 = 0; index1 < count; ++index1)
+			{
+				ModelBone modelBone = Bones[index1];
+				if (modelBone.Parent == null)
+				{
+					destinationBoneTransforms[index1] = modelBone.transform;
+				}
+				else
+				{
+					int index2 = modelBone.Parent.Index;
+					Matrix.Multiply(
+						ref modelBone.transform,
+						ref destinationBoneTransforms[index2],
+						out destinationBoneTransforms[index1]
+					);
+				}
+			}
+		}
 
-        #region Private Methods
+		#endregion
 
-        private void BuildHierarchy(ModelBone node, Matrix parentTransform, int level)
+		#region Private Methods
+
+		private void BuildHierarchy(ModelBone node, Matrix parentTransform, int level)
 		{
 			node.ModelTransform = node.Transform * parentTransform;
 			
-			foreach (var child in node.Children) 
+			foreach (ModelBone child in node.Children)
 			{
 				BuildHierarchy(child, node.ModelTransform, level + 1);
 			}
-			
-			//string s = string.Empty;
-			//
-			//for (int i = 0; i < level; i++) 
-			//{
-			//	s += "\t";
-			//}
-			//
-			//Debug.WriteLine("{0}:{1}", s, node.Name);
 		}
 
-        #endregion
+		#endregion
 	}
-
-	//// Summary:
-	////     Represents a 3D model composed of multiple ModelMesh objects which may be
-	////     moved independently.
-	//public sealed class Model
-	//{
-	//    // Summary:
-	//    //     Gets a collection of ModelBone objects which describe how each mesh in the
-	//    //     Meshes collection for this model relates to its parent mesh.
-	//    public ModelBoneCollection Bones { get { throw new NotImplementedException(); } }
-	//    //
-	//    // Summary:
-	//    //     Gets a collection of ModelMesh objects which compose the model. Each ModelMesh
-	//    //     in a model may be moved independently and may be composed of multiple materials
-	//    //     identified as ModelMeshPart objects.
-	//    public ModelMeshCollection Meshes { get { throw new NotImplementedException(); } }
-	//    //
-	//    // Summary:
-	//    //     Gets the root bone for this model.
-	//    public ModelBone Root { get { throw new NotImplementedException(); } }
-	//    //
-	//    // Summary:
-	//    //     Gets or sets an object identifying this model.
-	//    public object Tag { get { throw new NotImplementedException(); } set { throw new NotImplementedException(); } }
-
-	//    // Summary:
-	//    //     Copies a transform of each bone in a model relative to all parent bones of
-	//    //     the bone into a given array.
-	//    //
-	//    // Parameters:
-	//    //   destinationBoneTransforms:
-	//    //     The array to receive bone transforms.
-	//    public void CopyAbsoluteBoneTransformsTo(Matrix[] destinationBoneTransforms) { throw new NotImplementedException(); }
-	//    //
-	//    // Summary:
-	//    //     Copies an array of transforms into each bone in the model.
-	//    //
-	//    // Parameters:
-	//    //   sourceBoneTransforms:
-	//    //     An array containing new bone transforms.
-	//    public void CopyBoneTransformsFrom(Matrix[] sourceBoneTransforms) { throw new NotImplementedException(); }
-	//    //
-	//    // Summary:
-	//    //     Copies each bone transform relative only to the parent bone of the model
-	//    //     to a given array.
-	//    //
-	//    // Parameters:
-	//    //   destinationBoneTransforms:
-	//    //     The array to receive bone transforms.
-	//    public void CopyBoneTransformsTo(Matrix[] destinationBoneTransforms) { throw new NotImplementedException(); }
-	//    //
-	//    // Summary:
-	//    //     Render a model after applying the matrix transformations.
-	//    //
-	//    // Parameters:
-	//    //   world:
-	//    //     A world transformation matrix.
-	//    //
-	//    //   view:
-	//    //     A view transformation matrix.
-	//    //
-	//    //   projection:
-	//    //     A projection transformation matrix.
-	//    public void Draw(Matrix world, Matrix view, Matrix projection) { throw new NotImplementedException(); }
-	//}
 }

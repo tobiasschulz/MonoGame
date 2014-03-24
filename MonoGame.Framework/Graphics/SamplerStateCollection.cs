@@ -11,21 +11,21 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class SamplerStateCollection
 	{
-        #region Public Array Access Property
+		#region Public Array Access Property
 
-        public SamplerState this[int index]
-        {
-            get
-            {
-                return samplers[index];
-            }
-            set
-            {
-                samplers[index] = value;
-            }
-        }
+		public SamplerState this[int index]
+		{
+			get
+			{
+				return samplers[index];
+			}
+			set
+			{
+				samplers[index] = value;
+			}
+		}
 
-        #endregion
+		#endregion
 
 		#region Private Variables
 
