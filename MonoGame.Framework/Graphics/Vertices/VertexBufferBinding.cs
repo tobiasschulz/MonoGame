@@ -9,88 +9,112 @@
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public struct VertexBufferBinding
-    {
-        #region Public Properties
+	public struct VertexBufferBinding
+	{
+		#region Public Properties
 
-        /// <summary>
-        /// Gets the instance frequency. A value of 0 means no instancing.
-        /// </summary>
-        public int InstanceFrequency { get { return _instanceFrequency; } }
+		/// <summary>
+		/// Gets the instance frequency. A value of 0 means no instancing.
+		/// </summary>
+		public int InstanceFrequency
+		{
+			get
+			{
+				return instanceFrequency;
+			}
+		}
 
-        /// <summary>
-        /// Gets the vertex buffer.
-        /// </summary>
-        public VertexBuffer VertexBuffer { get { return _vertexBuffer; } }
+		/// <summary>
+		/// Gets the vertex buffer.
+		/// </summary>
+		public VertexBuffer VertexBuffer
+		{
+			get
+			{
+				return vertexBuffer;
+			}
+		}
 
-        /// <summary>
-        /// Gets the offset in bytes from the beginning of the vertex buffer to the first vertex to use.
-        /// </summary>
-        public int VertexOffset { get { return _vertexOffset; } }
+		/// <summary>
+		/// Gets the offset in bytes from the beginning of the vertex buffer to the first vertex to use.
+		/// </summary>
+		public int VertexOffset
+		{
+			get
+			{
+				return vertexOffset;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal Static Properties
+		#region Internal Static Properties
 
-        /// <summary>
-        /// A null vertex buffer binding for unused vertex buffer slots.
-        /// </summary>
-        static internal VertexBufferBinding None { get { return _none; } }
+		/// <summary>
+		/// A null vertex buffer binding for unused vertex buffer slots.
+		/// </summary>
+		internal static VertexBufferBinding None
+		{
+			get
+			{
+				return none;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        VertexBuffer _vertexBuffer;
-        int _vertexOffset;
-        int _instanceFrequency;
+		private VertexBuffer vertexBuffer;
+		private int vertexOffset;
+		private int instanceFrequency;
 
-        #endregion
+		#endregion
 
-        #region Private Static Variables
+		#region Private Static Variables
 
-        static VertexBufferBinding _none = new VertexBufferBinding(null);
+		private static VertexBufferBinding none = new VertexBufferBinding(null);
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        /// <summary>
-        /// Creates an instance of VertexBufferBinding.
-        /// </summary>
-        /// <param name="vertexBuffer">The vertex buffer to bind.</param>
-        public VertexBufferBinding(VertexBuffer vertexBuffer)
-        {
-            _vertexBuffer = vertexBuffer;
-            _vertexOffset = 0;
-            _instanceFrequency = 0;
-        }
+		/// <summary>
+		/// Creates an instance of VertexBufferBinding.
+		/// </summary>
+		/// <param name="vertexBuffer">The vertex buffer to bind.</param>
+		public VertexBufferBinding(VertexBuffer vertexBuffer)
+		{
+			this.vertexBuffer = vertexBuffer;
+			vertexOffset = 0;
+			instanceFrequency = 0;
+		}
 
-        /// <summary>
-        /// Creates an instance of VertexBufferBinding.
-        /// </summary>
-        /// <param name="vertexBuffer">The vertex buffer to bind.</param>
-        /// <param name="vertexOffset">The offset in bytes to the first vertex to use.</param>
-        public VertexBufferBinding(VertexBuffer vertexBuffer, int vertexOffset)
-        {
-            _vertexBuffer = vertexBuffer;
-            _vertexOffset = vertexOffset;
-            _instanceFrequency = 0;
-        }
+		/// <summary>
+		/// Creates an instance of VertexBufferBinding.
+		/// </summary>
+		/// <param name="vertexBuffer">The vertex buffer to bind.</param>
+		/// <param name="vertexOffset">The offset in bytes to the first vertex to use.</param>
+		public VertexBufferBinding(VertexBuffer vertexBuffer, int vertexOffset)
+		{
+			this.vertexBuffer = vertexBuffer;
+			this.vertexOffset = vertexOffset;
+			instanceFrequency = 0;
+		}
 
-        /// <summary>
-        /// Creates an instance of VertexBufferBinding.
-        /// </summary>
-        /// <param name="vertexBuffer">The vertex buffer to bind.</param>
-        /// <param name="vertexOffset">The offset in bytes to the first vertex to use.</param>
-        /// <param name="instanceFrequency">Number of instances to draw for each draw call. Use 0 if not using instanced drawing.</param>
-        public VertexBufferBinding(VertexBuffer vertexBuffer, int vertexOffset, int instanceFrequency)
-        {
-            _vertexBuffer = vertexBuffer;
-            _vertexOffset = vertexOffset;
-            _instanceFrequency = instanceFrequency;
-        }
+		/// <summary>
+		/// Creates an instance of VertexBufferBinding.
+		/// </summary>
+		/// <param name="vertexBuffer">The vertex buffer to bind.</param>
+		/// <param name="vertexOffset">The offset in bytes to the first vertex to use.</param>
+		/// <param name="instanceFrequency">Number of instances to draw for each draw call. Use 0 if not using instanced drawing.</param>
+		public VertexBufferBinding(VertexBuffer vertexBuffer, int vertexOffset, int instanceFrequency)
+		{
+			this.vertexBuffer = vertexBuffer;
+			this.vertexOffset = vertexOffset;
+			this.instanceFrequency = instanceFrequency;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

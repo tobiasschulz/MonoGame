@@ -7,99 +7,134 @@
  */
 #endregion
 
+#region Using Statements
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct VertexPositionColorTexture : IVertexType
-    {
-        #region Private Properties
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct VertexPositionColorTexture : IVertexType
+	{
+		#region Private Properties
 
-        VertexDeclaration IVertexType.VertexDeclaration
-        {
-            get
-            {
-                return VertexDeclaration;
-            }
-        }
+		VertexDeclaration IVertexType.VertexDeclaration
+		{
+			get
+			{
+				return VertexDeclaration;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Fields
+		#region Public Variables
 
-        public Vector3 Position;
-        public Color Color;
-        public Vector2 TextureCoordinate;
+		public Vector3 Position;
+		public Color Color;
+		public Vector2 TextureCoordinate;
 
-        #endregion
+		#endregion
 
-        #region Public Static Fields
+		#region Public Static Variables
 
-        public static readonly VertexDeclaration VertexDeclaration;
+		public static readonly VertexDeclaration VertexDeclaration;
 
-        #endregion
+		#endregion
 
-        #region Private Static Constructor
+		#region Private Static Constructor
 
-        static VertexPositionColorTexture()
-        {
-            var elements = new VertexElement[] 
-            { 
-                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), 
-                new VertexElement(12, VertexElementFormat.Color, VertexElementUsage.Color, 0), 
-                new VertexElement(16, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) 
-            };
-            VertexDeclaration = new VertexDeclaration(elements);
-        }
+		static VertexPositionColorTexture()
+		{
+			VertexDeclaration = new VertexDeclaration(
+				new VertexElement[]
+				{
+					new VertexElement(
+						0,
+						VertexElementFormat.Vector3,
+						VertexElementUsage.Position,
+						0
+					),
+					new VertexElement(
+						12,
+						VertexElementFormat.Color,
+						VertexElementUsage.Color,
+						0
+					),
+					new VertexElement(
+						16,
+						VertexElementFormat.Vector2,
+						VertexElementUsage.TextureCoordinate,
+						0
+					)
+				}
+			);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Constructor
+		#region Public Constructor
 
-        public VertexPositionColorTexture(Vector3 position, Color color, Vector2 textureCoordinate)
-        {
-            Position = position;
-            Color = color;
-            TextureCoordinate = textureCoordinate;
-        }
+		public VertexPositionColorTexture(
+			Vector3 position,
+			Color color,
+			Vector2 textureCoordinate
+		) {
+			Position = position;
+			Color = color;
+			TextureCoordinate = textureCoordinate;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Static Operators and Override Methods
+		#region Public Static Operators and Override Methods
 
-        public override int GetHashCode()
-        {
-            // TODO: FIc gethashcode
-            return 0;
-        }
+		public override int GetHashCode()
+		{
+			// TODO: Fix GetHashCode
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return string.Format("{{Position:{0} Color:{1} TextureCoordinate:{2}}}", new object[] { this.Position, this.Color, this.TextureCoordinate });
-        }
+		public override string ToString()
+		{
+			return string.Format(
+				"{{Position:{0} Color:{1} TextureCoordinate:{2}}}",
+				new object[]
+				{
+					Position,
+					Color,
+					TextureCoordinate
+				}
+			);
+		}
 
-        public static bool operator ==(VertexPositionColorTexture left, VertexPositionColorTexture right)
-        {
-            return (((left.Position == right.Position) && (left.Color == right.Color)) && (left.TextureCoordinate == right.TextureCoordinate));
-        }
+		public static bool operator ==(VertexPositionColorTexture left, VertexPositionColorTexture right)
+		{
+			return (	(left.Position == right.Position) &&
+					(left.Color == right.Color) &&
+					(left.TextureCoordinate == right.TextureCoordinate)	);
+		}
 
-        public static bool operator !=(VertexPositionColorTexture left, VertexPositionColorTexture right)
-        {
-            return !(left == right);
-        }
+		public static bool operator !=(VertexPositionColorTexture left, VertexPositionColorTexture right)
+		{
+			return !(left == right);
+		}
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+			{
+				return false;
+			}
 
-            if (obj.GetType() != base.GetType())
-                return false;
+			if (obj.GetType() != base.GetType())
+			{
+				return false;
+			}
 
-            return (this == ((VertexPositionColorTexture)obj));
-        }
+			return (this == ((VertexPositionColorTexture) obj));
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

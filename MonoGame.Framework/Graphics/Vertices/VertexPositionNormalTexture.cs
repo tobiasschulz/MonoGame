@@ -8,102 +8,131 @@
 #endregion
 
 #region Using Statements
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct VertexPositionNormalTexture : IVertexType
-    {
-        #region Private Properties
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct VertexPositionNormalTexture : IVertexType
+	{
+		#region Private Properties
 
-        VertexDeclaration IVertexType.VertexDeclaration
-        {
-            get
-            {
-                return VertexDeclaration;
-            }
-        }
+		VertexDeclaration IVertexType.VertexDeclaration
+		{
+			get
+			{
+				return VertexDeclaration;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Fields
+		#region Public Variables
 
-        public Vector3 Position;
-        public Vector3 Normal;
-        public Vector2 TextureCoordinate;
+		public Vector3 Position;
+		public Vector3 Normal;
+		public Vector2 TextureCoordinate;
 
-        #endregion
+		#endregion
 
-        #region Public Static Fields
+		#region Public Static Variables
 
-        public static readonly VertexDeclaration VertexDeclaration;
+		public static readonly VertexDeclaration VertexDeclaration;
 
-        #endregion
+		#endregion
 
-        #region Private Static Constructor
+		#region Private Static Constructor
 
-        static VertexPositionNormalTexture()
-        {
-            VertexElement[] elements = new VertexElement[] { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0), new VertexElement(0x18, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) };
-            VertexDeclaration declaration = new VertexDeclaration(elements);
-            VertexDeclaration = declaration;
-        }
+		static VertexPositionNormalTexture()
+		{
+			VertexDeclaration = new VertexDeclaration(
+				new VertexElement[]
+				{
+					new VertexElement(
+						0,
+						VertexElementFormat.Vector3,
+						VertexElementUsage.Position,
+						0
+					),
+					new VertexElement(
+						12,
+						VertexElementFormat.Vector3,
+						VertexElementUsage.Normal,
+						0
+					),
+					new VertexElement(
+						24,
+						VertexElementFormat.Vector2,
+						VertexElementUsage.TextureCoordinate,
+						0
+					)
+				}
+			);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Constructor
+		#region Public Constructor
 
-        public VertexPositionNormalTexture(Vector3 position, Vector3 normal, Vector2 textureCoordinate)
-        {
-            this.Position = position;
-            this.Normal = normal;
-            this.TextureCoordinate = textureCoordinate;
-        }
+		public VertexPositionNormalTexture(
+			Vector3 position,
+			Vector3 normal,
+			Vector2 textureCoordinate
+		) {
+			Position = position;
+			Normal = normal;
+			TextureCoordinate = textureCoordinate;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Static Operators and Override Methods
+		#region Public Static Operators and Override Methods
 
-        public override int GetHashCode()
-        {
-            // TODO: FIc gethashcode
-            return 0;
-        }
+		public override int GetHashCode()
+		{
+			// TODO: Fix GetHashCode
+			return 0;
+		}
 
-        public override string ToString()
-        {
-            return string.Format("{{Position:{0} Normal:{1} TextureCoordinate:{2}}}", new object[] { this.Position, this.Normal, this.TextureCoordinate });
-        }
+		public override string ToString()
+		{
+			return string.Format(
+				"{{Position:{0} Normal:{1} TextureCoordinate:{2}}}",
+				new object[]
+				{
+					Position,
+					Normal,
+					TextureCoordinate
+				}
+			);
+		}
 
-        public static bool operator ==(VertexPositionNormalTexture left, VertexPositionNormalTexture right)
-        {
-            return (((left.Position == right.Position) && (left.Normal == right.Normal)) && (left.TextureCoordinate == right.TextureCoordinate));
-        }
+		public static bool operator ==(VertexPositionNormalTexture left, VertexPositionNormalTexture right)
+		{
+			return (	(left.Position == right.Position) &&
+					(left.Normal == right.Normal) &&
+					(left.TextureCoordinate == right.TextureCoordinate)	);
+		}
 
-        public static bool operator !=(VertexPositionNormalTexture left, VertexPositionNormalTexture right)
-        {
-            return !(left == right);
-        }
+		public static bool operator !=(VertexPositionNormalTexture left, VertexPositionNormalTexture right)
+		{
+			return !(left == right);
+		}
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-            if (obj.GetType() != base.GetType())
-            {
-                return false;
-            }
-            return (this == ((VertexPositionNormalTexture)obj));
-        }
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+			{
+				return false;
+			}
+			if (obj.GetType() != base.GetType())
+			{
+				return false;
+			}
+			return (this == ((VertexPositionNormalTexture) obj));
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
