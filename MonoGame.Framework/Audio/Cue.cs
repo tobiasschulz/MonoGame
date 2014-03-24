@@ -7,38 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Audio
 {
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.cue.aspx
 	public sealed class Cue : IDisposable
 	{
-		private AudioEngine INTERNAL_baseEngine;
-
-		private CueData INTERNAL_data;
-		private XACTSound INTERNAL_activeSound;
-		private List<SoundEffectInstance> INTERNAL_instancePool;
-		private List<float> INTERNAL_instanceVolumes;
-
-		// User-controlled sounds require a bit more trickery.
-		private bool INTERNAL_userControlledPlaying;
-		private float INTERNAL_controlledValue;
-
-		private bool INTERNAL_isPositional;
-		private AudioListener INTERNAL_listener;
-		private AudioEmitter INTERNAL_emitter;
-
-		private List<Variable> INTERNAL_variables;
-
-		private AudioCategory INTERNAL_category;
-		private bool INTERNAL_isManaged;
-
-		private bool INTERNAL_queuedPlayback;
-		private bool INTERNAL_queuedPaused;
-
-		private static Random random = new Random();
+		#region Public Properties
 
 		public bool IsCreated
 		{
@@ -125,7 +104,48 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
+		#endregion
+
+		#region Private Variables
+
+		private AudioEngine INTERNAL_baseEngine;
+
+		private CueData INTERNAL_data;
+		private XACTSound INTERNAL_activeSound;
+		private List<SoundEffectInstance> INTERNAL_instancePool;
+		private List<float> INTERNAL_instanceVolumes;
+
+		// User-controlled sounds require a bit more trickery.
+		private bool INTERNAL_userControlledPlaying;
+		private float INTERNAL_controlledValue;
+
+		private bool INTERNAL_isPositional;
+		private AudioListener INTERNAL_listener;
+		private AudioEmitter INTERNAL_emitter;
+
+		private List<Variable> INTERNAL_variables;
+
+		private AudioCategory INTERNAL_category;
+		private bool INTERNAL_isManaged;
+
+		private bool INTERNAL_queuedPlayback;
+		private bool INTERNAL_queuedPaused;
+
+		#endregion
+
+		#region Private Static Random Number Generator
+
+		private static Random random = new Random();
+
+		#endregion
+
+		#region Disposing Event
+
 		public event EventHandler<EventArgs> Disposing;
+
+		#endregion
+
+		#region Internal Constructor
 
 		internal Cue(
 			AudioEngine audioEngine,
@@ -166,10 +186,44 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_instanceVolumes = new List<float>();
 		}
 
+		#endregion
+
+		#region Destructor
+
 		~Cue()
 		{
 			Dispose();
 		}
+
+		#endregion
+
+		#region Public Dispose Method
+
+		public void Dispose()
+		{
+			if (!IsDisposed)
+			{
+				if (Disposing != null)
+				{
+					Disposing.Invoke(this, null);
+				}
+				if (INTERNAL_instancePool != null)
+				{
+					foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
+					{
+						sfi.Dispose();
+					}
+					INTERNAL_instancePool.Clear();
+					INTERNAL_instanceVolumes.Clear();
+					INTERNAL_queuedPlayback = false;
+				}
+				IsDisposed = true;
+			}
+		}
+
+		#endregion
+
+		#region Public Methods
 
 		public void Apply3D(AudioListener listener, AudioEmitter emitter)
 		{
@@ -196,28 +250,6 @@ namespace Microsoft.Xna.Framework.Audio
 			);
 			// TODO: DopplerPitchScaler, OrientationAngle
 			INTERNAL_isPositional = true;
-		}
-
-		public void Dispose()
-		{
-			if (!IsDisposed)
-			{
-				if (Disposing != null)
-				{
-					Disposing.Invoke(this, null);
-				}
-				if (INTERNAL_instancePool != null)
-				{
-					foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
-					{
-						sfi.Dispose();
-					}
-					INTERNAL_instancePool.Clear();
-					INTERNAL_instanceVolumes.Clear();
-					INTERNAL_queuedPlayback = false;
-				}
-				IsDisposed = true;
-			}
 		}
 
 		public float GetVariable(string name)
@@ -363,6 +395,10 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		#endregion
+
+		#region Internal Methods
+
 		internal bool INTERNAL_update()
 		{
 			// If this is our first update, time to play!
@@ -486,6 +522,10 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_variables = cueVariables;
 		}
 
+		#endregion
+
+		#region Private Methods
+
 		private bool INTERNAL_calculateNextSound()
 		{
 			INTERNAL_activeSound = null;
@@ -562,5 +602,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 			}
 		}
+
+		#endregion
 	}
 }

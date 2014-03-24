@@ -7,20 +7,17 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public enum ResourceType
-    {
-        DepthStencilBuffer = 1,
+	public enum ResourceType
+	{
+		DepthStencilBuffer = 1,
 		Texture3DVolume = 2,
-        Texture2D = 3,
+		Texture2D = 3,
 		Texture3D = 4,
 		TextureCube = 5,
 		VertexBuffer = 6,
 		IndexBuffer = 7,
-        RenderTarget = 8
-    }
+		RenderTarget = 8
+	}
 }
-

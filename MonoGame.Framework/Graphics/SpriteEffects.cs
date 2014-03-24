@@ -7,16 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [Flags]
-    public enum SpriteEffects
-    {
+	[Flags]
+	public enum SpriteEffects
+	{
 		None = 0,
-        FlipHorizontally = 1,
-        FlipVertically = 2        
-    }
+		FlipHorizontally = 1,
+		FlipVertically = 2
+	}
 }
-

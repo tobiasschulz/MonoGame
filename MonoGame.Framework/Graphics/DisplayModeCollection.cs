@@ -32,44 +32,67 @@ SOFTWARE.
 */
 #endregion License
 
+#region Using Statements
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public class DisplayModeCollection : IEnumerable<DisplayMode>, IEnumerable
-    {
-        private readonly List<DisplayMode> modes;
+	public class DisplayModeCollection : IEnumerable<DisplayMode>, IEnumerable
+	{
+		#region Public Properties
 
-        public IEnumerable<DisplayMode> this[SurfaceFormat format]
-        {
-            get {
-                List<DisplayMode> list = new List<DisplayMode>();
-                foreach (DisplayMode mode in this.modes)
-                {
-                    if (mode.Format == format)
-                    {
-                        list.Add(mode);
-                    }
-                }
-                return list;
+		public IEnumerable<DisplayMode> this[SurfaceFormat format]
+		{
+			get
+			{
+				List<DisplayMode> list = new List<DisplayMode>();
+				foreach (DisplayMode mode in this.modes)
+				{
+					if (mode.Format == format)
+					{
+						list.Add(mode);
+					}
+				}
+				return list;
+			}
+		}
 
-            }
-        }
+		#endregion
 
-        public IEnumerator<DisplayMode> GetEnumerator()
-        {
-            return modes.GetEnumerator();
-        }
+		#region Private Variables
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return modes.GetEnumerator();
-        }
-        
-        public DisplayModeCollection(List<DisplayMode> setmodes) {
-            modes = setmodes;
-        }
-    }
+		private readonly List<DisplayMode> modes;
+
+		#endregion
+
+		#region Public Constructor
+
+		public DisplayModeCollection(List<DisplayMode> setmodes)
+		{
+			modes = setmodes;
+		}
+
+		#endregion
+
+		#region Public Methods
+
+		public IEnumerator<DisplayMode> GetEnumerator()
+		{
+			return modes.GetEnumerator();
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return modes.GetEnumerator();
+		}
+
+		#endregion
+	}
 }

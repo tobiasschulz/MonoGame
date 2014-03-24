@@ -14,42 +14,70 @@ namespace Microsoft.Xna.Framework.Graphics
 	// http://msdn.microsoft.com/en-us/library/ff434403.aspx
 	public struct RenderTargetBinding
 	{
-        private readonly Texture _renderTarget;
-        private readonly int _arraySlice;
+		#region Public Properties
 
-		public Texture RenderTarget 
-        {
-			get { return _renderTarget; }
+		public Texture RenderTarget
+		{
+			get
+			{
+				return renderTarget;
+			}
 		}
 
-        public int ArraySlice
-        {
-            get { return _arraySlice; }
-        }
+		public int ArraySlice
+		{
+			get
+			{
+				return arraySlice;
+			}
+		}
+
+		#endregion
+
+		#region Private Variables
+
+		private readonly Texture renderTarget;
+		private readonly int arraySlice;
+
+		#endregion
+
+		#region Public Constructors
 
 		public RenderTargetBinding(RenderTarget2D renderTarget)
 		{
-			if (renderTarget == null) 
+			if (renderTarget == null)
+			{
 				throw new ArgumentNullException("renderTarget");
+			}
 
-			_renderTarget = renderTarget;
-            _arraySlice = (int)CubeMapFace.PositiveX;
+			this.renderTarget = renderTarget;
+			arraySlice = (int) CubeMapFace.PositiveX;
 		}
 
-        public RenderTargetBinding(RenderTargetCube renderTarget, CubeMapFace cubeMapFace)
-        {
-            if (renderTarget == null)
-                throw new ArgumentNullException("renderTarget");
-            if (cubeMapFace < CubeMapFace.PositiveX || cubeMapFace > CubeMapFace.NegativeZ)
-                throw new ArgumentOutOfRangeException("cubeMapFace");
+		public RenderTargetBinding(RenderTargetCube renderTarget, CubeMapFace cubeMapFace)
+		{
+			if (renderTarget == null)
+			{
+				throw new ArgumentNullException("renderTarget");
+			}
+			if (cubeMapFace < CubeMapFace.PositiveX || cubeMapFace > CubeMapFace.NegativeZ)
+			{
+				throw new ArgumentOutOfRangeException("cubeMapFace");
+			}
 
-            _renderTarget = renderTarget;
-            _arraySlice = (int)cubeMapFace;
-        }
+			this.renderTarget = renderTarget;
+			arraySlice = (int) cubeMapFace;
+		}
 
-        public static implicit operator RenderTargetBinding(RenderTarget2D renderTarget)
-        {
-            return new RenderTargetBinding(renderTarget);
-        }
+		#endregion
+
+		#region Public Static Conversion Operator
+
+		public static implicit operator RenderTargetBinding(RenderTarget2D renderTarget)
+		{
+			return new RenderTargetBinding(renderTarget);
+		}
+
+		#endregion
 	}
 }

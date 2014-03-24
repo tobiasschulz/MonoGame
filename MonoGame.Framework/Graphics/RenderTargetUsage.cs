@@ -7,15 +7,12 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public enum RenderTargetUsage
-    {
-        DiscardContents,
-        PreserveContents,
-        PlatformContents
-    }
+	public enum RenderTargetUsage
+	{
+		DiscardContents,
+		PreserveContents,
+		PlatformContents
+	}
 }
-

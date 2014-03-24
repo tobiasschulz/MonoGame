@@ -7,41 +7,56 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	// Summary:
 	//     Represents a collection of ModelMesh objects.
 	public sealed class ModelMeshCollection : ReadOnlyCollection<ModelMesh>
-	{
-		internal ModelMeshCollection(IList<ModelMesh> list)
+    {
+        #region Public Properties
+
+        // Summary:
+        //     Retrieves a ModelMesh from the collection, given the name of the mesh.
+        //
+        // Parameters:
+        //   meshName:
+        //     The name of the mesh to retrieve.
+        public ModelMesh this[string meshName]
+        {
+            get
+            {
+                ModelMesh ret;
+                if (!this.TryGetValue(meshName, out ret))
+                {
+                    throw new KeyNotFoundException();
+                }
+                return ret;
+            }
+        }
+
+        #endregion
+
+        #region Internal Constructor
+
+        internal ModelMeshCollection(IList<ModelMesh> list)
 			: base(list)
 		{
 
 		}
-		
-	    // Summary:
-	    //     Retrieves a ModelMesh from the collection, given the name of the mesh.
-	    //
-	    // Parameters:
-	    //   meshName:
-	    //     The name of the mesh to retrieve.
-		public ModelMesh this[string meshName] {
-			get {
-				ModelMesh ret;
-				if (!this.TryGetValue(meshName, out ret)) {
-					throw new KeyNotFoundException();
-				}
-				return ret;
-			}
-		}
-		
-	    // Summary:
+
+        #endregion
+
+        #region Public Methods
+
+        // Summary:
 	    //     Finds a mesh with a given name if it exists in the collection.
 	    //
 	    // Parameters:
@@ -65,9 +80,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			
 			value = null;
 			return false;
-		}
+        }
 
-	}
+        #endregion
+
+    }
 
 	//// Summary:
 	////     Represents a collection of ModelMesh objects.

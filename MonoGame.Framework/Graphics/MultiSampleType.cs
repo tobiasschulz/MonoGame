@@ -7,29 +7,26 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public enum MultiSampleType
-    {
-        None,
-        NonMaskable,
-        TwoSamples,
-        ThreeSamples,
-        FourSamples,
-        FiveSamples,
-        SixSamples,
-        SevenSamples,
-        EightSamples,
-        NineSamples,
-        TenSamples,
-        ElevenSamples,
-        TwelveSamples,
-        ThirteenSamples,
-        FourteenSamples,
-        FifteenSamples,
-        SixteenSamples
-    }
+	public enum MultiSampleType
+	{
+		None,
+		NonMaskable,
+		TwoSamples,
+		ThreeSamples,
+		FourSamples,
+		FiveSamples,
+		SixSamples,
+		SevenSamples,
+		EightSamples,
+		NineSamples,
+		TenSamples,
+		ElevenSamples,
+		TwelveSamples,
+		ThirteenSamples,
+		FourteenSamples,
+		FifteenSamples,
+		SixteenSamples
+	}
 }
-

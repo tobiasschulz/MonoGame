@@ -29,6 +29,8 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.wavebank.aspx
 	public class WaveBank : IDisposable
 	{
+		#region Private Sound Entry Container Class
+
 		// Used to store sound entry data, mainly for streaming WaveBanks
 		private class SoundStreamEntry
 		{
@@ -101,6 +103,20 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		#endregion
+
+		#region Public Properties
+
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
+
+		#endregion
+
+		#region Private Variables
+
 		// We keep this in order to Dispose ourselves later.
 		private AudioEngine INTERNAL_baseEngine;
 		private string INTERNAL_name;
@@ -112,13 +128,15 @@ namespace Microsoft.Xna.Framework.Audio
 		// Stores the actual wavedata
 		private SoundEffect[] INTERNAL_sounds;
 
-		public bool IsDisposed
-		{
-			get;
-			private set;
-		}
+		#endregion
+
+		#region Disposing Event
 
 		public event EventHandler<EventArgs> Disposing;
+
+		#endregion
+
+		#region Public Constructors
 
 		public WaveBank(
 			AudioEngine audioEngine,
@@ -166,15 +184,27 @@ namespace Microsoft.Xna.Framework.Audio
 			LoadWaveBank(audioEngine, INTERNAL_waveBankReader, true);
 		}
 
+		#endregion
+
+		#region Destructor
+
 		~WaveBank()
 		{
 			Dispose(true);
 		}
 
+		#endregion
+
+		#region Public Dispose Method
+
 		public void Dispose()
 		{
 			Dispose(false);
 		}
+
+		#endregion
+
+		#region Protected Dispose Method
 
 		protected virtual void Dispose(bool disposing)
 		{
@@ -202,6 +232,10 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		#endregion
+
+		#region Internal Method
+
 		internal SoundEffect INTERNAL_getTrack(ushort track)
 		{
 			if (INTERNAL_sounds[track] == null)
@@ -214,6 +248,10 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 			return INTERNAL_sounds[track];
 		}
+
+		#endregion
+
+		#region Private WaveBank Load Method
 
 		private void LoadWaveBank(AudioEngine audioEngine, BinaryReader reader, bool streaming)
 		{
@@ -407,6 +445,10 @@ namespace Microsoft.Xna.Framework.Audio
 			IsDisposed = false;
 		}
 
+		#endregion
+
+		#region Private WaveBank Entry Load Method
+
 		private void LoadWaveEntry(SoundStreamEntry entry, ushort track, BinaryReader reader)
 		{
 			// Read Wavedata
@@ -438,15 +480,12 @@ namespace Microsoft.Xna.Framework.Audio
 					(entry.Alignment + 16) * 2
 				);
 			}
-			else if (entry.Codec == 0x3) // WMA
-			{
-				// TODO: WMA Codec
-				throw new NotSupportedException();
-			}
-			else // Includes 0x1, XMA
+			else // Includes 0x1 - XMA, 0x3 - WMA
 			{
 				throw new NotSupportedException();
 			}
 		}
+
+		#endregion
 	}
 }

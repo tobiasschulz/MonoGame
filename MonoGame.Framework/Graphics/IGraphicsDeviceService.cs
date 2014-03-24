@@ -7,18 +7,22 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public interface IGraphicsDeviceService
-    {
-		Microsoft.Xna.Framework.Graphics.GraphicsDevice GraphicsDevice { get; }
-        
-		event EventHandler<EventArgs> DeviceCreated;
-        event EventHandler<EventArgs> DeviceDisposing;
-        event EventHandler<EventArgs> DeviceReset;
-        event EventHandler<EventArgs> DeviceResetting;
-    }
-}
+	public interface IGraphicsDeviceService
+	{
+		GraphicsDevice GraphicsDevice
+		{
+			get;
+		}
 
+		event EventHandler<EventArgs> DeviceCreated;
+		event EventHandler<EventArgs> DeviceDisposing;
+		event EventHandler<EventArgs> DeviceReset;
+		event EventHandler<EventArgs> DeviceResetting;
+	}
+}

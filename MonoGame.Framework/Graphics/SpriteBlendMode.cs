@@ -7,16 +7,13 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public enum SpriteBlendMode
-    {
-        None = 0,
-        AlphaBlend = 1,
-        Additive = 2,
+	public enum SpriteBlendMode
+	{
+		None = 0,
+		AlphaBlend = 1,
+		Additive = 2,
 		PreMultiplied = 3,
-    }
+	}
 }
-

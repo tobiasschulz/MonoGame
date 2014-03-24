@@ -7,106 +7,135 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public struct VertexElement
-    {
-        internal int _offset;
-        internal VertexElementFormat _format;
-        internal VertexElementUsage _usage;
-        internal int _usageIndex;
+	public struct VertexElement
+	{
+		#region Public Properties
 
-        public int Offset
-        {
-            get
-            {
-                return this._offset;
-            }
-            set
-            {
-                this._offset = value;
-            }
-        }
+		public int Offset
+		{
+			get
+			{
+				return offset;
+			}
+			set
+			{
+				offset = value;
+			}
+		}
 
-        public VertexElementFormat VertexElementFormat
-        {
-            get
-            {
-                return this._format;
-            }
-            set
-            {
-                this._format = value;
-            }
-        }
+		public VertexElementFormat VertexElementFormat
+		{
+			get
+			{
+				return elementFormat;
+			}
+			set
+			{
+				elementFormat = value;
+			}
+		}
 
-        public VertexElementUsage VertexElementUsage
-        {
-            get
-            {
-                return this._usage;
-            }
-            set
-            {
-                this._usage = value;
-            }
-        }
-        
-        public int UsageIndex
-        {
-            get
-            {
-                return this._usageIndex;
-            }
-            set
-            {
-                this._usageIndex = value;
-            }
-        }
-        
-        public VertexElement(int offset, VertexElementFormat elementFormat, VertexElementUsage elementUsage, int usageIndex)
-        {
-            this._offset = offset;
-            this._usageIndex = usageIndex;
-            this._format = elementFormat;
-            this._usage = elementUsage;
-        }
+		public VertexElementUsage VertexElementUsage
+		{
+			get
+			{
+				return elementUsage;
+			}
+			set
+			{
+				elementUsage = value;
+			}
+		}
 
-        public override int GetHashCode()
-        {
-            // TODO: Fix hashes
-            return 0;
-        }
+		public int UsageIndex
+		{
+			get
+			{
+				return usageIndex;
+			}
+			set
+			{
+				usageIndex = value;
+			}
+		}
 
-        public override string ToString()
-        {
-            return string.Format("{{Offset:{0} Format:{1} Usage:{2} UsageIndex:{3}}}", new object[] { this.Offset, this.VertexElementFormat, this.VertexElementUsage, this.UsageIndex });
-        }
+		#endregion
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-            if (obj.GetType() != base.GetType())
-            {
-                return false;
-            }
-            return (this == ((VertexElement)obj));
-        }
+		#region Internal Varialbes
 
-        public static bool operator ==(VertexElement left, VertexElement right)
-        {
-            return ((((left._offset == right._offset) && (left._usageIndex == right._usageIndex)) && (left._usage == right._usage)) && (left._format == right._format));
-        }
+		private int offset;
+		private VertexElementFormat elementFormat;
+		private VertexElementUsage elementUsage;
+		private int usageIndex;
 
-        public static bool operator !=(VertexElement left, VertexElement right)
-        {
-            return !(left == right);
-        }
+		#endregion
 
-    }
+		#region Public Constructor
+
+		public VertexElement(
+			int offset,
+			VertexElementFormat elementFormat,
+			VertexElementUsage elementUsage,
+			int usageIndex
+		) {
+			this.offset = offset;
+			this.usageIndex = usageIndex;
+			this.elementFormat = elementFormat;
+			this.elementUsage = elementUsage;
+		}
+
+		#endregion
+
+		#region Public Static Operators and Override Methods
+
+		public override int GetHashCode()
+		{
+			// TODO: Fix hashes
+			return 0;
+		}
+
+		public override string ToString()
+		{
+			return string.Format(
+				"{{Offset:{0} Format:{1} Usage:{2} UsageIndex:{3}}}",
+				new object[]
+				{
+					Offset,
+					VertexElementFormat,
+					VertexElementUsage,
+					UsageIndex
+				}
+			);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+			{
+				return false;
+			}
+			if (obj.GetType() != base.GetType())
+			{
+				return false;
+			}
+			return (this == ((VertexElement) obj));
+		}
+
+		public static bool operator ==(VertexElement left, VertexElement right)
+		{
+			return (	(left.Offset == right.Offset) &&
+					(left.UsageIndex == right.UsageIndex) &&
+					(left.VertexElementUsage == right.VertexElementUsage) &&
+					(left.VertexElementFormat == right.VertexElementFormat)	);
+		}
+
+		public static bool operator !=(VertexElement left, VertexElement right)
+		{
+			return !(left == right);
+		}
+
+		#endregion
+	}
 }

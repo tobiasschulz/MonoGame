@@ -50,7 +50,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
-		#region Constructor, Deconstructor, Dispose Method
+		#region Public Constructor
 
 		public DynamicSoundEffectInstance(int sampleRate, AudioChannels channels) : base(null)
 		{
@@ -64,10 +64,18 @@ namespace Microsoft.Xna.Framework.Audio
 			availableBuffers = new Queue<int>();
 		}
 
+		#endregion
+
+		#region Destructor
+
 		~DynamicSoundEffectInstance()
 		{
 			Dispose();
 		}
+
+		#endregion
+
+		#region Public Dispose Method
 
 		public override void Dispose()
 		{

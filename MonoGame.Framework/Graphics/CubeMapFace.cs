@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public enum CubeMapFace
@@ -21,4 +19,3 @@ namespace Microsoft.Xna.Framework.Graphics
 		NegativeZ
 	}
 }
-

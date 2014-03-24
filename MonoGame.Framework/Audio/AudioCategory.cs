@@ -7,14 +7,18 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Audio
 {
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audiocategory.aspx
 	public struct AudioCategory : IEquatable<AudioCategory>
 	{
+		#region Private Float Instance Class
+
 		private class FloatInstance
 		{
 			public float Value;
@@ -24,12 +28,9 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
-		private List<Cue> activeCues;
+		#endregion
 
-		private Dictionary<string, int> cueInstanceCounts;
-
-		// Grumble, struct returns...
-		private FloatInstance INTERNAL_volume;
+		#region Public Properties
 
 		private string INTERNAL_name;
 		public string Name
@@ -40,6 +41,21 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		#endregion
+
+		#region Private Variables
+
+		private List<Cue> activeCues;
+
+		private Dictionary<string, int> cueInstanceCounts;
+
+		// Grumble, struct returns...
+		private FloatInstance INTERNAL_volume;
+
+		#endregion
+
+		#region Internal Constructor
+
 		internal AudioCategory(
 			string name,
 			float volume
@@ -49,6 +65,10 @@ namespace Microsoft.Xna.Framework.Audio
 			activeCues = new List<Cue>();
 			cueInstanceCounts = new Dictionary<string, int>();
 		}
+
+		#endregion
+
+		#region Public Methods
 
 		public void Pause()
 		{
@@ -119,6 +139,10 @@ namespace Microsoft.Xna.Framework.Audio
 		) {
 			return !(value1.Equals(value2));
 		}
+
+		#endregion
+
+		#region Internal Methods
 
 		internal void INTERNAL_update()
 		{
@@ -210,5 +234,7 @@ namespace Microsoft.Xna.Framework.Audio
 				cueInstanceCounts[cue.Name] -= 1;
 			}
 		}
+
+		#endregion
 	}
 }

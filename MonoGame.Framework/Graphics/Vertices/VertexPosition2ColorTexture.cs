@@ -7,89 +7,148 @@
  */
 #endregion
 
-using System;
-
+#region Using Statements
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
 	[StructLayout(LayoutKind.Sequential, Pack=1)]
 	// This should really be XNA's VertexPositionColorTexture
 	// but I'm not sure we want to use Vector3s if we don't have to.
-    internal struct VertexPosition2ColorTexture : IVertexType
+	internal struct VertexPosition2ColorTexture : IVertexType
 	{
+		#region Private Properties
+
+		VertexDeclaration IVertexType.VertexDeclaration
+		{
+			get
+			{
+				return VertexDeclaration;
+			}
+		}
+
+		#endregion
+
+		#region Public Variables
+
 		public Vector2 Position;
 		public Color Color;
 		public Vector2 TextureCoordinate;
 
-        public static readonly VertexDeclaration VertexDeclaration;
-		
-		public VertexPosition2ColorTexture ( Vector2 position, Color color, Vector2 texCoord )
+		#endregion
+
+		#region Public Static Variables
+
+		public static readonly VertexDeclaration VertexDeclaration;
+
+		#endregion
+
+		#region Private Static Constructor
+
+		static VertexPosition2ColorTexture()
 		{
+			VertexDeclaration = new VertexDeclaration(
+				new VertexElement[]
+				{
+					new VertexElement(
+						0,
+						VertexElementFormat.Vector2,
+						VertexElementUsage.Position,
+						0
+					),
+					new VertexElement(
+						8,
+						VertexElementFormat.Color,
+						VertexElementUsage.Color,
+						0
+					),
+					new VertexElement(
+						12,
+						VertexElementFormat.Vector2,
+						VertexElementUsage.TextureCoordinate,
+						0
+					)
+				}
+			);
+		}
+
+		#endregion
+
+		#region Public Constructor
+
+		public VertexPosition2ColorTexture(
+			Vector2 position,
+			Color color,
+			Vector2 texCoord
+		) {
 			Position = position;
 			Color = color;
 			TextureCoordinate = texCoord;
 		}
-		
+
+		#endregion
+
+		#region Public Static Methods
+
 		public static int GetSize()
 		{
-				return sizeof(float)*4+sizeof(uint);
-	    }
+				return (sizeof(float) * 4) + sizeof(uint);
+		}
 
-        VertexDeclaration IVertexType.VertexDeclaration
-        {
-            get
-            {
-                return VertexDeclaration;
-            }
-        }
+		#endregion
 
-        public override int GetHashCode()
-        {
-            // TODO: FIc gethashcode
-            return 0;
-        }
+		#region Public Static Operators and Override Methods
 
-        public override string ToString()
-        {
-            return string.Format("{{Position:{0} Color:{1} TextureCoordinate:{2}}}", new object[] { this.Position, this.Color, this.TextureCoordinate });
-        }
+		public override int GetHashCode()
+		{
+			// TODO: Fix GetHashCode
+			return 0;
+		}
 
-        public static bool operator ==(VertexPosition2ColorTexture left, VertexPosition2ColorTexture right)
-        {
-            return (((left.Position == right.Position) && (left.Color == right.Color)) && (left.TextureCoordinate == right.TextureCoordinate));
-        }
+		public override string ToString()
+		{
+			return string.Format(
+				"{{Position:{0} Color:{1} TextureCoordinate:{2}}}",
+				new object[]
+				{
+					Position,
+					Color,
+					TextureCoordinate
+				}
+			);
+		}
 
-        public static bool operator !=(VertexPosition2ColorTexture left, VertexPosition2ColorTexture right)
-        {
-            return !(left == right);
-        }
+		public static bool operator ==(VertexPosition2ColorTexture left, VertexPosition2ColorTexture right)
+		{
+			return (	(left.Position == right.Position) &&
+					(left.Color == right.Color) &&
+					(left.TextureCoordinate == right.TextureCoordinate)	);
+		}
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
+		public static bool operator !=(VertexPosition2ColorTexture left, VertexPosition2ColorTexture right)
+		{
+			return !(left == right);
+		}
 
-            if (obj.GetType() != base.GetType())
-                return false;
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+			{
+				return false;
+			}
 
-            return (this == ((VertexPosition2ColorTexture)obj));
-        }
+			if (obj.GetType() != base.GetType())
+			{
+				return false;
+			}
 
-        static VertexPosition2ColorTexture()
-        {
+			return (this == ((VertexPosition2ColorTexture) obj));
+		}
 
-            var elements = new VertexElement[] 
-            { 
-                new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0), 
-                new VertexElement(8, VertexElementFormat.Color, VertexElementUsage.Color, 0), 
-                new VertexElement(12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) 
-            };
-            VertexDeclaration = new VertexDeclaration(elements);
-        }
-    }
- 
+		#endregion
+	}
 }
-

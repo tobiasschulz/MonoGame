@@ -7,89 +7,122 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
-    public struct HalfVector2 : IPackedVector<uint>, IPackedVector, IEquatable<HalfVector2>
-    {
-        private uint packedValue;
-        public HalfVector2(float x, float y)
-        {
-            this.packedValue = PackHelper(x, y);
-        }
+	public struct HalfVector2 : IPackedVector<uint>, IPackedVector, IEquatable<HalfVector2>
+	{
+		#region Public Properties
 
-        public HalfVector2(Vector2 vector)
-        {
-            this.packedValue = PackHelper(vector.X, vector.Y);
-        }
+		[CLSCompliant(false)]
+		public uint PackedValue
+		{
+			get
+			{
+				return packedValue;
+			}
+			set
+			{
+				packedValue = value;
+			}
+		}
 
-        void IPackedVector.PackFromVector4(Vector4 vector)
-        {
-            this.packedValue = PackHelper(vector.X, vector.Y);
-        }
+		#endregion
 
-        private static uint PackHelper(float vectorX, float vectorY)
-        {
-            uint num2 = HalfTypeHelper.Convert(vectorX);
-            uint num = (uint)(HalfTypeHelper.Convert(vectorY) << 0x10);
-            return (num2 | num);
-        }
+		#region Private Variables
 
-        public Vector2 ToVector2()
-        {
-            Vector2 vector;
-            vector.X = HalfTypeHelper.Convert((ushort)this.packedValue);
-            vector.Y = HalfTypeHelper.Convert((ushort)(this.packedValue >> 0x10));
-            return vector;
-        }
+		private uint packedValue;
 
-        Vector4 IPackedVector.ToVector4()
-        {
-            Vector2 vector = this.ToVector2();
-            return new Vector4(vector.X, vector.Y, 0f, 1f);
-        }
+		#endregion
 
-        [CLSCompliant(false)]
-        public uint PackedValue
-        {
-            get
-            {
-                return this.packedValue;
-            }
-            set
-            {
-                this.packedValue = value;
-            }
-        }
-        public override string ToString()
-        {
-            return this.ToVector2().ToString();
-        }
+		#region Public Constructors
 
-        public override int GetHashCode()
-        {
-            return this.packedValue.GetHashCode();
-        }
+		public HalfVector2(float x, float y)
+		{
+			packedValue = PackHelper(x, y);
+		}
 
-        public override bool Equals(object obj)
-        {
-            return ((obj is HalfVector2) && this.Equals((HalfVector2)obj));
-        }
+		public HalfVector2(Vector2 vector)
+		{
+			packedValue = PackHelper(vector.X, vector.Y);
+		}
 
-        public bool Equals(HalfVector2 other)
-        {
-            return this.packedValue.Equals(other.packedValue);
-        }
+		#endregion
 
-        public static bool operator ==(HalfVector2 a, HalfVector2 b)
-        {
-            return a.Equals(b);
-        }
+		#region Public Methods
 
-        public static bool operator !=(HalfVector2 a, HalfVector2 b)
-        {
-            return !a.Equals(b);
-        }
-    }
+		public Vector2 ToVector2()
+		{
+			Vector2 vector;
+			vector.X = HalfTypeHelper.Convert((ushort) packedValue);
+			vector.Y = HalfTypeHelper.Convert((ushort) (packedValue >> 0x10));
+			return vector;
+		}
+
+		#endregion
+
+		#region IPackedVector Methods
+
+		void IPackedVector.PackFromVector4(Vector4 vector)
+		{
+			packedValue = PackHelper(vector.X, vector.Y);
+		}
+
+		Vector4 IPackedVector.ToVector4()
+		{
+			Vector2 vector = ToVector2();
+			return new Vector4(vector.X, vector.Y, 0f, 1f);
+		}
+
+		#endregion
+
+		#region Public Static Operators and Override Methods
+
+		public override string ToString()
+		{
+			return ToVector2().ToString();
+		}
+
+		public override int GetHashCode()
+		{
+			return packedValue.GetHashCode();
+		}
+
+		public override bool Equals(object obj)
+		{
+			return ((obj is HalfVector2) && Equals((HalfVector2) obj));
+		}
+
+		public bool Equals(HalfVector2 other)
+		{
+			return packedValue.Equals(other.packedValue);
+		}
+
+		public static bool operator ==(HalfVector2 a, HalfVector2 b)
+		{
+			return a.Equals(b);
+		}
+
+		public static bool operator !=(HalfVector2 a, HalfVector2 b)
+		{
+			return !a.Equals(b);
+		}
+
+		#endregion
+
+		#region Private Static Pack Method
+
+		private static uint PackHelper(float vectorX, float vectorY)
+		{
+			return (
+				HalfTypeHelper.Convert(vectorX) |
+				((uint) (HalfTypeHelper.Convert(vectorY) << 0x10))
+			);
+		}
+
+		#endregion
+	}
 }

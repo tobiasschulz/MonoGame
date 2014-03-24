@@ -19,6 +19,96 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.soundeffect.aspx
 	public sealed class SoundEffect : IDisposable
 	{
+		#region Public Properties
+
+		public TimeSpan Duration
+		{
+			get;
+			private set;
+		}
+
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
+
+		public string Name
+		{
+			get;
+			set;
+		}
+
+		#endregion
+
+		#region Public Static Properties
+
+		// FIXME: This should affect all sounds! alListener? -flibit
+		private static float INTERNAL_masterVolume = 1.0f;
+		public static float MasterVolume
+		{
+			get
+			{
+				return INTERNAL_masterVolume;
+			}
+			set
+			{
+				INTERNAL_masterVolume = value;
+			}
+		}
+
+		// FIXME: How does this affect OpenAL? -flibit
+		private static float INTERNAL_distanceScale = 1.0f;
+		public static float DistanceScale
+		{
+			get
+			{
+				return INTERNAL_distanceScale;
+			}
+			set
+			{
+				if (value <= 0.0f)
+				{
+					throw new ArgumentOutOfRangeException("value of DistanceScale");
+				}
+				INTERNAL_distanceScale = value;
+			}
+		}
+
+		// FIXME: How does this affect OpenAL? -flibit
+		private static float INTERNAL_dopplerScale = 1.0f;
+		public static float DopplerScale
+		{
+			get
+			{
+				return INTERNAL_dopplerScale;
+			}
+			set
+			{
+				if (value <= 0.0f)
+				{
+					throw new ArgumentOutOfRangeException("value of DopplerScale");
+				}
+				INTERNAL_dopplerScale = value;
+			}
+		}
+
+		// FIXME: How does this affect OpenAL? -flibit
+		private static float INTERNAL_speedOfSound = 343.5f;
+		public static float SpeedOfSound
+		{
+			get
+			{
+				return INTERNAL_speedOfSound;
+			}
+			set
+			{
+				INTERNAL_speedOfSound = value;
+			}
+		}
+
+		#endregion
+
 		#region Internal Audio Data
 
 		internal int INTERNAL_buffer;
@@ -98,6 +188,19 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
+		#region Public Dispose Method
+
+		public void Dispose()
+		{
+			if (!IsDisposed)
+			{
+				AL.DeleteBuffer(INTERNAL_buffer);
+				IsDisposed = true;
+			}
+		}
+
+		#endregion
+
 		#region Additional SoundEffect/SoundEffectInstance Creation Methods
 
 		public SoundEffectInstance CreateInstance()
@@ -112,7 +215,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
-		#region Play
+		#region Public Play Methods
 
 		public bool Play()
 		{
@@ -139,110 +242,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
-		#region Public Properties
-
-		public TimeSpan Duration
-		{
-			get;
-			private set;
-		}
-
-		public string Name
-		{
-			get;
-			set;
-		}
-
-		#endregion
-
-		#region Static Members
-
-		// FIXME: This should affect all sounds! alListener? -flibit
-		private static float INTERNAL_masterVolume = 1.0f;
-		public static float MasterVolume
-		{
-			get
-			{
-				return INTERNAL_masterVolume;
-			}
-			set
-			{
-				INTERNAL_masterVolume = value;
-			}
-		}
-
-		// FIXME: How does this affect OpenAL? -flibit
-		private static float INTERNAL_distanceScale = 1.0f;
-		public static float DistanceScale
-		{
-			get
-			{
-				return INTERNAL_distanceScale;
-			}
-			set
-			{
-				if (value <= 0.0f)
-				{
-					throw new ArgumentOutOfRangeException("value of DistanceScale");
-				}
-				INTERNAL_distanceScale = value;
-			}
-		}
-
-		// FIXME: How does this affect OpenAL? -flibit
-		private static float INTERNAL_dopplerScale = 1.0f;
-		public static float DopplerScale
-		{
-			get
-			{
-				return INTERNAL_dopplerScale;
-			}
-			set
-			{
-				if (value <= 0.0f)
-				{
-					throw new ArgumentOutOfRangeException("value of DopplerScale");
-				}
-				INTERNAL_dopplerScale = value;
-			}
-		}
-
-		// FIXME: How does this affect OpenAL? -flibit
-		private static float INTERNAL_speedOfSound = 343.5f;
-		public static float SpeedOfSound
-		{
-			get
-			{
-				return INTERNAL_speedOfSound;
-			}
-			set
-			{
-				INTERNAL_speedOfSound = value;
-			}
-		}
-
-		#endregion
-
-		#region IDisposable Members
-
-		public bool IsDisposed
-		{
-			get;
-			private set;
-		}
-
-		public void Dispose()
-		{
-			if (!IsDisposed)
-			{
-				AL.DeleteBuffer(INTERNAL_buffer);
-				IsDisposed = true;
-			}
-		}
-
-		#endregion
-
-		#region Additional OpenAL SoundEffect Code
+		#region Private OpenAL Loading Methods
 
 		private void INTERNAL_loadAudioStream(Stream s)
 		{

@@ -16,7 +16,23 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/dd940262.aspx
 	public class AudioEngine : IDisposable
 	{
+		#region Public Constants
+
 		public const int ContentVersion = 46;
+
+		#endregion
+
+		#region Public Properties
+
+		public bool IsDisposed
+		{
+			get;
+			private set;
+		}
+
+		#endregion
+
+		#region Private Variables
 
 		private Dictionary<string, WaveBank> INTERNAL_waveBanks;
 
@@ -26,13 +42,15 @@ namespace Microsoft.Xna.Framework.Audio
 		private List<DSPParameter> INTERNAL_dspParameters;
 		private Dictionary<long, DSPPreset> INTERNAL_dspPresets;
 
-		public bool IsDisposed
-		{
-			get;
-			private set;
-		}
+		#endregion
+
+		#region Disposing Event
 
 		public event EventHandler<EventArgs> Disposing;
+
+		#endregion
+
+		#region Public Constructors
 
 		public AudioEngine(string settingsFile)
 		{
@@ -352,10 +370,18 @@ namespace Microsoft.Xna.Framework.Audio
 			throw new NotSupportedException();
 		}
 
+		#endregion
+
+		#region Destructor
+
 		~AudioEngine()
 		{
 			Dispose(true);
 		}
+
+		#endregion
+
+		#region Public Dispose Methods
 
 		public void Dispose()
 		{
@@ -386,6 +412,10 @@ namespace Microsoft.Xna.Framework.Audio
 				IsDisposed = true;
 			}
 		}
+
+		#endregion
+
+		#region Public Methods
 
 		public AudioCategory GetCategory(string name)
 		{
@@ -484,6 +514,10 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 		}
 
+		#endregion
+
+		#region Internal Methods
+
 		internal void INTERNAL_addWaveBank(string name, WaveBank waveBank)
 		{
 			INTERNAL_waveBanks.Add(name, waveBank);
@@ -527,5 +561,7 @@ namespace Microsoft.Xna.Framework.Audio
 			newCue.INTERNAL_genVariables(cueVariables);
 			return INTERNAL_categories[category];
 		}
+
+		#endregion
 	}
 }

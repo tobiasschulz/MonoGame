@@ -7,16 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [Flags]
-    public enum ClearOptions
-    {
+	[Flags]
+	public enum ClearOptions
+	{
 		Target = 1,
-        DepthBuffer = 2,
-        Stencil = 4        
-    }
+		DepthBuffer = 2,
+		Stencil = 4
+	}
 }
-

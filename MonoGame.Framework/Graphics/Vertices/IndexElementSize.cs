@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public enum IndexElementSize
@@ -17,4 +15,3 @@ namespace Microsoft.Xna.Framework.Graphics
 		ThirtyTwoBits
 	}
 }
-

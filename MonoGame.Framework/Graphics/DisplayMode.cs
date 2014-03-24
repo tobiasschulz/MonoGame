@@ -35,112 +35,125 @@ SOFTWARE.
 */
 #endregion License
 
+#region Using Statements
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-    [DataContract]
-    public class DisplayMode
-    {
-        #region Fields
+	[DataContract]
+	public class DisplayMode
+	{
+		#region Public Properties
 
-        private SurfaceFormat format;
-        private int height;
-        private int width;
+		public float AspectRatio
+		{
+			get
+			{
+				return (float) Width / (float) Height;
+			}
+		}
 
-        #endregion Fields
+		public SurfaceFormat Format
+		{
+			get;
+			private set;
+		}
 
-        #region Properties
-        
-        public float AspectRatio {
-            get { return (float)width / (float)height; }
-        }
+		public int Height
+		{
+			get;
+			private set;
+		}
 
-        public SurfaceFormat Format {
-            get { return format; }
-        }
+		public int Width
+		{
+			get;
+			private set;
+		}
 
-        public int Height {
-            get { return this.height; }
-        }
+		public Rectangle TitleSafeArea
+		{
+			get
+			{
+				return new Rectangle(0, 0, Width, Height);
+			}
+		}
 
-        public int Width {
-            get { return this.width; }
-        }
-        
-        public Rectangle TitleSafeArea {
-            get { return new Rectangle(0, 0, Width, Height); }    
-        }
+		#endregion
 
-        #endregion Properties
+		#region Internal Constructor
 
-        #region Constructors
-        
-        internal DisplayMode(int width, int height, SurfaceFormat format)
-        {
-            this.width = width;
-            this.height = height;
-            this.format = format;
-        }
+		internal DisplayMode(int width, int height, SurfaceFormat format)
+		{
+			Width = width;
+			Height = height;
+			Format = format;
+		}
 
-        #endregion Constructors
+		#endregion
 
-        #region Operators
+		#region Public Static Operators and Override Methods
 
-        public static bool operator !=(DisplayMode left, DisplayMode right)
-        {
-            // If we don't do this cast to (object), we'll get a stack overflow.
-            object leftObj = (object) left;
-            object rightObj = (object) right;
-            if (leftObj == null && rightObj == null)
-            {
-                return false;
-            }
-            if (leftObj == null || rightObj == null)
-            {
-                return true;
-            }
-            return !((left.format == right.format) &&
-                (left.height == right.height) &&
-                (left.width == right.width));
-        }
+		public static bool operator !=(DisplayMode left, DisplayMode right)
+		{
+			// If we don't do this cast to (object), we'll get a stack overflow.
+			object leftObj = (object) left;
+			object rightObj = (object) right;
+			if (leftObj == null && rightObj == null)
+			{
+				return false;
+			}
+			if (leftObj == null || rightObj == null)
+			{
+				return true;
+			}
+			return !(	(left.Format == right.Format) &&
+					(left.Height == right.Height) &&
+					(left.Width == right.Width)	);
+		}
 
-        public static bool operator ==(DisplayMode left, DisplayMode right)
-        {
-            if (left == null && right == null)
-            {
-                return true;
-            }
-            if (left == null || right == null)
-            {
-                return false;
-            }
-            return (left.format == right.format) &&
-                (left.height == right.height) &&
-                (left.width == right.width);
-        }
+		public static bool operator ==(DisplayMode left, DisplayMode right)
+		{
+			if (left == null && right == null)
+			{
+				return true;
+			}
+			if (left == null || right == null)
+			{
+				return false;
+			}
+			return (	(left.Format == right.Format) &&
+					(left.Height == right.Height) &&
+					(left.Width == right.Width)	);
+		}
 
-        #endregion Operators
+		public override bool Equals(object obj)
+		{
+			return obj is DisplayMode && this == (DisplayMode)obj;
+		}
 
-        #region Public Methods
+		public override int GetHashCode()
+		{
+			return (Width.GetHashCode() ^ Height.GetHashCode() ^ Format.GetHashCode());
+		}
 
-        public override bool Equals(object obj)
-        {
-            return obj is DisplayMode && this == (DisplayMode)obj;
-        }
+		public override string ToString()
+		{
+			return string.Format(
+				CultureInfo.CurrentCulture,
+				"{{Width:{0} Height:{1} Format:{2}}}",
+				new object[]
+				{
+					Width,
+					Height,
+					Format
+				}
+			);
+		}
 
-        public override int GetHashCode()
-        {
-            return (this.width.GetHashCode() ^ this.height.GetHashCode() ^ this.format.GetHashCode());
-        }
-
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.CurrentCulture, "{{Width:{0} Height:{1} Format:{2}}}", new object[] { this.width, this.height, this.Format });
-        }
-
-        #endregion Public Methods
-    }
+		#endregion
+	}
 }

@@ -248,8 +248,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				// Copy from the vertex buffer to the temporary buffer
 				Marshal.Copy(ptr, buffer, 0, buffer.Length);
 				
-				var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-				var dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)));
+				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+				IntPtr dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)));
 				
 				// Copy from the temporary buffer to the destination array
 				int dataSize = Marshal.SizeOf(typeof(T));

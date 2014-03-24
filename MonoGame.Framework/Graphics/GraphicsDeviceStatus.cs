@@ -7,15 +7,12 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    public enum GraphicsDeviceStatus
-    {
-        Normal,
-        Lost,
-        NotReset
-    }
+	public enum GraphicsDeviceStatus
+	{
+		Normal,
+		Lost,
+		NotReset
+	}
 }
-

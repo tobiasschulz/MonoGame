@@ -508,7 +508,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				if (disposeActions.Count > 0)
 				{
-					foreach (var action in disposeActions)
+					foreach (Action action in disposeActions)
 					{
 						action();
 					}
@@ -832,7 +832,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.BindVertexBuffer(0);
 
 			// Pin the buffers.
-			var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
+			GCHandle vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
 
 			// Setup the vertex declaration to point at the VB data.
 			vertexDeclaration.GraphicsDevice = this;
@@ -929,8 +929,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.BindIndexBuffer(0);
 
 			// Pin the buffers.
-			var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
-			var ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
+			GCHandle vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
+			GCHandle ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
 
 			// Setup the vertex declaration to point at the VB data.
 			vertexDeclaration.GraphicsDevice = this;
@@ -996,8 +996,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.BindIndexBuffer(0);
 
 			// Pin the buffers.
-			var vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
-			var ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
+			GCHandle vbHandle = GCHandle.Alloc(vertexData, GCHandleType.Pinned);
+			GCHandle ibHandle = GCHandle.Alloc(indexData, GCHandleType.Pinned);
 
 			// Setup the vertex declaration to point at the VB data.
 			vertexDeclaration.GraphicsDevice = this;
@@ -1188,7 +1188,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		private void ActivateShaderProgram()
 		{
 			// Lookup the shader program.
-			var info = programCache.GetProgramInfo(VertexShader, PixelShader);
+			ShaderProgramInfo info = programCache.GetProgramInfo(VertexShader, PixelShader);
 			if (info.program == -1)
 			{
 				return;

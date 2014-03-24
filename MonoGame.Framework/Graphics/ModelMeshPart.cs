@@ -13,17 +13,15 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class ModelMeshPart
 	{
-		// Summary:
-		//     Gets or sets the material Effect for this mesh part. Reference page contains
-		//     code sample.
-        private Effect _effect;
-        public Effect Effect 
+        #region Public Properties
+
+        public Effect Effect
         {
-            get 
+            get
             {
                 return _effect;
             }
-            set 
+            set
             {
                 if (value == _effect)
                     return;
@@ -51,49 +49,68 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-		//
+        //
+        // Summary:
+        //     Gets the index buffer for this mesh part.
+        public IndexBuffer IndexBuffer { get; set; }
+
+        //
+        // Summary:
+        //     Gets the number of vertices used during a draw call.
+        public int NumVertices { get; set; }
+
+        //
+        // Summary:
+        //     Gets the number of primitives to render.
+        public int PrimitiveCount { get; set; }
+
+        //
+        // Summary:
+        //     Gets the location in the index array at which to start reading vertices.
+        public int StartIndex { get; set; }
+
+        //
+        // Summary:
+        //     Gets or sets an object identifying this model mesh part.
+        public object Tag { get; set; }
+
+        //
+        // Summary:
+        //     Gets the vertex buffer for this mesh part.
+        public VertexBuffer VertexBuffer { get; set; }
+
+        //
+        // Summary:
+        //     Gets the offset (in vertices) from the top of vertex buffer.
+        public int VertexOffset { get; set; }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal int VertexBufferIndex { get; set; }
+
+        internal int IndexBufferIndex { get; set; }
+
+        internal int EffectIndex { get; set; }
+
+        #endregion
+        
+        #region Private Variables
+
 		// Summary:
-		//     Gets the index buffer for this mesh part.
-		public IndexBuffer IndexBuffer { get; set; }
+		//     Gets or sets the material Effect for this mesh part. Reference page contains
+		//     code sample.
+        private Effect _effect;
 
-		//
-		// Summary:
-		//     Gets the number of vertices used during a draw call.
-		public int NumVertices { get; set; }
+        #endregion
 
-		//
-		// Summary:
-		//     Gets the number of primitives to render.
-		public int PrimitiveCount { get; set; }
+        #region Internal Variables
 
-		//
-		// Summary:
-		//     Gets the location in the index array at which to start reading vertices.
-		public int StartIndex { get; set; }
+        internal ModelMesh parent;
 
-		//
-		// Summary:
-		//     Gets or sets an object identifying this model mesh part.
-		public object Tag { get; set; }
-
-		//
-		// Summary:
-		//     Gets the vertex buffer for this mesh part.
-		public VertexBuffer VertexBuffer { get; set; }
-
-		//
-		// Summary:
-		//     Gets the offset (in vertices) from the top of vertex buffer.
-		public int VertexOffset { get; set; }
-
-		internal int VertexBufferIndex { get; set; }
-
-		internal int IndexBufferIndex { get; set; }
-
-		internal int EffectIndex { get; set; }
-		
-		internal ModelMesh parent;
-	}
+        #endregion
+    }
 
 	//// Summary:
 	////     Represents a batch of geometry information to submit to the graphics device
