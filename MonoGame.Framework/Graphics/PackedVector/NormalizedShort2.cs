@@ -7,131 +7,134 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
 	public struct NormalizedShort2 : IPackedVector<uint>, IEquatable<NormalizedShort2>
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        [CLSCompliant(false)]
-        public uint PackedValue
-        {
-            get
-            {
-                return short2Packed;
-            }
-            set
-            {
-                short2Packed = value;
-            }
-        }
-
-        #endregion
-
-        #region Private Variables
-
-        private uint short2Packed;
-
-        #endregion
-
-        #region Public Constructors
-
-        public NormalizedShort2(Vector2 vector)
+		[CLSCompliant(false)]
+		public uint PackedValue
 		{
-            short2Packed = PackInTwo(vector.X, vector.Y);
+			get
+			{
+				return packedValue;
+			}
+			set
+			{
+				packedValue = value;
+			}
 		}
 
-        public NormalizedShort2(float x, float y)
+		#endregion
+
+		#region Private Variables
+
+		private uint packedValue;
+
+		#endregion
+
+		#region Public Constructors
+
+		public NormalizedShort2(Vector2 vector)
 		{
-            short2Packed = PackInTwo(x, y);
+			packedValue = Pack(vector.X, vector.Y);
 		}
 
-        #endregion
-
-        #region Public Methods
-
-        public Vector2 ToVector2()
-        {
-            const float maxVal = 0x7FFF;
-
-            var v2 = new Vector2();
-            v2.X = ((short)(short2Packed & 0xFFFF)) / maxVal;
-            v2.Y = (short)(short2Packed >> 0x10) / maxVal;
-            return v2;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        void IPackedVector.PackFromVector4(Vector4 vector)
-        {
-            short2Packed = PackInTwo(vector.X, vector.Y);
-        }
-
-        Vector4 IPackedVector.ToVector4()
-        {
-            const float maxVal = 0x7FFF;
-
-            var v4 = new Vector4(0, 0, 0, 1);
-            v4.X = ((short)((short2Packed >> 0x00) & 0xFFFF)) / maxVal;
-            v4.Y = ((short)((short2Packed >> 0x10) & 0xFFFF)) / maxVal;
-            return v4;
-        }
-
-        #endregion
-
-        #region Public Static Operators and Override Methods
-
-        public static bool operator !=(NormalizedShort2 a, NormalizedShort2 b)
+		public NormalizedShort2(float x, float y)
 		{
-			return !a.Equals (b);
+			packedValue = Pack(x, y);
 		}
 
-        public static bool operator ==(NormalizedShort2 a, NormalizedShort2 b)
+		#endregion
+
+		#region Public Methods
+
+		public Vector2 ToVector2()
 		{
-			return a.Equals (b);
+			const float maxVal = 0x7FFF;
+
+			return new Vector2(
+				((short) (packedValue & 0xFFFF)) / maxVal,
+				((short) (packedValue >> 0x10)) / maxVal
+			);;
 		}
 
-        public override bool Equals (object obj)
+		#endregion
+
+		#region IPackedVector Methods
+
+		void IPackedVector.PackFromVector4(Vector4 vector)
 		{
-            return (obj is NormalizedShort2) && Equals((NormalizedShort2)obj);
+			packedValue = Pack(vector.X, vector.Y);
 		}
 
-        public bool Equals(NormalizedShort2 other)
+		Vector4 IPackedVector.ToVector4()
 		{
-            return short2Packed.Equals(other.short2Packed);
+			const float maxVal = 0x7FFF;
+
+			return new Vector4(
+				((short) ((packedValue >> 0x00) & 0xFFFF)) / maxVal,
+				((short) ((packedValue >> 0x10) & 0xFFFF)) / maxVal,
+				0,
+				1
+			);
 		}
 
-		public override int GetHashCode ()
+		#endregion
+
+		#region Public Static Operators and Override Methods
+
+		public static bool operator !=(NormalizedShort2 a, NormalizedShort2 b)
 		{
-			return short2Packed.GetHashCode();
+			return !a.Equals(b);
 		}
 
-		public override string ToString ()
+		public static bool operator ==(NormalizedShort2 a, NormalizedShort2 b)
 		{
-            return short2Packed.ToString("X");
+			return a.Equals(b);
 		}
 
-        #endregion
+		public override bool Equals(object obj)
+		{
+			return (obj is NormalizedShort2) && Equals((NormalizedShort2) obj);
+		}
 
-        #region Private Static Methods
+		public bool Equals(NormalizedShort2 other)
+		{
+			return packedValue.Equals(other.packedValue);
+		}
 
-        private static uint PackInTwo (float vectorX, float vectorY)
+		public override int GetHashCode()
+		{
+			return packedValue.GetHashCode();
+		}
+
+		public override string ToString()
+		{
+			return packedValue.ToString("X");
+		}
+
+		#endregion
+
+		#region Private Static Pack Method
+
+		private static uint Pack(float vectorX, float vectorY)
 		{
 			const float maxPos = 0x7FFF;
-            const float minNeg = -maxPos;
+			const float minNeg = -maxPos;
 
-			// clamp the value between min and max values
-            // Round rather than truncate.
-            var word2 = (uint)((int)MathHelper.Clamp((float)Math.Round(vectorX * maxPos), minNeg, maxPos) & 0xFFFF);
-            var word1 = (uint)(((int)MathHelper.Clamp((float)Math.Round(vectorY * maxPos), minNeg, maxPos) & 0xFFFF) << 0x10);
-
-			return (word2 | word1);
+			// Round rather than truncate
+			return (
+				((uint) ((int) MathHelper.Clamp((float) Math.Round(vectorX * maxPos), minNeg, maxPos) & 0xFFFF)) |
+				((uint) (((int) MathHelper.Clamp((float) Math.Round(vectorY * maxPos), minNeg, maxPos) & 0xFFFF) << 0x10))
+			);
 		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

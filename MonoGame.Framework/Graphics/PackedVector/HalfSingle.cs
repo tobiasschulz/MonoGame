@@ -7,104 +7,101 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
-    public struct HalfSingle : IPackedVector<UInt16>, IEquatable<HalfSingle>, IPackedVector
-    {
-        #region Public Properties
+	public struct HalfSingle : IPackedVector<UInt16>, IEquatable<HalfSingle>, IPackedVector
+	{
+		#region Public Properties
 
-        [CLSCompliant(false)]
-        public ushort PackedValue
-        {
-            get
-            {
-                return this.packedValue;
-            }
-            set
-            {
-                this.packedValue = value;
-            }
-        }
+		[CLSCompliant(false)]
+		public ushort PackedValue
+		{
+			get
+			{
+				return packedValue;
+			}
+			set
+			{
+				packedValue = value;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        UInt16 packedValue;
+		private UInt16 packedValue;
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public HalfSingle(float single)
-        {
-            packedValue = HalfTypeHelper.Convert(single);
-        }
+		public HalfSingle(float single)
+		{
+			packedValue = HalfTypeHelper.Convert(single);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public float ToSingle()
-        {
-            return HalfTypeHelper.Convert(this.packedValue);
-        }
+		public float ToSingle()
+		{
+			return HalfTypeHelper.Convert(this.packedValue);
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Methods
+		#region IPackedVector Methods
 
-        void IPackedVector.PackFromVector4(Vector4 vector)
-        {
-            this.packedValue = HalfTypeHelper.Convert(vector.X);
-        }
+		void IPackedVector.PackFromVector4(Vector4 vector)
+		{
+			packedValue = HalfTypeHelper.Convert(vector.X);
+		}
 
-        Vector4 IPackedVector.ToVector4()
-        {
-            return new Vector4(this.ToSingle(), 0f, 0f, 1f);
-        }
+		Vector4 IPackedVector.ToVector4()
+		{
+			return new Vector4(this.ToSingle(), 0f, 0f, 1f);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Static Operators and Override Methods
+		#region Public Static Operators and Override Methods
 
-        public override bool Equals(object obj)
-        {
-            if (obj != null && obj.GetType() == this.GetType())
-            {
-                return this == (HalfSingle)obj;
-            }
+		public override bool Equals(object obj)
+		{
+			return (obj is HalfSingle) && Equals((HalfSingle) obj);
+		}
 
-            return false;
-        }
+		public bool Equals(HalfSingle other)
+		{
+			return this.packedValue == other.packedValue;
+		}
 
-        public bool Equals(HalfSingle other)
-        {
-            return this.packedValue == other.packedValue;
-        }
+		public override string ToString()
+		{
+			return ToSingle().ToString();
+		}
 
-        public override string ToString()
-        {
-            return this.ToSingle().ToString();
-        }
+		public override int GetHashCode()
+		{
+			return packedValue.GetHashCode();
+		}
 
-        public override int GetHashCode()
-        {
-            return this.packedValue.GetHashCode();
-        }
+		public static bool operator ==(HalfSingle lhs, HalfSingle rhs)
+		{
+			return lhs.packedValue == rhs.packedValue;
+		}
 
-        public static bool operator ==(HalfSingle lhs, HalfSingle rhs)
-        {
-            return lhs.packedValue == rhs.packedValue;
-        }
+		public static bool operator !=(HalfSingle lhs, HalfSingle rhs)
+		{
+			return lhs.packedValue != rhs.packedValue;
+		}
 
-        public static bool operator !=(HalfSingle lhs, HalfSingle rhs)
-        {
-            return lhs.packedValue != rhs.packedValue;
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 }
