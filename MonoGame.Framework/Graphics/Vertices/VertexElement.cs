@@ -29,11 +29,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				return format;
+				return elementFormat;
 			}
 			set
 			{
-				format = value;
+				elementFormat = value;
 			}
 		}
 
@@ -41,11 +41,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				return usage;
+				return elementUsage;
 			}
 			set
 			{
-				usage = value;
+				elementUsage = value;
 			}
 		}
 
@@ -66,8 +66,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Internal Varialbes
 
 		private int offset;
-		private VertexElementFormat format;
-		private VertexElementUsage usage;
+		private VertexElementFormat elementFormat;
+		private VertexElementUsage elementUsage;
 		private int usageIndex;
 
 		#endregion
@@ -82,8 +82,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		) {
 			this.offset = offset;
 			this.usageIndex = usageIndex;
-			this.format = elementFormat;
-			this.usage = elementUsage;
+			this.elementFormat = elementFormat;
+			this.elementUsage = elementUsage;
 		}
 
 		#endregion
@@ -102,10 +102,10 @@ namespace Microsoft.Xna.Framework.Graphics
 				"{{Offset:{0} Format:{1} Usage:{2} UsageIndex:{3}}}",
 				new object[]
 				{
-					this.Offset,
-					this.VertexElementFormat,
-					this.VertexElementUsage,
-					this.UsageIndex
+					Offset,
+					VertexElementFormat,
+					VertexElementUsage,
+					UsageIndex
 				}
 			);
 		}
