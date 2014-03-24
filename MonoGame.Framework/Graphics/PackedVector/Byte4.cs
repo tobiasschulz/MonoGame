@@ -16,7 +16,34 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
     /// </summary>
     public struct Byte4 : IPackedVector<uint>, IEquatable<Byte4>, IPackedVector
     {
+        #region Public Properties
+
+        /// <summary>
+        /// Directly gets or sets the packed representation of the value.
+        /// </summary>
+        /// <value>The packed representation of the value.</value>
+        [CLSCompliant(false)]
+        public uint PackedValue
+        {
+            get
+            {
+                return packedValue;
+            }
+            set
+            {
+                packedValue = value;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
         uint packedValue;
+
+        #endregion
+
+        #region Public Constructors
 
         /// <summary>
         /// Initializes a new instance of the Byte4 class.
@@ -40,6 +67,40 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             packedValue = Pack(ref vector);
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Expands the packed representation into a Vector4.
+        /// </summary>
+        /// <returns>The expanded vector.</returns>
+        public Vector4 ToVector4()
+        {
+            return new Vector4(
+                (float)(packedValue & 0xFF),
+                (float)((packedValue >> 0x8) & 0xFF),
+                (float)((packedValue >> 0x10) & 0xFF),
+                (float)((packedValue >> 0x18) & 0xFF));
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Sets the packed representation from a Vector4.
+        /// </summary>
+        /// <param name="vector">The vector to create the packed representation from.</param>
+        void IPackedVector.PackFromVector4(Vector4 vector)
+        {
+            packedValue = Pack(ref vector);
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
         /// <summary>
         /// Compares the current instance of a class to another instance to determine whether they are different.
         /// </summary>
@@ -60,23 +121,6 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
         public static bool operator ==(Byte4 a, Byte4 b)
         {
             return a.PackedValue == b.PackedValue;
-        }
-
-        /// <summary>
-        /// Directly gets or sets the packed representation of the value.
-        /// </summary>
-        /// <value>The packed representation of the value.</value>
-        [CLSCompliant(false)]
-        public uint PackedValue
-        {
-            get
-            {
-                return packedValue;
-            }
-            set
-            {
-                packedValue = value;
-            }
         }
 
         /// <summary>
@@ -119,6 +163,10 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             return packedValue.ToString("x8");
         }
 
+        #endregion
+
+        #region Private Static Methods
+
         /// <summary>
         /// Packs a vector into a uint.
         /// </summary>
@@ -138,27 +186,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
             return byte4 | byte3 | byte2 | byte1;
         }
 
-        /// <summary>
-        /// Sets the packed representation from a Vector4.
-        /// </summary>
-        /// <param name="vector">The vector to create the packed representation from.</param>
-        void IPackedVector.PackFromVector4(Vector4 vector)
-        {
-            packedValue = Pack(ref vector);
-        }
-
-        /// <summary>
-        /// Expands the packed representation into a Vector4.
-        /// </summary>
-        /// <returns>The expanded vector.</returns>
-        public Vector4 ToVector4()
-        {
-            return new Vector4(
-                (float)(packedValue & 0xFF),
-                (float)((packedValue >> 0x8) & 0xFF),
-                (float)((packedValue >> 0x10) & 0xFF),
-                (float)((packedValue >> 0x18) & 0xFF));
-        }
+        #endregion
     }
 }
 

@@ -7,9 +7,11 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -17,33 +19,64 @@ namespace Microsoft.Xna.Framework.Graphics
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct VertexPositionColor : IVertexType
 	{
+        #region Private Properties
+
+        VertexDeclaration IVertexType.VertexDeclaration
+        {
+            get
+            {
+                return VertexDeclaration;
+            }
+        }
+
+        #endregion
+
+        #region Public Fields
+
         [DataMember]
 		public Vector3 Position;
         
         [DataMember]
 		public Color Color;
 
-		public static readonly VertexDeclaration VertexDeclaration;
+        #endregion
 
-		public VertexPositionColor (Vector3 position, Color color)
+        #region Public Static Fields
+
+        public static readonly VertexDeclaration VertexDeclaration;
+
+        #endregion
+
+        #region Private Static Constructor
+
+        static VertexPositionColor()
+        {
+            VertexElement[] elements = new VertexElement[] { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement(12, VertexElementFormat.Color, VertexElementUsage.Color, 0) };
+            VertexDeclaration declaration = new VertexDeclaration(elements);
+            VertexDeclaration = declaration;
+        }
+
+        #endregion
+
+        #region Public Constructor
+
+        public VertexPositionColor (Vector3 position, Color color)
 		{
 			this.Position = position;
 			Color = color;
 		}
 
-		VertexDeclaration IVertexType.VertexDeclaration {
-			get {
-				return VertexDeclaration;
-			}
-		}
+        #endregion
 
-		public override int GetHashCode ()
+        #region Public Static Operators and Override Methods
+
+        public override int GetHashCode ()
 		{
 			// TODO: Fix gethashcode
 			return 0;
 		}
 
-		public override string ToString ()
+        public override string ToString ()
 		{
 			return string.Format ("{{Position:{0} Color:{1}}}", new object[] { this.Position, this.Color });
 		}
@@ -69,11 +102,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			return (this == ((VertexPositionColor)obj));
 		}
 
-		static VertexPositionColor ()
-		{
-			VertexElement[] elements = new VertexElement[] { new VertexElement (0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement (12, VertexElementFormat.Color, VertexElementUsage.Color, 0) };
-			VertexDeclaration declaration = new VertexDeclaration (elements);
-			VertexDeclaration = declaration;
-		}
-	}
+        #endregion
+    }
 }

@@ -13,40 +13,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class PresentationParameters : IDisposable
     {
-        #region Constants
-
-        public const int DefaultPresentRate = 60;
-
-        #endregion Constants
-
-        #region Private Fields
-
-        private DepthFormat depthStencilFormat;
-        private SurfaceFormat backBufferFormat;
-        private int backBufferHeight = GraphicsDeviceManager.DefaultBackBufferHeight;
-        private int backBufferWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
-        private IntPtr deviceWindowHandle;
-        private bool isFullScreen;
-        private int multiSampleCount;
-        private bool disposed;       	
-
-        #endregion Private Fields
-
-        #region Constructors
-
-        public PresentationParameters()
-        {
-            Clear();
-        }
-
-        ~PresentationParameters()
-        {
-            Dispose(false);
-        }
-
-        #endregion Constructors
-
-        #region Properties
+        #region Public Properties
 
         public SurfaceFormat BackBufferFormat
         {
@@ -66,7 +33,7 @@ namespace Microsoft.Xna.Framework.Graphics
             set { backBufferWidth = value; }
         }
 
-        public Rectangle Bounds 
+        public Rectangle Bounds
         {
             get { return new Rectangle(0, 0, backBufferWidth, backBufferHeight); }
         }
@@ -85,36 +52,72 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public bool IsFullScreen
         {
-			get
+            get
             {
-				 return isFullScreen;
+                return isFullScreen;
             }
             set
             {
-				 isFullScreen = value;
-			}
+                isFullScreen = value;
+            }
         }
-		
+
         public int MultiSampleCount
         {
             get { return multiSampleCount; }
             set { multiSampleCount = value; }
         }
-		
+
         public PresentInterval PresentationInterval { get; set; }
 
-		public DisplayOrientation DisplayOrientation 
-		{ 
-			get; 
-			set; 
-		}
-		
-		public RenderTargetUsage RenderTargetUsage { get; set; }
+        public DisplayOrientation DisplayOrientation
+        {
+            get;
+            set;
+        }
+
+        public RenderTargetUsage RenderTargetUsage { get; set; }
 
         #endregion Properties
 
+        #region Public Constants
 
-        #region Methods
+        public const int DefaultPresentRate = 60;
+
+        #endregion Constants
+
+        #region Private Fields
+
+        private DepthFormat depthStencilFormat;
+        private SurfaceFormat backBufferFormat;
+        private int backBufferHeight = GraphicsDeviceManager.DefaultBackBufferHeight;
+        private int backBufferWidth = GraphicsDeviceManager.DefaultBackBufferWidth;
+        private IntPtr deviceWindowHandle;
+        private bool isFullScreen;
+        private int multiSampleCount;
+        private bool disposed;       	
+
+        #endregion Private Fields
+
+        #region Public Constructors
+
+        public PresentationParameters()
+        {
+            Clear();
+        }
+
+        #endregion Constructors
+
+        #region Deconstructor Method
+
+        ~PresentationParameters()
+        {
+            Dispose(false);
+        }
+
+        #endregion
+
+        #region Public Methods
 
         public void Clear()
         {
@@ -165,6 +168,5 @@ namespace Microsoft.Xna.Framework.Graphics
         }
 
         #endregion Methods
-
     }
 }

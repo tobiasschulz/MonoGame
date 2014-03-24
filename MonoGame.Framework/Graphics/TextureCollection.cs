@@ -11,7 +11,23 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class TextureCollection
 	{
-		#region Private Variables
+        #region Public Properties
+
+        public Texture this[int index]
+        {
+            get
+            {
+                return textures[index];
+            }
+            set
+            {
+                textures[index] = value;
+            }
+        }
+
+        #endregion
+        
+        #region Private Variables
 
 		private readonly Texture[] textures;
 
@@ -22,22 +38,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		internal TextureCollection(int maxTextures)
 		{
 			textures = new Texture[maxTextures];
-		}
-
-		#endregion
-
-		#region Public Array Access Method
-
-		public Texture this[int index]
-		{
-			get
-			{
-				return textures[index];
-			}
-			set
-			{
-				textures[index] = value;
-			}
 		}
 
 		#endregion

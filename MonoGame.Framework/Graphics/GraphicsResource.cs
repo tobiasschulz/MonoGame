@@ -7,15 +7,57 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {	
 	public abstract class GraphicsResource : IDisposable
-	{
-		bool disposed;
-        
+    {
+        #region Public Properties
+
+        public GraphicsDevice GraphicsDevice
+        {
+            get
+            {
+                return graphicsDevice;
+            }
+
+            internal set
+            {
+                graphicsDevice = value;
+            }
+        }
+
+        public bool IsDisposed
+        {
+            get
+            {
+                return disposed;
+            }
+        }
+
+        public string Name { get; set; }
+
+        public Object Tag { get; set; }
+
+        #endregion
+
+        #region Private Variables
+
+        bool disposed;
+
+        // The GraphicsDevice property should only be accessed in Dispose(bool) if the disposing
+        // parameter is true. If disposing is false, the GraphicsDevice may or may not be
+        // disposed yet.
+        GraphicsDevice graphicsDevice;
+
+        #endregion
+
+        #region Private Static Variables
+
         // Resources may be added to and removed from the list from many threads.
         static object resourcesLock = new object();
 
@@ -24,12 +66,11 @@ namespace Microsoft.Xna.Framework.Graphics
         // collected by holding a strong reference to it in this list.
         static List<WeakReference> resources = new List<WeakReference>();
 
-        // The GraphicsDevice property should only be accessed in Dispose(bool) if the disposing
-        // parameter is true. If disposing is false, the GraphicsDevice may or may not be
-        // disposed yet.
-		GraphicsDevice graphicsDevice;
+        #endregion
 
-		internal GraphicsResource()
+        #region Internal Constructor and Deconstructor
+
+        internal GraphicsResource()
         {
             lock (resourcesLock)
             {
@@ -44,6 +85,37 @@ namespace Microsoft.Xna.Framework.Graphics
             // Dispose(false);
         }
 
+        #endregion
+
+        #region Events
+
+        public event EventHandler<EventArgs> Disposing;
+
+        #endregion
+
+        #region Public Dispose Method
+
+        public void Dispose()
+        {
+            // Dispose of managed objects as well
+            Dispose(true);
+            // Since we have been manually disposed, do not call the finalizer on this object
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
         /// <summary>
         /// Called before the device is reset. Allows graphics resources to 
         /// invalidate their state so they can be recreated after the device reset.
@@ -54,6 +126,48 @@ namespace Microsoft.Xna.Framework.Graphics
         {
 
         }
+
+        #endregion
+
+        #region Protected Dispose Method
+
+        /// <summary>
+        /// The method that derived classes should override to implement disposing of managed and native resources.
+        /// </summary>
+        /// <param name="disposing">True if managed objects should be disposed.</param>
+        /// <remarks>Native resources should always be released regardless of the value of the disposing parameter.</remarks>
+        protected virtual void Dispose(bool disposing)
+        {
+            // FIXME: What was this? No, really, what? -flibit
+            //if (!disposed)
+            //{
+            //if (disposing)
+            //{
+            // Release managed objects
+            // ...
+            //}
+
+            // Release native objects
+            // ...
+
+            // Do not trigger the event if called from the finalizer
+            if (disposing && Disposing != null)
+                Disposing(this, EventArgs.Empty);
+
+            // Remove from the global list of graphics resources
+            lock (resourcesLock)
+            {
+                resources.Remove(new WeakReference(this));
+            }
+
+            graphicsDevice = null;
+            disposed = true;
+            //}
+        }
+
+        #endregion
+
+        #region Internal Static Methods
 
         internal static void DoGraphicsDeviceResetting()
         {
@@ -88,79 +202,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
-		public void Dispose()
-        {
-            // Dispose of managed objects as well
-            Dispose(true);
-            // Since we have been manually disposed, do not call the finalizer on this object
-            GC.SuppressFinalize(this);
-        }
-		
-        /// <summary>
-        /// The method that derived classes should override to implement disposing of managed and native resources.
-        /// </summary>
-        /// <param name="disposing">True if managed objects should be disposed.</param>
-        /// <remarks>Native resources should always be released regardless of the value of the disposing parameter.</remarks>
-        protected virtual void Dispose(bool disposing)
-        {
-            // FIXME: What was this? No, really, what? -flibit
-            //if (!disposed)
-            //{
-                //if (disposing)
-                //{
-                    // Release managed objects
-                    // ...
-                //}
-
-                // Release native objects
-                // ...
-
-                // Do not trigger the event if called from the finalizer
-                if (disposing && Disposing != null)
-                    Disposing(this, EventArgs.Empty);
-
-                // Remove from the global list of graphics resources
-                lock (resourcesLock)
-                {
-                    resources.Remove(new WeakReference(this));
-                }
-
-                graphicsDevice = null;
-                disposed = true;
-            //}
-        }
-
-		public event EventHandler<EventArgs> Disposing;
-		
-		public GraphicsDevice GraphicsDevice
-		{
-			get
-			{
-				return graphicsDevice;
-			}
-
-            internal set
-            {
-                graphicsDevice = value;
-            }
-		}
-		
-		public bool IsDisposed
-		{
-			get
-			{
-				return disposed;
-			}
-		}
-		
-		public string Name { get; set; }
-		
-		public Object Tag { get; set; }
-
-        public override string ToString()
-        {
-            return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
-        }
-	}
+        #endregion
+    }
 }
 

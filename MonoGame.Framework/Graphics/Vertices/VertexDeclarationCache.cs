@@ -7,10 +7,12 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -22,7 +24,7 @@ namespace Microsoft.Xna.Framework.Graphics
     internal class VertexDeclarationCache<T>
         where T : struct, IVertexType
     {
-        static private VertexDeclaration _cached;
+        #region Public Static Property
 
         static public VertexDeclaration VertexDeclaration
         {
@@ -34,5 +36,13 @@ namespace Microsoft.Xna.Framework.Graphics
                 return _cached;
             }
         }
+
+        #endregion
+
+        #region Private Static Variable
+
+        static private VertexDeclaration _cached;
+
+        #endregion
     }
 }

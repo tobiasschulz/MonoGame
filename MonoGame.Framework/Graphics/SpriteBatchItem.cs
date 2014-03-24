@@ -12,23 +12,34 @@ using System;
 namespace Microsoft.Xna.Framework.Graphics
 {
 	internal class SpriteBatchItem
-	{
-		public Texture2D Texture;
+    {
+        #region Public Fields
+
+        public Texture2D Texture;
 		public float Depth;
 
         public VertexPositionColorTexture vertexTL;
 		public VertexPositionColorTexture vertexTR;
 		public VertexPositionColorTexture vertexBL;
 		public VertexPositionColorTexture vertexBR;
-		public SpriteBatchItem ()
+
+        #endregion
+
+        #region Public Constructors
+
+        public SpriteBatchItem ()
 		{
 			vertexTL = new VertexPositionColorTexture();
             vertexTR = new VertexPositionColorTexture();
             vertexBL = new VertexPositionColorTexture();
             vertexBR = new VertexPositionColorTexture();            
 		}
-		
-		public void Set ( float x, float y, float w, float h, Color color, Vector2 texCoordTL, Vector2 texCoordBR )
+
+        #endregion
+
+        #region Public Methods
+
+        public void Set ( float x, float y, float w, float h, Color color, Vector2 texCoordTL, Vector2 texCoordBR )
 		{
 			vertexTL.Position.X = x;
             vertexTL.Position.Y = y;
@@ -91,7 +102,9 @@ namespace Microsoft.Xna.Framework.Graphics
             vertexBR.Color = color;
             vertexBR.TextureCoordinate.X = texCoordBR.X;
             vertexBR.TextureCoordinate.Y = texCoordBR.Y;
-		}
-	}
+        }
+
+        #endregion
+    }
 }
 

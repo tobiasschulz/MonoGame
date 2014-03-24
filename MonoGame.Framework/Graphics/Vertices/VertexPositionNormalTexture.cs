@@ -7,27 +7,20 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VertexPositionNormalTexture : IVertexType
     {
-        public Vector3 Position;
-        public Vector3 Normal;
-        public Vector2 TextureCoordinate;
-        public static readonly VertexDeclaration VertexDeclaration;
-        public VertexPositionNormalTexture(Vector3 position, Vector3 normal, Vector2 textureCoordinate)
-        {
-            this.Position = position;
-            this.Normal = normal;
-            this.TextureCoordinate = textureCoordinate;
-        }
+        #region Private Properties
 
         VertexDeclaration IVertexType.VertexDeclaration
         {
@@ -36,6 +29,47 @@ namespace Microsoft.Xna.Framework.Graphics
                 return VertexDeclaration;
             }
         }
+
+        #endregion
+
+        #region Public Fields
+
+        public Vector3 Position;
+        public Vector3 Normal;
+        public Vector2 TextureCoordinate;
+
+        #endregion
+
+        #region Public Static Fields
+
+        public static readonly VertexDeclaration VertexDeclaration;
+
+        #endregion
+
+        #region Private Static Constructor
+
+        static VertexPositionNormalTexture()
+        {
+            VertexElement[] elements = new VertexElement[] { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0), new VertexElement(0x18, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) };
+            VertexDeclaration declaration = new VertexDeclaration(elements);
+            VertexDeclaration = declaration;
+        }
+
+        #endregion
+
+        #region Public Constructor
+
+        public VertexPositionNormalTexture(Vector3 position, Vector3 normal, Vector2 textureCoordinate)
+        {
+            this.Position = position;
+            this.Normal = normal;
+            this.TextureCoordinate = textureCoordinate;
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
         public override int GetHashCode()
         {
             // TODO: FIc gethashcode
@@ -70,11 +104,6 @@ namespace Microsoft.Xna.Framework.Graphics
             return (this == ((VertexPositionNormalTexture)obj));
         }
 
-        static VertexPositionNormalTexture()
-        {
-            VertexElement[] elements = new VertexElement[] { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0), new VertexElement(0x18, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) };
-            VertexDeclaration declaration = new VertexDeclaration(elements);
-            VertexDeclaration = declaration;
-        }
+        #endregion
     }
 }

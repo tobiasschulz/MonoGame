@@ -7,10 +7,11 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Diagnostics;
-
 using OpenTK.Graphics.OpenGL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -89,26 +90,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		internal protected override void GraphicsDeviceResetting()
 		{
 			// FIXME: Do we even want to bother with DeviceResetting for GL? -flibit
-		}
-
-		#endregion
-
-		#region Mipmap Level Calculator
-
-		internal static int CalculateMipLevels(
-			int width,
-			int height = 0,
-			int depth = 0
-		) {
-			int levels = 1;
-			for (
-				int size = Math.Max(Math.Max(width, height), depth);
-				size > 1;
-				levels += 1
-			) {
-				size /= 2;
-			}
-			return levels;
 		}
 
 		#endregion
@@ -218,5 +199,25 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
-	}
+
+		#region Static Mipmap Level Calculator
+
+		internal static int CalculateMipLevels(
+			int width,
+			int height = 0,
+			int depth = 0
+		) {
+			int levels = 1;
+			for (
+				int size = Math.Max(Math.Max(width, height), depth);
+				size > 1;
+				levels += 1
+			) {
+				size /= 2;
+			}
+			return levels;
+		}
+
+		#endregion
+    }
 }

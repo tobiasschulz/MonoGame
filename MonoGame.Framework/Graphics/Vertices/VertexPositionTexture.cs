@@ -7,25 +7,20 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
     [StructLayout(LayoutKind.Sequential, Pack=1)]
     public struct VertexPositionTexture : IVertexType
     {
-        public Vector3 Position;
-        public Vector2 TextureCoordinate;
-        public static readonly VertexDeclaration VertexDeclaration;
-        public VertexPositionTexture(Vector3 position, Vector2 textureCoordinate)
-        {
-            this.Position = position;
-            this.TextureCoordinate = textureCoordinate;
-        }
+        #region Private Properties
 
         VertexDeclaration IVertexType.VertexDeclaration
         {
@@ -34,6 +29,45 @@ namespace Microsoft.Xna.Framework.Graphics
                 return VertexDeclaration;
             }
         }
+
+        #endregion
+
+        #region Public Fields
+
+        public Vector3 Position;
+        public Vector2 TextureCoordinate;
+
+        #endregion
+
+        #region Public Static Fields
+
+        public static readonly VertexDeclaration VertexDeclaration;
+
+        #endregion
+
+        #region Private Static Constructor
+
+        static VertexPositionTexture()
+        {
+            VertexElement[] elements = new VertexElement[] { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement(12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) };
+            VertexDeclaration declaration = new VertexDeclaration(elements);
+            VertexDeclaration = declaration;
+        }
+
+        #endregion
+
+        #region Public Constructor
+
+        public VertexPositionTexture(Vector3 position, Vector2 textureCoordinate)
+        {
+            this.Position = position;
+            this.TextureCoordinate = textureCoordinate;
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
         public override int GetHashCode()
         {
             // TODO: Fix get hashcode
@@ -68,12 +102,6 @@ namespace Microsoft.Xna.Framework.Graphics
             return (this == ((VertexPositionTexture)obj));
         }
 
-        static VertexPositionTexture()
-        {
-            VertexElement[] elements = new VertexElement[] { new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), new VertexElement(12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0) };
-            VertexDeclaration declaration = new VertexDeclaration(elements);
-            VertexDeclaration = declaration;
-        }
-
+        #endregion
     }
 }
