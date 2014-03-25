@@ -123,9 +123,17 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
 		#region Public Constructors
 
-		public TouchLocation(int id, TouchLocationState state, Vector2 position)
-			: this(id, state, position, TouchLocationState.Invalid, Vector2.Zero)
-		{
+		public TouchLocation(
+			int id,
+			TouchLocationState state,
+			Vector2 position
+		) : this(
+			id,
+			state,
+			position,
+			TouchLocationState.Invalid,
+			Vector2.Zero
+		) {
 		}
 
 		public TouchLocation(	int id, TouchLocationState state, Vector2 position,

@@ -186,8 +186,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 			TouchLocationState state,
 			Vector2 position,
 			bool isMouse
-		)
-		{
+		) {
 			PrimaryWindow.TouchPanelState.AddEvent(id, state, position, isMouse);
 		}
 

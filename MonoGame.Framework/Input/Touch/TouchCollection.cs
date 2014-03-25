@@ -33,7 +33,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <summary>
 		/// States if a touch screen is available.
 		/// </summary>
-		public bool IsConnected {
+		public bool IsConnected 
+		{
 			get
 			{
 				return _isConnected;
