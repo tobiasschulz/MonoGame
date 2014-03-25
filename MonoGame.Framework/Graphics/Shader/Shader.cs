@@ -341,6 +341,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
             //Console.WriteLine (_glslCode);
+            HashKey = MonoGame.Utilities.Hash.ComputeHash(System.Text.Encoding.ASCII.GetBytes(_glslCode));
 
             Samplers = SamplerList.ToArray();
             _attributes = AttributeList.ToArray();
