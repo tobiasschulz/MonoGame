@@ -113,6 +113,12 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
+		public bool IsPrepared
+		{
+			get;
+			private set;
+		}
+
 		#endregion
 
 		#region Private Variables
@@ -229,6 +235,7 @@ namespace Microsoft.Xna.Framework.Audio
 					INTERNAL_waveBankReader = null;
 				}
 				IsDisposed = true;
+				IsPrepared = false;
 			}
 		}
 
@@ -255,6 +262,13 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private void LoadWaveBank(AudioEngine audioEngine, BinaryReader reader, bool streaming)
 		{
+			/* Until we finish the LoadWaveBank process, this WaveBank is NOT
+			 * ready to run. For us this doesn't really matter, but the game
+			 * could be loading WaveBanks asynchronously, so let's be careful.
+			 * -flibit
+			 */
+			IsPrepared = false;
+
 			INTERNAL_baseEngine = audioEngine;
 
 			// Check the file header. Should be 'WBND'
@@ -443,6 +457,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 			// Finally.
 			IsDisposed = false;
+			IsPrepared = true;
 		}
 
 		#endregion
