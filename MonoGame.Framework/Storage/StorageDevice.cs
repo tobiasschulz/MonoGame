@@ -33,7 +33,15 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				return new DriveInfo(GetDevicePath()).AvailableFreeSpace;
+				// This only really matters on Windows.
+				try
+				{
+					return new DriveInfo(GetDevicePath()).AvailableFreeSpace;
+				}
+				catch
+				{
+					return 0; // Hmm...
+				}
 			}
 		}
 
@@ -44,7 +52,15 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				return new DriveInfo(GetDevicePath()).IsReady;
+				// This only really matters on Windows.
+				try
+				{
+					return new DriveInfo(GetDevicePath()).IsReady;
+				}
+				catch
+				{
+					return true;
+				}
 			}
 		}
 
@@ -55,7 +71,15 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				return new DriveInfo(GetDevicePath()).TotalSize;
+				// This only really matters on Windows.
+				try
+				{
+					return new DriveInfo(GetDevicePath()).TotalSize;
+				}
+				catch
+				{
+					return 0; // Hmm...
+				}
 			}
 		}
 
@@ -285,7 +309,7 @@ namespace Microsoft.Xna.Framework.Storage
 			// Retrieve the delegate.
 			AsyncResult asyncResult = (AsyncResult) result;
 
-			Object del = (AsyncResult) asyncResult.AsyncDelegate;
+			object del = asyncResult.AsyncDelegate;
 
 			if (del is ShowSelectorAsynchronous)
 			{
