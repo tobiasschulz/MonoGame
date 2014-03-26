@@ -17,129 +17,180 @@ using System.Linq;
 
 namespace Microsoft.Xna.Framework.Input.Touch
 {
-    /// <summary>
-    /// Allows retrieval of information from Touch Panel device.
-    /// </summary>
-    public static class TouchPanel
-    {
+	/// <summary>
+	/// Allows retrieval of information from Touch Panel device.
+	/// </summary>
+	public static class TouchPanel
+	{
+		#region Public Static Properties
 
-        #region Internal Static Variables
+		/// <summary>
+		/// The window handle of the touch panel. Purely for Xna compatibility.
+		/// </summary>
+		public static IntPtr WindowHandle
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.WindowHandle;
+			}
+			set
+			{
+				PrimaryWindow.TouchPanelState.WindowHandle = value;
+			}
+		}
 
-        internal static GameWindow PrimaryWindow;
+		/// <summary>
+		/// Gets or sets the display height of the touch panel.
+		/// </summary>
+		public static int DisplayHeight
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.DisplayHeight;
+			}
+			set {
+				PrimaryWindow.TouchPanelState.DisplayHeight = value;
+			}
+		}
 
-        #endregion
+		/// <summary>
+		/// Gets or sets the display orientation of the touch panel.
+		/// </summary>
+		public static DisplayOrientation DisplayOrientation
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.DisplayOrientation;
+			}
+			set
+			{
+				PrimaryWindow.TouchPanelState.DisplayOrientation = value;
+			}
+		}
 
-        #region Public Static Methods
+		/// <summary>
+		/// Gets or sets the display width of the touch panel.
+		/// </summary>
+		public static int DisplayWidth
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.DisplayWidth;
+			}
+			set
+			{
+				PrimaryWindow.TouchPanelState.DisplayWidth = value;
+			}
+		}
 
-        /// <summary>
-        /// Gets the current state of the touch panel.
-        /// </summary>
-        /// <returns><see cref="TouchCollection"/></returns>
-        public static TouchCollection GetState()
-        {
-            return PrimaryWindow.TouchPanelState.GetState();
-        }
+		/// <summary>
+		/// Gets or sets enabled gestures.
+		/// </summary>
+		public static GestureType EnabledGestures
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.EnabledGestures;
+			}
+			set
+			{
+				PrimaryWindow.TouchPanelState.EnabledGestures = value;
+			}
+		}
 
-        public static TouchPanelState GetState(GameWindow window)
-        {
-            return window.TouchPanelState;
-        }
+		public static bool EnableMouseTouchPoint
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.EnableMouseTouchPoint;
+			}
+			set
+			{
+				PrimaryWindow.TouchPanelState.EnableMouseTouchPoint = value;
+			}
+		}
 
-        public static TouchPanelCapabilities GetCapabilities()
-        {
-            return PrimaryWindow.TouchPanelState.GetCapabilities();
-        }
+		public static bool EnableMouseGestures
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.EnableMouseGestures;
+			}
+			set
+			{
+				PrimaryWindow.TouchPanelState.EnableMouseGestures = value;
+			}
+		}
 
-        /// <summary>
-        /// Returns the next available gesture on touch panel device.
-        /// </summary>
-        /// <returns><see cref="GestureSample"/></returns>
+		/// <summary>
+		/// Returns true if a touch gesture is available.
+		/// </summary>
+		public static bool IsGestureAvailable
+		{
+			get
+			{
+				return PrimaryWindow.TouchPanelState.IsGestureAvailable;
+			}
+		}
+
+		#endregion
+
+		#region Internal Static Variables
+
+		internal static GameWindow PrimaryWindow;
+
+		#endregion
+
+		#region Public Static Methods
+
+		/// <summary>
+		/// Gets the current state of the touch panel.
+		/// </summary>
+		/// <returns><see cref="TouchCollection"/></returns>
+		public static TouchCollection GetState()
+		{
+			return PrimaryWindow.TouchPanelState.GetState();
+		}
+
+		public static TouchPanelState GetState(GameWindow window)
+		{
+			return window.TouchPanelState;
+		}
+
+		public static TouchPanelCapabilities GetCapabilities()
+		{
+			return PrimaryWindow.TouchPanelState.GetCapabilities();
+		}
+
+		/// <summary>
+		/// Returns the next available gesture on touch panel device.
+		/// </summary>
+		/// <returns><see cref="GestureSample"/></returns>
 		public static GestureSample ReadGesture()
-        {
-            // Return the next gesture.
-            return PrimaryWindow.TouchPanelState.GestureList.Dequeue();			
-        }
+		{
+			// Return the next gesture.
+			return PrimaryWindow.TouchPanelState.GestureList.Dequeue();
+		}
 
-        /// <summary>
-        /// The window handle of the touch panel. Purely for Xna compatibility.
-        /// </summary>
-        public static IntPtr WindowHandle
-        {
-            get { return PrimaryWindow.TouchPanelState.WindowHandle; }
-            set { PrimaryWindow.TouchPanelState.WindowHandle = value; }
-        }
+		#endregion
 
-        /// <summary>
-        /// Gets or sets the display height of the touch panel.
-        /// </summary>
-        public static int DisplayHeight
-        {
-            get { return PrimaryWindow.TouchPanelState.DisplayHeight; }
-            set { PrimaryWindow.TouchPanelState.DisplayHeight = value; }
-        }
+		#region Internal Static Methods
 
-        /// <summary>
-        /// Gets or sets the display orientation of the touch panel.
-        /// </summary>
-        public static DisplayOrientation DisplayOrientation
-        {
-            get { return PrimaryWindow.TouchPanelState.DisplayOrientation; }
-            set { PrimaryWindow.TouchPanelState.DisplayOrientation = value; }
-        }
+		internal static void AddEvent(int id, TouchLocationState state, Vector2 position)
+		{
+			AddEvent(id, state, position, false);
+		}
 
-        /// <summary>
-        /// Gets or sets the display width of the touch panel.
-        /// </summary>
-        public static int DisplayWidth
-        {
-            get { return PrimaryWindow.TouchPanelState.DisplayWidth; }
-            set { PrimaryWindow.TouchPanelState.DisplayWidth = value; }
-        }
-		
-        /// <summary>
-        /// Gets or sets enabled gestures.
-        /// </summary>
-        public static GestureType EnabledGestures
-        {
-            get { return PrimaryWindow.TouchPanelState.EnabledGestures; }
-            set { PrimaryWindow.TouchPanelState.EnabledGestures = value; }
-        }
+		internal static void AddEvent(
+			int id,
+			TouchLocationState state,
+			Vector2 position,
+			bool isMouse
+		) {
+			PrimaryWindow.TouchPanelState.AddEvent(id, state, position, isMouse);
+		}
 
-        public static bool EnableMouseTouchPoint
-        {
-            get { return PrimaryWindow.TouchPanelState.EnableMouseTouchPoint; }
-            set { PrimaryWindow.TouchPanelState.EnableMouseTouchPoint = value; }
-        }
+		#endregion
 
-        public static bool EnableMouseGestures
-        {
-            get { return PrimaryWindow.TouchPanelState.EnableMouseGestures; }
-            set { PrimaryWindow.TouchPanelState.EnableMouseGestures = value; }
-        }
-
-        /// <summary>
-        /// Returns true if a touch gesture is available.
-        /// </summary>
-        public static bool IsGestureAvailable
-        {
-            get { return PrimaryWindow.TouchPanelState.IsGestureAvailable; }
-        }
-
-        #endregion
-
-        #region Internal Static Methods
-
-        internal static void AddEvent(int id, TouchLocationState state, Vector2 position)
-        {
-            AddEvent(id, state, position, false);
-        }
-
-        internal static void AddEvent(int id, TouchLocationState state, Vector2 position, bool isMouse)
-        {
-            PrimaryWindow.TouchPanelState.AddEvent(id, state, position, isMouse);
-        }
-
-        #endregion
-
-    }
+	}
 }
