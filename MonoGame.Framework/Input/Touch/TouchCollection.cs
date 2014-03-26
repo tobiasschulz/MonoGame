@@ -7,13 +7,12 @@
  */
 #endregion
 
-#region Using clause
+#region Using Statements
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-#endregion Using clause
+#endregion
 
 namespace Microsoft.Xna.Framework.Input.Touch
 {
@@ -22,12 +21,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
 	/// </summary>
 	public struct TouchCollection : IList<TouchLocation>
 	{
-		private TouchLocation[] _collection;
-
-		private bool _isConnected;
-
-		private static readonly TouchLocation[] emptyCollection = new TouchLocation[0];
-
 		#region Public Properties
 
 		/// <summary>
@@ -37,7 +30,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		{
 			get
 			{
-				return _isConnected;
+				return isConnected;
 			}
 		}
 
@@ -64,11 +57,11 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		{
 			get
 			{
-				if (_collection == null)
+				if (collection == null)
 				{
 					return 0;
 				}
-				return _collection.Length;
+				return collection.Length;
 			}
 		}
 
@@ -81,17 +74,27 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		{
 			get
 			{
-				if (_collection == null)
+				if (collection == null)
 				{
 					throw new ArgumentOutOfRangeException("index");
 				}
-				return _collection[index];
+				return collection[index];
 			}
 			set
 			{
 				throw new NotSupportedException();
 			}
 		}
+
+		#endregion
+
+		#region Private Variables
+
+		private TouchLocation[] collection;
+
+		private bool isConnected;
+
+		private static readonly TouchLocation[] emptyCollection = new TouchLocation[0];
 
 		#endregion
 
@@ -106,8 +109,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// </param>
 		public TouchCollection(TouchLocation[] touches)
 		{
-			_isConnected = true;
-			_collection = touches;
+			isConnected = true;
+			collection = touches;
 		}
 
 		#endregion
@@ -122,12 +125,12 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <returns></returns>
 		public bool FindById(int id, out TouchLocation touchLocation)
 		{
-			if (_collection == null)
+			if (collection == null)
 			{
 				touchLocation = default(TouchLocation);
 				return false;
 			}
-			foreach (TouchLocation location in _collection)
+			foreach (TouchLocation location in collection)
 			{
 				if (location.Id == id)
 				{
@@ -152,13 +155,13 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <returns></returns>
 		public int IndexOf(TouchLocation item)
 		{
-			if (_collection == null)
+			if (collection == null)
 			{
 				return -1;
 			}
-			for (int i = 0; i < _collection.Length; i += 1)
+			for (int i = 0; i < collection.Length; i += 1)
 			{
-				if (item == _collection[i])
+				if (item == collection[i])
 				{
 					return i;
 				}
@@ -211,11 +214,11 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <returns>Returns true if queried item is found, false otherwise.</returns>
 		public bool Contains(TouchLocation item)
 		{
-			if (_collection == null)
+			if (collection == null)
 			{
 				return false;
 			}
-			foreach(TouchLocation location in _collection)
+			foreach(TouchLocation location in collection)
 			{
 				if (item == location)
 				{
@@ -234,9 +237,9 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <param name="arrayIndex">The starting index of the copy operation.</param>
 		public void CopyTo(TouchLocation[] array, int arrayIndex)
 		{
-			if (_collection != null)
+			if (collection != null)
 			{
-				_collection.CopyTo(array, arrayIndex);
+				collection.CopyTo(array, arrayIndex);
 			}
 		}
 
@@ -256,12 +259,12 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <returns>Enumerable list of <see cref="TouchLocation"/> objects.</returns>
 		public IEnumerator<TouchLocation> GetEnumerator()
 		{
-			if (_collection == null)
+			if (collection == null)
 			{
 				return emptyCollection.AsEnumerable().GetEnumerator();
 			}
 
-			return _collection.AsEnumerable().GetEnumerator();
+			return collection.AsEnumerable().GetEnumerator();
 		}
 
 
@@ -271,12 +274,12 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <returns>Enumerable list of objects.</returns>
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			if (_collection == null)
+			if (collection == null)
 			{
 				return emptyCollection.GetEnumerator();
 			}
 
-			return _collection.GetEnumerator();
+			return collection.GetEnumerator();
 		}
 
 		#endregion

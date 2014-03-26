@@ -7,13 +7,9 @@
  */
 #endregion
 
-#region Using clause
+#region Using Statements
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-#endregion Using clause
+#endregion
 
 namespace Microsoft.Xna.Framework.Input.Touch
 {
@@ -48,7 +44,8 @@ namespace Microsoft.Xna.Framework.Input.Touch
 			{
 				return PrimaryWindow.TouchPanelState.DisplayHeight;
 			}
-			set {
+			set
+			{
 				PrimaryWindow.TouchPanelState.DisplayHeight = value;
 			}
 		}
@@ -191,6 +188,5 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		}
 
 		#endregion
-
 	}
 }

@@ -7,10 +7,6 @@
  */
 #endregion
 
-#region Using clause
-using System;
-#endregion Using clause
-
 namespace Microsoft.Xna.Framework.Input.Touch
 {
 	/// <summary>
@@ -18,7 +14,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
 	/// </summary>
 	public struct TouchPanelCapabilities
 	{
-
 		#region Public Properties
 
 		public bool HasPressure
@@ -82,6 +77,5 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		}
 
 		#endregion
-
 	}
 }

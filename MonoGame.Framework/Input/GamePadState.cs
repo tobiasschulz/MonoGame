@@ -127,6 +127,7 @@ namespace Microsoft.Xna.Framework.Input
             Buttons = buttons;
             DPad = dPad;
 			IsConnected = true;
+			PacketNumber = 0;
         }
 
         //
