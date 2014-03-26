@@ -32,13 +32,17 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	class VertexBufferReader : ContentTypeReader<VertexBuffer>
 	{
+		#region Protected Read Method
+
 		protected internal override VertexBuffer Read(
 			ContentReader input,
 			VertexBuffer existingInstance
@@ -56,5 +60,7 @@ namespace Microsoft.Xna.Framework.Content
 			buffer.SetData(data);
 			return buffer;
 		}
+
+		#endregion
 	}
 }

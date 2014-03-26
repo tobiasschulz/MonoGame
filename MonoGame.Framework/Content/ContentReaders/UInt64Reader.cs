@@ -7,14 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
+
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class UInt64Reader : ContentTypeReader<ulong>
 	{
+		#region Internal Constructor
+
 		internal UInt64Reader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override ulong Read(
 			ContentReader input,
@@ -22,5 +31,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadUInt64();
 		}
+
+		#endregion
 	}
 }

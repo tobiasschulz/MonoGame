@@ -32,20 +32,28 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class PointReader : ContentTypeReader<Point>
 	{
+		#region Internal Constructor
+
 		internal PointReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Point Read(
 			ContentReader input,
@@ -55,5 +63,7 @@ namespace Microsoft.Xna.Framework.Content
 			int Y = input.ReadInt32();
 			return new Point(X, Y);
 		}
+
+		#endregion
 	}
 }

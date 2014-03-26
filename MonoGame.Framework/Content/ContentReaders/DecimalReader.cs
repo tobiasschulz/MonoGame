@@ -7,15 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class DecimalReader : ContentTypeReader<decimal>
 	{
+		#region Internal Constructor
+
 		internal DecimalReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override decimal Read(
 			ContentReader input,
@@ -23,5 +31,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadDecimal();
 		}
+
+		#endregion
 	}
 }

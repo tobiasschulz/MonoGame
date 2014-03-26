@@ -7,12 +7,16 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	class IndexBufferReader : ContentTypeReader<IndexBuffer>
 	{
+		#region Protected Read Method
+
 		protected internal override IndexBuffer Read(
 			ContentReader input,
 			IndexBuffer existingInstance
@@ -46,5 +50,7 @@ namespace Microsoft.Xna.Framework.Content
 			indexBuffer.SetData(data);
 			return indexBuffer;
 		}
+
+		#endregion
 	}
 }

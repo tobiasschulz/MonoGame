@@ -7,17 +7,25 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Content;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Int64Reader : ContentTypeReader<long>
 	{
+		#region Internal Constructor
+
 		internal Int64Reader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override long Read(
 			ContentReader input,
@@ -25,5 +33,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadInt64();
 		}
+
+		#endregion
 	}
 }

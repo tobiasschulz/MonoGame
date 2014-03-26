@@ -7,17 +7,25 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Content;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class TimeSpanReader : ContentTypeReader<TimeSpan>
 	{
+		#region Internal Constructor
+
 		internal TimeSpanReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override TimeSpan Read(
 			ContentReader input,
@@ -31,5 +39,7 @@ namespace Microsoft.Xna.Framework.Content
 			 */
 			return new TimeSpan(input.ReadInt64());
 		}
+
+		#endregion
 	}
 }

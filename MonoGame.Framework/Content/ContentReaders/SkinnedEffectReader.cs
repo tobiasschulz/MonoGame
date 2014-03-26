@@ -7,14 +7,18 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	class SkinnedEffectReader : ContentTypeReader<SkinnedEffect>
 	{
+		#region Protected Read Method
+
 		protected internal override SkinnedEffect Read(
 			ContentReader input,
 			SkinnedEffect existingInstance
@@ -29,5 +33,7 @@ namespace Microsoft.Xna.Framework.Content
 			effect.Alpha = input.ReadSingle();
 			return effect;
 		}
+
+		#endregion
 	}
 }

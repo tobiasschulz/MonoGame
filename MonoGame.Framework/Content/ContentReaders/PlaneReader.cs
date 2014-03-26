@@ -32,15 +32,23 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class PlaneReader : ContentTypeReader<Plane>
 	{
+		#region Internal Constructor
+
 		internal PlaneReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Plane Read(
 			ContentReader input,
@@ -50,5 +58,7 @@ namespace Microsoft.Xna.Framework.Content
 			existingInstance.D = input.ReadSingle();
 			return existingInstance;
 		}
+
+		#endregion
 	}
 }

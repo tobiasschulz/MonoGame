@@ -7,14 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework.Graphics;
-
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Texture3DReader : ContentTypeReader<Texture3D>
 	{
+		#region Protected Read Method
+
 		protected internal override Texture3D Read(
 			ContentReader reader,
 			Texture3D existingInstance
@@ -68,5 +71,7 @@ namespace Microsoft.Xna.Framework.Content
 
 			return texture;
 		}
+
+		#endregion
 	}
 }

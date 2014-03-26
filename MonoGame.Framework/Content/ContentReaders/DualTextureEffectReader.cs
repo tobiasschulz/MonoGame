@@ -7,14 +7,18 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	class DualTextureEffectReader : ContentTypeReader<DualTextureEffect>
 	{
+		#region Protected Read Method
+
 		protected internal override DualTextureEffect Read(
 			ContentReader input,
 			DualTextureEffect existingInstance
@@ -27,6 +31,8 @@ namespace Microsoft.Xna.Framework.Content
 			effect.VertexColorEnabled = input.ReadBoolean();
 			return effect;
 		}
+
+		#endregion
 	}
 }
 

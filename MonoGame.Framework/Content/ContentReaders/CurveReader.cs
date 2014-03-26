@@ -7,12 +7,16 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class CurveReader : ContentTypeReader<Curve>
 	{
+		#region Protected Read Method
+
 		protected internal override Curve Read(
 			ContentReader input,
 			Curve existingInstance
@@ -45,6 +49,8 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return curve;
 		}
+
+		#endregion
 	}
 }
 

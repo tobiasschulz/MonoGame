@@ -7,15 +7,19 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class EffectMaterialReader : ContentTypeReader<EffectMaterial>
 	{
+		#region Protected Read Method
+
 		protected internal override EffectMaterial Read(
 			ContentReader input,
 			EffectMaterial existingInstance
@@ -42,5 +46,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return effectMaterial;
 		}
+
+		#endregion
 	}
 }

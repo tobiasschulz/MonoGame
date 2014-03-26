@@ -9,14 +9,17 @@
 /* Original source from SilverSprite project at http://silversprite.codeplex.com */
 #endregion
 
-
+#region Using Statements
 using System;
 using System.Reflection;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class ReflectiveReader<T> : ContentTypeReader
 	{
+		#region Private Variables
+
 		ConstructorInfo constructor;
 		PropertyInfo[] properties;
 		FieldInfo[] fields;
@@ -26,27 +29,20 @@ namespace Microsoft.Xna.Framework.Content
 		Type baseType;
 		ContentTypeReader baseTypeReader;
 
+		#endregion
+
+		#region Internal Constructor
+
 		internal ReflectiveReader() : base(typeof(T))
 		{
 			targetType = typeof(T);
 		}
 
-		protected internal override void Initialize(ContentTypeReaderManager manager)
-		{
-			base.Initialize(manager);
-			this.manager = manager;
-			Type type = targetType.BaseType;
-			if (type != null && type != typeof(object))
-			{
-				baseType = type;
-				baseTypeReader = manager.GetTypeReader(baseType);
-			}
-			constructor = targetType.GetDefaultConstructor();
-			properties = targetType.GetAllProperties();
-			fields = targetType.GetAllFields();
-		}
+		#endregion
 
-		static object CreateChildObject(PropertyInfo property, FieldInfo field)
+		#region Private Static Child Helper Method
+
+		private static object CreateChildObject(PropertyInfo property, FieldInfo field)
 		{
 			object obj = null;
 			Type t;
@@ -68,6 +64,72 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return obj;
 		}
+
+		#endregion
+
+		#region Protected Initialization Method
+
+		protected internal override void Initialize(ContentTypeReaderManager manager)
+		{
+			base.Initialize(manager);
+			this.manager = manager;
+			Type type = targetType.BaseType;
+			if (type != null && type != typeof(object))
+			{
+				baseType = type;
+				baseTypeReader = manager.GetTypeReader(baseType);
+			}
+			constructor = targetType.GetDefaultConstructor();
+			properties = targetType.GetAllProperties();
+			fields = targetType.GetAllFields();
+		}
+
+		#endregion
+
+		#region Protected Read Method
+
+		protected internal override object Read(
+			ContentReader input,
+			object existingInstance
+		) {
+			T obj;
+			if (existingInstance != null)
+			{
+				obj = (T) existingInstance;
+			}
+			else
+			{
+				if (constructor == null)
+				{
+					obj = (T) Activator.CreateInstance(typeof(T));
+				}
+				else
+				{
+					obj = (T) constructor.Invoke(null);
+				}
+			}
+			if (baseTypeReader != null)
+			{
+				baseTypeReader.Read(input, obj);
+			}
+			// Box the type.
+			object boxed = (object) obj;
+			foreach (PropertyInfo property in properties)
+			{
+				Read(boxed, input, property);
+			}
+			foreach (FieldInfo field in fields)
+			{
+				Read(boxed, input, field);
+			}
+			// Unbox it... required for value types.
+			obj = (T) boxed;
+			return obj;
+		}
+
+		#endregion
+
+		#region Private Read Method
 
 		private void Read(
 			object parent,
@@ -202,43 +264,6 @@ namespace Microsoft.Xna.Framework.Content
 			}
 		}
 
-		protected internal override object Read(
-			ContentReader input,
-			object existingInstance
-		) {
-			T obj;
-			if (existingInstance != null)
-			{
-				obj = (T) existingInstance;
-			}
-			else
-			{
-				if (constructor == null)
-				{
-					obj = (T) Activator.CreateInstance(typeof(T));
-				}
-				else
-				{
-					obj = (T) constructor.Invoke(null);
-				}
-			}
-			if (baseTypeReader != null)
-			{
-				baseTypeReader.Read(input, obj);
-			}
-			// Box the type.
-			object boxed = (object) obj;
-			foreach (PropertyInfo property in properties)
-			{
-				Read(boxed, input, property);
-			}
-			foreach (FieldInfo field in fields)
-			{
-				Read(boxed, input, field);
-			}
-			// Unbox it... required for value types.
-			obj = (T) boxed;
-			return obj;
-		}
+		#endregion
 	}
 }
