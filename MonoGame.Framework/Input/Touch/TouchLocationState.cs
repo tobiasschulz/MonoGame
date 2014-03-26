@@ -7,10 +7,6 @@
  */
 #endregion
 
-#region Using clause
-using System;
-#endregion Using clause
-
 namespace Microsoft.Xna.Framework.Input.Touch
 {
 	/// <summary>
