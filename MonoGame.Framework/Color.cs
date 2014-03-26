@@ -35,6 +35,7 @@ SOFTWARE.
 using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace Microsoft.Xna.Framework
 {
@@ -1782,7 +1783,17 @@ namespace Microsoft.Xna.Framework
         /// <returns>The string representation of the color value of this instance.</returns>
 	public override string ToString ()
 	{
-	    return string.Format("[Color: R={0}, G={1}, B={2}, A={3}, PackedValue={4}]", R, G, B, A, PackedValue);
+            StringBuilder sb = new StringBuilder(25);
+            sb.Append("{R:");
+            sb.Append(R);
+            sb.Append(" G:");
+            sb.Append(G);
+            sb.Append(" B:");
+            sb.Append(B);
+            sb.Append(" A:");
+            sb.Append(A);
+            sb.Append("}");
+            return sb.ToString();
 	}
 	
 	/// <summary>
