@@ -411,7 +411,7 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException ex)
 			{
 				// MonoGame try to load as a non-content file
-				assetName = assetName = TitleContainer.GetFilename(
+				assetName = TitleContainer.GetFilename(
 					Path.Combine(RootDirectoryFullPath, assetName)
 				);
 				assetName = Normalize<T>(assetName);
