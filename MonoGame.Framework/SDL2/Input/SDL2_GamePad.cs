@@ -784,20 +784,20 @@ namespace Microsoft.Xna.Framework.Input
 				GamePadButtons gc_buttons = new GamePadButtons(gc_buttonState);
 
 				// Build the GamePadState, increment PacketNumber if state changed.
-				GamePadState builtState = new GamePadState(
+				GamePadState gc_builtState = new GamePadState(
 					gc_sticks,
 					gc_triggers,
 					gc_buttons,
 					gc_dpad
 				);
-				builtState.PacketNumber = INTERNAL_states[(int) index].PacketNumber;
-				if (builtState != INTERNAL_states[(int) index])
+				gc_builtState.PacketNumber = INTERNAL_states[(int) index].PacketNumber;
+				if (gc_builtState != INTERNAL_states[(int) index])
 				{
-					builtState.PacketNumber += 1;
-					INTERNAL_states[(int) index] = builtState;
+					gc_builtState.PacketNumber += 1;
+					INTERNAL_states[(int) index] = gc_builtState;
 				}
 
-				return builtState;
+				return gc_builtState;
 			}
 
 			// SDL_Joystick
@@ -859,8 +859,21 @@ namespace Microsoft.Xna.Framework.Input
 			// DPad
 			GamePadDPad dpad = new GamePadDPad(buttons.buttons);
    
-			// Return the compiled GamePadState.
-			return new GamePadState(sticks, triggers, buttons, dpad);
+			// Build the GamePadState, increment PacketNumber if state changed.
+			GamePadState builtState = new GamePadState(
+				sticks,
+				triggers,
+				buttons,
+				dpad
+			);
+			builtState.PacketNumber = INTERNAL_states[(int) index].PacketNumber;
+			if (builtState != INTERNAL_states[(int) index])
+			{
+				builtState.PacketNumber += 1;
+				INTERNAL_states[(int) index] = builtState;
+			}
+
+			return builtState;
 		}
 
 		#endregion
