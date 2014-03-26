@@ -77,6 +77,7 @@ namespace Microsoft.Xna.Framework.Input
 		private static IntPtr[] INTERNAL_devices = new IntPtr[4];
 		private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
 		private static bool[] INTERNAL_isGameController = new bool[4];
+		private static GamePadState[] INTERNAL_states = new GamePadState[4];
 		private static Dictionary<int, int> INTERNAL_instanceList = new Dictionary<int, int>();
 
 		// We use this to apply XInput-like rumble effects.
@@ -174,6 +175,7 @@ namespace Microsoft.Xna.Framework.Input
 				return;
 			}
 			INTERNAL_instanceList.Add(instance, which);
+			INTERNAL_states[which] = GamePadState.InitializedState;
 
 			// Initialize the haptics for each joystick.
 			if (SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
@@ -223,6 +225,7 @@ namespace Microsoft.Xna.Framework.Input
 				System.Console.WriteLine("Ignoring device removal, ID: " + which);
 				return;
 			}
+			INTERNAL_states[which] = GamePadState.InitializedState;
 			INTERNAL_instanceList.Remove(which);
 			if (INTERNAL_haptics[output] != IntPtr.Zero)
 			{
@@ -780,12 +783,21 @@ namespace Microsoft.Xna.Framework.Input
 				// Compile the master buttonstate
 				GamePadButtons gc_buttons = new GamePadButtons(gc_buttonState);
 
-				return new GamePadState(
+				// Build the GamePadState, increment PacketNumber if state changed.
+				GamePadState builtState = new GamePadState(
 					gc_sticks,
 					gc_triggers,
 					gc_buttons,
 					gc_dpad
 				);
+				builtState.PacketNumber = INTERNAL_states[(int) index].PacketNumber;
+				if (builtState != INTERNAL_states[(int) index])
+				{
+					builtState.PacketNumber += 1;
+					INTERNAL_states[(int) index] = builtState;
+				}
+
+				return builtState;
 			}
 
 			// SDL_Joystick
