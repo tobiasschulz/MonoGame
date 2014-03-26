@@ -32,15 +32,23 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class QuaternionReader : ContentTypeReader<Quaternion>
 	{
+		#region Internal Constructor
+
 		internal QuaternionReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Quaternion Read(
 			ContentReader input,
@@ -48,5 +56,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadQuaternion();
 		}
+
+		#endregion
 	}
 }

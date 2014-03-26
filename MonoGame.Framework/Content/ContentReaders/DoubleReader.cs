@@ -7,14 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
+
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class DoubleReader : ContentTypeReader<double>
 	{
+		#region Internal Constructor
+
 		internal DoubleReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override double Read(
 			ContentReader input,
@@ -22,6 +31,8 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadDouble();
 		}
+
+		#endregion
 	}
 }
 

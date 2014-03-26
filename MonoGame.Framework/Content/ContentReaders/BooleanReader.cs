@@ -7,20 +7,28 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class BooleanReader : ContentTypeReader<bool>
 	{
+		#region Internal Constructor
+
 		internal BooleanReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override bool Read(
 			ContentReader input,
@@ -28,5 +36,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadBoolean();
 		}
+
+		#endregion
 	}
 }

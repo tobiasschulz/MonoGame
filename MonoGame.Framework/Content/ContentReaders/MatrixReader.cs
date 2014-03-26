@@ -11,6 +11,8 @@ namespace Microsoft.Xna.Framework.Content
 {
 	class MatrixReader : ContentTypeReader<Matrix>
 	{
+		#region Protected Read Method
+
 		protected internal override Matrix Read(
 			ContentReader input,
 			Matrix existingInstance
@@ -35,5 +37,7 @@ namespace Microsoft.Xna.Framework.Content
 				input.ReadSingle()
 			);
 		}
+
+		#endregion
 	}
 }

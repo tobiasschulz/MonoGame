@@ -7,23 +7,35 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.IO;
 
 using Microsoft.Xna.Framework.Media;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class VideoReader : ContentTypeReader<Video>
 	{
+		#region Private Supported File Extensions Variable
+
 		static string[] supportedExtensions = new string[] {
 			".ogv", ".ogg"
 		};
+
+		#endregion
+
+		#region Internal Filename Normalizer Method
 
 		internal static string Normalize(string fileName)
 		{
 			return Normalize(fileName, supportedExtensions);
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Video Read(
 			ContentReader input,
@@ -41,5 +53,7 @@ namespace Microsoft.Xna.Framework.Content
 			/*int soundTrackType =*/ input.ReadObject<int>();
 			return new Video(path);
 		}
+
+		#endregion
 	}
 }

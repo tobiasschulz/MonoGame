@@ -32,23 +32,39 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	public class ArrayReader<T> : ContentTypeReader<T[]>
 	{
+		#region Private ContentTypeReader Instance
+
 		ContentTypeReader elementReader;
+
+		#endregion
+
+		#region Public Constructor
 
 		public ArrayReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Initialization Method
 
 		protected internal override void Initialize(ContentTypeReaderManager manager)
 		{
 			Type readerType = typeof(T);
 			elementReader = manager.GetTypeReader(readerType);
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override T[] Read(ContentReader input, T[] existingInstance)
 		{
@@ -84,5 +100,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return array;
 		}
+
+		#endregion
 	}
 }

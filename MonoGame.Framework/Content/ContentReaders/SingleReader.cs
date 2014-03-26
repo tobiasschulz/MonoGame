@@ -7,14 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
+
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class SingleReader : ContentTypeReader<float>
 	{
+		#region Internal Constructor
+
 		internal SingleReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override float Read(
 			ContentReader input,
@@ -22,5 +31,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadSingle();
 		}
+
+		#endregion
 	}
 }

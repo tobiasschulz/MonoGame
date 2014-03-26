@@ -7,23 +7,34 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
-
 	public class DictionaryReader<TKey, TValue> : ContentTypeReader<Dictionary<TKey, TValue>>
 	{
+		#region Private Variables
+
 		ContentTypeReader keyReader;
 		ContentTypeReader valueReader;
 
 		Type keyType;
 		Type valueType;
 
+		#endregion
+
+		#region Public Constructor
+
 		public DictionaryReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Initialization Method
 
 		protected internal override void Initialize(ContentTypeReaderManager manager)
 		{
@@ -32,6 +43,10 @@ namespace Microsoft.Xna.Framework.Content
 			keyReader = manager.GetTypeReader(keyType);
 			valueReader = manager.GetTypeReader(valueType);
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Dictionary<TKey, TValue> Read(ContentReader input, Dictionary<TKey, TValue> existingInstance)
 		{
@@ -72,6 +87,8 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return dictionary;
 		}
+
+		#endregion
 	}
 }
 

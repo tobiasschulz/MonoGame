@@ -7,18 +7,26 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class ColorReader : ContentTypeReader<Color>
 	{
+		#region Internal Constructor
+
 		internal ColorReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Color Read(
 			ContentReader input,
@@ -33,5 +41,7 @@ namespace Microsoft.Xna.Framework.Content
 			byte a = input.ReadByte();
 			return new Color(r, g, b, a);
 		}
+
+		#endregion
 	}
 }

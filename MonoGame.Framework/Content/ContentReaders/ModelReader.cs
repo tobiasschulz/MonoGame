@@ -7,21 +7,29 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	public class ModelReader : ContentTypeReader<Model>
 	{
+		#region Public Constructor
+
 		public ModelReader()
 		{
 		}
 
-		static int ReadBoneReference(ContentReader reader, uint boneCount)
+		#endregion
+
+		#region Private Bone Helper Method
+
+		private static int ReadBoneReference(ContentReader reader, uint boneCount)
 		{
 			uint boneId;
 			// Read the bone ID, which may be encoded as either an 8 or 32 bit value.
@@ -40,6 +48,10 @@ namespace Microsoft.Xna.Framework.Content
 
 			return -1;
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Model Read(ContentReader reader, Model existingInstance)
 		{
@@ -171,5 +183,7 @@ namespace Microsoft.Xna.Framework.Content
 			model.Tag = reader.ReadObject<object>();
 			return model;
 		}
+
+		#endregion
 	}
 }

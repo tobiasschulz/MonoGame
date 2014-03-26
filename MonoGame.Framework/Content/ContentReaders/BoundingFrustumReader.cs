@@ -7,16 +7,24 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class BoundingFrustumReader : ContentTypeReader<BoundingFrustum>
 	{
+		#region Internal Constructor
+
 		internal BoundingFrustumReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override BoundingFrustum Read(
 			ContentReader input,
@@ -24,5 +32,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return new BoundingFrustum(input.ReadMatrix());
 		}
+
+		#endregion
 	}
 }

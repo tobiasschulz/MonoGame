@@ -11,6 +11,8 @@ namespace Microsoft.Xna.Framework.Content
 {
 	class BoundingBoxReader : ContentTypeReader<BoundingBox>
 	{
+		#region Protected Read Method
+
 		protected internal override BoundingBox Read(
 			ContentReader input,
 			BoundingBox existingInstance
@@ -21,5 +23,7 @@ namespace Microsoft.Xna.Framework.Content
 			);
 			return result;
 		}
+
+		#endregion
 	}
 }

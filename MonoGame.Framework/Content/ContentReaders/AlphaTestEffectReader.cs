@@ -7,12 +7,16 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	class AlphaTestEffectReader : ContentTypeReader<AlphaTestEffect>
 	{
+		#region Protected Read Method
+
 		protected internal override AlphaTestEffect Read(ContentReader input, AlphaTestEffect existingInstance)
 		{
 			AlphaTestEffect effect = new AlphaTestEffect(input.GraphicsDevice);
@@ -24,5 +28,7 @@ namespace Microsoft.Xna.Framework.Content
 			effect.VertexColorEnabled = input.ReadBoolean();
 			return effect;
 		}
+
+		#endregion
 	}
 }

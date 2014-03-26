@@ -32,21 +32,33 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 using Microsoft.Xna.Framework.Content;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	public class ListReader<T> : ContentTypeReader<List<T>>
 	{
+		#region Private ContentTypeReader Instance
+
 		ContentTypeReader elementReader;
+
+		#endregion
+
+		#region Public Constructor
 
 		public ListReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Initialization Method
 
 		protected internal override void Initialize(ContentTypeReaderManager manager)
 		{
@@ -54,6 +66,9 @@ namespace Microsoft.Xna.Framework.Content
 			elementReader = manager.GetTypeReader(readerType);
 		}
 
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override List<T> Read(
 			ContentReader input,
@@ -80,5 +95,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			return list;
 		}
+
+		#endregion
 	}
 }

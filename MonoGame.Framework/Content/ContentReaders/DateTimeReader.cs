@@ -7,15 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class DateTimeReader : ContentTypeReader<DateTime>
 	{
+		#region Internal Constructor
+
 		internal DateTimeReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override DateTime Read(
 			ContentReader input,
@@ -27,5 +35,7 @@ namespace Microsoft.Xna.Framework.Content
 			DateTimeKind kind = (DateTimeKind) ((value >> 62) & 3);
 			return new DateTime(ticks, kind);
 		}
+
+		#endregion
 	}
 }

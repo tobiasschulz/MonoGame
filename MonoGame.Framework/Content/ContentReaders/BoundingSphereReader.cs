@@ -7,16 +7,24 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class BoundingSphereReader : ContentTypeReader<BoundingSphere>
 	{
+		#region Internal Constructor
+
 		internal BoundingSphereReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override BoundingSphere Read(
 			ContentReader input,
@@ -26,5 +34,7 @@ namespace Microsoft.Xna.Framework.Content
 			float radius = input.ReadSingle();
 			return new BoundingSphere(center, radius);
 		}
+
+		#endregion
 	}
 }
