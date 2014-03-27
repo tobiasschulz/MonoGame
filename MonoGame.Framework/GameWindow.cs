@@ -7,14 +7,16 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 using System;
 using System.ComponentModel;
+#endregion
 
 namespace Microsoft.Xna.Framework {
 	public abstract class GameWindow {
-		#region Properties
+		#region Public Properties
 
 		[DefaultValue(false)]
 		public abstract bool AllowUserResizing { get; set; }
@@ -27,7 +29,6 @@ namespace Microsoft.Xna.Framework {
 
 		public abstract string ScreenDeviceName { get; }
 
-		private string _title;
 		public string Title {
 			get { return _title; }
 			set {
@@ -56,8 +57,22 @@ namespace Microsoft.Xna.Framework {
             }
         }
 
+		#endregion
+
+        #region Internal Variables
+
         internal MouseState MouseState;
-	    internal TouchPanelState TouchPanelState;
+        internal TouchPanelState TouchPanelState;
+
+        #endregion
+
+        #region Private Variables
+
+        private string _title;
+
+        #endregion
+
+        #region Protected Constructors
 
         protected GameWindow()
         {
@@ -65,11 +80,11 @@ namespace Microsoft.Xna.Framework {
             TouchPanelState = new TouchPanelState(this);
         }
 
-		#endregion Properties
+        #endregion
 
-		#region Events
+        #region Events
 
-		public event EventHandler<EventArgs> ClientSizeChanged;
+        public event EventHandler<EventArgs> ClientSizeChanged;
 		public event EventHandler<EventArgs> OrientationChanged;
 		public event EventHandler<EventArgs> ScreenDeviceNameChanged;
 
@@ -85,9 +100,11 @@ namespace Microsoft.Xna.Framework {
 		/// </remarks>
 		public event EventHandler<TextInputEventArgs> TextInput;
 
-		#endregion Events
+		#endregion
 
-		public abstract void BeginScreenDeviceChange (bool willBeFullScreen);
+        #region Public Methods
+
+        public abstract void BeginScreenDeviceChange (bool willBeFullScreen);
 
 		public abstract void EndScreenDeviceChange (
 			string screenDeviceName, int clientWidth, int clientHeight);
@@ -97,7 +114,11 @@ namespace Microsoft.Xna.Framework {
 			EndScreenDeviceChange(screenDeviceName, ClientBounds.Width, ClientBounds.Height);
 		}
 
-		protected void OnActivated ()
+        #endregion
+
+        #region Protected Methods
+
+        protected void OnActivated ()
 		{
 		}
 
@@ -136,5 +157,6 @@ namespace Microsoft.Xna.Framework {
 		protected internal abstract void SetSupportedOrientations (DisplayOrientation orientations);
 		protected abstract void SetTitle (string title);
 
+        #endregion
     }
 }

@@ -32,26 +32,17 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
  [DataContract]
     public class CurveKey : IEquatable<CurveKey>, IComparable<CurveKey>
     {
-        #region Private Fields
-
-        private CurveContinuity continuity;
-        private float position;
-        private float tangentIn;
-        private float tangentOut;
-        private float value;
-
-        #endregion Private Fields
-
-
-        #region Properties
+        #region Public Properties
 
         [DataMember]
         public CurveContinuity Continuity
@@ -89,8 +80,17 @@ namespace Microsoft.Xna.Framework
 
         #endregion
 
+        #region Private Fields
 
-        #region Constructors
+        private CurveContinuity continuity;
+        private float position;
+        private float tangentIn;
+        private float tangentOut;
+        private float value;
+
+        #endregion
+
+        #region Public Constructors
 
         public CurveKey(float position, float value)
             : this(position, value, 0, 0, CurveContinuity.Smooth)
@@ -113,10 +113,28 @@ namespace Microsoft.Xna.Framework
             this.continuity = continuity;
         }
 
-        #endregion Constructors
-
+        #endregion
 
         #region Public Methods
+
+        public CurveKey Clone()
+        {
+            return new CurveKey(this.position, this.value, this.tangentIn, this.tangentOut, this.continuity);
+        }
+
+        public int CompareTo(CurveKey other)
+        {
+            return this.position.CompareTo(other.position);
+        }
+
+        public bool Equals(CurveKey other)
+        {
+            return (this == other);
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
 
         public static bool operator !=(CurveKey a, CurveKey b)
         {
@@ -136,21 +154,6 @@ namespace Microsoft.Xna.Framework
                 && (a.tangentIn == b.tangentIn)
                 && (a.tangentOut == b.tangentOut)
                 && (a.continuity == b.continuity);
-        }
-
-        public CurveKey Clone()
-        {
-            return new CurveKey(this.position, this.value, this.tangentIn, this.tangentOut, this.continuity);
-        }
-
-        public int CompareTo(CurveKey other)
-        {
-            return this.position.CompareTo(other.position);
-        }
-
-        public bool Equals(CurveKey other)
-        {
-            return (this == other);
         }
 
         public override bool Equals(object obj)

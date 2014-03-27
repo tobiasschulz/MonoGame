@@ -35,42 +35,18 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class BoundingFrustum : IEquatable<BoundingFrustum>
     {
-        #region Private Fields
-
-        private Matrix matrix;
-        private readonly Vector3[] corners = new Vector3[CornerCount];
-        private readonly Plane[] planes = new Plane[PlaneCount];
-
-        private const int PlaneCount = 6;
-
-        #endregion Private Fields
-
-        #region Public Fields
-        public const int CornerCount = 8;
-        #endregion
-
-        #region Public Constructors
-
-        public BoundingFrustum(Matrix value)
-        {
-            this.matrix = value;
-            this.CreatePlanes();
-            this.CreateCorners();
-        }
-
-        #endregion Public Constructors
-
-
         #region Public Properties
 
         public Matrix Matrix
@@ -80,20 +56,20 @@ namespace Microsoft.Xna.Framework
             {
                 this.matrix = value;
                 this.CreatePlanes();    // FIXME: The odds are the planes will be used a lot more often than the matrix
-            	this.CreateCorners();   // is updated, so this should help performance. I hope ;)
-			}
+                this.CreateCorners();   // is updated, so this should help performance. I hope ;)
+            }
         }
 
         public Plane Near
         {
             get { return this.planes[0]; }
         }
-        
+
         public Plane Far
         {
             get { return this.planes[1]; }
         }
-        
+
         public Plane Left
         {
             get { return this.planes[2]; }
@@ -114,26 +90,36 @@ namespace Microsoft.Xna.Framework
             get { return this.planes[5]; }
         }
 
-        #endregion Public Properties
+        #endregion
 
+        #region Public Fields
+
+        public const int CornerCount = 8;
+
+        #endregion
+
+        #region Private Fields
+
+        private Matrix matrix;
+        private readonly Vector3[] corners = new Vector3[CornerCount];
+        private readonly Plane[] planes = new Plane[PlaneCount];
+
+        private const int PlaneCount = 6;
+
+        #endregion
+
+        #region Public Constructors
+
+        public BoundingFrustum(Matrix value)
+        {
+            this.matrix = value;
+            this.CreatePlanes();
+            this.CreateCorners();
+        }
+
+        #endregion
 
         #region Public Methods
-
-        public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
-        {
-            if (object.Equals(a, null))
-                return (object.Equals(b, null));
-
-            if (object.Equals(b, null))
-                return (object.Equals(a, null));
-
-            return a.matrix == (b.matrix);
-        }
-
-        public static bool operator !=(BoundingFrustum a, BoundingFrustum b)
-        {
-            return !(a == b);
-        }
 
         public ContainmentType Contains(BoundingBox box)
         {
@@ -227,12 +213,6 @@ namespace Microsoft.Xna.Framework
             return (this == other);
         }
 
-        public override bool Equals(object obj)
-        {
-            BoundingFrustum f = obj as BoundingFrustum;
-            return (object.Equals(f, null)) ? false : (this == f);
-        }
-
         public Vector3[] GetCorners()
         {
             return (Vector3[])this.corners.Clone();
@@ -308,27 +288,7 @@ namespace Microsoft.Xna.Framework
         }
         */
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder(256);
-            sb.Append("{Near:");
-            sb.Append(this.planes[0].ToString());
-            sb.Append(" Far:");
-            sb.Append(this.planes[1].ToString());
-            sb.Append(" Left:");
-            sb.Append(this.planes[2].ToString());
-            sb.Append(" Right:");
-            sb.Append(this.planes[3].ToString());
-            sb.Append(" Top:");
-            sb.Append(this.planes[4].ToString());
-            sb.Append(" Bottom:");
-            sb.Append(this.planes[5].ToString());
-            sb.Append("}");
-            return sb.ToString();
-        }
-
-        #endregion Public Methods
-
+        #endregion
 
         #region Private Methods
 
@@ -360,6 +320,19 @@ namespace Microsoft.Xna.Framework
             this.NormalizePlane(ref this.planes[4]);
             this.NormalizePlane(ref this.planes[5]);
         }
+        
+        private void NormalizePlane(ref Plane p)
+        {
+            float factor = 1f / p.Normal.Length();
+            p.Normal.X *= factor;
+            p.Normal.Y *= factor;
+            p.Normal.Z *= factor;
+            p.D *= factor;
+        }
+
+        #endregion
+
+        #region Private Static Methods
 
         private static void IntersectionPoint(ref Plane a, ref Plane b, ref Plane c, out Vector3 result)
         {
@@ -369,42 +342,78 @@ namespace Microsoft.Xna.Framework
             //                             N1 . ( N2 * N3 )
             //
             // Note: N refers to the normal, d refers to the displacement. '.' means dot product. '*' means cross product
-            
+
             Vector3 v1, v2, v3;
             Vector3 cross;
-            
+
             Vector3.Cross(ref b.Normal, ref c.Normal, out cross);
-            
+
             float f;
             Vector3.Dot(ref a.Normal, ref cross, out f);
             f *= -1.0f;
-            
+
             Vector3.Cross(ref b.Normal, ref c.Normal, out cross);
             Vector3.Multiply(ref cross, a.D, out v1);
             //v1 = (a.D * (Vector3.Cross(b.Normal, c.Normal)));
-            
-            
+
+
             Vector3.Cross(ref c.Normal, ref a.Normal, out cross);
             Vector3.Multiply(ref cross, b.D, out v2);
             //v2 = (b.D * (Vector3.Cross(c.Normal, a.Normal)));
-            
-            
+
+
             Vector3.Cross(ref a.Normal, ref b.Normal, out cross);
             Vector3.Multiply(ref cross, c.D, out v3);
             //v3 = (c.D * (Vector3.Cross(a.Normal, b.Normal)));
-            
+
             result.X = (v1.X + v2.X + v3.X) / f;
             result.Y = (v1.Y + v2.Y + v3.Y) / f;
             result.Z = (v1.Z + v2.Z + v3.Z) / f;
         }
-        
-        private void NormalizePlane(ref Plane p)
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
+        public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
         {
-            float factor = 1f / p.Normal.Length();
-            p.Normal.X *= factor;
-            p.Normal.Y *= factor;
-            p.Normal.Z *= factor;
-            p.D *= factor;
+            if (object.Equals(a, null))
+                return (object.Equals(b, null));
+
+            if (object.Equals(b, null))
+                return (object.Equals(a, null));
+
+            return a.matrix == (b.matrix);
+        }
+
+        public static bool operator !=(BoundingFrustum a, BoundingFrustum b)
+        {
+            return !(a == b);
+        }
+
+        public override bool Equals(object obj)
+        {
+            BoundingFrustum f = obj as BoundingFrustum;
+            return (object.Equals(f, null)) ? false : (this == f);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder(256);
+            sb.Append("{Near:");
+            sb.Append(this.planes[0].ToString());
+            sb.Append(" Far:");
+            sb.Append(this.planes[1].ToString());
+            sb.Append(" Left:");
+            sb.Append(this.planes[2].ToString());
+            sb.Append(" Right:");
+            sb.Append(this.planes[3].ToString());
+            sb.Append(" Top:");
+            sb.Append(this.planes[4].ToString());
+            sb.Append(" Bottom:");
+            sb.Append(this.planes[5].ToString());
+            sb.Append("}");
+            return sb.ToString();
         }
 
         #endregion

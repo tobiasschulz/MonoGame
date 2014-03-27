@@ -35,17 +35,18 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     [DataContract]
     public struct BoundingBox : IEquatable<BoundingBox>
     {
-
         #region Public Fields
 
         [DataMember]
@@ -56,8 +57,14 @@ namespace Microsoft.Xna.Framework
 
         public const int CornerCount = 8;
 
-        #endregion Public Fields
+        #endregion
 
+        #region Private Static Variables
+
+        private static readonly Vector3 MaxVector3 = new Vector3(float.MaxValue);
+        private static readonly Vector3 MinVector3 = new Vector3(float.MinValue);
+
+        #endregion
 
         #region Public Constructors
 
@@ -67,8 +74,7 @@ namespace Microsoft.Xna.Framework
             this.Max = max;
         }
 
-        #endregion Public Constructors
-
+        #endregion
 
         #region Public Methods
 
@@ -258,82 +264,6 @@ namespace Microsoft.Xna.Framework
                 result = ContainmentType.Contains;
         }
 
-        private static readonly Vector3 MaxVector3 = new Vector3(float.MaxValue);
-        private static readonly Vector3 MinVector3 = new Vector3(float.MinValue);
-
-        /// <summary>
-        /// Create a bounding box from the given list of points.
-        /// </summary>
-        /// <param name="points">The list of Vector3 instances defining the point cloud to bound</param>
-        /// <returns>A bounding box that encapsulates the given point cloud.</returns>
-        /// <exception cref="System.ArgumentException">Thrown if the given list has no points.</exception>
-        public static BoundingBox CreateFromPoints(IEnumerable<Vector3> points)
-        {
-            if (points == null)
-                throw new ArgumentNullException();
-
-            var empty = true;
-            var minVec = MaxVector3;
-            var maxVec = MinVector3;
-            foreach (var ptVector in points)
-            {
-                minVec.X = (minVec.X < ptVector.X) ? minVec.X : ptVector.X;
-                minVec.Y = (minVec.Y < ptVector.Y) ? minVec.Y : ptVector.Y;
-                minVec.Z = (minVec.Z < ptVector.Z) ? minVec.Z : ptVector.Z;
-
-                maxVec.X = (maxVec.X > ptVector.X) ? maxVec.X : ptVector.X;
-                maxVec.Y = (maxVec.Y > ptVector.Y) ? maxVec.Y : ptVector.Y;
-                maxVec.Z = (maxVec.Z > ptVector.Z) ? maxVec.Z : ptVector.Z;
-
-                empty = false;
-            }
-            if (empty)
-                throw new ArgumentException();
-
-            return new BoundingBox(minVec, maxVec);
-        }
-
-        public static BoundingBox CreateFromSphere(BoundingSphere sphere)
-        {
-            BoundingBox result;
-            CreateFromSphere(ref sphere, out result);
-            return result;
-        }
-
-        public static void CreateFromSphere(ref BoundingSphere sphere, out BoundingBox result)
-        {
-            var corner = new Vector3(sphere.Radius);
-            result.Min = sphere.Center - corner;
-            result.Max = sphere.Center + corner;
-        }
-
-        public static BoundingBox CreateMerged(BoundingBox original, BoundingBox additional)
-        {
-            BoundingBox result;
-            CreateMerged(ref original, ref additional, out result);
-            return result;
-        }
-
-        public static void CreateMerged(ref BoundingBox original, ref BoundingBox additional, out BoundingBox result)
-        {
-            result.Min.X = Math.Min(original.Min.X, additional.Min.X);
-            result.Min.Y = Math.Min(original.Min.Y, additional.Min.Y);
-            result.Min.Z = Math.Min(original.Min.Z, additional.Min.Z);
-            result.Max.X = Math.Max(original.Max.X, additional.Max.X);
-            result.Max.Y = Math.Max(original.Max.Y, additional.Max.Y);
-            result.Max.Z = Math.Max(original.Max.Z, additional.Max.Z);
-        }
-
-        public bool Equals(BoundingBox other)
-        {
-            return (this.Min == other.Min) && (this.Max == other.Max);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return (obj is BoundingBox) ? this.Equals((BoundingBox)obj) : false;
-        }
-
         public Vector3[] GetCorners()
         {
             return new Vector3[] {
@@ -382,11 +312,6 @@ namespace Microsoft.Xna.Framework
             corners[7].X = this.Min.X;
             corners[7].Y = this.Min.Y;
             corners[7].Z = this.Min.Z;
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Min.GetHashCode() + this.Max.GetHashCode();
         }
 
         public bool Intersects(BoundingBox box)
@@ -531,6 +456,92 @@ namespace Microsoft.Xna.Framework
             result = Intersects(ray);
         }
 
+        public bool Equals(BoundingBox other)
+        {
+            return (this.Min == other.Min) && (this.Max == other.Max);
+        }
+        
+        #endregion
+
+        #region Public Static Methods
+
+        /// <summary>
+        /// Create a bounding box from the given list of points.
+        /// </summary>
+        /// <param name="points">The list of Vector3 instances defining the point cloud to bound</param>
+        /// <returns>A bounding box that encapsulates the given point cloud.</returns>
+        /// <exception cref="System.ArgumentException">Thrown if the given list has no points.</exception>
+        public static BoundingBox CreateFromPoints(IEnumerable<Vector3> points)
+        {
+            if (points == null)
+                throw new ArgumentNullException();
+
+            var empty = true;
+            var minVec = MaxVector3;
+            var maxVec = MinVector3;
+            foreach (var ptVector in points)
+            {
+                minVec.X = (minVec.X < ptVector.X) ? minVec.X : ptVector.X;
+                minVec.Y = (minVec.Y < ptVector.Y) ? minVec.Y : ptVector.Y;
+                minVec.Z = (minVec.Z < ptVector.Z) ? minVec.Z : ptVector.Z;
+
+                maxVec.X = (maxVec.X > ptVector.X) ? maxVec.X : ptVector.X;
+                maxVec.Y = (maxVec.Y > ptVector.Y) ? maxVec.Y : ptVector.Y;
+                maxVec.Z = (maxVec.Z > ptVector.Z) ? maxVec.Z : ptVector.Z;
+
+                empty = false;
+            }
+            if (empty)
+                throw new ArgumentException();
+
+            return new BoundingBox(minVec, maxVec);
+        }
+
+        public static BoundingBox CreateFromSphere(BoundingSphere sphere)
+        {
+            BoundingBox result;
+            CreateFromSphere(ref sphere, out result);
+            return result;
+        }
+
+        public static void CreateFromSphere(ref BoundingSphere sphere, out BoundingBox result)
+        {
+            var corner = new Vector3(sphere.Radius);
+            result.Min = sphere.Center - corner;
+            result.Max = sphere.Center + corner;
+        }
+
+        public static BoundingBox CreateMerged(BoundingBox original, BoundingBox additional)
+        {
+            BoundingBox result;
+            CreateMerged(ref original, ref additional, out result);
+            return result;
+        }
+
+        public static void CreateMerged(ref BoundingBox original, ref BoundingBox additional, out BoundingBox result)
+        {
+            result.Min.X = Math.Min(original.Min.X, additional.Min.X);
+            result.Min.Y = Math.Min(original.Min.Y, additional.Min.Y);
+            result.Min.Z = Math.Min(original.Min.Z, additional.Min.Z);
+            result.Max.X = Math.Max(original.Max.X, additional.Max.X);
+            result.Max.Y = Math.Max(original.Max.Y, additional.Max.Y);
+            result.Max.Z = Math.Max(original.Max.Z, additional.Max.Z);
+        }
+        
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
+        public override bool Equals(object obj)
+        {
+            return (obj is BoundingBox) ? this.Equals((BoundingBox)obj) : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Min.GetHashCode() + this.Max.GetHashCode();
+        }
+
         public static bool operator ==(BoundingBox a, BoundingBox b)
         {
             return a.Equals(b);
@@ -546,6 +557,6 @@ namespace Microsoft.Xna.Framework
             return string.Format("{{Min:{0} Max:{1}}}", this.Min.ToString(), this.Max.ToString());
         }
 
-        #endregion Public Methods
+        #endregion
     }
 }

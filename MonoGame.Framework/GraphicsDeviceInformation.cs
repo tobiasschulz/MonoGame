@@ -7,22 +7,32 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
 	public class GraphicsDeviceInformation
-	{
-		public GraphicsDeviceInformation ()
+    {
+        #region Public Properties
+
+        public GraphicsAdapter Adapter { get; set; }
+
+        public GraphicsProfile GraphicsProfile { get; set; }
+
+        public PresentationParameters PresentationParameters { get; set; }
+
+        #endregion
+
+        #region Public Constructors
+
+        public GraphicsDeviceInformation ()
 		{
 		}
-		
-		public GraphicsAdapter Adapter { get; set; }
-		
-		public GraphicsProfile GraphicsProfile { get; set; }
-		
-		public PresentationParameters PresentationParameters { get; set; }
-	}
+
+        #endregion
+    }
 }
 

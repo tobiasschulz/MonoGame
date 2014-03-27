@@ -32,19 +32,31 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class GameServiceContainer : IServiceProvider
     {
+        #region Private Fields
+
         Dictionary<Type, object> services;
+
+        #endregion
+
+        #region Public Constructors
 
         public GameServiceContainer()
         {
             services = new Dictionary<Type, object>();
         }
+
+        #endregion
+
+        #region Public Methods
 
         public void AddService(Type type, object provider)
         {
@@ -77,5 +89,7 @@ namespace Microsoft.Xna.Framework
 
             services.Remove(type);
         }
+
+        #endregion
     }
 }

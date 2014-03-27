@@ -7,52 +7,16 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     abstract class GamePlatform : IDisposable
     {
-        #region Fields
-
-        protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
-        protected bool _needsToResetElapsedTime = false;
-        bool disposed;
-        protected bool IsDisposed { get { return disposed; } }
-
-        #endregion
-
-        #region Construction/Destruction
-        public static GamePlatform Create(Game game)
-        {
-            /* I suspect you may have an urge to put an #if in here for new
-             * GamePlatform implementations.
-             *
-             * DON'T.
-             *
-             * Determine this at runtime, or load dynamically.
-             * No amount of whining will get me to budge on this.
-             * -flibit
-             */
-            return new SDL2_GamePlatform(game);
-        }
-
-        protected GamePlatform(Game game)
-        {
-            if (game == null)
-                throw new ArgumentNullException("game");
-            Game = game;
-        }
-
-        ~GamePlatform()
-        {
-            Dispose(false);
-        }
-
-        #endregion Construction/Destruction
-
         #region Public Properties
 
         /// <summary>
@@ -66,10 +30,10 @@ namespace Microsoft.Xna.Framework
         /// </summary>
         public Game Game
         {
-            get; private set;
+            get;
+            private set;
         }
 
-        private bool _isActive;
         public bool IsActive
         {
             get { return _isActive; }
@@ -83,7 +47,6 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-        private bool _isMouseVisible;
         public bool IsMouseVisible
         {
             get { return _isMouseVisible; }
@@ -97,7 +60,6 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-        private GameWindow _window;
         public GameWindow Window
         {
             get { return _window; }
@@ -114,17 +76,55 @@ namespace Microsoft.Xna.Framework
                 _window = value;
             }
         }
-  
+
         public virtual bool VSyncEnabled
         {
             get
             {
                 throw new NotImplementedException();
             }
-            set {
+            set
+            {
             }
         }
+
+        #endregion
+
+        #region Protected Fields
+
+        protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
+        protected bool _needsToResetElapsedTime = false;
+        protected bool IsDisposed { get { return disposed; } }
+
+        #endregion
+
+        #region Private Fields
+
+        bool disposed;
+        private bool _isActive;
+        private bool _isMouseVisible;
+        private GameWindow _window;
+
+        #endregion
+
+        #region Protected Constructor
+
+        protected GamePlatform(Game game)
+        {
+            if (game == null)
+                throw new ArgumentNullException("game");
+            Game = game;
+        }
         
+        #endregion
+
+        #region Deconstructor
+
+        ~GamePlatform()
+        {
+            Dispose(false);
+        }
+
         #endregion
 
         #region Events
@@ -132,27 +132,10 @@ namespace Microsoft.Xna.Framework
         public event EventHandler<EventArgs> AsyncRunLoopEnded;
         public event EventHandler<EventArgs> Activated;
         public event EventHandler<EventArgs> Deactivated;
+        
+        #endregion
 
-        private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
-            where TEventArgs : EventArgs
-        {
-            if (handler != null)
-                handler(this, e);
-        }
-
-        /// <summary>
-        /// Raises the AsyncRunLoopEnded event.  This method must be called by
-        /// derived classes when the asynchronous run loop they start has
-        /// stopped running.
-        /// </summary>
-        protected void RaiseAsyncRunLoopEnded()
-        {
-            Raise(AsyncRunLoopEnded, EventArgs.Empty);
-        }
-
-        #endregion Events
-
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Gives derived classes an opportunity to do work before any
@@ -281,7 +264,52 @@ namespace Microsoft.Xna.Framework
 
         protected virtual void OnIsMouseVisibleChanged() {}
 
-        #endregion Methods
+        public virtual void Present() { }
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Raises the AsyncRunLoopEnded event.  This method must be called by
+        /// derived classes when the asynchronous run loop they start has
+        /// stopped running.
+        /// </summary>
+        protected void RaiseAsyncRunLoopEnded()
+        {
+            Raise(AsyncRunLoopEnded, EventArgs.Empty);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
+            where TEventArgs : EventArgs
+        {
+            if (handler != null)
+                handler(this, e);
+        }
+
+        #endregion
+
+        #region Public Static Methods
+
+        public static GamePlatform Create(Game game)
+        {
+            /* I suspect you may have an urge to put an #if in here for new
+             * GamePlatform implementations.
+             *
+             * DON'T.
+             *
+             * Determine this at runtime, or load dynamically.
+             * No amount of whining will get me to budge on this.
+             * -flibit
+             */
+            return new SDL2_GamePlatform(game);
+        }
+
+        #endregion
 
         #region IDisposable implementation
 
@@ -311,11 +339,8 @@ namespace Microsoft.Xna.Framework
 		/// </param>
 		[System.Diagnostics.Conditional("DEBUG")]
 		public virtual void Log(string Message) {}		
-			
 
         #endregion
-
-        public virtual void Present() {}
     }
 }
 

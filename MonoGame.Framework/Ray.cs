@@ -32,9 +32,11 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -257,6 +259,9 @@ namespace Microsoft.Xna.Framework
             result = (dist < 0) ? null : distanceAlongRay - (float?)Math.Sqrt(dist);
         }
 
+        #endregion
+
+        #region Public Static Methods
 
         public static bool operator !=(Ray a, Ray b)
         {

@@ -7,17 +7,25 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class GameTime
     {
+        #region Public Properties
+
         public TimeSpan TotalGameTime { get; set; }
 
         public TimeSpan ElapsedGameTime { get; set; }
 
         public bool IsRunningSlowly { get; set; }
+
+        #endregion
+
+        #region Public Constructors
 
         public GameTime()
         {
@@ -38,7 +46,9 @@ namespace Microsoft.Xna.Framework
             TotalGameTime = totalRealTime;
             ElapsedGameTime = elapsedRealTime;
 		    IsRunningSlowly = isRunningSlowly;
-		}
+        }
+
+        #endregion
     }
 }
 

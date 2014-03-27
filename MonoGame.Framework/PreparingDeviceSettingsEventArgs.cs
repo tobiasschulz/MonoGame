@@ -7,25 +7,40 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
+
 namespace Microsoft.Xna.Framework
 {
 	public class PreparingDeviceSettingsEventArgs : EventArgs
-	{
-		private GraphicsDeviceInformation _graphicsDeviceInformation;
-		
-		public PreparingDeviceSettingsEventArgs(GraphicsDeviceInformation graphicsDeviceInformation)
+    {
+        #region Public Properties
+
+        public GraphicsDeviceInformation GraphicsDeviceInformation
+        {
+            get
+            {
+                return _graphicsDeviceInformation;
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
+        private GraphicsDeviceInformation _graphicsDeviceInformation;
+
+        #endregion
+
+        #region Public Constructor
+
+        public PreparingDeviceSettingsEventArgs(GraphicsDeviceInformation graphicsDeviceInformation)
 		{
 			_graphicsDeviceInformation = graphicsDeviceInformation;
 		}
-		
-		public GraphicsDeviceInformation GraphicsDeviceInformation 
-		{ 
-			get 
-			{
-				return _graphicsDeviceInformation; 
-			}
-		}
-	}
+
+        #endregion
+    }
 }
 
