@@ -11,7 +11,7 @@
 using System;
 #endregion
 
-namespace Microsoft.Xna.Framework
+namespace Microsoft.Xna.Framework.Graphics
 {
 	[Serializable]
 	public class DeviceLostException : Exception
