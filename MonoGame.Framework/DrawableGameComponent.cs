@@ -7,19 +7,19 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class DrawableGameComponent : GameComponent, IDrawable
     {
-        private bool _initialized;
-        private int _drawOrder;
-        private bool _visible = true;
+        #region Public Properties
 
         public Graphics.GraphicsDevice GraphicsDevice
         {
-            get { return this.Game.GraphicsDevice; } 
+            get { return this.Game.GraphicsDevice; }
         }
 
         public int DrawOrder
@@ -52,13 +52,33 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-        public event EventHandler<EventArgs> DrawOrderChanged;
-        public event EventHandler<EventArgs> VisibleChanged;
+        #endregion
+
+        #region Private Variables
+
+        private bool _initialized;
+        private int _drawOrder;
+        private bool _visible = true;
+
+        #endregion
+
+        #region Public Constructors
 
         public DrawableGameComponent(Game game)
             : base(game)
         {
         }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<EventArgs> DrawOrderChanged;
+        public event EventHandler<EventArgs> VisibleChanged;
+
+        #endregion
+
+        #region Public Methods
 
         public override void Initialize()
         {
@@ -69,14 +89,24 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+        #endregion
+
+        #region Pubilc Virtual Methods
+
+        public virtual void Draw(GameTime gameTime) { }
+
+        #endregion
+
+        #region Protected Virtual Methods
+
         protected virtual void LoadContent() { }
 
         protected virtual void UnloadContent () { }
 
-        public virtual void Draw(GameTime gameTime) { }
-
         protected virtual void OnVisibleChanged(object sender, EventArgs args) { }
 
         protected virtual void OnDrawOrderChanged(object sender, EventArgs args) { }
+
+        #endregion
     }
 }

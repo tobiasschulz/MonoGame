@@ -32,23 +32,17 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class CurveKeyCollection : ICollection<CurveKey>, IEnumerable<CurveKey>, IEnumerable
     {
-        #region Private Fields
-
-        private bool isReadOnly = false;
-        private List<CurveKey> innerlist;
-
-        #endregion Private Fields
-
-
-        #region Properties
+        #region Public Properties
 
         public int Count
         {
@@ -81,18 +75,23 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-        #endregion Properties
+        #endregion
 
+        #region Private Fields
 
-        #region Constructors
+        private bool isReadOnly = false;
+        private List<CurveKey> innerlist;
+
+        #endregion
+
+        #region Public Constructors
 
         public CurveKeyCollection()
         {
             innerlist = new List<CurveKey>();
         }
 
-        #endregion Constructors
-
+        #endregion
 
         #region Public Methods
 
@@ -167,6 +166,6 @@ namespace Microsoft.Xna.Framework
             return innerlist.GetEnumerator();
         }
 
-        #endregion Public Methods
+        #endregion
     }
 }

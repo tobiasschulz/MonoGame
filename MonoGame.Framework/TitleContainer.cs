@@ -7,19 +7,31 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.IO;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public static class TitleContainer
     {
+        #region Internal Static Properties
+
+        static internal string Location { get; private set; }
+
+        #endregion
+
+        #region Private Static Constructor
+
         static TitleContainer() 
         {
             Location = AppDomain.CurrentDomain.BaseDirectory;
         }
 
-        static internal string Location { get; private set; }
+        #endregion
+
+        #region Public Static Methods
 
         /// <summary>
         /// Returns an open stream to an exsiting file in the title storage area.
@@ -39,6 +51,10 @@ namespace Microsoft.Xna.Framework
             return File.OpenRead(absolutePath);
         }
 
+        #endregion
+
+        #region Internal Static Methods
+
         // TODO: This is just path normalization.  Remove this
         // and replace it with a proper utility function.  I'm sure
         // this same logic is duplicated all over the code base.
@@ -48,6 +64,8 @@ namespace Microsoft.Xna.Framework
             name = name.Replace('\\', Path.DirectorySeparatorChar);
             return name;
         }
+
+        #endregion
     }
 }
 

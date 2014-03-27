@@ -7,14 +7,15 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {   
     public class GameComponent : IGameComponent, IUpdateable, IComparable<GameComponent>, IDisposable
     {
-        bool _enabled = true;
-        int _updateOrder;
+        #region Public Properties
 
         public Game Game { get; private set; }
 
@@ -48,32 +49,42 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+        #endregion
+
+        #region Private Variables
+
+        bool _enabled = true;
+        int _updateOrder;
+
+        #endregion
+
+        #region Events
+
         public event EventHandler<EventArgs> EnabledChanged;
         public event EventHandler<EventArgs> UpdateOrderChanged;
+
+        #endregion
+
+        #region Public Constructors
 
         public GameComponent(Game game)
         {
             this.Game = game;
         }
 
+        #endregion
+
+        #region Deconstructor
+
         ~GameComponent()
         {
             Dispose(false);
         }
 
-        public virtual void Initialize() { }
+        #endregion
 
-        public virtual void Update(GameTime gameTime) { }
+        #region Public Dispose Method
 
-        protected virtual void OnUpdateOrderChanged(object sender, EventArgs args) { }
-
-        protected virtual void OnEnabledChanged(object sender, EventArgs args) { }
-
-        /// <summary>
-        /// Shuts down the component.
-        /// </summary>
-        protected virtual void Dispose(bool disposing) { }
-        
         /// <summary>
         /// Shuts down the component.
         /// </summary>
@@ -83,7 +94,31 @@ namespace Microsoft.Xna.Framework
             GC.SuppressFinalize(this);
         }
 
+        #endregion
+
+        #region Public Virtual Methods
+
+        public virtual void Initialize() { }
+
+        public virtual void Update(GameTime gameTime) { }
+
+        #endregion
+
+        #region Protected Virtual Methods
+
+        protected virtual void OnUpdateOrderChanged(object sender, EventArgs args) { }
+
+        protected virtual void OnEnabledChanged(object sender, EventArgs args) { }
+
+        /// <summary>
+        /// Shuts down the component.
+        /// </summary>
+        protected virtual void Dispose(bool disposing) { }
+
+        #endregion
+
         #region IComparable<GameComponent> Members
+
         // TODO: Should be removed, as it is not part of XNA 4.0
         public int CompareTo(GameComponent other)
         {

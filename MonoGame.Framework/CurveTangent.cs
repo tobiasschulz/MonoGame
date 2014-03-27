@@ -7,7 +7,9 @@
  */
 #endregion
 
+#region Using Statemetns
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {

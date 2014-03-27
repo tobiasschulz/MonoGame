@@ -32,44 +32,19 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Globalization;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     [DataContract]
     public struct Rectangle : IEquatable<Rectangle>
     {
-        #region Private Fields
-
-        private static Rectangle emptyRectangle = new Rectangle();
-
-        #endregion Private Fields
-
-        #region Public Fields
-
-        [DataMember]
-        public int X;
-
-        [DataMember]
-        public int Y;
-
-        [DataMember]
-        public int Width;
-
-        [DataMember]
-        public int Height;
-
-        #endregion Public Fields
-
         #region Public Properties
-
-        public static Rectangle Empty
-        {
-            get { return emptyRectangle; }
-        }
 
         public int Left
         {
@@ -91,9 +66,69 @@ namespace Microsoft.Xna.Framework
             get { return (this.Y + this.Height); }
         }
 
-        #endregion Public Properties
+        public Point Location
+        {
+            get
+            {
+                return new Point(this.X, this.Y);
+            }
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+            }
+        }
 
-        #region Constructors
+        public Point Center
+        {
+            get
+            {
+                return new Point(this.X + (this.Width / 2), this.Y + (this.Height / 2));
+            }
+        }
+
+        public bool IsEmpty
+        {
+            get
+            {
+                return ((((this.Width == 0) && (this.Height == 0)) && (this.X == 0)) && (this.Y == 0));
+            }
+        }
+
+        #endregion
+
+        #region Public Static Properties
+
+        public static Rectangle Empty
+        {
+            get { return emptyRectangle; }
+        }
+
+        #endregion
+
+        #region Public Fields
+
+        [DataMember]
+        public int X;
+
+        [DataMember]
+        public int Y;
+
+        [DataMember]
+        public int Width;
+
+        [DataMember]
+        public int Height;
+
+        #endregion
+
+        #region Private Static Fields
+
+        private static Rectangle emptyRectangle = new Rectangle();
+
+        #endregion
+
+        #region Public Constructors
 
         public Rectangle(int x, int y, int width, int height)
         {
@@ -103,14 +138,9 @@ namespace Microsoft.Xna.Framework
             this.Height = height;
         }
 
-        #endregion Constructors
+        #endregion
 
         #region Public Methods
-
-        public static bool operator ==(Rectangle a, Rectangle b)
-        {
-            return ((a.X == b.X) && (a.Y == b.Y) && (a.Width == b.Width) && (a.Height == b.Height));
-        }
 
 		public bool Contains(int x, int y)
         {
@@ -137,11 +167,6 @@ namespace Microsoft.Xna.Framework
             return ((((this.X <= value.X) && ((value.X + value.Width) <= (this.X + this.Width))) && (this.Y <= value.Y)) && ((value.Y + value.Height) <= (this.Y + this.Height)));
         }
 
-        public static bool operator !=(Rectangle a, Rectangle b)
-        {
-            return !(a == b);
-        }
-
         public void Offset(Point offset)
         {
             X += offset.X;
@@ -153,27 +178,6 @@ namespace Microsoft.Xna.Framework
             X += offsetX;
             Y += offsetY;
         }
-		
-		public Point Location
-		{
-			get 
-			{
-				return new Point(this.X, this.Y);
-			}
-			set
-			{
-				X = value.X;
-				Y = value.Y;
-			}
-		}
-		
-		public Point Center
-		{
-			get 
-			{
-				return new Point(this.X + (this.Width / 2), this.Y + (this.Height / 2));
-			}
-		}
            
         public void Inflate(int horizontalValue, int verticalValue)
         {
@@ -181,14 +185,6 @@ namespace Microsoft.Xna.Framework
             Y -= verticalValue;
             Width += horizontalValue * 2;
             Height += verticalValue * 2;
-        }
-		
-		public bool IsEmpty
-        {
-            get
-            {
-                return ((((this.Width == 0) && (this.Height == 0)) && (this.X == 0)) && (this.Y == 0));
-            }
         }
 
         public bool Equals(Rectangle other)
@@ -226,6 +222,20 @@ namespace Microsoft.Xna.Framework
                      Left       < value.Right && 
                      value.Top  < Bottom      &&
                      Top        < value.Bottom;
+        }
+
+        #endregion
+
+        #region Public Static Methods
+
+        public static bool operator ==(Rectangle a, Rectangle b)
+        {
+            return ((a.X == b.X) && (a.Y == b.Y) && (a.Width == b.Width) && (a.Height == b.Height));
+        }
+
+        public static bool operator !=(Rectangle a, Rectangle b)
+        {
+            return !(a == b);
         }
 
         public static Rectangle Intersect(Rectangle value1, Rectangle value2)
@@ -267,8 +277,8 @@ namespace Microsoft.Xna.Framework
 			result.Y = Math.Min (value1.Y, value2.Y);
 			result.Width = Math.Max (value1.Right, value2.Right) - result.X;
 			result.Height = Math.Max (value1.Bottom, value2.Bottom) - result.Y;
-		}
-				
-        #endregion Public Methods
+        }
+
+        #endregion
     }
 }

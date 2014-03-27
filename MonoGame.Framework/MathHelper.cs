@@ -32,9 +32,11 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -43,7 +45,9 @@ namespace Microsoft.Xna.Framework
     /// </summary>
     public static class MathHelper
     {
-    	/// <summary>
+        #region Public Constants
+
+        /// <summary>
         /// Represents the mathematical constant e(2.71828175).
         /// </summary>
         public const float E = (float)Math.E;
@@ -77,7 +81,11 @@ namespace Microsoft.Xna.Framework
         /// Represents the value of pi times two(6.28318548).
         /// </summary>
         public const float TwoPi = (float)(Math.PI * 2.0);
-        
+
+        #endregion
+
+        #region Public Static Methods
+
         /// <summary>
         /// Returns the Cartesian coordinate for one axis of a point that is defined by a given triangle and two normalized barycentric (areal) coordinates.
         /// </summary>
@@ -303,6 +311,8 @@ namespace Microsoft.Xna.Framework
 	public static bool IsPowerOfTwo(int value)
 	{
 	     return (value > 0) && ((value & (value - 1)) == 0);
-	}
+    }
+
+        #endregion
     }
 }

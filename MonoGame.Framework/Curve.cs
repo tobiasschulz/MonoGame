@@ -32,9 +32,11 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -42,15 +44,6 @@ namespace Microsoft.Xna.Framework
     [DataContract]
     public class Curve
     {
-        #region Private Fields
-
-        private CurveKeyCollection keys;
-        private CurveLoopType postLoop;
-        private CurveLoopType preLoop;
-
-        #endregion Private Fields
-
-
         #region Public Properties
 
         [DataMember]
@@ -79,8 +72,15 @@ namespace Microsoft.Xna.Framework
             set { this.preLoop = value; }
         }
 
-        #endregion Public Properties
+        #endregion
 
+        #region Private Fields
+
+        private CurveKeyCollection keys;
+        private CurveLoopType postLoop;
+        private CurveLoopType preLoop;
+
+        #endregion
 
         #region Public Constructors
 
@@ -89,8 +89,7 @@ namespace Microsoft.Xna.Framework
             this.keys = new CurveKeyCollection();
         }
 
-        #endregion Public Constructors
-
+        #endregion
 
         #region Public Methods
 
@@ -262,8 +261,7 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-	    #endregion Public Methods
-
+	    #endregion
 
         #region Private Methods
 
