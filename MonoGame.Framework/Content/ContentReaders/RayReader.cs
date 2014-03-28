@@ -7,16 +7,24 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class RayReader : ContentTypeReader<Ray>
 	{
+		#region Internal Constructor
+
 		internal RayReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Ray Read(
 			ContentReader input,
@@ -26,5 +34,7 @@ namespace Microsoft.Xna.Framework.Content
 			Vector3 direction = input.ReadVector3();
 			return new Ray(position, direction);
 		}
+
+		#endregion
 	}
 }

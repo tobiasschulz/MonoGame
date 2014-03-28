@@ -7,21 +7,33 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.IO;
 
 using Microsoft.Xna.Framework.Media;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class SongReader : ContentTypeReader<Song>
 	{
+		#region Private Supported File Extensions Variable
+
 		static string[] supportedExtensions = new string[] { ".flac", ".ogg" };
+
+		#endregion
+
+		#region Internal Filename Normalizer Method
 
 		internal static string Normalize(string fileName)
 		{
 			return Normalize(fileName, supportedExtensions);
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Song Read(ContentReader input, Song existingInstance)
 		{
@@ -53,5 +65,7 @@ namespace Microsoft.Xna.Framework.Content
 			int durationMs = input.ReadObject<int>();
 			return new Song(path, durationMs);
 		}
+
+		#endregion
 	}
 }

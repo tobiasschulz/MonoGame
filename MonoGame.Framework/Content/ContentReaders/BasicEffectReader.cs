@@ -7,12 +7,16 @@
  */
 #endregion
 
+#region Using Statements
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class BasicEffectReader : ContentTypeReader<BasicEffect>
 	{
+		#region Protected Read Method
+
 		protected internal override BasicEffect Read(
 			ContentReader input,
 			BasicEffect existingInstance
@@ -32,5 +36,7 @@ namespace Microsoft.Xna.Framework.Content
 			effect.VertexColorEnabled = input.ReadBoolean();
 			return effect;
 		}
+
+		#endregion
 	}
 }

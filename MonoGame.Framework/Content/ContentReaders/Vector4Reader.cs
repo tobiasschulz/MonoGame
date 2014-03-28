@@ -32,15 +32,23 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Vector4Reader : ContentTypeReader<Vector4>
 	{
+		#region Internal Constructor
+
 		internal Vector4Reader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Vector4 Read(
 			ContentReader input,
@@ -48,5 +56,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadVector4();
 		}
+
+		#endregion
 	}
 }

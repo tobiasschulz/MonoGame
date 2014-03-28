@@ -7,27 +7,45 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 using System.Linq;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class EffectReader : ContentTypeReader<Effect>
 	{
+		#region Private Supported File Extensions Variable
+
+		static string[] supportedExtensions = new string[] {".fxg"};
+
+		#endregion
+
+		#region Public Constructor
+
 		public EffectReader()
 		{
 		}
 
-		static string[] supportedExtensions = new string[] {".fxg"};
+		#endregion
+
+		// FIXME: Shouldn't this be internal?
+		#region Public Filename Normalizer Method
 
 		public static string Normalize(string FileName)
 		{
 			return ContentTypeReader.Normalize(FileName, supportedExtensions);
 		}
+
+		#endregion
+
+		// FIXME: Are these ever even used?
+		#region Private Static Methods
 
 		private static string TryFindAnyCased(
 			string search,
@@ -46,6 +64,10 @@ namespace Microsoft.Xna.Framework.Content
 			return arr.Any(s => s == search);
 		}
 
+		#endregion
+
+		#region Protected Read Method
+
 		protected internal override Effect Read(
 			ContentReader input,
 			Effect existingInstance
@@ -55,5 +77,7 @@ namespace Microsoft.Xna.Framework.Content
 			effect.Name = input.AssetName;
 			return effect;
 		}
+
+		#endregion
 	}
 }

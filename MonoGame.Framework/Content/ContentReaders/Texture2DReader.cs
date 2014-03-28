@@ -32,30 +32,46 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Texture2DReader : ContentTypeReader<Texture2D>
 	{
-		internal Texture2DReader()
-		{
-			// Do nothing
-		}
+		#region Private Supported File Extensions Variable
 
 		static string[] supportedExtensions = new string[] {
 			".jpg", ".bmp", ".jpeg", ".png", ".gif", ".pict", ".tga"
 		};
 
+		#endregion
+
+		#region Internal Constructor
+
+		internal Texture2DReader()
+		{
+			// Do nothing
+		}
+
+		#endregion
+
+		#region Internal Filename Normalizer Method
+
 		internal static string Normalize(string fileName)
 		{
 			return Normalize(fileName, supportedExtensions);
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Texture2D Read(
 			ContentReader reader,
@@ -311,5 +327,7 @@ namespace Microsoft.Xna.Framework.Content
 
 			return texture;
 		}
+
+		#endregion
 	}
 }

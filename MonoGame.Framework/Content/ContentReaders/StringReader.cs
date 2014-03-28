@@ -32,17 +32,25 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class StringReader : ContentTypeReader<String>
 	{
+		#region Internal Constructor
+
 		internal StringReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override string Read(
 			ContentReader input,
@@ -50,5 +58,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadString();
 		}
+
+		#endregion
 	}
 }

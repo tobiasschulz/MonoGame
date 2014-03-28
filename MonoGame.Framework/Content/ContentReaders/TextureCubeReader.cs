@@ -7,14 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class TextureCubeReader : ContentTypeReader<TextureCube>
 	{
+		#region Protected Read Method
 
 		protected internal override TextureCube Read(
 			ContentReader reader,
@@ -59,5 +62,7 @@ namespace Microsoft.Xna.Framework.Content
 
 			return textureCube;
 		}
+
+		#endregion
 	}
 }

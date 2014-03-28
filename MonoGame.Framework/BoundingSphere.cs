@@ -35,11 +35,13 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -55,10 +57,9 @@ namespace Microsoft.Xna.Framework
         [DataMember]
         public float Radius;
 
-        #endregion Public Fields
+        #endregion
 
-
-        #region Constructors
+        #region Public Constructors
 
         public BoundingSphere(Vector3 center, float radius)
         {
@@ -66,8 +67,7 @@ namespace Microsoft.Xna.Framework
             this.Radius = radius;
         }
 
-        #endregion Constructors
-
+        #endregion
 
         #region Public Methods
 
@@ -200,6 +200,15 @@ namespace Microsoft.Xna.Framework
             result = Contains(point);
         }
 
+        public bool Equals(BoundingSphere other)
+        {
+            return this.Center == other.Center && this.Radius == other.Radius;
+        }
+        
+        #endregion
+
+        #region Public Static Methods
+
         public static BoundingSphere CreateFromBoundingBox(BoundingBox box)
         {
             // Find the center of the box.
@@ -281,24 +290,6 @@ namespace Microsoft.Xna.Framework
             result = BoundingSphere.CreateMerged(original, additional);
         }
 
-        public bool Equals(BoundingSphere other)
-        {
-            return this.Center == other.Center && this.Radius == other.Radius;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is BoundingSphere)
-                return this.Equals((BoundingSphere)obj);
-
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Center.GetHashCode() + this.Radius.GetHashCode();
-        }
-
         public bool Intersects(BoundingBox box)
         {
 			return box.Intersects(this);
@@ -364,12 +355,29 @@ namespace Microsoft.Xna.Framework
 			result = Intersects(ray);
         }
 
-        public static bool operator == (BoundingSphere a, BoundingSphere b)
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
+        public override bool Equals(object obj)
+        {
+            if (obj is BoundingSphere)
+                return this.Equals((BoundingSphere)obj);
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Center.GetHashCode() + this.Radius.GetHashCode();
+        }
+
+        public static bool operator ==(BoundingSphere a, BoundingSphere b)
         {
             return a.Equals(b);
         }
 
-        public static bool operator != (BoundingSphere a, BoundingSphere b)
+        public static bool operator !=(BoundingSphere a, BoundingSphere b)
         {
             return !a.Equals(b);
         }
@@ -379,6 +387,6 @@ namespace Microsoft.Xna.Framework
             return string.Format(CultureInfo.CurrentCulture, "{{Center:{0} Radius:{1}}}", this.Center.ToString(), this.Radius.ToString());
         }
 
-        #endregion Public Methods
+        #endregion
     }
 }

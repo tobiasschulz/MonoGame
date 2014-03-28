@@ -7,17 +7,25 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using Microsoft.Xna.Framework.Content;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Vector2Reader : ContentTypeReader<Vector2>
 	{
+		#region Internal Constructor
+
 		internal Vector2Reader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override Vector2 Read(
 			ContentReader input,
@@ -25,5 +33,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadVector2();
 		}
+
+		#endregion
 	}
 }

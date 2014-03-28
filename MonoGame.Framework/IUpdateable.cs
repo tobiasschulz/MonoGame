@@ -7,7 +7,7 @@
  */
 #endregion
 
-#region Statemenents
+#region Using Statemenents
 using System;
 #endregion
 
@@ -15,20 +15,20 @@ namespace Microsoft.Xna.Framework
 {
 	public interface IUpdateable
 	{
-		#region Methods
+        #region Properties
+        bool Enabled { get; }
+
+        int UpdateOrder { get; }
+        #endregion
+
+        #region Events
+        event EventHandler<EventArgs> EnabledChanged;
+
+        event EventHandler<EventArgs> UpdateOrderChanged;
+        #endregion
+        
+        #region Methods
 		void Update(GameTime gameTime);
-		#endregion
-		
-		#region Events
-		event EventHandler<EventArgs> EnabledChanged;
-		
-		event EventHandler<EventArgs> UpdateOrderChanged;
-		#endregion
-	
-		#region Properties
-		bool Enabled { get; }
-		
-		int UpdateOrder { get; }
 		#endregion
 	}
 }

@@ -7,12 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
+
 namespace Microsoft.Xna.Framework.Content
 {
 	public class VertexDeclarationReader : ContentTypeReader<VertexDeclaration>
 	{
+		#region Protected Read Method
+
 		protected internal override VertexDeclaration Read(
 			ContentReader reader,
 			VertexDeclaration existingInstance
@@ -43,6 +48,8 @@ namespace Microsoft.Xna.Framework.Content
 			 */
 			return new VertexDeclaration(vertexStride, elements);
 		}
+
+		#endregion
 	}
 }
 

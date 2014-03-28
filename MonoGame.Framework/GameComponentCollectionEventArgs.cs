@@ -7,18 +7,15 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class GameComponentCollectionEventArgs : EventArgs
     {
-        private IGameComponent _gameComponent;
-
-        public GameComponentCollectionEventArgs(IGameComponent gameComponent)
-        {
-            _gameComponent = gameComponent;
-        }
+        #region Public Properties
 
         public IGameComponent GameComponent
         {
@@ -27,6 +24,23 @@ namespace Microsoft.Xna.Framework
                 return _gameComponent;
             }
         }
+
+        #endregion
+
+        #region Private Variables
+
+        private IGameComponent _gameComponent;
+
+        #endregion
+
+        #region Public Constructors
+
+        public GameComponentCollectionEventArgs(IGameComponent gameComponent)
+        {
+            _gameComponent = gameComponent;
+        }
+
+        #endregion
     }
 }
 

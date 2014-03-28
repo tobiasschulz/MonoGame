@@ -7,15 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class ByteReader : ContentTypeReader<byte>
 	{
+		#region Internal Constructor
+
 		internal ByteReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override byte Read(
 			ContentReader input,
@@ -23,5 +31,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadByte();
 		}
+
+		#endregion
 	}
 }

@@ -32,21 +32,28 @@ SOFTWARE.
 */
 #endregion License
 
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class CharReader : ContentTypeReader<char>
 	{
+		#region Internal Constructor
+
 		internal CharReader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override char Read(
 			ContentReader input,
@@ -54,5 +61,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadChar();
 		}
+
+		#endregion
 	}
 }

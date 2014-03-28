@@ -7,13 +7,17 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using Microsoft.Xna.Framework.Graphics;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
 	class EnvironmentMapEffectReader : ContentTypeReader<EnvironmentMapEffect>
 	{
+		#region Protected Read Method
+
 		protected internal override EnvironmentMapEffect Read(
 			ContentReader input,
 			EnvironmentMapEffect existingInstance
@@ -29,5 +33,7 @@ namespace Microsoft.Xna.Framework.Content
 			effect.Alpha = input.ReadSingle();
 			return effect;
 		}
+
+		#endregion
 	}
 }

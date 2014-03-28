@@ -7,10 +7,12 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+#endregion
 
 namespace Microsoft.Xna.Framework.Content
 {
@@ -19,10 +21,15 @@ namespace Microsoft.Xna.Framework.Content
 	/// </summary>
 	internal class ExternalReferenceReader : ContentTypeReader
 	{
+		#region Public Constructor
+
 		public ExternalReferenceReader() : base(null)
 		{
-
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override object Read(
 			ContentReader input,
@@ -30,5 +37,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadExternalReference<object>();
 		}
+
+		#endregion
 	}
 }

@@ -32,18 +32,84 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     internal class ReusableItemList<T> : ICollection<T>, IEnumerator<T>
     {
+        #region Public ICollection<T> Properties
+
+        public T this[int index]
+        {
+            get
+            {
+                if (index >= _listTop)
+                    throw new IndexOutOfRangeException();
+                return _list[index];
+            }
+            set
+            {
+                if (index >= _listTop)
+                    throw new IndexOutOfRangeException();
+                _list[index] = value;
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                return _listTop;
+            }
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Public IEnumerator<T> Properties
+
+        public T Current
+        {
+            get
+            {
+                return _list[_iteratorIndex];
+            }
+        }
+
+        #endregion
+
+        #region Private IEnumerator Properties
+
+        object System.Collections.IEnumerator.Current
+        {
+            get
+            {
+                return _list[_iteratorIndex];
+            }
+        }
+
+        #endregion
+
+        #region Private Variables
+
         private readonly List<T> _list = new List<T>();
         private int _listTop = 0;
         private int _iteratorIndex;
 
-        #region ICollection<T> Members
+        #endregion
+
+        #region Public ICollection<T> Methods
 
         public void Add(T item)
         {
@@ -78,22 +144,6 @@ namespace Microsoft.Xna.Framework
 				return default(T);
 			}
 		}
-
-		public T this[int index]
-		{
-			get
-			{
-				if (index >= _listTop) 
-					throw new IndexOutOfRangeException();
-				return _list[index];
-			}
-			set
-			{
-				if (index >= _listTop) 
-					throw new IndexOutOfRangeException();
-				_list[index] = value;
-			}
-		}
 		
         public void Clear()
         {
@@ -116,22 +166,6 @@ namespace Microsoft.Xna.Framework
             _list.CopyTo(array,arrayIndex);
         }
 
-        public int Count
-        {
-            get 
-            {
-                return _listTop;
-            }
-        }
-
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public bool Remove(T item)
         {
             throw new NotSupportedException();
@@ -139,7 +173,7 @@ namespace Microsoft.Xna.Framework
 
         #endregion
 
-        #region IEnumerable<T> Members
+        #region Public IEnumerable<T> Methods
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -149,29 +183,17 @@ namespace Microsoft.Xna.Framework
 
         #endregion
 
-        #region IEnumerable Members
+        #region Public IEnumerator Methods
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        public bool MoveNext()
         {
-            _iteratorIndex = -1;
-            return this;
+            _iteratorIndex++;
+            return (_iteratorIndex < _listTop);
         }
 
         #endregion
 
-        #region IEnumerator<T> Members
-
-        public T Current
-        {
-            get
-            {
-                return _list[_iteratorIndex];
-            }
-        }
-
-        #endregion
-
-        #region IDisposable Members
+        #region Public IDisposable Methods
 
         public void Dispose()
         {
@@ -179,20 +201,12 @@ namespace Microsoft.Xna.Framework
 
         #endregion
 
-        #region IEnumerator Members
+        #region Private IEnumerable Methods
 
-        object System.Collections.IEnumerator.Current
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            get
-            {
-                return _list[_iteratorIndex];
-            }
-        }
-
-        public bool MoveNext()
-        {
-            _iteratorIndex++;
-            return (_iteratorIndex < _listTop);
+            _iteratorIndex = -1;
+            return this;
         }
 
         #endregion

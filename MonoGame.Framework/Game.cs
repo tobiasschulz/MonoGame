@@ -7,6 +7,7 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,24 +20,156 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
-
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
     public class Game : IDisposable
     {
+        #region Public Properties
+
+        public LaunchParameters LaunchParameters { get; private set; }
+
+        public GameComponentCollection Components
+        {
+            get { return _components; }
+        }
+
+        public TimeSpan InactiveSleepTime
+        {
+            get { return _inactiveSleepTime; }
+            set
+            {
+                if (_inactiveSleepTime != value)
+                {
+                    _inactiveSleepTime = value;
+                }
+            }
+        }
+
+        public bool IsActive
+        {
+            get { return Platform.IsActive; }
+        }
+
+        public bool IsMouseVisible
+        {
+            get { return Platform.IsMouseVisible; }
+            set { Platform.IsMouseVisible = value; }
+        }
+
+        public TimeSpan TargetElapsedTime
+        {
+            get { return _targetElapsedTime; }
+            set
+            {
+                // Give GamePlatform implementations an opportunity to override
+                // the new value.
+                value = Platform.TargetElapsedTimeChanging(value);
+
+                if (value <= TimeSpan.Zero)
+                    throw new ArgumentOutOfRangeException(
+                        "value must be positive and non-zero.");
+
+                if (value != _targetElapsedTime)
+                {
+                    _targetElapsedTime = value;
+                    Platform.TargetElapsedTimeChanged();
+                }
+            }
+        }
+
+        public bool IsFixedTimeStep
+        {
+            get { return _isFixedTimeStep; }
+            set { _isFixedTimeStep = value; }
+        }
+
+        public GameServiceContainer Services
+        {
+            get { return _services; }
+        }
+
+        public ContentManager Content { get; set; }
+
+        public GraphicsDevice GraphicsDevice
+        {
+            get
+            {
+                if (_graphicsDeviceService == null)
+                {
+                    _graphicsDeviceService = (IGraphicsDeviceService)
+                        Services.GetService(typeof(IGraphicsDeviceService));
+
+                    if (_graphicsDeviceService == null)
+                        throw new InvalidOperationException("No Graphics Device Service");
+                }
+                return _graphicsDeviceService.GraphicsDevice;
+            }
+        }
+
+        [CLSCompliant(false)]
+        public GameWindow Window
+        {
+            get { return Platform.Window; }
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        // FIXME: Internal members should be eliminated.
+        // Currently Game.Initialized is used by the Mac game window class to
+        // determine whether to raise DeviceResetting and DeviceReset on
+        // GraphicsDeviceManager.
+        internal bool Initialized
+        {
+            get { return _initialized; }
+        }
+
+        internal GraphicsDeviceManager graphicsDeviceManager
+        {
+            get
+            {
+                if (_graphicsDeviceManager == null)
+                {
+                    _graphicsDeviceManager = (IGraphicsDeviceManager)
+                        Services.GetService(typeof(IGraphicsDeviceManager));
+
+                    if (_graphicsDeviceManager == null)
+                        throw new InvalidOperationException("No Graphics Device Manager");
+                }
+                return (GraphicsDeviceManager)_graphicsDeviceManager;
+            }
+        }
+
+        #endregion
+
+        #region Internal Static Properties
+
+        internal static Game Instance { get { return Game._instance; } }
+
+        #endregion
+
+        #region Internal Fields
+
+        internal GamePlatform Platform;
+
+        #endregion
+
+        #region Private Fields
+
         private const float DefaultTargetFramesPerSecond = 60.0f;
 
         private GameComponentCollection _components;
         private GameServiceContainer _services;
-        internal GamePlatform Platform;
 
         private SortingFilteringCollection<IDrawable> _drawables =
             new SortingFilteringCollection<IDrawable>(
                 d => d.Visible,
                 (d, handler) => d.VisibleChanged += handler,
                 (d, handler) => d.VisibleChanged -= handler,
-                (d1 ,d2) => Comparer<int>.Default.Compare(d1.DrawOrder, d2.DrawOrder),
+                (d1, d2) => Comparer<int>.Default.Compare(d1.DrawOrder, d2.DrawOrder),
                 (d, handler) => d.DrawOrderChanged += handler,
                 (d, handler) => d.DrawOrderChanged -= handler);
 
@@ -60,9 +193,14 @@ namespace Microsoft.Xna.Framework
 
         private readonly TimeSpan _maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
-
         private bool _suppressDraw;
-        
+
+        private static Game _instance = null;
+
+        #endregion
+
+        #region Public Constructors
+
         public Game()
         {
             _instance = this;
@@ -97,16 +235,16 @@ namespace Microsoft.Xna.Framework
             Window.Title = windowTitle;
         }
 
+        #endregion
+
+        #region Deconstructor
+
         ~Game()
         {
             Dispose(false);
         }
 
-		[System.Diagnostics.Conditional("DEBUG")]
-		internal void Log(string Message)
-		{
-			if (Platform != null) Platform.Log(Message);
-		}
+        #endregion
 
         #region IDisposable Implementation
 
@@ -174,112 +312,7 @@ namespace Microsoft.Xna.Framework
             }
         }
 
-        #endregion IDisposable Implementation
-
-        #region Properties
-
-        private static Game _instance = null;
-        internal static Game Instance { get { return Game._instance; } }
-
-        public LaunchParameters LaunchParameters { get; private set; }
-
-        public GameComponentCollection Components
-        {
-            get { return _components; }
-        }
-
-        public TimeSpan InactiveSleepTime
-        {
-            get { return _inactiveSleepTime; }
-            set 
-            {
-                if (_inactiveSleepTime != value)
-                {
-                    _inactiveSleepTime = value;
-                }
-            }
-        }
-
-        public bool IsActive
-        {
-            get { return Platform.IsActive; }
-        }
-
-        public bool IsMouseVisible
-        {
-            get { return Platform.IsMouseVisible; }
-            set { Platform.IsMouseVisible = value; }
-        }
-
-        public TimeSpan TargetElapsedTime
-        {
-            get { return _targetElapsedTime; }
-            set
-            {
-                // Give GamePlatform implementations an opportunity to override
-                // the new value.
-                value = Platform.TargetElapsedTimeChanging(value);
-
-                if (value <= TimeSpan.Zero)
-                    throw new ArgumentOutOfRangeException(
-                        "value must be positive and non-zero.");
-
-                if (value != _targetElapsedTime)
-                {
-                    _targetElapsedTime = value;
-                    Platform.TargetElapsedTimeChanged();
-                }
-            }
-        }
-
-        public bool IsFixedTimeStep
-        {
-            get { return _isFixedTimeStep; }
-            set { _isFixedTimeStep = value; }
-        }
-
-        public GameServiceContainer Services {
-            get { return _services; }
-        }
-
-        public ContentManager Content { get; set; }
-
-        public GraphicsDevice GraphicsDevice
-        {
-            get
-            {
-                if (_graphicsDeviceService == null)
-                {
-                    _graphicsDeviceService = (IGraphicsDeviceService)
-                        Services.GetService(typeof(IGraphicsDeviceService));
-
-                    if (_graphicsDeviceService == null)
-                        throw new InvalidOperationException("No Graphics Device Service");
-                }
-                return _graphicsDeviceService.GraphicsDevice;
-            }
-        }
-
-		[CLSCompliant(false)]
-        public GameWindow Window
-        {
-            get { return Platform.Window; }
-        }
-
-        #endregion Properties
-
-        #region Internal Properties
-
-        // FIXME: Internal members should be eliminated.
-        // Currently Game.Initialized is used by the Mac game window class to
-        // determine whether to raise DeviceResetting and DeviceReset on
-        // GraphicsDeviceManager.
-        internal bool Initialized
-        {
-            get { return _initialized; }
-        }
-
-        #endregion Internal Properties
+        #endregion
 
         #region Events
 
@@ -531,7 +564,7 @@ namespace Microsoft.Xna.Framework
 			Raise(Deactivated, args);
 		}
 
-        #endregion Protected Methods
+        #endregion
 
         #region Event Handlers
 
@@ -560,9 +593,15 @@ namespace Microsoft.Xna.Framework
 			DoExiting();
         }
 
-        #endregion Event Handlers
+        #endregion
 
         #region Internal Methods
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        internal void Log(string Message)
+        {
+            if (Platform != null) Platform.Log(Message);
+        }
 
         // FIXME: We should work toward eliminating internal methods.  They
         //        break entirely the possibility that additional platforms could
@@ -651,23 +690,9 @@ namespace Microsoft.Xna.Framework
 			UnloadContent();
 		}
 
-        #endregion Internal Methods
+        #endregion
 
-        internal GraphicsDeviceManager graphicsDeviceManager
-        {
-            get
-            {
-                if (_graphicsDeviceManager == null)
-                {
-                    _graphicsDeviceManager = (IGraphicsDeviceManager)
-                        Services.GetService(typeof(IGraphicsDeviceManager));
-
-                    if (_graphicsDeviceManager == null)
-                        throw new InvalidOperationException ("No Graphics Device Manager");
-                }
-                return (GraphicsDeviceManager)_graphicsDeviceManager;
-            }
-        }
+        #region Private Methods
 
         // NOTE: InitializeExistingComponents really should only be called once.
         //       Game.Initialize is the only method in a position to guarantee
@@ -723,6 +748,10 @@ namespace Microsoft.Xna.Framework
             if (handler != null)
                 handler(this, e);
         }
+
+        #endregion
+
+        #region SortingFilteringCollection class
 
         /// <summary>
         /// The SortingFilteringCollection class provides efficient, reusable
@@ -965,6 +994,10 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+        #endregion
+
+        #region AddJournalEntry struct
+
         // For iOS, the AOT compiler can't seem to handle a
         // List<AddJournalEntry<T>>, so unfortunately we'll use object
         // for storage.
@@ -997,11 +1030,17 @@ namespace Microsoft.Xna.Framework
                 return object.Equals(Item, ((AddJournalEntry)obj).Item);
             }
         }
+
+        #endregion
     }
+
+    #region GameRunBehavior enum
 
     public enum GameRunBehavior
     {
         Asynchronous,
         Synchronous
     }
+    
+    #endregion
 }

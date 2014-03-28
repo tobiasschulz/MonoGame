@@ -7,14 +7,23 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
+
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Int32Reader : ContentTypeReader<int>
 	{
+		#region Internal Constructor
+
 		internal Int32Reader()
 		{
 		}
+
+		#endregion
+
+		#region Protected Read Method
 
 		protected internal override int Read(
 			ContentReader input,
@@ -22,5 +31,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			return input.ReadInt32();
 		}
+
+		#endregion
 	}
 }

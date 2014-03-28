@@ -32,14 +32,18 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
 	internal class PlaneHelper
     {
+        #region Public Static Methods
+
         /// <summary>
         /// Returns a value indicating what side (positive/negative) of a plane a point is
         /// </summary>
@@ -63,6 +67,8 @@ namespace Microsoft.Xna.Framework
             return (float)Math.Abs((plane.Normal.X * point.X + plane.Normal.Y * point.Y + plane.Normal.Z * point.Z)
                                     / Math.Sqrt(plane.Normal.X * plane.Normal.X + plane.Normal.Y * plane.Normal.Y + plane.Normal.Z * plane.Normal.Z));
         }
+
+        #endregion
     }
 	
     [DataContract]
@@ -76,10 +82,9 @@ namespace Microsoft.Xna.Framework
         [DataMember]
         public Vector3 Normal;
 
-        #endregion Public Fields
+        #endregion
 
-
-        #region Constructors
+        #region Public Constructors
 
         public Plane(Vector4 value)
             : this(new Vector3(value.X, value.Y, value.Z), value.W)
@@ -109,8 +114,7 @@ namespace Microsoft.Xna.Framework
 
         }
 
-        #endregion Constructors
-
+        #endregion
 
         #region Public Methods
 
@@ -176,47 +180,6 @@ namespace Microsoft.Xna.Framework
 			D = D * factor;
         }
 
-        public static Plane Normalize(Plane value)
-        {
-			Plane ret;
-			Normalize(ref value, out ret);
-			return ret;
-        }
-
-        public static void Normalize(ref Plane value, out Plane result)
-        {
-			float factor;
-			result.Normal = Vector3.Normalize(value.Normal);
-			factor = (float)Math.Sqrt(result.Normal.X * result.Normal.X + result.Normal.Y * result.Normal.Y + result.Normal.Z * result.Normal.Z) / 
-					(float)Math.Sqrt(value.Normal.X * value.Normal.X + value.Normal.Y * value.Normal.Y + value.Normal.Z * value.Normal.Z);
-			result.D = value.D * factor;
-        }
-
-        public static bool operator !=(Plane plane1, Plane plane2)
-        {
-            return !plane1.Equals(plane2);
-        }
-
-        public static bool operator ==(Plane plane1, Plane plane2)
-        {
-            return plane1.Equals(plane2);
-        }
-
-        public override bool Equals(object other)
-        {
-            return (other is Plane) ? this.Equals((Plane)other) : false;
-        }
-
-        public bool Equals(Plane other)
-        {
-            return ((Normal == other.Normal) && (D == other.D));
-        }
-
-        public override int GetHashCode()
-        {
-            return Normal.GetHashCode() ^ D.GetHashCode();
-        }
-
         public PlaneIntersectionType Intersects(BoundingBox box)
         {
             return box.Intersects(this);
@@ -242,6 +205,55 @@ namespace Microsoft.Xna.Framework
         public void Intersects(ref BoundingSphere sphere, out PlaneIntersectionType result)
         {
             sphere.Intersects(ref this, out result);
+        }
+
+        #endregion
+
+        #region Public Static Methods
+
+        public static Plane Normalize(Plane value)
+        {
+			Plane ret;
+			Normalize(ref value, out ret);
+			return ret;
+        }
+
+        public static void Normalize(ref Plane value, out Plane result)
+        {
+			float factor;
+			result.Normal = Vector3.Normalize(value.Normal);
+			factor = (float)Math.Sqrt(result.Normal.X * result.Normal.X + result.Normal.Y * result.Normal.Y + result.Normal.Z * result.Normal.Z) / 
+					(float)Math.Sqrt(value.Normal.X * value.Normal.X + value.Normal.Y * value.Normal.Y + value.Normal.Z * value.Normal.Z);
+			result.D = value.D * factor;
+        }
+
+        #endregion
+
+        #region Public Static Operators and Override Methods
+
+        public static bool operator !=(Plane plane1, Plane plane2)
+        {
+            return !plane1.Equals(plane2);
+        }
+
+        public static bool operator ==(Plane plane1, Plane plane2)
+        {
+            return plane1.Equals(plane2);
+        }
+
+        public override bool Equals(object other)
+        {
+            return (other is Plane) ? this.Equals((Plane)other) : false;
+        }
+
+        public bool Equals(Plane other)
+        {
+            return ((Normal == other.Normal) && (D == other.D));
+        }
+
+        public override int GetHashCode()
+        {
+            return Normal.GetHashCode() ^ D.GetHashCode();
         }
 
         public override string ToString()

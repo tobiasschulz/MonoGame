@@ -7,7 +7,9 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -16,11 +18,8 @@ namespace Microsoft.Xna.Framework
     /// </summary>
     public class TextInputEventArgs : EventArgs
     {
-        char character;
-        public TextInputEventArgs(char character)
-        {
-            this.character = character;
-        }
+        #region Public Properties
+
         public char Character
         {
             get
@@ -28,5 +27,22 @@ namespace Microsoft.Xna.Framework
                 return character;
             }
         }
+
+        #endregion
+
+        #region Private Variables
+
+        char character;
+
+        #endregion
+
+        #region Public Constructors
+
+        public TextInputEventArgs(char character)
+        {
+            this.character = character;
+        }
+
+        #endregion
     }
 }

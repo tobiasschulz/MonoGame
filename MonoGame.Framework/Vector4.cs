@@ -32,10 +32,12 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Text;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -43,36 +45,7 @@ namespace Microsoft.Xna.Framework
     [TypeConverter(typeof(XNAVector4Converter))]
     public struct Vector4 : IEquatable<Vector4>
     {
-        #region Private Fields
-
-        private static Vector4 zeroVector = new Vector4();
-        private static Vector4 unitVector = new Vector4(1f, 1f, 1f, 1f);
-        private static Vector4 unitXVector = new Vector4(1f, 0f, 0f, 0f);
-        private static Vector4 unitYVector = new Vector4(0f, 1f, 0f, 0f);
-        private static Vector4 unitZVector = new Vector4(0f, 0f, 1f, 0f);
-        private static Vector4 unitWVector = new Vector4(0f, 0f, 0f, 1f);
-
-        #endregion Private Fields
-
-
-        #region Public Fields
-        
-        [DataMember]
-        public float X;
-
-        [DataMember]
-        public float Y;
-      
-        [DataMember]
-        public float Z;
-      
-        [DataMember]
-        public float W;
-
-        #endregion Public Fields
-
-
-        #region Properties
+        #region Public Static Properties
 
         public static Vector4 Zero
         {
@@ -104,10 +77,36 @@ namespace Microsoft.Xna.Framework
             get { return unitWVector; }
         }
 
-        #endregion Properties
+        #endregion
 
+        #region Public Fields
 
-        #region Constructors
+        [DataMember]
+        public float X;
+
+        [DataMember]
+        public float Y;
+
+        [DataMember]
+        public float Z;
+
+        [DataMember]
+        public float W;
+
+        #endregion
+
+        #region Private Static Fields
+
+        private static Vector4 zeroVector = new Vector4();
+        private static Vector4 unitVector = new Vector4(1f, 1f, 1f, 1f);
+        private static Vector4 unitXVector = new Vector4(1f, 0f, 0f, 0f);
+        private static Vector4 unitYVector = new Vector4(0f, 1f, 0f, 0f);
+        private static Vector4 unitZVector = new Vector4(0f, 0f, 1f, 0f);
+        private static Vector4 unitWVector = new Vector4(0f, 0f, 0f, 1f);
+
+        #endregion
+
+        #region Public Constructors
 
         public Vector4(float x, float y, float z, float w)
         {
@@ -143,8 +142,63 @@ namespace Microsoft.Xna.Framework
 
         #endregion
 
-
         #region Public Methods
+
+        public override bool Equals(object obj)
+        {
+            return (obj is Vector4) ? this == (Vector4)obj : false;
+        }
+
+        public bool Equals(Vector4 other)
+        {
+            return this.W == other.W
+                && this.X == other.X
+                && this.Y == other.Y
+                && this.Z == other.Z;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)(this.W + this.X + this.Y + this.Y);
+        }
+
+        public float Length()
+        {
+            float result;
+            DistanceSquared(ref this, ref zeroVector, out result);
+            return (float)Math.Sqrt(result);
+        }
+
+        public float LengthSquared()
+        {
+            float result;
+            DistanceSquared(ref this, ref zeroVector, out result);
+            return result;
+        }
+
+        public void Normalize()
+        {
+            Normalize(ref this, out this);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder(32);
+            sb.Append("{X:");
+            sb.Append(this.X);
+            sb.Append(" Y:");
+            sb.Append(this.Y);
+            sb.Append(" Z:");
+            sb.Append(this.Z);
+            sb.Append(" W:");
+            sb.Append(this.W);
+            sb.Append("}");
+            return sb.ToString();
+        }
+
+        #endregion
+
+        #region Public Static Methods
 
         public static Vector4 Add(Vector4 value1, Vector4 value2)
         {
@@ -288,24 +342,6 @@ namespace Microsoft.Xna.Framework
             result = vector1.X * vector2.X + vector1.Y * vector2.Y + vector1.Z * vector2.Z + vector1.W * vector2.W;
         }
 
-        public override bool Equals(object obj)
-        {
-            return (obj is Vector4) ? this == (Vector4)obj : false;
-        }
-
-        public bool Equals(Vector4 other)
-        {
-            return this.W == other.W
-                && this.X == other.X
-                && this.Y == other.Y
-                && this.Z == other.Z;
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)(this.W + this.X + this.Y + this.Y);
-        }
-
         public static Vector4 Hermite(Vector4 value1, Vector4 tangent1, Vector4 value2, Vector4 tangent2, float amount)
         {
             Vector4 result = new Vector4();
@@ -319,20 +355,6 @@ namespace Microsoft.Xna.Framework
             result.X = MathHelper.Hermite(value1.X, tangent1.X, value2.X, tangent2.X, amount);
             result.Y = MathHelper.Hermite(value1.Y, tangent1.Y, value2.Y, tangent2.Y, amount);
             result.Z = MathHelper.Hermite(value1.Z, tangent1.Z, value2.Z, tangent2.Z, amount);
-        }
-
-        public float Length()
-        {
-            float result;
-            DistanceSquared(ref this, ref zeroVector, out result);
-            return (float)Math.Sqrt(result);
-        }
-
-        public float LengthSquared()
-        {
-            float result;
-            DistanceSquared(ref this, ref zeroVector, out result);
-            return result;
         }
 
         public static Vector4 Lerp(Vector4 value1, Vector4 value2, float amount)
@@ -431,12 +453,7 @@ namespace Microsoft.Xna.Framework
 
         public static void Negate(ref Vector4 value, out Vector4 result)
         {
-            result = new Vector4(-value.X, -value.Y, -value.Z,-value.W);
-        }
-
-        public void Normalize()
-        {
-            Normalize(ref this, out this);
+            result = new Vector4(-value.X, -value.Y, -value.Z, -value.W);
         }
 
         public static Vector4 Normalize(Vector4 vector)
@@ -536,25 +553,9 @@ namespace Microsoft.Xna.Framework
                                  (vector.X * matrix.M14) + (vector.Y * matrix.M24) + (vector.Z * matrix.M34) + (vector.W * matrix.M44));
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder(32);
-            sb.Append("{X:");
-            sb.Append(this.X);
-            sb.Append(" Y:");
-            sb.Append(this.Y);
-            sb.Append(" Z:");
-            sb.Append(this.Z);
-            sb.Append(" W:");
-            sb.Append(this.W);
-            sb.Append("}");
-            return sb.ToString();
-        }
+        #endregion
 
-        #endregion Public Methods
-
-
-        #region Operators
+        #region Public Static Operators
 
         public static Vector4 operator -(Vector4 value)
         {
@@ -638,11 +639,13 @@ namespace Microsoft.Xna.Framework
             return value1;
         }
 
-        #endregion Operators
+        #endregion
     }
 
     public class XNAVector4Converter : TypeConverter
     {
+        #region Public Methods
+
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string))
@@ -677,5 +680,7 @@ namespace Microsoft.Xna.Framework
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }
+
+        #endregion
     }
 }

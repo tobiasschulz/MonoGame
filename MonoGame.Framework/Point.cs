@@ -32,9 +32,11 @@ SOFTWARE.
 */
 #endregion
 
+#region Using Statements
 using System;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+#endregion
 
 namespace Microsoft.Xna.Framework
 {
@@ -42,11 +44,14 @@ namespace Microsoft.Xna.Framework
     [TypeConverter(typeof(XNAPointConverter))]
     public struct Point : IEquatable<Point>
     {
-        #region Private Fields
+        #region Public Static Properties
 
-        private static Point zeroPoint = new Point();
+        public static Point Zero
+        {
+            get { return zeroPoint; }
+        }
 
-        #endregion Private Fields
+        #endregion
 
         #region Public Fields
 
@@ -56,18 +61,15 @@ namespace Microsoft.Xna.Framework
         [DataMember]
         public int Y;
 
-        #endregion Public Fields
+        #endregion
 
-        #region Properties
+        #region Private Static Fields
 
-        public static Point Zero
-        {
-            get { return zeroPoint; }
-        }
+        private static Point zeroPoint = new Point();
 
-        #endregion Properties
+        #endregion
 
-        #region Constructors
+        #region Public Constructors
 
         public Point(int x, int y)
         {
@@ -75,9 +77,33 @@ namespace Microsoft.Xna.Framework
             this.Y = y;
         }
 
-        #endregion Constructors
+        #endregion
 
-        #region Operators
+        #region Public methods
+
+        public bool Equals(Point other)
+        {
+            return ((X == other.X) && (Y == other.Y));
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj is Point) ? Equals((Point)obj) : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return X ^ Y;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{{X:{0} Y:{1}}}", X, Y);
+        }
+
+        #endregion
+
+        #region Public Static Operators
 
         public static Point operator +(Point a, Point b)
         {
@@ -110,34 +136,12 @@ namespace Microsoft.Xna.Framework
         }
 
         #endregion
-
-        #region Public methods
-
-        public bool Equals(Point other)
-        {
-            return ((X == other.X) && (Y == other.Y));
-        }
-        
-        public override bool Equals(object obj)
-        {
-            return (obj is Point) ? Equals((Point)obj) : false;
-        }
-
-        public override int GetHashCode()
-        {
-            return X ^ Y;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{{X:{0} Y:{1}}}", X, Y);
-        }
-
-        #endregion
     }
 
     public class XNAPointConverter : TypeConverter
     {
+        #region Public Methods
+
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string))
@@ -169,6 +173,8 @@ namespace Microsoft.Xna.Framework
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }
+
+        #endregion
     }
 }
 
