@@ -10,7 +10,7 @@
 using System;
 
 namespace Microsoft.Xna.Framework.Input
-{    
+{
     /// <summary>
     /// Represents a mouse state with cursor position and button press information.
     /// </summary>
@@ -190,7 +190,7 @@ namespace Microsoft.Xna.Framework.Input
 				   left._rightButton == right._rightButton &&
                    left._scrollWheelValue == right._scrollWheelValue;
 		}
-		
+
         /// <summary>
         /// Compares whether two MouseState instances are not equal.
         /// </summary>

@@ -42,7 +42,7 @@ namespace Microsoft.Xna.Framework.Input
             get;
             internal set;
         }
-        
+
         //
         // Summary:
         //     Returns a structure that identifies what buttons on the Xbox 360 controller
@@ -196,27 +196,27 @@ namespace Microsoft.Xna.Framework.Input
             var result = Buttons.buttons;
             var sticks = ThumbSticks;
             sticks.ApplyDeadZone(GamePadDeadZone.IndependentAxes, 7849 / 32767f);
-            
+
             if (sticks.Left.X < 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickLeft;
             else if (sticks.Left.X > 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickRight;
-            
+
             if (sticks.Left.Y < 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickDown;
             else if (sticks.Left.Y > 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.LeftThumbstickUp;
-            
+
             if (sticks.Right.X < 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightThumbstickLeft;
             else if (sticks.Right.X > 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightThumbstickRight;
-            
+
             if (sticks.Right.Y < 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightThumbstickDown;
             else if (sticks.Right.Y > 0)
                 result |= Microsoft.Xna.Framework.Input.Buttons.RightThumbstickUp;
-            
+
             return result;
         }
 

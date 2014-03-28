@@ -9,72 +9,68 @@
 
 namespace Microsoft.Xna.Framework.Input
 {
-    public struct AccelerometerCapabilities
-    {
+	public struct AccelerometerCapabilities
+	{
+		#region Public Properties
 
-        #region Public Properties
-
-        public bool IsConnected
-        {
-            get
-            {
+		public bool IsConnected
+		{
+			get
+			{
 				return true;
-            }
-        }
+			}
+		}
 
-        public bool HasXAxis
-        {
-            get
-            {
+		public bool HasXAxis
+		{
+			get
+			{
 				return true;
-            }
-        }
+			}
+		}
 
-        public bool HasYAxis
-        {
-            get
-            {
+		public bool HasYAxis
+		{
+			get
+			{
 				return true;
-            }
-        }
+			}
+		}
 
-        public bool HasZAxis
-        {
-            get
-            {
+		public bool HasZAxis
+		{
+			get
+			{
 				return true;
-            }
-        }
+			}
+		}
 
-        public float MaximumAcceleration
-        {
-            get
-            {
+		public float MaximumAcceleration
+		{
+			get
+			{
 				//TODO: What?
 				return 1.0f;
-            }
-        }
+			}
+		}
 
-        public float MinimumAcceleration
-        {
-            get
-            {
+		public float MinimumAcceleration
+		{
+			get
+			{
 				//TODO: What?
 				return 0.0f;
-            }
-        }
+			}
+		}
 
-        public float AccelerationResolution
-        {
-            get
-            {
-				//TODO: What?
+		public float AccelerationResolution
+		{
+			get
+			{
+				// TODO: What?
 				return 1.0f;
-            }
-        }
-
-        #endregion
-
-    }
+			}
+		}
+		#endregion
+	}
 }
-

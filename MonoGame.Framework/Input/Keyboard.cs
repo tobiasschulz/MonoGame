@@ -19,7 +19,7 @@ namespace Microsoft.Xna.Framework.Input
     /// </summary>
 	public static class Keyboard
     {
-        
+
         #region Private Static Variables
 
         static List<Keys> _keys;

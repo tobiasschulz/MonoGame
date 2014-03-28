@@ -12,44 +12,43 @@ using System;
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct AccelerometerState
-    {
+	{
+		#region Public Properties
 
-        #region Public Properties
+		public Vector3 Acceleration
+		{
+			get
+			{
+				return acceleration;
+			}
+			internal set
+			{
+				acceleration = value;
+			}
+		}
 
-        public Vector3 Acceleration
-        {
-            get
-            {
-                return _acceleration;
-            }
-            internal set
-            {
-                _acceleration = value;
-            }
-        }
+		/*
+		public Matrix GetRotation()
+		{
+			throw new NotImplementedException();
+		}
+		*/
 
-        /*
-        public Matrix GetRotation()
-        {
-            throw new NotImplementedException();
-        }
-        */
+		public bool IsConnected
+		{
+			get
+			{
+				return true;
+			}
+		}
 
-        public bool IsConnected
-        {
-            get
-            {
-                return true;
-            }
-        }
+		#endregion
 
-        #endregion
+		#region Private Variables
 
-        #region Private Variables
+		private Vector3 acceleration;
 
-        private Vector3 _acceleration;
+		#endregion
 
-        #endregion
-
-    }
+	}
 }
