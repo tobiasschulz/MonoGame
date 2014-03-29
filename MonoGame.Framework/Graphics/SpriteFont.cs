@@ -17,7 +17,6 @@ using System.Text;
 
 namespace Microsoft.Xna.Framework.Graphics 
 {
-
 	public sealed class SpriteFont
     {
         #region Public Properties
@@ -25,25 +24,43 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <summary>
         /// Gets a collection of the characters in the font.
         /// </summary>
-        public ReadOnlyCollection<char> Characters { get { return _characters; } }
+        public ReadOnlyCollection<char> Characters
+        {
+            get
+            {
+                return _characters;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the character that will be substituted when a
         /// given character is not included in the font.
         /// </summary>
-        public char? DefaultCharacter { get; set; }
+        public char? DefaultCharacter
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the line spacing (the distance from baseline
         /// to baseline) of the font.
         /// </summary>
-        public int LineSpacing { get; set; }
+        public int LineSpacing
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the spacing (tracking) between characters in
         /// the font.
         /// </summary>
-        public float Spacing { get; set; }
+        public float Spacing
+        {
+            get;
+            set;
+        }
 
         #endregion
 
@@ -71,11 +88,17 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Internal Constructor
 
-        internal SpriteFont (
-			Texture2D texture, List<Rectangle> glyphBounds, List<Rectangle> cropping, List<char> characters,
-			int lineSpacing, float spacing, List<Vector3> kerning, char? defaultCharacter)
-		{
-			_characters = new ReadOnlyCollection<char> (characters.ToArray ());
+        internal SpriteFont(
+            Texture2D texture,
+            List<Rectangle> glyphBounds,
+            List<Rectangle> cropping,
+            List<char> characters,
+			int lineSpacing,
+            float spacing,
+            List<Vector3> kerning,
+            char? defaultCharacter
+        ) {
+            _characters = new ReadOnlyCollection<char>(characters.ToArray());
 			_texture = texture;
 			_glyphBounds = glyphBounds;
 			_cropping = cropping;
@@ -87,9 +110,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			_glyphs = new Dictionary<char, Glyph>(characters.Count);
 
-			for (var i = 0; i < characters.Count; i++) 
+            for (int i = 0; i < characters.Count; i += 1) 
             {
-				var glyph = new Glyph 
+				Glyph glyph = new Glyph 
                 {
 					BoundsInTexture = glyphBounds[i],
 					Cropping = cropping[i],
@@ -117,7 +140,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// this font.</returns>
 		public Vector2 MeasureString(string text)
 		{
-			var source = new CharacterSource(text);
+			CharacterSource source = new CharacterSource(text);
 			Vector2 size;
 			MeasureString(ref source, out size);
 			return size;
@@ -132,7 +155,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// this font.</returns>
 		public Vector2 MeasureString(StringBuilder text)
 		{
-			var source = new CharacterSource(text);
+            CharacterSource source = new CharacterSource(text);
 			Vector2 size;
 			MeasureString(ref source, out size);
 			return size;
@@ -142,13 +165,21 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Internal Methods
 
-        internal void DrawInto(SpriteBatch spriteBatch, ref CharacterSource text, Vector2 position, Color color,
-                                float rotation, Vector2 origin, Vector2 scale, SpriteEffects effect, float depth)
-        {
-            var flipAdjustment = Vector2.Zero;
+        internal void DrawInto(
+            SpriteBatch spriteBatch,
+            ref CharacterSource text,
+            Vector2 position,
+            Color color,
+            float rotation,
+            Vector2 origin,
+            Vector2 scale,
+            SpriteEffects effect,
+            float depth
+        ) {
+            Vector2 flipAdjustment = Vector2.Zero;
 
-            var flippedVert = (effect & SpriteEffects.FlipVertically) == SpriteEffects.FlipVertically;
-            var flippedHorz = (effect & SpriteEffects.FlipHorizontally) == SpriteEffects.FlipHorizontally;
+            bool flippedVert = (effect & SpriteEffects.FlipVertically) == SpriteEffects.FlipVertically;
+            bool flippedHorz = (effect & SpriteEffects.FlipHorizontally) == SpriteEffects.FlipHorizontally;
 
             if (flippedVert || flippedHorz)
             {
@@ -168,8 +199,8 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
             }
 
-            // TODO: This looks excessive... i suspect we could do most
-            // of this with simple vector math and avoid this much matrix work.
+            /* TODO: This looks excessive... i suspect we could do most
+            ** of this with simple vector math and avoid this much matrix work. */
 
             Matrix transformation, temp;
             Matrix.CreateTranslation(-origin.X, -origin.Y, 0f, out transformation);
@@ -185,16 +216,18 @@ namespace Microsoft.Xna.Framework.Graphics
             // Get the default glyph here once.
             Glyph? defaultGlyph = null;
             if (DefaultCharacter.HasValue)
-                defaultGlyph = _glyphs[DefaultCharacter.Value];
-
-            var currentGlyph = Glyph.Empty;
-            var offset = Vector2.Zero;
-            var hasCurrentGlyph = false;
-            var firstGlyphOfLine = true;
-
-            for (var i = 0; i < text.Length; ++i)
             {
-                var c = text[i];
+                defaultGlyph = _glyphs[DefaultCharacter.Value];
+            }
+
+            Glyph currentGlyph = Glyph.Empty;
+            Vector2 offset = Vector2.Zero;
+            bool hasCurrentGlyph = false;
+            bool firstGlyphOfLine = true;
+
+            for (int i = 0; i < text.Length; i += 1)
+            {
+                char c = text[i];
                 if (c == '\r')
                 {
                     hasCurrentGlyph = false;
@@ -219,7 +252,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (!hasCurrentGlyph)
                 {
                     if (!defaultGlyph.HasValue)
+                    {
                         throw new ArgumentException(Errors.TextContainsUnresolvableCharacters, "text");
+                    }
 
                     currentGlyph = defaultGlyph.Value;
                     hasCurrentGlyph = true;
@@ -227,9 +262,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 if (hasCurrentGlyph)
                 {
-                    // The first character on a line might have a negative left side bearing.
-                    // In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
-                    //  so that text does not hang off the left side of its rectangle.
+                    /* The first character on a line might have a negative left side bearing.
+                    ** In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
+                    **  so that text does not hang off the left side of its rectangle. */
                     if (firstGlyphOfLine)
                     {
                         offset.X = Math.Max(offset.X, 0);
@@ -241,25 +276,42 @@ namespace Microsoft.Xna.Framework.Graphics
                     }
                 }
 
-                var p = offset;
+                Vector2 p = offset;
 
                 if (flippedHorz)
+                {
                     p.X += currentGlyph.BoundsInTexture.Width;
+                }
+
                 p.X += currentGlyph.Cropping.X;
 
                 if (flippedVert)
+                {
                     p.Y += currentGlyph.BoundsInTexture.Height - LineSpacing;
+                }
+
                 p.Y += currentGlyph.Cropping.Y;
 
                 Vector2.Transform(ref p, ref transformation, out p);
 
-                var destRect = new Vector4(p.X, p.Y,
-                                            currentGlyph.BoundsInTexture.Width * scale.X,
-                                            currentGlyph.BoundsInTexture.Height * scale.Y);
+                Vector4 destRect = new Vector4(
+                    p.X,
+                    p.Y,
+                    currentGlyph.BoundsInTexture.Width * scale.X,
+                    currentGlyph.BoundsInTexture.Height * scale.Y
+                );
 
                 spriteBatch.DrawInternal(
-                    _texture, destRect, currentGlyph.BoundsInTexture,
-                    color, rotation, Vector2.Zero, effect, depth, false);
+                    _texture,
+                    destRect,
+                    currentGlyph.BoundsInTexture,
+                    color,
+                    rotation,
+                    Vector2.Zero,
+                    effect,
+                    depth,
+                    false
+                );
             }
 
             // We need to flush if we're using Immediate sort mode.
@@ -280,20 +332,22 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Get the default glyph here once.
             Glyph? defaultGlyph = null;
-            if ( DefaultCharacter.HasValue )
-                defaultGlyph = _glyphs[DefaultCharacter.Value];
-
-			var width = 0.0f;
-			var finalLineHeight = (float)LineSpacing;
-			var fullLineCount = 0;
-            var currentGlyph = Glyph.Empty;
-			var offset = Vector2.Zero;
-            var hasCurrentGlyph = false;
-            var firstGlyphOfLine = true;
-
-            for (var i = 0; i < text.Length; ++i)
+            if (DefaultCharacter.HasValue)
             {
-                var c = text[i];
+                defaultGlyph = _glyphs[DefaultCharacter.Value];
+            }
+
+			float width = 0.0f;
+			float finalLineHeight = (float)LineSpacing;
+			int fullLineCount = 0;
+            Glyph currentGlyph = Glyph.Empty;
+			Vector2 offset = Vector2.Zero;
+            bool hasCurrentGlyph = false;
+            bool firstGlyphOfLine = true;
+
+            for (int i = 0; i < text.Length; i += i)
+            {
+                char c = text[i];
                 if (c == '\r')
                 {
                     hasCurrentGlyph = false;
@@ -312,16 +366,20 @@ namespace Microsoft.Xna.Framework.Graphics
                     continue;
                 }
 
-                if (hasCurrentGlyph) {
+                if (hasCurrentGlyph)
+                {
                     offset.X += Spacing;
                 
-                    // The first character on a line might have a negative left side bearing.
-                    // In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
-                    //  so that text does not hang off the left side of its rectangle.
-                    if (firstGlyphOfLine) {
+                    /* The first character on a line might have a negative left side bearing.
+                    ** In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
+                    ** so that text does not hang off the left side of its rectangle. */
+                    if (firstGlyphOfLine)
+                    {
                         offset.X = Math.Max(offset.X + Math.Abs(currentGlyph.LeftSideBearing), 0);
                         firstGlyphOfLine = false;
-                    } else {
+                    }
+                    else
+                    {
                         offset.X += currentGlyph.LeftSideBearing;
                     }
                     
@@ -332,18 +390,24 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (!hasCurrentGlyph)
                 {
                     if (!defaultGlyph.HasValue)
+                    {
                         throw new ArgumentException(Errors.TextContainsUnresolvableCharacters, "text");
+                    }
 
                     currentGlyph = defaultGlyph.Value;
                     hasCurrentGlyph = true;                        
                 }
 
-                var proposedWidth = offset.X + currentGlyph.WidthIncludingBearings + Spacing;
+                float proposedWidth = offset.X + currentGlyph.WidthIncludingBearings + Spacing;
                 if (proposedWidth > width)
+                {
                     width = proposedWidth;
+                }
 
                 if (currentGlyph.Cropping.Height > finalLineHeight)
+                {
                     finalLineHeight = currentGlyph.Cropping.Height;
+                }
             }
 
             size.X = width;
@@ -378,8 +442,10 @@ namespace Microsoft.Xna.Framework.Graphics
             {
 				get 
                 {
-					if (_string != null)
-						return _string[index];
+                    if (_string != null)
+                    {
+                        return _string[index];
+                    }
 					return _builder[index];
 				}
 			}

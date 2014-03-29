@@ -7,7 +7,9 @@
  */
 #endregion
 
+#region Using Statements
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -87,11 +89,18 @@ namespace Microsoft.Xna.Framework.Graphics
         public SpriteBatchItem CreateBatchItem()
         {
             SpriteBatchItem item;
+            
             if (_freeBatchItemQueue.Count > 0)
+            {
                 item = _freeBatchItemQueue.Dequeue();
+            }
             else
+            {
                 item = new SpriteBatchItem();
+            }
+            
             _batchItemList.Add(item);
+            
             return item;
         }
 
@@ -104,7 +113,9 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             // nothing to do
             if (_batchItemList.Count == 0)
+            {
                 return;
+            }
 
             // sort the batch items
             switch (sortMode)
@@ -127,8 +138,8 @@ namespace Microsoft.Xna.Framework.Graphics
             while (batchCount > 0)
             {
                 // setup the vertexArray array
-                var startIndex = 0;
-                var index = 0;
+                int startIndex = 0;
+                int index = 0;
                 Texture2D tex = null;
 
                 int numBatchesToProcess = batchCount;
@@ -138,11 +149,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 }
                 EnsureArrayCapacity(numBatchesToProcess);
                 // Draw the batches
-                for (int i = 0; i < numBatchesToProcess; i++, batchIndex++)
+                foreach (SpriteBatchItem item in _batchItemList)
                 {
-                    SpriteBatchItem item = _batchItemList[batchIndex];
                     // if the texture changed, we need to flush and bind the new texture
-                    var shouldFlush = !ReferenceEquals(item.Texture, tex);
+                    bool shouldFlush = !ReferenceEquals(item.Texture, tex);
                     if (shouldFlush)
                     {
                         FlushVertexArray(startIndex, index);
@@ -194,7 +204,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 _index.CopyTo(newIndex, 0);
                 start = _index.Length / 6;
             }
-            for (var i = start; i < numBatchItems; i++)
+            for (int i = start; i < numBatchItems; i += 1)
             {
                 /*
                  *  TL    TR
@@ -228,9 +238,11 @@ namespace Microsoft.Xna.Framework.Graphics
         private void FlushVertexArray(int start, int end)
         {
             if (start == end)
+            {
                 return;
+            }
 
-            var vertexCount = end - start;
+            int vertexCount = end - start;
 
             _device.DrawUserIndexedPrimitives(
                 PrimitiveType.TriangleList,
@@ -253,10 +265,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>0 if they are not reference equal, and 1 if so.</returns>
-	    static int CompareTexture ( SpriteBatchItem a, SpriteBatchItem b )
-		{
-            return ReferenceEquals( a.Texture, b.Texture ) ? 0 : 1;
-		}
+        static int CompareTexture(SpriteBatchItem a, SpriteBatchItem b)
+        {
+            return ReferenceEquals(a.Texture, b.Texture) ? 0 : 1;
+        }
 
         /// <summary>
         /// Compares the Depth of a against b returning -1 if a is less than b, 
@@ -265,10 +277,10 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns>-1 if a is less than b, 0 if equal, and 1 if a is greater than b</returns>
-	    static int CompareDepth ( SpriteBatchItem a, SpriteBatchItem b )
-		{
-			return a.Depth.CompareTo(b.Depth);
-		}
+        static int CompareDepth(SpriteBatchItem a, SpriteBatchItem b)
+        {
+            return a.Depth.CompareTo(b.Depth);
+        }
 
         /// <summary>
         /// Implements the opposite of CompareDepth, where b is compared against a.

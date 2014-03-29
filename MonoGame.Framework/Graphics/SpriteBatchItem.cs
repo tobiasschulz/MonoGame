@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Graphics
 {
 	internal class SpriteBatchItem
@@ -39,9 +37,16 @@ namespace Microsoft.Xna.Framework.Graphics
 
         #region Public Methods
 
-        public void Set ( float x, float y, float w, float h, Color color, Vector2 texCoordTL, Vector2 texCoordBR )
-		{
-			vertexTL.Position.X = x;
+        public void Set(
+            float x,
+            float y,
+            float w,
+            float h,
+            Color color,
+            Vector2 texCoordTL,
+            Vector2 texCoordBR
+        ) {
+            vertexTL.Position.X = x;
             vertexTL.Position.Y = y;
             vertexTL.Position.Z = Depth;
             vertexTL.Color = color;
@@ -70,11 +75,22 @@ namespace Microsoft.Xna.Framework.Graphics
             vertexBR.TextureCoordinate.Y = texCoordBR.Y;
 		}
 
-		public void Set ( float x, float y, float dx, float dy, float w, float h, float sin, float cos, Color color, Vector2 texCoordTL, Vector2 texCoordBR )
-		{
-            // TODO, Should we be just assigning the Depth Value to Z?
-            // According to http://blogs.msdn.com/b/shawnhar/archive/2011/01/12/spritebatch-billboards-in-a-3d-world.aspx
-            // We do.
+		public void Set(
+            float x,
+            float y,
+            float dx,
+            float dy,
+            float w,
+            float h,
+            float sin,
+            float cos,
+            Color color,
+            Vector2 texCoordTL,
+            Vector2 texCoordBR
+        ) {
+            /* TODO, Should we be just assigning the Depth Value to Z?
+            ** According to http://blogs.msdn.com/b/shawnhar/archive/2011/01/12/spritebatch-billboards-in-a-3d-world.aspx
+            ** We do. */
 			vertexTL.Position.X = x+dx*cos-dy*sin;
             vertexTL.Position.Y = y+dx*sin+dy*cos;
             vertexTL.Position.Z = Depth;
