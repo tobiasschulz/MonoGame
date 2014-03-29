@@ -16,112 +16,112 @@ namespace Microsoft.Xna.Framework.Graphics
 	/// <summary>
 	/// Represents bone data for a model. Reference page contains links to related
 	/// conceptual articles.
-    /// </summary>
+	/// </summary>
 	public sealed class ModelBone
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        public List<ModelMesh> Meshes
-        {
-            get
-            {
-                return meshes;
-            }
-            private set
-            {
-                meshes = value;
-            }
-        }
+		public List<ModelMesh> Meshes
+		{
+			get
+			{
+				return meshes;
+			}
+			private set
+			{
+				meshes = value;
+			}
+		}
 
-        /// <summary>
-        /// Gets a collection of bones that are children of this bone.
-        /// </summary>
-        public ModelBoneCollection Children
-        { 
-            get;
-            private set;
-        }
+		/// <summary>
+		/// Gets a collection of bones that are children of this bone.
+		/// </summary>
+		public ModelBoneCollection Children
+		{
+			get;
+			private set;
+		}
 
-        /// <summary>
-        /// Gets the index of this bone in the Bones collection.
-        /// </summary>
-        public int Index
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the index of this bone in the Bones collection.
+		/// </summary>
+		public int Index
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets the name of this bone.
-        /// </summary>
-        public string Name
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the name of this bone.
+		/// </summary>
+		public string Name
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets the parent of this bone.
-        /// </summary>
-        public ModelBone Parent
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the parent of this bone.
+		/// </summary>
+		public ModelBone Parent
+		{
+			get;
+			set;
+		}
 
-        public Matrix Transform
-        {
-            get
-            {
-                return this.transform;
-            }
-            set
-            {
-                this.transform = value;
-            }
-        }
+		public Matrix Transform
+		{
+			get
+			{
+				return this.transform;
+			}
+			set
+			{
+				this.transform = value;
+			}
+		}
 
-        /// <summary>
-        /// Transform of this node from the root of the model not from the parent
-        /// </summary>
-        public Matrix ModelTransform
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Transform of this node from the root of the model not from the parent
+		/// </summary>
+		public Matrix ModelTransform
+		{
+			get;
+			set;
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal Variables
+		#region Internal Variables
 
-        /// <summary>
-        /// Gets or sets the matrix used to transform this bone relative to its parent
-        /// bone.
-        /// </summary>
-        internal Matrix transform;
+		/// <summary>
+		/// Gets or sets the matrix used to transform this bone relative to its parent
+		/// bone.
+		/// </summary>
+		internal Matrix transform;
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        private List<ModelBone> children = new List<ModelBone>();
-		
+		private List<ModelBone> children = new List<ModelBone>();
+
 		private List<ModelMesh> meshes = new List<ModelMesh>();
 
-        #endregion
+		#endregion
 
-        #region Public Constructor
+		#region Public Constructor
 
-        public ModelBone()
-        {
-            Children = new ModelBoneCollection(new List<ModelBone>());
-        }
+		public ModelBone()
+		{
+			Children = new ModelBoneCollection(new List<ModelBone>());
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public void AddMesh(ModelMesh mesh)
+		public void AddMesh(ModelMesh mesh)
 		{
 			meshes.Add(mesh);
 		}
@@ -130,8 +130,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			children.Add(modelBone);
 			Children = new ModelBoneCollection(children);
-        }
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

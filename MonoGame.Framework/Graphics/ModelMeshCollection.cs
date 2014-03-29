@@ -17,72 +17,72 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	/// <summary>
 	/// Represents a collection of ModelMesh objects.
-    /// </summary>
-    public sealed class ModelMeshCollection : ReadOnlyCollection<ModelMesh>
-    {
-        #region Public Properties
+	/// </summary>
+	public sealed class ModelMeshCollection : ReadOnlyCollection<ModelMesh>
+	{
+		#region Public Properties
 
-        /// <summary>
-        /// Retrieves a ModelMesh from the collection, given the name of the mesh.
-        /// </summary>
-        /// <param name="meshName">
-        ///  The name of the mesh to retrieve.
-        /// </param>
-        public ModelMesh this[string meshName]
-        {
-            get
-            {
-                ModelMesh ret;
-                if (!this.TryGetValue(meshName, out ret))
-                {
-                    throw new KeyNotFoundException();
-                }
-                return ret;
-            }
-        }
+		/// <summary>
+		/// Retrieves a ModelMesh from the collection, given the name of the mesh.
+		/// </summary>
+		/// <param name="meshName">
+		///  The name of the mesh to retrieve.
+		/// </param>
+		public ModelMesh this[string meshName]
+		{
+			get
+			{
+				ModelMesh ret;
+				if (!this.TryGetValue(meshName, out ret))
+				{
+					throw new KeyNotFoundException();
+				}
+				return ret;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal Constructor
+		#region Internal Constructor
 
-        internal ModelMeshCollection(IList<ModelMesh> list)
-            : base(list)
-        {
-        }
+		internal ModelMeshCollection(IList<ModelMesh> list)
+			: base(list)
+		{
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        /// <summary>
-        /// Finds a mesh with a given name if it exists in the collection.
-        /// </summary>
-        /// <param name="meshName">
-        /// The name of the mesh to find.
-        /// </param>
-        /// <param name="value">
-        /// [OutAttribute] The mesh named meshName, if found.
-        /// </param>
-        public bool TryGetValue(string meshName, out ModelMesh value)
-        {
-            if (string.IsNullOrEmpty(meshName))
-            {
-                throw new ArgumentNullException("meshName");
-            }
+		/// <summary>
+		/// Finds a mesh with a given name if it exists in the collection.
+		/// </summary>
+		/// <param name="meshName">
+		/// The name of the mesh to find.
+		/// </param>
+		/// <param name="value">
+		/// [OutAttribute] The mesh named meshName, if found.
+		/// </param>
+		public bool TryGetValue(string meshName, out ModelMesh value)
+		{
+			if (string.IsNullOrEmpty(meshName))
+			{
+				throw new ArgumentNullException("meshName");
+			}
 
-            foreach (ModelMesh mesh in this)
-            {
-                if (string.Compare(mesh.Name, meshName, StringComparison.Ordinal) == 0)
-                {
-                    value = mesh;
-                    return true;
-                }
-            }
+			foreach (ModelMesh mesh in this)
+			{
+				if (string.Compare(mesh.Name, meshName, StringComparison.Ordinal) == 0)
+				{
+					value = mesh;
+					return true;
+				}
+			}
 
-            value = null;
-            return false;
-        }
+			value = null;
+			return false;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

@@ -15,127 +15,127 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	/// <summary>
 	/// Represents a mesh that is part of a Model.
-    /// </summary>
+	/// </summary>
 	public sealed class ModelMesh
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        /// <summary>
-        /// Gets the BoundingSphere that contains this mesh.
-        /// </summary>
-        public BoundingSphere BoundingSphere
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the BoundingSphere that contains this mesh.
+		/// </summary>
+		public BoundingSphere BoundingSphere
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets a collection of effects associated with this mesh.
-        /// </summary>
-        public ModelEffectCollection Effects
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets a collection of effects associated with this mesh.
+		/// </summary>
+		public ModelEffectCollection Effects
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets the ModelMeshPart objects that make up this mesh. Each part of a mesh
-        /// is composed of a set of primitives that share the same material.
-        /// </summary>
-        public ModelMeshPartCollection MeshParts
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the ModelMeshPart objects that make up this mesh. Each part of a mesh
+		/// is composed of a set of primitives that share the same material.
+		/// </summary>
+		public ModelMeshPartCollection MeshParts
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets the name of this mesh.
-        /// </summary>
-        public string Name
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the name of this mesh.
+		/// </summary>
+		public string Name
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets the parent bone for this mesh. The parent bone of a mesh contains a
-        /// transformation matrix that describes how the mesh is located relative to
-        /// any parent meshes in a model.
-        /// </summary>
-        public ModelBone ParentBone
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets the parent bone for this mesh. The parent bone of a mesh contains a
+		/// transformation matrix that describes how the mesh is located relative to
+		/// any parent meshes in a model.
+		/// </summary>
+		public ModelBone ParentBone
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Gets or sets an object identifying this mesh.
-        /// </summary>
-        public object Tag
-        {
-            get;
-            set;
-        }
+		/// <summary>
+		/// Gets or sets an object identifying this mesh.
+		/// </summary>
+		public object Tag
+		{
+			get;
+			set;
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        private GraphicsDevice graphicsDevice;
+		private GraphicsDevice graphicsDevice;
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public ModelMesh(GraphicsDevice graphicsDevice, List<ModelMeshPart> parts)
+		public ModelMesh(GraphicsDevice graphicsDevice, List<ModelMeshPart> parts)
 		{
 			// TODO: Complete member initialization
 			this.graphicsDevice = graphicsDevice;
-			
+
 			MeshParts = new ModelMeshPartCollection(parts);
-			
+
 			foreach (ModelMeshPart part in parts)
-            {
+			{
 				part.parent = this;
 			}
-			
+
 			Effects = new ModelEffectCollection();
 		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        /// <summary>
-        /// Draws all of the ModelMeshPart objects in this mesh, using their current
-        /// Effect settings.
-        public void Draw()
-        {
-            foreach (ModelMeshPart part in MeshParts)
-            {
-                Effect effect = part.Effect;
+		/// <summary>
+		/// Draws all of the ModelMeshPart objects in this mesh, using their current
+		/// Effect settings.
+		public void Draw()
+		{
+			foreach (ModelMeshPart part in MeshParts)
+			{
+				Effect effect = part.Effect;
 
-                if (part.PrimitiveCount > 0)
-                {
-                    graphicsDevice.SetVertexBuffer(part.VertexBuffer);
-                    graphicsDevice.Indices = part.IndexBuffer;
+				if (part.PrimitiveCount > 0)
+				{
+					graphicsDevice.SetVertexBuffer(part.VertexBuffer);
+					graphicsDevice.Indices = part.IndexBuffer;
 
-                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        graphicsDevice.DrawIndexedPrimitives(
-                            PrimitiveType.TriangleList,
-                            part.VertexOffset,
-                            0,
-                            part.NumVertices,
-                            part.StartIndex,
-                            part.PrimitiveCount
-                        );
-                    }
-                }
-            }
-        }
+					foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+					{
+						pass.Apply();
+						graphicsDevice.DrawIndexedPrimitives(
+							PrimitiveType.TriangleList,
+							part.VertexOffset,
+							0,
+							part.NumVertices,
+							part.StartIndex,
+							part.PrimitiveCount
+						);
+					}
+				}
+			}
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
