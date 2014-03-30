@@ -51,17 +51,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			GraphicsDevice = graphicsDevice;
 
-<<<<<<< HEAD
-            // Use a custom SpriteEffect so we can control the transformation matrix
-            _spriteEffect = new Effect(graphicsDevice, SpriteEffect.Bytecode, "SpriteBatch.SpriteEffect");
-            _matrixTransform = _spriteEffect.Parameters["MatrixTransform"];
-            _spritePass = _spriteEffect.CurrentTechnique.Passes[0];
-=======
 			// Use a custom SpriteEffect so we can control the transformation matrix
-			_spriteEffect = new Effect(graphicsDevice, SpriteEffect.Bytecode);
+			_spriteEffect = new Effect(graphicsDevice, SpriteEffect.Bytecode, "SpriteBatch.SpriteEffect");
 			_matrixTransform = _spriteEffect.Parameters["MatrixTransform"];
 			_spritePass = _spriteEffect.CurrentTechnique.Passes[0];
->>>>>>> monogame-sdl2
 
 			_batcher = new SpriteBatcher(graphicsDevice);
 
