@@ -499,7 +499,51 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Private SDL_Surface Interop
+		#region Public Static Texture2D Load Method
+
+		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
+		{
+			// Load the Stream into an SDL_RWops*
+			byte[] mem = new byte[stream.Length];
+			stream.Read(mem, 0, mem.Length);
+			IntPtr rwops = SDL.SDL_RWFromMem(mem, mem.Length);
+
+			// Load the SDL_Surface* from RWops, get the image data
+			IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
+			surface = INTERNAL_convertSurfaceFormat(surface);
+			int width = INTERNAL_getSurfaceWidth(surface);
+			int height = INTERNAL_getSurfaceHeight(surface);
+			byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
+			Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
+
+			/* Ensure that the alpha pixels are... well, actual alpha.
+			 * You think this looks stupid, but be assured: Your paint program is
+			 * almost certainly even stupider.
+			 * -flibit
+			 */
+			for (int i = 0; i < pixels.Length; i += 4)
+			{
+				if (pixels[i + 3] == 0)
+				{
+					pixels[i] = 0;
+					pixels[i + 1] = 0;
+					pixels[i + 2] = 0;
+				}
+			}
+
+			// Create the Texture2D from the SDL_Surface
+			Texture2D result = new Texture2D(
+				graphicsDevice,
+				width,
+				height
+			);
+			result.SetData(pixels);
+			return result;
+		}
+
+		#endregion
+
+		#region Private Static SDL_Surface Interop
 
 		[StructLayout(LayoutKind.Sequential)]
 		private struct SDL_Surface
@@ -565,50 +609,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				SDL_Surface* surPtr = (SDL_Surface*) surface;
 				result = surPtr->h;
 			}
-			return result;
-		}
-
-		#endregion
-
-		#region Public Static Texture2D Load Method
-
-		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
-		{
-			// Load the Stream into an SDL_RWops*
-			byte[] mem = new byte[stream.Length];
-			stream.Read(mem, 0, mem.Length);
-			IntPtr rwops = SDL.SDL_RWFromMem(mem, mem.Length);
-
-			// Load the SDL_Surface* from RWops, get the image data
-			IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
-			surface = INTERNAL_convertSurfaceFormat(surface);
-			int width = INTERNAL_getSurfaceWidth(surface);
-			int height = INTERNAL_getSurfaceHeight(surface);
-			byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
-			Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
-
-			/* Ensure that the alpha pixels are... well, actual alpha.
-			 * You think this looks stupid, but be assured: Your paint program is
-			 * almost certainly even stupider.
-			 * -flibit
-			 */
-			for (int i = 0; i < pixels.Length; i += 4)
-			{
-				if (pixels[i + 3] == 0)
-				{
-					pixels[i] = 0;
-					pixels[i + 1] = 0;
-					pixels[i + 2] = 0;
-				}
-			}
-
-			// Create the Texture2D from the SDL_Surface
-			Texture2D result = new Texture2D(
-				graphicsDevice,
-				width,
-				height
-			);
-			result.SetData(pixels);
 			return result;
 		}
 
