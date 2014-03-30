@@ -10,7 +10,6 @@
 #region Using Statements
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -45,8 +44,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Public Constructor
 
-		public ModelBoneCollection(IList<ModelBone> list)
-			: base(list)
+		public ModelBoneCollection(IList<ModelBone> list) : base(list)
 		{
 		}
 

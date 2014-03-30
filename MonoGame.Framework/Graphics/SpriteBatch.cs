@@ -14,6 +14,7 @@ using System.Text;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
+	// TODO: Rewrite from scratch using DynamicVertexBuffer/DynamicIndexBuffer. -flibit
 	public class SpriteBatch : GraphicsResource
 	{
 		#region Private Variables
@@ -731,7 +732,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			_spritePass.Apply();
 
 			/* If the user supplied a custom effect then apply
-             * it now to override the sprite effect.
+			 * it now to override the sprite effect.
 			 */
 			if (_effect != null)
 			{

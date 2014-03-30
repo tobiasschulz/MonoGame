@@ -17,22 +17,22 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				return _effect;
+				return INTERNAL_effect;
 			}
 			set
 			{
-				if (value == _effect)
+				if (value == INTERNAL_effect)
 				{
 					return;
 				}
 
-				if (_effect != null)
+				if (INTERNAL_effect != null)
 				{
 					// First check to see any other parts are also using this effect.
 					bool removeEffect = true;
 					foreach (ModelMeshPart part in parent.MeshParts)
 					{
-						if (part != this && part._effect == _effect)
+						if (part != this && part.INTERNAL_effect == INTERNAL_effect)
 						{
 							removeEffect = false;
 							break;
@@ -41,12 +41,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
 					if (removeEffect)
 					{
-						parent.Effects.Remove(_effect);
+						parent.Effects.Remove(INTERNAL_effect);
 					}
 				}
 
 				// Set the new effect.
-				_effect = value;
+				INTERNAL_effect = value;
 				parent.Effects.Add(value);
 			}
 		}
@@ -141,9 +141,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Private Variables
 
 		/// <summary>
-		/// Gets or sets the material Effect for this mesh part. Reference page contains
-		/// code sample.
-		private Effect _effect;
+		/// Gets or sets the material Effect for this mesh part.
+		/// </summary>
+		private Effect INTERNAL_effect;
 
 		#endregion
 

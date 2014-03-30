@@ -23,8 +23,7 @@ namespace Microsoft.Xna.Framework.Graphics
 	{
 		#region Public Constructor
 
-		public ModelEffectCollection(IList<Effect> list)
-			: base(list)
+		public ModelEffectCollection(IList<Effect> list) : base(list)
 		{
 		}
 
@@ -32,8 +31,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Internal Constructor
 
-		internal ModelEffectCollection()
-			: base(new List<Effect>())
+		internal ModelEffectCollection() : base(new List<Effect>())
 		{
 		}
 
@@ -46,14 +44,14 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		public new ModelEffectCollection.Enumerator GetEnumerator()
 		{
-			return new ModelEffectCollection.Enumerator((List<Effect>)Items);
+			return new ModelEffectCollection.Enumerator((List<Effect>) Items);
 		}
 
 		#endregion
 
 		#region Internal Methods
 
-		//ModelMeshPart needs to be able to add to ModelMesh's effects list
+		// ModelMeshPart needs to be able to add to ModelMesh's effects list
 		internal void Add(Effect item)
 		{
 			Items.Add(item);

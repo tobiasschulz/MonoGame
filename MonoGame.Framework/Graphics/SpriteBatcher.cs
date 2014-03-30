@@ -21,8 +21,7 @@ namespace Microsoft.Xna.Framework.Graphics
 	/// </summary>
 	internal class SpriteBatcher
 	{
-		/*
-		 * Note that this class is fundamental to high performance for SpriteBatch games. Please exercise
+		/* Note that this class is fundamental to high performance for SpriteBatch games. Please exercise
 		 * caution when making changes to this class.
 		 */
 
@@ -206,15 +205,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 			for (int i = start; i < numBatchItems; i += 1)
 			{
-				/*
-				 *  TL    TR
-				 *   0----1 0,1,2,3 = index offsets for vertex indices
-				 *   |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
-				 *   |  / |
-				 *   | /  |
-				 *   |/   |
-				 *   2----3
-				 *  BL    BR
+				/* TL    TR
+				 *  0----1 0,1,2,3 = index offsets for vertex indices
+				 *  |   /| TL,TR,BL,BR are vertex references in SpriteBatchItem.
+				 *  |  / |
+				 *  | /  |
+				 *  |/   |
+				 *  2----3
+				 * BL    BR
 				 */
 				// Triangle 1
 				newIndex[i * 6 + 0] = (short)(i * 4);

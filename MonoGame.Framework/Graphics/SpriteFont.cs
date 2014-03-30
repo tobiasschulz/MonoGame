@@ -5,10 +5,11 @@
  * Released under the Microsoft Public License.
  * See LICENSE for details.
  */
+
+// Original code from SilverSprite Project
 #endregion
 
 #region Using Statements
-// Original code from SilverSprite Project
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +18,7 @@ using System.Text;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
+	// TODO: Rewrite from scratch. Just. No. -flibit
 	public sealed class SpriteFont
 	{
 		#region Public Properties
@@ -265,7 +267,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					/* The first character on a line might have a negative left side bearing.
 					 * In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
-					 *  so that text does not hang off the left side of its rectangle.
+					 * so that text does not hang off the left side of its rectangle.
 					 */
 					if (firstGlyphOfLine)
 					{

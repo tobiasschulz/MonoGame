@@ -26,7 +26,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// Retrieves a ModelMesh from the collection, given the name of the mesh.
 		/// </summary>
 		/// <param name="meshName">
-		///  The name of the mesh to retrieve.
+		/// The name of the mesh to retrieve.
 		/// </param>
 		public ModelMesh this[string meshName]
 		{
@@ -45,8 +45,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Internal Constructor
 
-		internal ModelMeshCollection(IList<ModelMesh> list)
-			: base(list)
+		internal ModelMeshCollection(IList<ModelMesh> list) : base(list)
 		{
 		}
 

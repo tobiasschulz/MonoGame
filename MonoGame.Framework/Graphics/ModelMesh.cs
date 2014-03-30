@@ -109,6 +109,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Draws all of the ModelMeshPart objects in this mesh, using their current
 		/// Effect settings.
+		/// </summary>
 		public void Draw()
 		{
 			foreach (ModelMeshPart part in MeshParts)

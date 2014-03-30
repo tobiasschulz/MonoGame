@@ -23,14 +23,8 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public List<ModelMesh> Meshes
 		{
-			get
-			{
-				return meshes;
-			}
-			private set
-			{
-				meshes = value;
-			}
+			get;
+			private set;
 		}
 
 		/// <summary>
@@ -69,16 +63,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the matrix used to transform this bone relative to its parent
+		/// bone.
+		/// </summary>
 		public Matrix Transform
 		{
-			get
-			{
-				return this.transform;
-			}
-			set
-			{
-				this.transform = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -92,21 +84,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Internal Variables
-
-		/// <summary>
-		/// Gets or sets the matrix used to transform this bone relative to its parent
-		/// bone.
-		/// </summary>
-		internal Matrix transform;
-
-		#endregion
-
 		#region Private Variables
 
 		private List<ModelBone> children = new List<ModelBone>();
-
-		private List<ModelMesh> meshes = new List<ModelMesh>();
 
 		#endregion
 
@@ -115,6 +95,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public ModelBone()
 		{
 			Children = new ModelBoneCollection(new List<ModelBone>());
+			Meshes = new List<ModelMesh>();
 		}
 
 		#endregion
@@ -123,7 +104,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void AddMesh(ModelMesh mesh)
 		{
-			meshes.Add(mesh);
+			Meshes.Add(mesh);
 		}
 
 		public void AddChild(ModelBone modelBone)
