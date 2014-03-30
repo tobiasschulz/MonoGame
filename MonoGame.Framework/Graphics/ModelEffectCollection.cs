@@ -16,104 +16,118 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-	// Summary:
-	//     Represents a collection of effects associated with a model.
+	/// <summary>
+	/// Represents a collection of effects associated with a model.
+	/// </summary>
 	public sealed class ModelEffectCollection : ReadOnlyCollection<Effect>
-    {
+	{
+		#region Public Constructor
 
-        #region Public Constructor
-
-        public ModelEffectCollection(IList<Effect> list)
-			: base(list)
+		public ModelEffectCollection(IList<Effect> list) : base(list)
 		{
 		}
 
-        #endregion
+		#endregion
 
-        #region Internal Constructor
+		#region Internal Constructor
 
-        internal ModelEffectCollection() : base(new List<Effect>())
-	    {
-	    }
+		internal ModelEffectCollection() : base(new List<Effect>())
+		{
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        // Summary:
-        //     Returns a ModelEffectCollection.Enumerator that can iterate through a ModelEffectCollection.
-        public new ModelEffectCollection.Enumerator GetEnumerator()
-        {
-            return new ModelEffectCollection.Enumerator((List<Effect>)Items);
-        }
+		/// <summary>
+		/// Returns a ModelEffectCollection.Enumerator that can iterate through a ModelEffectCollection.
+		/// </summary>
+		public new ModelEffectCollection.Enumerator GetEnumerator()
+		{
+			return new ModelEffectCollection.Enumerator((List<Effect>) Items);
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal Methods
+		#region Internal Methods
 
-        //ModelMeshPart needs to be able to add to ModelMesh's effects list
+		// ModelMeshPart needs to be able to add to ModelMesh's effects list
 		internal void Add(Effect item)
 		{
-			Items.Add (item);
+			Items.Add(item);
 		}
+
 		internal void Remove(Effect item)
 		{
-			Items.Remove (item);
+			Items.Remove(item);
 		}
 
-        #endregion
+		#endregion
 
-        #region Public Enumerator struct
+		#region Public Enumerator struct
 
-        // Summary:
-	    //     Provides the ability to iterate through the bones in an ModelEffectCollection.
-	    public struct Enumerator : IEnumerator<Effect>, IDisposable, IEnumerator
-	    {
+		/// <summary>
+		/// Provides the ability to iterate through the bones in an ModelEffectCollection.
+		/// </summary>
+		public struct Enumerator : IEnumerator<Effect>, IDisposable, IEnumerator
+		{
+			/// <summary>
+			/// Gets the current element in the ModelEffectCollection.
+			/// </summary>
+			public Effect Current
+			{
+				get
+				{
+					return enumerator.Current;
+				}
+			}
 
-            // Summary:
-            //     Gets the current element in the ModelEffectCollection.
-            public Effect Current { get { return enumerator.Current; } }
-            
-            List<Effect>.Enumerator enumerator;
-            bool disposed;
+			List<Effect>.Enumerator enumerator;
+			bool disposed;
 
 			internal Enumerator(List<Effect> list)
 			{
 				enumerator = list.GetEnumerator();
-                disposed = false;
+				disposed = false;
 			}
 
-	        // Summary:
-	        //     Immediately releases the unmanaged resources used by this object.
-	        public void Dispose()
-            {
-                if (!disposed)
-                {
-                    enumerator.Dispose();
-                    disposed = true;
-                }
-            }
+			/// <summary>
+			/// Immediately releases the unmanaged resources used by this object.
+			/// </summary>
+			public void Dispose()
+			{
+				if (!disposed)
+				{
+					enumerator.Dispose();
+					disposed = true;
+				}
+			}
 
-            //
-	        // Summary:
-	        //     Advances the enumerator to the next element of the ModelEffectCollection.
-	        public bool MoveNext() { return enumerator.MoveNext(); }
+			/// <summary>
+			/// Advances the enumerator to the next element of the ModelEffectCollection.
+			/// </summary>
+			public bool MoveNext()
+			{
+				return enumerator.MoveNext();
+			}
 
-	        object IEnumerator.Current
-	        {
-	            get { return Current; }
-	        }
+			object IEnumerator.Current
+			{
+				get
+				{
+					return Current;
+				}
+			}
 
-	        void IEnumerator.Reset()
-	        {
+			void IEnumerator.Reset()
+			{
 				IEnumerator resetEnumerator = enumerator;
-				resetEnumerator.Reset ();
-				enumerator = (List<Effect>.Enumerator)resetEnumerator;
-	        }
+				resetEnumerator.Reset();
+				enumerator = (List<Effect>.Enumerator) resetEnumerator;
+			}
 
-        }
+		}
 
-        #endregion
-    
-    }
+		#endregion
+	}
 }

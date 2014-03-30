@@ -45,7 +45,7 @@ namespace Microsoft.Xna.Framework.Content
 	{
 		#region Private Variables
 
-		private ContentReader _reader;
+		private ContentReader reader;
 		private ContentTypeReader[] contentReaders;
 		private static string assemblyName;
 
@@ -72,7 +72,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		public ContentTypeReaderManager(ContentReader reader)
 		{
-			_reader = reader;
+			this.reader = reader;
 		}
 
 		#endregion
@@ -149,7 +149,7 @@ namespace Microsoft.Xna.Framework.Content
 #pragma warning restore 0219, 0649
 			int numberOfReaders;
 			// The first content byte i read tells me the number of content readers in this XNB file
-			numberOfReaders = _reader.Read7BitEncodedInt();
+			numberOfReaders = reader.Read7BitEncodedInt();
 			contentReaders = new ContentTypeReader[numberOfReaders];
 			/* For each reader in the file, we read out the length of the string which contains the type of the reader,
 			 * then we read out the string. Finally we instantiate an instance of that reader using reflection
@@ -159,7 +159,7 @@ namespace Microsoft.Xna.Framework.Content
 				/* This string tells us what reader we need to decode the following data
 				 * string readerTypeString = reader.ReadString();
 				 */
-				string originalReaderTypeString = _reader.ReadString();
+				string originalReaderTypeString = reader.ReadString();
 				Func<ContentTypeReader> readerFunc;
 				if (typeCreators.TryGetValue(originalReaderTypeString, out readerFunc))
 				{
@@ -205,7 +205,7 @@ namespace Microsoft.Xna.Framework.Content
 				/* I think the next 4 bytes refer to the "Version" of the type reader,
 				 * although it always seems to be zero
 				 */
-				_reader.ReadInt32();
+				reader.ReadInt32();
 			}
 			return contentReaders;
 		}

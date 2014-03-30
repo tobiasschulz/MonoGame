@@ -172,7 +172,7 @@ namespace Microsoft.Xna.Framework
 				return DisplayOrientation.LandscapeLeft;
 			}
 		}
-  
+
 		public override IntPtr Handle
 		{
 			get
@@ -631,7 +631,7 @@ namespace Microsoft.Xna.Framework
 				INTERNAL_sdlWindowFlags_Next &= ~SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
 			}
 		}
-  
+
 		public override void EndScreenDeviceChange(
 			string screenDeviceName,
 			int clientWidth,
@@ -772,7 +772,7 @@ namespace Microsoft.Xna.Framework
 				SDL.SDL_FreeSurface(icon);
 			}
 		}
-  
+
 		#endregion
 
 		#region Private TextInput Methods

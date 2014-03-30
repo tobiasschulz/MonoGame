@@ -18,38 +18,39 @@ namespace Microsoft.Xna.Framework.Graphics
 	{
 		#region Public Properties
 
-		// Summary:
-		//	Gets a collection of ModelBone objects which describe how each mesh in the
-		//	Meshes collection for this model relates to its parent mesh.
+		/// <summary>
+		/// Gets a collection of ModelBone objects which describe how each mesh in the
+		/// Meshes collection for this model relates to its parent mesh.
+		/// </summary>
 		public ModelBoneCollection Bones
 		{
 			get;
 			private set;
 		}
 
-		//
-		// Summary:
-		//	 Gets a collection of ModelMesh objects which compose the model. Each ModelMesh
-		//	 in a model may be moved independently and may be composed of multiple materials
-		//	 identified as ModelMeshPart objects.
+		/// <summary>
+		/// Gets a collection of ModelMesh objects which compose the model. Each ModelMesh
+		/// in a model may be moved independently and may be composed of multiple materials
+		/// identified as ModelMeshPart objects.
+		/// </summary>
 		public ModelMeshCollection Meshes
 		{
 			get;
 			private set;
 		}
 
-		//
-		// Summary:
-		//	 Gets the root bone for this model.
+		/// <summary>
+		/// Gets the root bone for this model.
+		/// </summary>
 		public ModelBone Root
 		{
 			get;
 			set;
 		}
 
-		//
-		// Summary:
-		//	 Gets or sets an object identifying this model.
+		/// <summary>
+		/// Gets or sets an object identifying this model.
+		/// </summary>
 		public object Tag
 		{
 			get;
@@ -134,18 +135,19 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			int count = Bones.Count;
-			for (int index1 = 0; index1 < count; ++index1)
+			for (int index1 = 0; index1 < count; index1 += 1)
 			{
 				ModelBone modelBone = Bones[index1];
 				if (modelBone.Parent == null)
 				{
-					destinationBoneTransforms[index1] = modelBone.transform;
+					destinationBoneTransforms[index1] = modelBone.Transform;
 				}
 				else
 				{
 					int index2 = modelBone.Parent.Index;
+					Matrix modelBoneTransform = modelBone.Transform;
 					Matrix.Multiply(
-						ref modelBone.transform,
+						ref modelBoneTransform,
 						ref destinationBoneTransforms[index2],
 						out destinationBoneTransforms[index1]
 					);
