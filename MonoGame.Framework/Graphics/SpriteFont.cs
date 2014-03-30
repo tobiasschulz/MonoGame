@@ -349,7 +349,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			bool hasCurrentGlyph = false;
 			bool firstGlyphOfLine = true;
 
-			for (int i = 0; i < text.Length; i += i)
+			for (int i = 0; i < text.Length; i += 1)
 			{
 				char c = text[i];
 				if (c == '\r')
