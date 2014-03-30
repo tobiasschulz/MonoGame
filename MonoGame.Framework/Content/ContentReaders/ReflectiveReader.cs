@@ -151,10 +151,8 @@ namespace Microsoft.Xna.Framework.Content
 				MethodInfo getMethod = property.GetGetMethod();
 				MethodInfo setMethod = property.GetSetMethod();
 
-				if ( (getMethod != null &&
-				      getMethod.GetParameters().Length > 0) ||
-				     (setMethod != null &&
-				      setMethod.GetParameters().Length > 0) )
+				if (	(getMethod != null && getMethod.GetParameters().Length > 0) ||
+					(setMethod != null && setMethod.GetParameters().Length > 0)	)
 				{
 					/* This is presumably a property like this[indexer] and this
 					 * should not get involved in the object deserialization

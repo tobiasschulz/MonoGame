@@ -232,7 +232,7 @@ namespace Microsoft.Xna.Framework.Storage
 		/// Begin process to display the StorageDevice selector UI.
 		/// </summary>
 		/// <returns>The show selector.</returns>
-		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
+		/// <param name="player">The PlayerIndex. Only PlayerIndex.One is valid on Windows.</param>
 		/// <param name="callback">Method to invoke when device is selected by player.</param>
 		/// <param name="state">Request identifier object for callback (can be null).</param>
 		public static IAsyncResult BeginShowSelector(
@@ -271,7 +271,7 @@ namespace Microsoft.Xna.Framework.Storage
 		/// Begin process to display the StorageDevice selector UI.
 		/// </summary>
 		/// <returns>The show selector.</returns>
-		/// <param name="player">The PlayerIndex.  Only PlayerIndex.One is valid on Windows.</param>
+		/// <param name="player">The PlayerIndex. Only PlayerIndex.One is valid on Windows.</param>
 		/// <param name="sizeInBytes">Size (in bytes) of data to write.</param>
 		/// <param name="directoryCount">Number of directories to write.</param>
 		/// <param name="callback">Method to invoke when device is selected by player.</param>
@@ -325,9 +325,6 @@ namespace Microsoft.Xna.Framework.Storage
 
 		#region Public StorageContainer Delete Method
 
-		// Parameters:
-		//   titleName:
-		//     The name of the storage container to delete.
 		public void DeleteContainer(string titleName)
 		{
 			throw new NotImplementedException();
