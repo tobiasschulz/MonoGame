@@ -12,80 +12,79 @@ using System;
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct GamePadTriggers
-    {
+	{
+		#region Public Properties
 
-        #region Public Properties
+		public float Left
+		{
+			get { return left; }
+			internal set { left = MathHelper.Clamp(value, 0f, 1f); }
+		}
+		public float Right
+		{
+			get { return right; }
+			internal set { right = MathHelper.Clamp(value, 0f, 1f); }
+		}
 
-        public float Left
-        {
-            get { return left; }
-            internal set { left = MathHelper.Clamp(value, 0f, 1f); }
-        }
-        public float Right
-        {
-            get { return right; }
-            internal set { right = MathHelper.Clamp(value, 0f, 1f); }
-        }
+		#endregion
 
-        #endregion
+		#region Private Variables
 
-        #region Private Variables
+		float left, right;
 
-        float left, right;
+		#endregion
 
-        #endregion
+		#region Public Constructor
 
-        #region Public Constructor
+		public GamePadTriggers(float leftTrigger, float rightTrigger):this()
+		{
+			Left = leftTrigger;
+			Right = rightTrigger;
+		}
 
-        public GamePadTriggers(float leftTrigger, float rightTrigger):this()
-        {
-            Left = leftTrigger;
-            Right = rightTrigger;
-        }
+		#endregion
 
-        #endregion
+		#region Public Static Operators and Override Methods
 
-        #region Public Static Operators and Override Methods
+		/// <summary>
+		/// Determines whether two specified instances of <see cref="GamePadTriggers"/> are equal.
+		/// </summary>
+		/// <param name="left">The first object to compare.</param>
+		/// <param name="right">The second object to compare.</param>
+		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
+		public static bool operator ==(GamePadTriggers left, GamePadTriggers right)
+		{
+			return (left.left == right.left)
+			    && (left.right == right.right);
+		}
 
-        /// <summary>
-        /// Determines whether two specified instances of <see cref="GamePadTriggers"/> are equal.
-        /// </summary>
-        /// <param name="left">The first object to compare.</param>
-        /// <param name="right">The second object to compare.</param>
-        /// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
-        public static bool operator ==(GamePadTriggers left, GamePadTriggers right)
-        {
-            return (left.left == right.left)
-                && (left.right == right.right);
-        }
+		/// <summary>
+		/// Determines whether two specified instances of <see cref="GamePadTriggers"/> are not equal.
+		/// </summary>
+		/// <param name="left">The first object to compare.</param>
+		/// <param name="right">The second object to compare.</param>
+		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are not equal; otherwise, false.</returns>
+		public static bool operator !=(GamePadTriggers left, GamePadTriggers right)
+		{
+			return !(left == right);
+		}
 
-        /// <summary>
-        /// Determines whether two specified instances of <see cref="GamePadTriggers"/> are not equal.
-        /// </summary>
-        /// <param name="left">The first object to compare.</param>
-        /// <param name="right">The second object to compare.</param>
-        /// <returns>true if <paramref name="left"/> and <paramref name="right"/> are not equal; otherwise, false.</returns>
-        public static bool operator !=(GamePadTriggers left, GamePadTriggers right)
-        {
-            return !(left == right);
-        }
+		/// <summary>
+		/// Returns a value indicating whether this instance is equal to a specified object.
+		/// </summary>
+		/// <param name="obj">An object to compare to this instance.</param>
+		/// <returns>true if <paramref name="obj"/> is a <see cref="GamePadTriggers"/> and has the same value as this
+		/// instance; otherwise, false.</returns>
+		public override bool Equals(object obj)
+		{
+			return (obj is GamePadTriggers) && (this == (GamePadTriggers)obj);
+		}
 
-        /// <summary>
-        /// Returns a value indicating whether this instance is equal to a specified object.
-        /// </summary>
-        /// <param name="obj">An object to compare to this instance.</param>
-        /// <returns>true if <paramref name="obj"/> is a <see cref="GamePadTriggers"/> and has the same value as this instance; otherwise, false.</returns>
-        public override bool Equals(object obj)
-        {
-            return (obj is GamePadTriggers) && (this == (GamePadTriggers)obj);
-        }
+		public override int GetHashCode ()
+		{
+			return this.Left.GetHashCode() + this.Right.GetHashCode();
+		}
 
-        public override int GetHashCode ()
-        {
-            return this.Left.GetHashCode() + this.Right.GetHashCode();
-        }
-
-        #endregion
-
-    }
+		#endregion
+	}
 }

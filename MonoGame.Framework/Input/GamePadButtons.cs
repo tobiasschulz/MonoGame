@@ -93,7 +93,7 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				return ((buttons & Buttons.RightStick) == Buttons.RightStick) ? ButtonState.Pressed : ButtonState.Released;
 			}
-			}
+		}
 
 		public ButtonState BigButton
 		{
@@ -164,12 +164,12 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="obj"/> is a <see cref="GamePadButtons"/> and has the same value as this instance; otherwise, false.</returns>
 		public override bool Equals(object obj)
 		{
-			return (obj is GamePadButtons) && (this == (GamePadButtons)obj);
+			return (obj is GamePadButtons) && (this == (GamePadButtons) obj);
 		}
 
 		public override int GetHashCode()
 		{
-			return (int)this.buttons;
+			return (int) this.buttons;
 		}
 
 		#endregion

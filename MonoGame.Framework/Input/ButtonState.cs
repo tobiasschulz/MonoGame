@@ -17,4 +17,3 @@ namespace Microsoft.Xna.Framework.Input
 		Pressed = 1,
 	}
 }
-

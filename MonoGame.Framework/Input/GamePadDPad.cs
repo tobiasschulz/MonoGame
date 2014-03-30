@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="obj"/> is a <see cref="GamePadDPad"/> and has the same value as this instance; otherwise, false.</returns>
 		public override bool Equals(object obj)
 		{
-			return (obj is GamePadDPad) && (this == (GamePadDPad)obj);
+			return (obj is GamePadDPad) && (this == (GamePadDPad) obj);
 		}
 
 		public override int GetHashCode ()
