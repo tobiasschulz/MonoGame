@@ -135,7 +135,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			int count = Bones.Count;
-			for (int index1 = 0; index1 < count; ++index1)
+			for (int index1 = 0; index1 < count; index1 += 1)
 			{
 				ModelBone modelBone = Bones[index1];
 				if (modelBone.Parent == null)

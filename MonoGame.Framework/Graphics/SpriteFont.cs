@@ -360,7 +360,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 				if (c == '\n')
 				{
-					fullLineCount++;
+					fullLineCount += 1;
 					finalLineHeight = LineSpacing;
 
 					offset.X = 0;
