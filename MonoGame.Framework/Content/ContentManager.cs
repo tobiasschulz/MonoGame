@@ -43,14 +43,8 @@ namespace Microsoft.Xna.Framework.Content
 
 		public string RootDirectory
 		{
-			get
-			{
-				return _rootDirectory;
-			}
-			set
-			{
-				_rootDirectory = value;
-			}
+			get;
+			set;
 		}
 
 		#endregion
@@ -73,7 +67,6 @@ namespace Microsoft.Xna.Framework.Content
 
 		#region Private Variables
 
-		private string _rootDirectory = string.Empty;
 		private IServiceProvider serviceProvider;
 		private IGraphicsDeviceService graphicsDeviceService;
 		private Dictionary<string, object> loadedAssets = new Dictionary<string, object>();
@@ -208,6 +201,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				throw new ArgumentNullException("serviceProvider");
 			}
+			this.RootDirectory = string.Empty;
 			this.serviceProvider = serviceProvider;
 			AddContentManager(this);
 		}
