@@ -57,8 +57,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			width,
 			height,
 			false,
-			SurfaceFormat.Color,
-			false
+			SurfaceFormat.Color
 		) {
 		}
 
@@ -68,27 +67,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			int height,
 			bool mipmap,
 			SurfaceFormat format
-		) : this(
-			graphicsDevice,
-			width,
-			height,
-			mipmap,
-			format,
-			false
-		) {
-		}
-
-		#endregion
-
-		#region Protected Constructor
-
-		protected Texture2D(
-			GraphicsDevice graphicsDevice,
-			int width,
-			int height,
-			bool mipmap,
-			SurfaceFormat format,
-			bool renderTarget
 		) {
 			if (graphicsDevice == null)
 			{
