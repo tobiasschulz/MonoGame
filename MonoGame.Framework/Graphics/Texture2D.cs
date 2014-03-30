@@ -609,6 +609,21 @@ namespace Microsoft.Xna.Framework.Graphics
 			byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
 			Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
 
+			/* Ensure that the alpha pixels are... well, actual alpha.
+			 * You think this looks stupid, but be assured: Your paint program is
+			 * almost certainly even stupider.
+			 * -flibit
+			 */
+			for (int i = 0; i < pixels.Length; i += 4)
+			{
+				if (pixels[i + 3] == 0)
+				{
+					pixels[i] = 0;
+					pixels[i + 1] = 0;
+					pixels[i + 2] = 0;
+				}
+			}
+
 			// Create the Texture2D from the SDL_Surface
 			Texture2D result = new Texture2D(
 				graphicsDevice,

@@ -13,8 +13,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Media
 {
-	public sealed class PlaylistCollection	: ICollection<Playlist>, IEnumerable<Playlist>,
-						  IEnumerable, IDisposable
+	public sealed class PlaylistCollection	: ICollection<Playlist>, IEnumerable<Playlist>, IEnumerable, IDisposable
 	{
 		#region Public Properties
 

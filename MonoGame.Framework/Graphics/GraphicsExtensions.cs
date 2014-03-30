@@ -220,7 +220,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			throw new ArgumentException();
 		}
 
-	   public static NormalPointerType OpenGLNormalPointerType(this VertexElementFormat elementFormat)
+		public static NormalPointerType OpenGLNormalPointerType(this VertexElementFormat elementFormat)
 		{
 			switch (elementFormat)
 			{
@@ -264,7 +264,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			throw new ArgumentException();
 		}
 
-	   public static TexCoordPointerType OpenGLTexCoordPointerType(this VertexElementFormat elementFormat)
+		public static TexCoordPointerType OpenGLTexCoordPointerType(this VertexElementFormat elementFormat)
 		{
 			switch (elementFormat)
 			{
