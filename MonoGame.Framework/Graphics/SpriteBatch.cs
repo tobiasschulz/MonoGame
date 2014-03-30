@@ -66,13 +66,84 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Begin()
 		{
-			Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Matrix.Identity);
+			Begin(
+				SpriteSortMode.Deferred,
+				BlendState.AlphaBlend,
+				SamplerState.LinearClamp,
+				DepthStencilState.None,
+				RasterizerState.CullCounterClockwise,
+				null,
+				Matrix.Identity
+			);
 		}
 
-		public void Begin(SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, DepthStencilState depthStencilState, RasterizerState rasterizerState, Effect effect, Matrix transformMatrix)
-		{
+		public void Begin(
+			SpriteSortMode sortMode,
+			BlendState blendState
+		) {
+			Begin(
+				sortMode,
+				blendState,
+				SamplerState.LinearClamp,
+				DepthStencilState.None,
+				RasterizerState.CullCounterClockwise,
+				null,
+				Matrix.Identity
+			);
+		}
+
+		public void Begin(
+			SpriteSortMode sortMode,
+			BlendState blendState,
+			SamplerState samplerState,
+			DepthStencilState depthStencilState,
+			RasterizerState rasterizerState
+		) {
+			Begin(
+				sortMode,
+				blendState,
+				samplerState,
+				depthStencilState,
+				rasterizerState,
+				null,
+				Matrix.Identity
+			);
+		}
+
+		public void Begin(
+			SpriteSortMode sortMode,
+			BlendState blendState,
+			SamplerState samplerState,
+			DepthStencilState depthStencilState,
+			RasterizerState rasterizerState,
+			Effect effect
+		) {
+			Begin(
+				sortMode,
+				blendState,
+				samplerState,
+				depthStencilState,
+				rasterizerState,
+				effect,
+				Matrix.Identity
+			);
+		}
+
+		public void Begin(
+			SpriteSortMode sortMode,
+			BlendState blendState,
+			SamplerState samplerState,
+			DepthStencilState depthStencilState,
+			RasterizerState rasterizerState,
+			Effect effect,
+			Matrix transformMatrix
+		) {
 			if (_beginCalled)
-				throw new InvalidOperationException("Begin cannot be called again until End has been successfully called.");
+			{
+				throw new InvalidOperationException(
+					"Begin cannot be called again until End has been successfully called."
+				);
+			}
 
 			// defaults
 			_sortMode = sortMode;
@@ -87,24 +158,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			// Setup things now so a user can chage them.
 			if (sortMode == SpriteSortMode.Immediate)
+			{
 				Setup();
+			}
 
 			_beginCalled = true;
-		}
-
-		public void Begin(SpriteSortMode sortMode, BlendState blendState)
-		{
-			Begin(sortMode, blendState, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Matrix.Identity);
-		}
-
-		public void Begin(SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, DepthStencilState depthStencilState, RasterizerState rasterizerState)
-		{
-			Begin(sortMode, blendState, samplerState, depthStencilState, rasterizerState, null, Matrix.Identity);
-		}
-
-		public void Begin(SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, DepthStencilState depthStencilState, RasterizerState rasterizerState, Effect effect)
-		{
-			Begin(sortMode, blendState, samplerState, depthStencilState, rasterizerState, effect, Matrix.Identity);
 		}
 
 		public void End()
@@ -112,7 +170,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			_beginCalled = false;
 
 			if (_sortMode != SpriteSortMode.Immediate)
+			{
 				Setup();
+			}
 
 			_batcher.DrawBatch(_sortMode);
 		}
@@ -120,6 +180,91 @@ namespace Microsoft.Xna.Framework.Graphics
 		#endregion
 
 		#region Public Draw Methods
+
+		public void Draw(
+			Texture2D texture,
+			Vector2 position,
+			Color color
+		) {
+			Draw(
+				texture,
+				position,
+				null,
+				color
+			);
+		}
+
+		public void Draw(
+			Texture2D texture,
+			Rectangle rectangle,
+			Color color
+		) {
+			Draw(
+				texture,
+				rectangle,
+				null,
+				color
+			);
+		}
+
+		public void DrawString(
+			SpriteFont spriteFont,
+			string text,
+			Vector2 position,
+			Color color
+		) {
+			CheckValid(spriteFont, text);
+
+			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
+			spriteFont.DrawInto(
+				this,
+				ref source,
+				position,
+				color,
+				0,
+				Vector2.Zero,
+				Vector2.One,
+				SpriteEffects.None,
+				0f
+			);
+		}
+
+		public void Draw(
+			Texture2D texture,
+			Vector2 position,
+			Rectangle? sourceRectangle,
+			Color color
+		) {
+			Draw(
+				texture,
+				position,
+				sourceRectangle,
+				color,
+				0f,
+				Vector2.Zero,
+				1f,
+				SpriteEffects.None,
+				0f
+			);
+		}
+
+		public void Draw(
+			Texture2D texture,
+			Rectangle destinationRectangle,
+			Rectangle? sourceRectangle,
+			Color color
+		) {
+			Draw(
+				texture,
+				destinationRectangle,
+				sourceRectangle,
+				color,
+				0,
+				Vector2.Zero,
+				SpriteEffects.None,
+				0f
+			);
+		}
 
 		// Overload for calling Draw() with named parameters
 		/// <summary>
@@ -186,19 +331,21 @@ namespace Microsoft.Xna.Framework.Graphics
 			// If both drawRectangle and position are null, or if both have been assigned a value, raise an error
 			if ((drawRectangle.HasValue) == (position.HasValue))
 			{
-				throw new InvalidOperationException("Expected drawRectangle or position, but received neither or both.");
+				throw new InvalidOperationException(
+					"Expected drawRectangle or position, but received neither or both."
+				);
 			}
 			else if (position != null)
 			{
 				// Call Draw() using position
 				Draw(
 					texture,
-					(Vector2)position,
+					(Vector2) position,
 					sourceRectangle,
-					(Color)color,
+					(Color) color,
 					rotation,
-					(Vector2)origin,
-					(Vector2)scale,
+					(Vector2) origin,
+					(Vector2) scale,
 					effect,
 					depth
 				);
@@ -208,11 +355,11 @@ namespace Microsoft.Xna.Framework.Graphics
 				// Call Draw() using drawRectangle
 				Draw(
 					texture,
-					(Rectangle)drawRectangle,
+					(Rectangle) drawRectangle,
 					sourceRectangle,
-					(Color)color,
+					(Color) color,
 					rotation,
-					(Vector2)origin,
+					(Vector2) origin,
 					effect,
 					depth
 				);
@@ -226,18 +373,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			Color color,
 			float rotation,
 			Vector2 origin,
-			Vector2 scale,
+			float scale,
 			SpriteEffects effect,
 			float depth
 		) {
 			CheckValid(texture);
 
-			float w = texture.Width * scale.X;
-			float h = texture.Height * scale.Y;
+			float w = texture.Width * scale;
+			float h = texture.Height * scale;
 			if (sourceRectangle.HasValue)
 			{
-				w = sourceRectangle.Value.Width * scale.X;
-				h = sourceRectangle.Value.Height * scale.Y;
+				w = sourceRectangle.Value.Width * scale;
+				h = sourceRectangle.Value.Height * scale;
 			}
 
 			DrawInternal(
@@ -260,18 +407,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			Color color,
 			float rotation,
 			Vector2 origin,
-			float scale,
+			Vector2 scale,
 			SpriteEffects effect,
 			float depth
 		) {
 			CheckValid(texture);
 
-			float w = texture.Width * scale;
-			float h = texture.Height * scale;
+			float w = texture.Width * scale.X;
+			float h = texture.Height * scale.Y;
 			if (sourceRectangle.HasValue)
 			{
-				w = sourceRectangle.Value.Width * scale;
-				h = sourceRectangle.Value.Height * scale;
+				w = sourceRectangle.Value.Width * scale.X;
+				h = sourceRectangle.Value.Height * scale.Y;
 			}
 
 			DrawInternal(
@@ -312,13 +459,13 @@ namespace Microsoft.Xna.Framework.Graphics
 				rotation,
 				new Vector2(
 					origin.X
-						* ((float)destinationRectangle.Width
-							/ (float)((sourceRectangle.HasValue && sourceRectangle.Value.Width != 0)
+						* ((float) destinationRectangle.Width
+							/ (float) ((sourceRectangle.HasValue && sourceRectangle.Value.Width != 0)
 								? sourceRectangle.Value.Width : texture.Width)
 						),
 					origin.Y
-						* ((float)destinationRectangle.Height)
-							/ (float)((sourceRectangle.HasValue && sourceRectangle.Value.Height != 0)
+						* ((float) destinationRectangle.Height)
+							/ (float) ((sourceRectangle.HasValue && sourceRectangle.Value.Height != 0)
 								? sourceRectangle.Value.Height : texture.Height)
 				),
 				effect,
@@ -327,90 +474,144 @@ namespace Microsoft.Xna.Framework.Graphics
 			);
 		}
 
-		public void Draw(Texture2D texture, Vector2 position, Rectangle? sourceRectangle, Color color)
-		{
-			Draw(texture, position, sourceRectangle, color, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-		}
-
-		public void Draw(Texture2D texture, Rectangle destinationRectangle, Rectangle? sourceRectangle, Color color)
-		{
-			Draw(texture, destinationRectangle, sourceRectangle, color, 0, Vector2.Zero, SpriteEffects.None, 0f);
-		}
-
-		public void Draw(Texture2D texture, Vector2 position, Color color)
-		{
-			Draw(texture, position, null, color);
-		}
-
-		public void Draw(Texture2D texture, Rectangle rectangle, Color color)
-		{
-			Draw(texture, rectangle, null, color);
-		}
-
-		public void DrawString(SpriteFont spriteFont, string text, Vector2 position, Color color)
-		{
+		public void DrawString(
+			SpriteFont spriteFont,
+			StringBuilder text,
+			Vector2 position,
+			Color color
+		) {
 			CheckValid(spriteFont, text);
 
 			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
 			spriteFont.DrawInto(
-				this, ref source, position, color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+				this,
+				ref source,
+				position,
+				color,
+				0,
+				Vector2.Zero,
+				Vector2.One,
+				SpriteEffects.None,
+				0f
+			);
 		}
 
 		public void DrawString(
-			SpriteFont spriteFont, string text, Vector2 position, Color color,
-			float rotation, Vector2 origin, float scale, SpriteEffects effects, float depth)
-		{
+			SpriteFont spriteFont,
+			string text,
+			Vector2 position,
+			Color color,
+			float rotation,
+			Vector2 origin,
+			float scale,
+			SpriteEffects effects,
+			float depth
+		) {
 			CheckValid(spriteFont, text);
 
 			Vector2 scaleVec = new Vector2(scale, scale);
 			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
-			spriteFont.DrawInto(this, ref source, position, color, rotation, origin, scaleVec, effects, depth);
+			spriteFont.DrawInto(
+				this,
+				ref source,
+				position,
+				color,
+				rotation,
+				origin,
+				scaleVec,
+				effects,
+				depth
+			);
 		}
 
 		public void DrawString(
-			SpriteFont spriteFont, string text, Vector2 position, Color color,
-			float rotation, Vector2 origin, Vector2 scale, SpriteEffects effect, float depth)
-		{
+			SpriteFont spriteFont,
+			string text,
+			Vector2 position,
+			Color color,
+			float rotation,
+			Vector2 origin,
+			Vector2 scale,
+			SpriteEffects effect,
+			float depth
+		) {
 			CheckValid(spriteFont, text);
 
 			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
-			spriteFont.DrawInto(this, ref source, position, color, rotation, origin, scale, effect, depth);
-		}
-
-		public void DrawString(SpriteFont spriteFont, StringBuilder text, Vector2 position, Color color)
-		{
-			CheckValid(spriteFont, text);
-
-			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
-			spriteFont.DrawInto(this, ref source, position, color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+			spriteFont.DrawInto(
+				this,
+				ref source,
+				position,
+				color,
+				rotation,
+				origin,
+				scale,
+				effect,
+				depth
+			);
 		}
 
 		public void DrawString(
-			SpriteFont spriteFont, StringBuilder text, Vector2 position, Color color,
-			float rotation, Vector2 origin, float scale, SpriteEffects effects, float depth)
-		{
+			SpriteFont spriteFont,
+			StringBuilder text,
+			Vector2 position,
+			Color color,
+			float rotation,
+			Vector2 origin,
+			float scale,
+			SpriteEffects effects,
+			float depth
+		) {
 			CheckValid(spriteFont, text);
 
 			Vector2 scaleVec = new Vector2(scale, scale);
 			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
-			spriteFont.DrawInto(this, ref source, position, color, rotation, origin, scaleVec, effects, depth);
+			spriteFont.DrawInto(
+				this,
+				ref source,
+				position,
+				color,
+				rotation,
+				origin,
+				scaleVec,
+				effects,
+				depth
+			);
 		}
 
 		public void DrawString(
-			SpriteFont spriteFont, StringBuilder text, Vector2 position, Color color,
-			float rotation, Vector2 origin, Vector2 scale, SpriteEffects effect, float depth)
-		{
+			SpriteFont spriteFont,
+			StringBuilder text,
+			Vector2 position,
+			Color color,
+			float rotation,
+			Vector2 origin,
+			Vector2 scale,
+			SpriteEffects effect,
+			float depth
+		) {
 			CheckValid(spriteFont, text);
 
 			SpriteFont.CharacterSource source = new SpriteFont.CharacterSource(text);
-			spriteFont.DrawInto(this, ref source, position, color, rotation, origin, scale, effect, depth);
+			spriteFont.DrawInto(
+				this,
+				ref source,
+				position,
+				color,
+				rotation,
+				origin,
+				scale,
+				effect,
+				depth
+			);
 		}
 
 		#endregion
 
 		#region Internal Methods
 
-		internal void DrawInternal(Texture2D texture,
+		internal void DrawInternal(
+			Texture2D texture,
 			Vector4 destinationRectangle,
 			Rectangle? sourceRectangle,
 			Color color,
@@ -418,8 +619,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			Vector2 origin,
 			SpriteEffects effect,
 			float depth,
-			bool autoFlush)
-		{
+			bool autoFlush
+		) {
 			SpriteBatchItem item = _batcher.CreateBatchItem();
 
 			item.Depth = depth;
@@ -437,10 +638,10 @@ namespace Microsoft.Xna.Framework.Graphics
 				_tempRect.Height = texture.Height;
 			}
 
-			_texCoordTL.X = _tempRect.X / (float)texture.Width;
-			_texCoordTL.Y = _tempRect.Y / (float)texture.Height;
-			_texCoordBR.X = (_tempRect.X + _tempRect.Width) / (float)texture.Width;
-			_texCoordBR.Y = (_tempRect.Y + _tempRect.Height) / (float)texture.Height;
+			_texCoordTL.X = _tempRect.X / (float) texture.Width;
+			_texCoordTL.Y = _tempRect.Y / (float) texture.Height;
+			_texCoordBR.X = (_tempRect.X + _tempRect.Width) / (float) texture.Width;
+			_texCoordBR.Y = (_tempRect.Y + _tempRect.Height) / (float) texture.Height;
 
 			if ((effect & SpriteEffects.FlipVertically) != 0)
 			{
@@ -455,17 +656,19 @@ namespace Microsoft.Xna.Framework.Graphics
 				_texCoordTL.X = temp;
 			}
 
-			item.Set(destinationRectangle.X,
-					destinationRectangle.Y,
-					-origin.X,
-					-origin.Y,
-					destinationRectangle.Z,
-					destinationRectangle.W,
-					(float)Math.Sin(rotation),
-					(float)Math.Cos(rotation),
-					color,
-					_texCoordTL,
-					_texCoordBR);
+			item.Set(
+				destinationRectangle.X,
+				destinationRectangle.Y,
+				-origin.X,
+				-origin.Y,
+				destinationRectangle.Z,
+				destinationRectangle.W,
+				(float) Math.Sin(rotation),
+				(float) Math.Cos(rotation),
+				color,
+				_texCoordTL,
+				_texCoordBR
+			);
 
 			if (autoFlush)
 			{
@@ -528,7 +731,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			_spritePass.Apply();
 
 			/* If the user supplied a custom effect then apply
-            ** it now to override the sprite effect. */
+             * it now to override the sprite effect.
+			 */
 			if (_effect != null)
 			{
 				_effect.CurrentTechnique.Passes[0].Apply();

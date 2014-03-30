@@ -252,7 +252,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				_index,
 				0,
 				(vertexCount / 4) * 2,
-				VertexPositionColorTexture.VertexDeclaration);
+				VertexPositionColorTexture.VertexDeclaration
+			);
 		}
 
 		#endregion

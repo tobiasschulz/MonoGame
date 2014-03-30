@@ -125,7 +125,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				IEnumerator resetEnumerator = enumerator;
 				resetEnumerator.Reset();
-				enumerator = (List<Effect>.Enumerator)resetEnumerator;
+				enumerator = (List<Effect>.Enumerator) resetEnumerator;
 			}
 
 		}

@@ -200,7 +200,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			/* TODO: This looks excessive... i suspect we could do most
-			** of this with simple vector math and avoid this much matrix work. */
+			 * of this with simple vector math and avoid this much matrix work.
+			 */
 
 			Matrix transformation, temp;
 			Matrix.CreateTranslation(-origin.X, -origin.Y, 0f, out transformation);
@@ -263,8 +264,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (hasCurrentGlyph)
 				{
 					/* The first character on a line might have a negative left side bearing.
-					** In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
-					**  so that text does not hang off the left side of its rectangle. */
+					 * In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
+					 *  so that text does not hang off the left side of its rectangle.
+					 */
 					if (firstGlyphOfLine)
 					{
 						offset.X = Math.Max(offset.X, 0);
@@ -371,8 +373,9 @@ namespace Microsoft.Xna.Framework.Graphics
 					offset.X += Spacing;
 
 					/* The first character on a line might have a negative left side bearing.
-					** In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
-					** so that text does not hang off the left side of its rectangle. */
+					 * In this scenario, SpriteBatch/SpriteFont normally offset the text to the right,
+					 * so that text does not hang off the left side of its rectangle.
+					 */
 					if (firstGlyphOfLine)
 					{
 						offset.X = Math.Max(offset.X + Math.Abs(currentGlyph.LeftSideBearing), 0);

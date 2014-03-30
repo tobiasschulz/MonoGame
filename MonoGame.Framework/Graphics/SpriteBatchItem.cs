@@ -89,8 +89,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			Vector2 texCoordBR
 		) {
 			/* TODO, Should we be just assigning the Depth Value to Z?
-			** According to http://blogs.msdn.com/b/shawnhar/archive/2011/01/12/spritebatch-billboards-in-a-3d-world.aspx
-			** We do. */
+			 * According to http://blogs.msdn.com/b/shawnhar/archive/2011/01/12/spritebatch-billboards-in-a-3d-world.aspx
+			 * We do.
+			 */
 			vertexTL.Position.X = x + dx * cos - dy * sin;
 			vertexTL.Position.Y = y + dx * sin + dy * cos;
 			vertexTL.Position.Z = Depth;

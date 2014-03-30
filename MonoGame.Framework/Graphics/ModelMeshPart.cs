@@ -54,7 +54,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Gets the index buffer for this mesh part.
 		/// </summary>
-		public IndexBuffer IndexBuffer { get; set; }
+		public IndexBuffer IndexBuffer
+		{
+			get;
+			set;
+		}
 
 		/// <summary>
 		/// Gets the number of vertices used during a draw call.
