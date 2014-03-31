@@ -123,8 +123,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			graphicsDevice,
 			size,
 			mipMap,
-			preferredFormat,
-			true
+			preferredFormat
 		) {
 			DepthStencilFormat = preferredDepthFormat;
 			MultiSampleCount = preferredMultiSampleCount;

@@ -39,25 +39,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			int size,
 			bool mipMap,
 			SurfaceFormat format
-		) : this(
-			graphicsDevice,
-			size,
-			mipMap,
-			format,
-			false
-		) {
-		}
-
-		#endregion
-
-		#region Protected Constructor
-
-		protected TextureCube(
-			GraphicsDevice graphicsDevice,
-			int size,
-			bool mipMap,
-			SurfaceFormat format,
-			bool renderTarget
 		) {
 			if (graphicsDevice == null)
 			{

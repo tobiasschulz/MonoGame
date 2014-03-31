@@ -9,7 +9,6 @@
 
 #region Using Statements
 using System;
-using OpenTK.Graphics.OpenGL;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -116,8 +115,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			width,
 			height,
 			mipMap,
-			preferredFormat,
-			true
+			preferredFormat
 		) {
 			DepthStencilFormat = preferredDepthFormat;
 			MultiSampleCount = preferredMultiSampleCount;
