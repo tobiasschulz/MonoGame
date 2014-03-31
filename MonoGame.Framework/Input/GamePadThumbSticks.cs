@@ -32,7 +32,7 @@ namespace Microsoft.Xna.Framework.Input
 						left = value;
 						break;
 					case GateType.Round:
-						if (value.LengthSquared () > 1f)
+						if (value.LengthSquared() > 1f)
 						{
 							left = Vector2.Normalize(value);
 						}
@@ -68,9 +68,13 @@ namespace Microsoft.Xna.Framework.Input
 						break;
 					case GateType.Round:
 						if (value.LengthSquared() > 1f)
+						{
 							right = Vector2.Normalize(value);
+						}
 						else
+						{
 							right = value;
+						}
 						break;
 					case GateType.Square:
 						right = new Vector2(
@@ -126,29 +130,29 @@ namespace Microsoft.Xna.Framework.Input
 				case GamePadDeadZone.None:
 					break;
 				case GamePadDeadZone.IndependentAxes:
-					if (Math.Abs (left.X) < size)
+					if (Math.Abs(left.X) < size)
 					{
 						left.X = 0f;
 					}
-					if (Math.Abs (left.Y) < size)
+					if (Math.Abs(left.Y) < size)
 					{
 						left.Y = 0f;
 					}
-					if (Math.Abs (right.X) < size)
+					if (Math.Abs(right.X) < size)
 					{
 						right.X = 0f;
 					}
-					if (Math.Abs (right.Y) < size)
+					if (Math.Abs(right.Y) < size)
 					{
 						right.Y = 0f;
 					}
 					break;
 				case GamePadDeadZone.Circular:
-					if (left.LengthSquared () < size * size)
+					if (left.LengthSquared() < size * size)
 					{
 						left = Vector2.Zero;
 					}
-					if (right.LengthSquared () < size * size)
+					if (right.LengthSquared() < size * size)
 					{
 						right = Vector2.Zero;
 					}

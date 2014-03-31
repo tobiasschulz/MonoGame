@@ -20,16 +20,19 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
+
 		public ButtonState Left
 		{
 			get;
 			internal set;
 		}
+
 		public ButtonState Right
 		{
 			get;
 			internal set;
 		}
+
 		public ButtonState Up
 		{
 			get;
@@ -40,8 +43,12 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Public Constructor
 
-		public GamePadDPad(ButtonState upValue, ButtonState downValue, ButtonState leftValue, ButtonState rightValue)
-			: this()
+		public GamePadDPad(
+			ButtonState upValue,
+			ButtonState downValue,
+			ButtonState leftValue,
+			ButtonState rightValue
+			) : this()
 		{
 			Up = upValue;
 			Down = downValue;
@@ -86,10 +93,10 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
 		public static bool operator ==(GamePadDPad left, GamePadDPad right)
 		{
-			return (left.Down == right.Down)
-				&& (left.Left == right.Left)
-				&& (left.Right == right.Right)
-				&& (left.Up == right.Up);
+			return	(left.Down == right.Down) &&
+					(left.Left == right.Left) &&
+					(left.Right == right.Right)	&&
+					(left.Up == right.Up);
 		}
 
 		/// <summary>

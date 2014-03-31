@@ -19,7 +19,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.A) == Buttons.A) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.A) == Buttons.A) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -27,7 +29,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.B) == Buttons.B) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.B) == Buttons.B) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -35,7 +39,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.Back) == Buttons.Back) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.Back) == Buttons.Back) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -43,7 +49,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.X) == Buttons.X) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.X) == Buttons.X) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -51,7 +59,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.Y) == Buttons.Y) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.Y) == Buttons.Y) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -59,7 +69,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.Start) == Buttons.Start) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.Start) == Buttons.Start) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -67,7 +79,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.LeftShoulder) == Buttons.LeftShoulder) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.LeftShoulder) == Buttons.LeftShoulder) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -75,7 +89,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.LeftStick) == Buttons.LeftStick) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.LeftStick) == Buttons.LeftStick) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -83,7 +99,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.RightShoulder) == Buttons.RightShoulder) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.RightShoulder) == Buttons.RightShoulder) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -91,7 +109,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.RightStick) == Buttons.RightStick) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.RightStick) == Buttons.RightStick) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 
@@ -99,7 +119,9 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				return ((buttons & Buttons.BigButton) == Buttons.BigButton) ? ButtonState.Pressed : ButtonState.Released;
+				return ((buttons & Buttons.BigButton) == Buttons.BigButton) ?
+					ButtonState.Pressed :
+					ButtonState.Released;
 			}
 		}
 

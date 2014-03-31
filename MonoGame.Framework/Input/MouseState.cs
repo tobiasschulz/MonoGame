@@ -53,7 +53,10 @@ namespace Microsoft.Xna.Framework.Input
 		/// </summary>
 		public Point Position
 		{
-			get { return new Point(_x, _y); }
+			get
+			{
+				return new Point(_x, _y);
+			}
 		}
 
 		/// <summary>
@@ -65,7 +68,10 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				return _leftButton;
 			}
-		    internal set { _leftButton = value; }
+			internal set
+			{
+				_leftButton = value;
+			}
 		}
 
 		/// <summary>
@@ -77,7 +83,10 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				return _middleButton;
 			}
-			internal set { _middleButton = value; }
+			internal set
+			{
+				_middleButton = value;
+			}
 		}
 
 		/// <summary>
@@ -89,7 +98,10 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				return _rightButton;
 			}
-			internal set { _rightButton = value; }
+			internal set
+			{
+				_rightButton = value;
+			}
 		}
 
 		/// <summary>
@@ -97,11 +109,14 @@ namespace Microsoft.Xna.Framework.Input
 		/// </summary>
 		public int ScrollWheelValue
 		{
-		    get
+			get
 			{
 				return _scrollWheelValue;
 			}
-			internal set { _scrollWheelValue = value; }
+			internal set
+			{
+				_scrollWheelValue = value;
+			}
 		}
 
 		/// <summary>
@@ -213,7 +228,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			if (obj is MouseState)
 			{
-				return this == (MouseState)obj;
+				return this == (MouseState) obj;
 			}
 			return false;
 		}

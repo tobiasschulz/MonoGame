@@ -42,6 +42,7 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
+
 		/// <summary>
 		/// Returns a structure that identifies what buttons on the Xbox 360 controller
 		/// are pressed. Reference page contains links to related code samples.
@@ -51,6 +52,7 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
+
 		/// <summary>
 		/// Returns a structure that identifies what directions of the directional pad
 		/// on the Xbox 360 Controller are pressed.
@@ -60,6 +62,7 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
+
 		/// <summary>
 		/// Returns a structure that indicates the position of the Xbox 360 Controller
 		/// sticks (thumbsticks).
@@ -69,6 +72,7 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
+
 		/// <summary>
 		/// Returns a structure that identifies the position of triggers on the Xbox
 		/// 360 controller.
@@ -114,8 +118,7 @@ namespace Microsoft.Xna.Framework.Input
 			GamePadTriggers triggers,
 			GamePadButtons buttons,
 			GamePadDPad dPad
-		) : this()
-		{
+		) : this() {
 			ThumbSticks = thumbSticks;
 			Triggers = triggers;
 			Buttons = buttons;
@@ -154,7 +157,8 @@ namespace Microsoft.Xna.Framework.Input
 			new GamePadTriggers(leftTrigger, rightTrigger),
 			new GamePadButtons(buttons),
 			new GamePadDPad()
-		) { }
+		) {
+		}
 
 		#endregion
 
@@ -193,8 +197,8 @@ namespace Microsoft.Xna.Framework.Input
 		/// </summary>
 		private Buttons GetVirtualButtons ()
 		{
-			var result = Buttons.buttons;
-			var sticks = ThumbSticks;
+			Buttons result = Buttons.buttons;
+			GamePadThumbSticks sticks = ThumbSticks;
 			sticks.ApplyDeadZone(GamePadDeadZone.IndependentAxes, 7849 / 32767f);
 
 			if (sticks.Left.X < 0)
@@ -249,6 +253,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			return !left.Equals(right);
 		}
+
 		/// <summary>
 		/// Determines whether two GamePadState instances are equal.
 		/// </summary>
@@ -258,6 +263,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			return left.Equals(right);
 		}
+
 		/// <summary>
 		/// Returns a value that indicates whether the current instance is equal to a specified object.
 		/// </summary>
@@ -266,6 +272,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			return base.Equals(obj);
 		}
+
 		/// <summary>
 		/// Gets the hash code for this instance.
 		/// </summary>
@@ -273,6 +280,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			return base.GetHashCode();
 		}
+
 		/// <summary>
 		/// Retrieves a string representation of this object.
 		/// </summary>

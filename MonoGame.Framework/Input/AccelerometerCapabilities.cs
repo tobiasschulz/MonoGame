@@ -49,7 +49,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				//TODO: What?
+				// TODO: What?
 				return 1.0f;
 			}
 		}
@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework.Input
 		{
 			get
 			{
-				//TODO: What?
+				// TODO: What?
 				return 0.0f;
 			}
 		}

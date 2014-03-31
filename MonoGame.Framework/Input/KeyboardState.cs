@@ -131,14 +131,15 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>The keys that are currently being pressed.</returns>
 		public Keys[] GetPressedKeys()
 		{
-			uint count =	CountBits(keys0) +
-							CountBits(keys1) +
-							CountBits(keys2) +
-							CountBits(keys3) +
-							CountBits(keys4) +
-							CountBits(keys5) +
-							CountBits(keys6) +
-							CountBits(keys7);
+			uint count =
+				CountBits(keys0) +
+				CountBits(keys1) +
+				CountBits(keys2) +
+				CountBits(keys3) +
+				CountBits(keys4) +
+				CountBits(keys5) +
+				CountBits(keys6) +
+				CountBits(keys7);
 
 			if (count == 0)
 			{

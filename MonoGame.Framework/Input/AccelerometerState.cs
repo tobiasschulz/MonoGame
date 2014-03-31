@@ -49,6 +49,5 @@ namespace Microsoft.Xna.Framework.Input
 		private Vector3 acceleration;
 
 		#endregion
-
 	}
 }

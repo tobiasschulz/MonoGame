@@ -17,13 +17,25 @@ namespace Microsoft.Xna.Framework.Input
 
 		public float Left
 		{
-			get { return left; }
-			internal set { left = MathHelper.Clamp(value, 0f, 1f); }
+			get
+			{
+				return left;
+			}
+			internal set
+			{
+				left = MathHelper.Clamp(value, 0f, 1f);
+			}
 		}
 		public float Right
 		{
-			get { return right; }
-			internal set { right = MathHelper.Clamp(value, 0f, 1f); }
+			get
+			{
+				return right;
+			}
+			internal set
+			{
+				right = MathHelper.Clamp(value, 0f, 1f);
+			}
 		}
 
 		#endregion
@@ -54,8 +66,8 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
 		public static bool operator ==(GamePadTriggers left, GamePadTriggers right)
 		{
-			return (left.left == right.left)
-			    && (left.right == right.right);
+			return	(left.left == right.left) &&
+					(left.right == right.right);
 		}
 
 		/// <summary>
@@ -77,7 +89,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// instance; otherwise, false.</returns>
 		public override bool Equals(object obj)
 		{
-			return (obj is GamePadTriggers) && (this == (GamePadTriggers)obj);
+			return (obj is GamePadTriggers) && (this == (GamePadTriggers) obj);
 		}
 
 		public override int GetHashCode ()
