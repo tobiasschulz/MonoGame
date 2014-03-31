@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework
 {
-    public class EffectUtilities
+    public static class EffectUtilities
     {
         public static Dictionary<string, string> ReadableEffectCode = new Dictionary<string, string> ();
 
