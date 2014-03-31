@@ -55,9 +55,9 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Internal Static Methods
 
-		internal static void SetKeys(List<Keys> keys)
+		internal static void SetKeys(List<Keys> newKeys)
 		{
-			this.keys = keys;
+			keys = newKeys;
 		}
 
 		#endregion

@@ -40,7 +40,7 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Private Variables
 
-		private float left
+		private float left;
 		private float right;
 
 		#endregion
