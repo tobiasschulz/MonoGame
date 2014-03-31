@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	public enum GamePadType

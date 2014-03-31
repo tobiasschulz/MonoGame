@@ -7,10 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-#endregion Using Statements
-
 namespace Microsoft.Xna.Framework.Input
 {
 	/// <summary>

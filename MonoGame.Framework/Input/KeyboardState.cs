@@ -7,7 +7,9 @@
  */
 #endregion
 
+#region Using Statements
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
@@ -131,7 +133,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>The keys that are currently being pressed.</returns>
 		public Keys[] GetPressedKeys()
 		{
-			uint count =
+			uint count = (
 				CountBits(keys0) +
 				CountBits(keys1) +
 				CountBits(keys2) +
@@ -139,7 +141,8 @@ namespace Microsoft.Xna.Framework.Input
 				CountBits(keys4) +
 				CountBits(keys5) +
 				CountBits(keys6) +
-				CountBits(keys7);
+				CountBits(keys7)
+			);
 
 			if (count == 0)
 			{
@@ -275,14 +278,14 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if the instances are equal; false otherwise.</returns>
 		public static bool operator ==(KeyboardState a, KeyboardState b)
 		{
-			return a.keys0 == b.keys0
-				&& a.keys1 == b.keys1
-				&& a.keys2 == b.keys2
-				&& a.keys3 == b.keys3
-				&& a.keys4 == b.keys4
-				&& a.keys5 == b.keys5
-				&& a.keys6 == b.keys6
-				&& a.keys7 == b.keys7;
+			return (	a.keys0 == b.keys0 &&
+					a.keys1 == b.keys1 &&
+					a.keys2 == b.keys2 &&
+					a.keys3 == b.keys3 &&
+					a.keys4 == b.keys4 &&
+					a.keys5 == b.keys5 &&
+					a.keys6 == b.keys6 &&
+					a.keys7 == b.keys7	);
 		}
 
 		/// <summary>
@@ -313,8 +316,8 @@ namespace Microsoft.Xna.Framework.Input
 		private static uint CountBits(uint v)
 		{
 			// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-			v = v - ((v >> 1) & 0x55555555);						// reuse input as temporary
-			v = (v & 0x33333333) + ((v >> 2) & 0x33333333);			// temp
+			v = v - ((v >> 1) & 0x55555555);			// reuse input as temporary
+			v = (v & 0x33333333) + ((v >> 2) & 0x33333333);		// temp
 			return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;	// count
 		}
 

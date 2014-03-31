@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct GamePadButtons
@@ -144,8 +142,7 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Internal Constructor
 
-		internal GamePadButtons(params Buttons[] buttons)
-			: this()
+		internal GamePadButtons(params Buttons[] buttons) : this()
 		{
 			foreach (Buttons b in buttons)
 			{
@@ -197,4 +194,3 @@ namespace Microsoft.Xna.Framework.Input
 		#endregion
 	}
 }
-

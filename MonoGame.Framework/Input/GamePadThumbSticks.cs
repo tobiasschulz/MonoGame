@@ -8,7 +8,6 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework;
 using System;
 #endregion
 
@@ -98,7 +97,7 @@ namespace Microsoft.Xna.Framework.Input
 			None,
 			Round,
 			Square
-		};
+		}
 
 		public static GateType Gate = GateType.Round;
 
@@ -106,14 +105,14 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Private Variables
 
-		Vector2 left;
-		Vector2 right;
+		private Vector2 left;
+		private Vector2 right;
 
 		#endregion
 
 		#region Public Constructor
 
-		public GamePadThumbSticks(Vector2 leftPosition, Vector2 rightPosition):this()
+		public GamePadThumbSticks(Vector2 leftPosition, Vector2 rightPosition) : this()
 		{
 			Left = leftPosition;
 			Right = rightPosition;
@@ -172,8 +171,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
 		public static bool operator ==(GamePadThumbSticks left, GamePadThumbSticks right)
 		{
-			return (left.left == right.left)
-			    && (left.right == right.right);
+			return (left.left == right.left) && (left.right == right.right);
 		}
 
 		/// <summary>

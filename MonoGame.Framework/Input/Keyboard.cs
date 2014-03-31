@@ -21,7 +21,7 @@ namespace Microsoft.Xna.Framework.Input
 	{
 		#region Private Static Variables
 
-		static List<Keys> _keys;
+		static List<Keys> keys;
 
 		#endregion
 
@@ -33,7 +33,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>Current keyboard state.</returns>
 		public static KeyboardState GetState()
 		{
-			return new KeyboardState(_keys);
+			return new KeyboardState(keys);
 		}
 
 		#endregion
@@ -48,7 +48,7 @@ namespace Microsoft.Xna.Framework.Input
 		[Obsolete("Use GetState() instead. In future versions this method can be removed.")]
 		public static KeyboardState GetState(PlayerIndex playerIndex)
 		{
-			return new KeyboardState(_keys);
+			return new KeyboardState(keys);
 		}
 
 		#endregion
@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Input
 
 		internal static void SetKeys(List<Keys> keys)
 		{
-			_keys = keys;
+			this.keys = keys;
 		}
 
 		#endregion

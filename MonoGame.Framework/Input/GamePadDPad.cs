@@ -7,7 +7,9 @@
  */
 #endregion
 
+#region Using Statements
 using System;
+#endregion
 
 namespace Microsoft.Xna.Framework.Input
 {
@@ -48,8 +50,7 @@ namespace Microsoft.Xna.Framework.Input
 			ButtonState downValue,
 			ButtonState leftValue,
 			ButtonState rightValue
-			) : this()
-		{
+		) : this() {
 			Up = upValue;
 			Down = downValue;
 			Left = leftValue;
@@ -60,8 +61,7 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Internal Constructor
 
-		internal GamePadDPad(Buttons b)
-			: this()
+		internal GamePadDPad(Buttons b) : this()
 		{
 			if ((b & Buttons.DPadDown) == Buttons.DPadDown)
 			{
@@ -93,10 +93,10 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
 		public static bool operator ==(GamePadDPad left, GamePadDPad right)
 		{
-			return	(left.Down == right.Down) &&
+			return	(	(left.Down == right.Down) &&
 					(left.Left == right.Left) &&
-					(left.Right == right.Right)	&&
-					(left.Up == right.Up);
+					(left.Right == right.Right) &&
+					(left.Up == right.Up)	);
 		}
 
 		/// <summary>
@@ -122,10 +122,12 @@ namespace Microsoft.Xna.Framework.Input
 
 		public override int GetHashCode ()
 		{
-			return	(this.Down  == ButtonState.Pressed ? 1 : 0) +
-					(this.Left  == ButtonState.Pressed ? 2 : 0) +
-					(this.Right == ButtonState.Pressed ? 4 : 0) +
-					(this.Up    == ButtonState.Pressed ? 8 : 0);
+			return (
+				(Down  == ButtonState.Pressed ? 1 : 0) +
+				(Left  == ButtonState.Pressed ? 2 : 0) +
+				(Right == ButtonState.Pressed ? 4 : 0) +
+				(Up    == ButtonState.Pressed ? 8 : 0)
+			);
 		}
 
 		#endregion

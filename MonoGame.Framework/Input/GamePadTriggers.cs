@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct GamePadTriggers
@@ -42,7 +40,8 @@ namespace Microsoft.Xna.Framework.Input
 
 		#region Private Variables
 
-		float left, right;
+		private float left
+		private float right;
 
 		#endregion
 
@@ -66,8 +65,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
 		public static bool operator ==(GamePadTriggers left, GamePadTriggers right)
 		{
-			return	(left.left == right.left) &&
-					(left.right == right.right);
+			return	(left.left == right.left) && (left.right == right.right);
 		}
 
 		/// <summary>

@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	public struct AccelerometerState
@@ -17,14 +15,8 @@ namespace Microsoft.Xna.Framework.Input
 
 		public Vector3 Acceleration
 		{
-			get
-			{
-				return acceleration;
-			}
-			internal set
-			{
-				acceleration = value;
-			}
+			get;
+			internal set;
 		}
 
 		/*
@@ -41,12 +33,6 @@ namespace Microsoft.Xna.Framework.Input
 				return true;
 			}
 		}
-
-		#endregion
-
-		#region Private Variables
-
-		private Vector3 acceleration;
 
 		#endregion
 	}

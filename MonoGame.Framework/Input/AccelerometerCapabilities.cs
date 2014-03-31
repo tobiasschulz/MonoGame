@@ -71,6 +71,7 @@ namespace Microsoft.Xna.Framework.Input
 				return 1.0f;
 			}
 		}
+
 		#endregion
 	}
 }

@@ -7,11 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using Microsoft.Xna.Framework;
-using System;
-#endregion
-
 namespace Microsoft.Xna.Framework.Input
 {
 	/// <summary>
@@ -173,7 +168,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// </param>
 		public bool IsButtonDown(Buttons button)
 		{
-		    return (GetVirtualButtons() & button) == button;
+			return (GetVirtualButtons() & button) == button;
 		}
 
 		/// <summary>

@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	/// <summary>
@@ -196,23 +194,23 @@ namespace Microsoft.Xna.Framework.Input
 		/// Compares whether two MouseState instances are equal.
 		/// </summary>
 		/// <param name="left">MouseState instance on the left of the equal sign.</param>
-		/// <param name="right">MouseState instance  on the right of the equal sign.</param>
+		/// <param name="right">MouseState instance on the right of the equal sign.</param>
 		/// <returns>true if the instances are equal; false otherwise.</returns>
 		public static bool operator ==(MouseState left, MouseState right)
 		{
-			return left._x == right._x &&
-				left._y == right._y &&
-				left._leftButton == right._leftButton &&
-				left._middleButton == right._middleButton &&
-				left._rightButton == right._rightButton &&
-				left._scrollWheelValue == right._scrollWheelValue;
+			return	(	left._x == right._x &&
+					left._y == right._y &&
+					left._leftButton == right._leftButton &&
+					left._middleButton == right._middleButton &&
+					left._rightButton == right._rightButton &&
+					left._scrollWheelValue == right._scrollWheelValue	);
 		}
 
 		/// <summary>
 		/// Compares whether two MouseState instances are not equal.
 		/// </summary>
 		/// <param name="left">MouseState instance on the left of the equal sign.</param>
-		/// <param name="right">MouseState instance  on the right of the equal sign.</param>
+		/// <param name="right">MouseState instance on the right of the equal sign.</param>
 		/// <returns>true if the objects are not equal; false otherwise.</returns>
 		public static bool operator !=(MouseState left, MouseState right)
 		{

@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	/// <summary>
@@ -32,5 +30,5 @@ namespace Microsoft.Xna.Framework.Input
 		None,
 		IndependentAxes,
 		Circular
-	};
+	}
 }
