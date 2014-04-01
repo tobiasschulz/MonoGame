@@ -142,7 +142,7 @@ namespace Microsoft.Xna.Framework.Audio
 			int loopLength
 		) {
 			byte[] sendBuf;
-			if (offset == 0 || count != buffer.Length)
+			if (offset != 0 || count != buffer.Length)
 			{
 				// I kind of hate this. -flibit
 				sendBuf = new byte[count];
