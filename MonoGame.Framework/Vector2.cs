@@ -131,7 +131,8 @@ namespace Microsoft.Xna.Framework
 
 		public bool Equals(Vector2 other)
 		{
-			return (X == other.X) && (Y == other.Y);
+			return (	(X == other.X) &&
+					(Y == other.Y)	);
 		}
 
 		public override int GetHashCode()
@@ -387,8 +388,10 @@ namespace Microsoft.Xna.Framework
 
 		public static Vector2 Max(Vector2 value1, Vector2 value2)
 		{
-			return new Vector2(value1.X > value2.X ? value1.X : value2.X,
-						value1.Y > value2.Y ? value1.Y : value2.Y);
+			return new Vector2(
+				value1.X > value2.X ? value1.X : value2.X,
+				value1.Y > value2.Y ? value1.Y : value2.Y
+			);
 		}
 
 		public static void Max(ref Vector2 value1, ref Vector2 value2, out Vector2 result)
@@ -399,8 +402,10 @@ namespace Microsoft.Xna.Framework
 
 		public static Vector2 Min(Vector2 value1, Vector2 value2)
 		{
-			return new Vector2(value1.X < value2.X ? value1.X : value2.X,
-						value1.Y < value2.Y ? value1.Y : value2.Y);
+			return new Vector2(
+				value1.X < value2.X ? value1.X : value2.X,
+				value1.Y < value2.Y ? value1.Y : value2.Y
+			);
 		}
 
 		public static void Min(ref Vector2 value1, ref Vector2 value2, out Vector2 result)
@@ -592,13 +597,15 @@ namespace Microsoft.Xna.Framework
 
 		public static bool operator ==(Vector2 value1, Vector2 value2)
 		{
-			return value1.X == value2.X && value1.Y == value2.Y;
+			return (	(value1.X == value2.X) &&
+					(value1.Y == value2.Y)	);
 		}
 
 
 		public static bool operator !=(Vector2 value1, Vector2 value2)
 		{
-			return value1.X != value2.X || value1.Y != value2.Y;
+			return (	(value1.X != value2.X) ||
+					(value1.Y != value2.Y)	);
 		}
 
 

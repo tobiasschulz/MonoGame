@@ -204,16 +204,16 @@ namespace Microsoft.Xna.Framework
 			}
 
 			Vector3 other = (Vector3) obj;
-			return X == other.X &&
-					Y == other.Y &&
-					Z == other.Z;
+			return (	(X == other.X) &&
+					(Y == other.Y) &&
+					(Z == other.Z)	);
 		}
 
 		public bool Equals(Vector3 other)
 		{
-			return X == other.X &&
-					Y == other.Y &&
-					Z == other.Z;
+			return (	(X == other.X) &&
+					(Y == other.Y) &&
+					(Z == other.Z)	);
 		}
 
 		public override int GetHashCode()
@@ -360,9 +360,11 @@ namespace Microsoft.Xna.Framework
 
 		public static void Cross(ref Vector3 vector1, ref Vector3 vector2, out Vector3 result)
 		{
-			result = new Vector3(vector1.Y * vector2.Z - vector2.Y * vector1.Z,
-						-(vector1.X * vector2.Z - vector2.X * vector1.Z),
-						vector1.X * vector2.Y - vector2.X * vector1.Y);
+			result = new Vector3(
+				vector1.Y * vector2.Z - vector2.Y * vector1.Z,
+				-(vector1.X * vector2.Z - vector2.X * vector1.Z),
+				vector1.X * vector2.Y - vector2.X * vector1.Y
+			);
 		}
 
 		public static float Distance(Vector3 vector1, Vector3 vector2)
@@ -390,9 +392,9 @@ namespace Microsoft.Xna.Framework
 			ref Vector3 value2,
 			out float result
 		) {
-			result = (value1.X - value2.X) * (value1.X - value2.X) +
-					 (value1.Y - value2.Y) * (value1.Y - value2.Y) +
-					 (value1.Z - value2.Z) * (value1.Z - value2.Z);
+			result = (	(value1.X - value2.X) * (value1.X - value2.X) +
+					(value1.Y - value2.Y) * (value1.Y - value2.Y) +
+					(value1.Z - value2.Z) * (value1.Z - value2.Z)	);
 		}
 
 		public static Vector3 Divide(Vector3 value1, Vector3 value2)
@@ -434,7 +436,9 @@ namespace Microsoft.Xna.Framework
 
 		public static void Dot(ref Vector3 vector1, ref Vector3 vector2, out float result)
 		{
-			result = vector1.X * vector2.X + vector1.Y * vector2.Y + vector1.Z * vector2.Z;
+			result = (	(vector1.X * vector2.X) +
+					(vector1.Y * vector2.Y) +
+					(vector1.Z * vector2.Z)	);
 		}
 
 		public static Vector3 Hermite(
@@ -745,26 +749,6 @@ namespace Microsoft.Xna.Framework
 			return result;
 		}
 
-		///// <summary>
-		///// Transforms a vector by a quaternion rotation.
-		///// </summary>
-		///// <param name="vec">The vector to transform.</param>
-		///// <param name="quat">The quaternion to rotate the vector by.</param>
-		///// <param name="result">The result of the operation.</param>
-		//		public static void Transform(ref Vector3 vec, ref Quaternion quat, out Vector3 result)
-		//		{
-		//		// Taken from the OpentTK implementation of Vector3
-		//			// Since vec.W == 0, we can optimize quat * vec * quat^-1 as follows:
-		//			// vec + 2.0 * cross(quat.xyz, cross(quat.xyz, vec) + quat.w * vec)
-		//			Vector3 xyz = quat.Xyz, temp, temp2;
-		//			Vector3.Cross(ref xyz, ref vec, out temp);
-		//			Vector3.Multiply(ref vec, quat.W, out temp2);
-		//			Vector3.Add(ref temp, ref temp2, out temp);
-		//			Vector3.Cross(ref xyz, ref temp, out temp);
-		//			Vector3.Multiply(ref temp, 2, out temp);
-		//			Vector3.Add(ref vec, ref temp, out result);
-		//		}
-
 		/// <summary>
 		/// Transforms a vector by a quaternion rotation.
 		/// </summary>
@@ -893,9 +877,9 @@ namespace Microsoft.Xna.Framework
 
 		public static bool operator ==(Vector3 value1, Vector3 value2)
 		{
-			return value1.X == value2.X
-				&& value1.Y == value2.Y
-				&& value1.Z == value2.Z;
+			return (	(value1.X == value2.X) &&
+					(value1.Y == value2.Y) &&
+					(value1.Z == value2.Z)	);
 		}
 
 		public static bool operator !=(Vector3 value1, Vector3 value2)

@@ -169,10 +169,10 @@ namespace Microsoft.Xna.Framework
 
 		public bool Equals(Vector4 other)
 		{
-			return this.W == other.W
-				&& this.X == other.X
-				&& this.Y == other.Y
-				&& this.Z == other.Z;
+			return (	(this.W == other.W) &&
+					(this.X == other.X) &&
+					(this.Y == other.Y) &&
+					(this.Z == other.Z)	);
 		}
 
 		public override int GetHashCode()
@@ -343,10 +343,10 @@ namespace Microsoft.Xna.Framework
 			ref Vector4 value2,
 			out float result
 		) {
-			result = (value1.W - value2.W) * (value1.W - value2.W) +
-					 (value1.X - value2.X) * (value1.X - value2.X) +
-					 (value1.Y - value2.Y) * (value1.Y - value2.Y) +
-					 (value1.Z - value2.Z) * (value1.Z - value2.Z);
+			result = (	(value1.W - value2.W) * (value1.W - value2.W) +
+					(value1.X - value2.X) * (value1.X - value2.X) +
+					(value1.Y - value2.Y) * (value1.Y - value2.Y) +
+					(value1.Z - value2.Z) * (value1.Z - value2.Z)	);
 		}
 
 		public static Vector4 Divide(Vector4 value1, Vector4 value2)
@@ -398,10 +398,10 @@ namespace Microsoft.Xna.Framework
 
 		public static void Dot(ref Vector4 vector1, ref Vector4 vector2, out float result)
 		{
-			result = vector1.X * vector2.X +
-				vector1.Y * vector2.Y +
-				vector1.Z * vector2.Z +
-				vector1.W * vector2.W;
+			result = (	(vector1.X * vector2.X) +
+					(vector1.Y * vector2.Y) +
+					(vector1.Z * vector2.Z) +
+					(vector1.W * vector2.W)	);
 		}
 
 		public static Vector4 Hermite(
@@ -667,10 +667,10 @@ namespace Microsoft.Xna.Framework
 
 		public static bool operator ==(Vector4 value1, Vector4 value2)
 		{
-			return value1.W == value2.W
-				&& value1.X == value2.X
-				&& value1.Y == value2.Y
-				&& value1.Z == value2.Z;
+			return (	(value1.W == value2.W) &&
+					(value1.X == value2.X) &&
+					(value1.Y == value2.Y) &&
+					(value1.Z == value2.Z)	);
 		}
 
 		public static bool operator !=(Vector4 value1, Vector4 value2)
