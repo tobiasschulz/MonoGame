@@ -544,6 +544,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			foreach (KeyValuePair<string, object> asset in LoadedAssets)
 			{
+				/* This never executes as asset.Key is never null. This just forces the
+				 * linker to include the ReloadAsset function when AOT compiled.
+				 */
 				MethodInfo methodInfo = typeof(ContentManager).GetMethod("ReloadAsset", BindingFlags.NonPublic | BindingFlags.Instance);
 				MethodInfo genericMethod = methodInfo.MakeGenericMethod(asset.Value.GetType());
 				genericMethod.Invoke(this, new object[] { asset.Key, Convert.ChangeType(asset.Value, asset.Value.GetType()) });
