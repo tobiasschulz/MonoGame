@@ -141,12 +141,24 @@ namespace Microsoft.Xna.Framework.Audio
 			int loopStart,
 			int loopLength
 		) {
+			byte[] sendBuf;
+			if (offset == 0 || count != buffer.Length)
+			{
+				// I kind of hate this. -flibit
+				sendBuf = new byte[count];
+				Array.Copy(buffer, offset, sendBuf, 0, count);
+			}
+			else
+			{
+				sendBuf = buffer;
+			}
+
 			INTERNAL_bufferData(
-				buffer,
+				sendBuf,
 				(uint) sampleRate,
 				(uint) channels,
-				loopStart,
-				loopStart + loopLength,
+				(uint) loopStart,
+				(uint) (loopStart + loopLength),
 				0
 			);
 		}
@@ -164,18 +176,17 @@ namespace Microsoft.Xna.Framework.Audio
 
 			Name = Path.GetFileNameWithoutExtension(fileName);
 
-			Stream s;
 			try
 			{
-				s = File.OpenRead(fileName);
+				using (Stream s = File.OpenRead(fileName))
+				{
+					INTERNAL_loadAudioStream(s);
+				}
 			}
 			catch (IOException e)
 			{
 				throw new Content.ContentLoadException("Could not load audio data", e);
 			}
-
-			INTERNAL_loadAudioStream(s);
-			s.Close();
 		}
 
 		internal SoundEffect(Stream s)
