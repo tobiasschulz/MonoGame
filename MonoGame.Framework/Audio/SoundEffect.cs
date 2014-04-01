@@ -115,13 +115,51 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
+		#region Public Constructors
+
+		public SoundEffect(
+			byte[] buffer,
+			int sampleRate,
+			AudioChannels channels
+		) {
+			INTERNAL_bufferData(
+				buffer,
+				(uint) sampleRate,
+				(uint) channels,
+				0,
+				0,
+				0
+			);
+		}
+
+		public SoundEffect(
+			byte[] buffer,
+			int offset,
+			int count,
+			int sampleRate,
+			AudioChannels channels,
+			int loopStart,
+			int loopLength
+		) {
+			INTERNAL_bufferData(
+				buffer,
+				(uint) sampleRate,
+				(uint) channels,
+				loopStart,
+				loopStart + loopLength,
+				0
+			);
+		}
+
+		#endregion
+
 		#region Internal Constructors
 
 		internal SoundEffect(string fileName)
 		{
 			if (fileName == string.Empty)
 			{
-				throw new FileNotFoundException("Supported Sound Effect formats are wav, mp3, acc, aiff");
+				throw new ArgumentNullException("fileName");
 			}
 
 			Name = Path.GetFileNameWithoutExtension(fileName);
@@ -163,27 +201,6 @@ namespace Microsoft.Xna.Framework.Audio
 				loopStart + loopLength,
 				compressionAlign
 			);
-		}
-
-		#endregion
-
-		#region Public Constructors
-
-		public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
-		{
-			INTERNAL_bufferData(
-				buffer,
-				(uint) sampleRate,
-				(uint) channels,
-				0,
-				0,
-				0
-			);
-		}
-
-		public SoundEffect(byte[] buffer, int offset, int count, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
-		{
-			throw new NotImplementedException();
 		}
 
 		#endregion
