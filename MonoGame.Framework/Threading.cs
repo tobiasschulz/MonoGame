@@ -10,16 +10,16 @@
 #region THREADED_GL Option
 // #define THREADED_GL
 /* Ah, so I see you've run into some issues with threaded GL...
- * 
+ *
  * This class is designed to handle rendering coming from multiple threads, but
  * if you're too wreckless with how many threads are calling the GL, this will
  * hang.
- * 
+ *
  * With THREADED_GL we instead allow you to run threaded rendering using
  * multiple GL contexts. This is more flexible, but much more dangerous.
- * 
+ *
  * Also note that this affects SDL2/SDL2_GameWindow.cs! Check THREADED_GL there too.
- * 
+ *
  * Basically, if you have to enable this, you should feel very bad.
  * -flibit
  */
