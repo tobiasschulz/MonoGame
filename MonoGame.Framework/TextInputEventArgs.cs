@@ -13,36 +13,28 @@ using System;
 
 namespace Microsoft.Xna.Framework
 {
-    /// <summary>
-    /// This class is used for the game window's TextInput event as EventArgs.
-    /// </summary>
-    public class TextInputEventArgs : EventArgs
-    {
-        #region Public Properties
+	/// <summary>
+	/// This class is used for the game window's TextInput event as EventArgs.
+	/// </summary>
+	public class TextInputEventArgs : EventArgs
+	{
+		#region Public Properties
 
-        public char Character
-        {
-            get
-            {
-                return character;
-            }
-        }
+		public char Character
+		{
+			get;
+			private set;
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Public Constructors
 
-        char character;
+		public TextInputEventArgs(char character)
+		{
+			Character = character;
+		}
 
-        #endregion
-
-        #region Public Constructors
-
-        public TextInputEventArgs(char character)
-        {
-            this.character = character;
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 }
