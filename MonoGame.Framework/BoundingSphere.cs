@@ -119,7 +119,7 @@ namespace Microsoft.Xna.Framework
 
 		public ContainmentType Contains(BoundingBox box)
 		{
-			//check if all corner is in sphere
+			// Check if all corner is in sphere
 			bool inside = true;
 			foreach (Vector3 corner in box.GetCorners())
 			{
@@ -135,7 +135,7 @@ namespace Microsoft.Xna.Framework
 				return ContainmentType.Contains;
 			}
 
-			//check if the distance from sphere center to cube face < radius
+			// Check if the distance from sphere center to cube face < radius
 			double dmin = 0;
 
 			if (Center.X < box.Min.X)
@@ -170,13 +170,13 @@ namespace Microsoft.Xna.Framework
 				return ContainmentType.Intersects;
 			}
 
-			//else disjoint
+			// Else disjoint
 			return ContainmentType.Disjoint;
 		}
 
 		public ContainmentType Contains(BoundingFrustum frustum)
 		{
-			//check if all corner is in sphere
+			// Check if all corner is in sphere
 			bool inside = true;
 
 			Vector3[] corners = frustum.GetCorners();
@@ -193,16 +193,16 @@ namespace Microsoft.Xna.Framework
 				return ContainmentType.Contains;
 			}
 
-			//check if the distance from sphere center to frustrum face < radius
+			// Check if the distance from sphere center to frustrum face < radius
 			double dmin = 0;
-			//TODO : calcul dmin
+			// TODO : calcul dmin
 
 			if (dmin <= Radius * Radius)
 			{
 				return ContainmentType.Intersects;
 			}
 
-			//else disjoint
+			// Else disjoint
 			return ContainmentType.Disjoint;
 		}
 
@@ -284,17 +284,26 @@ namespace Microsoft.Xna.Framework
 			float radius = 0;
 			Vector3 center = new Vector3();
 			// First, we'll find the center of gravity for the point 'cloud'.
-			int num_points = 0; // The number of points (there MUST be a better way to get this instead of counting the number of points one by one?)
+
+			/* The number of points (there MUST be a better way to get this
+			 * instead of counting the number of points one by one?)
+			 */
+			int num_points = 0;
 
 			foreach (Vector3 v in points)
 			{
-				center += v;	// If we actually knew the number of points, we'd get better accuracy by adding v / num_points.
+				/* If we actually knew the number of points,
+				 * we'd get better accuracy by adding v / num_points.
+				 */
+				center += v;
 				++num_points;
 			}
 
 			center /= (float) num_points;
 
-			// Calculate the radius of the needed sphere (it equals the distance between the center and the point further away).
+			/* Calculate the radius of the needed sphere
+			 * (it equals the distance between the center and the point further away).
+			 */
 			foreach (Vector3 v in points)
 			{
 				float distance = ((Vector3) (v - center)).Length();
@@ -313,23 +322,23 @@ namespace Microsoft.Xna.Framework
 			Vector3 ocenterToaCenter = Vector3.Subtract(additional.Center, original.Center);
 			float distance = ocenterToaCenter.Length();
 
-			// intersect
+			// Intersect
 			if (distance <= original.Radius + additional.Radius)
 			{
-				// original contain additional
+				// Original contain additional
 				if (distance <= original.Radius - additional.Radius)
 				{
 					return original;
 				}
 
-				// additional contain original
+				// Additional contain original
 				if (distance <= additional.Radius - original.Radius)
 				{
 					return additional;
 				}
 			}
 
-			//else find center of new sphere and radius
+			// Else find center of new sphere and radius
 			float leftRadius = Math.Max(original.Radius - distance, additional.Radius);
 			float Rightradius = Math.Max(original.Radius + distance, additional.Radius);
 

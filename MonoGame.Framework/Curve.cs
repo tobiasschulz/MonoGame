@@ -215,7 +215,7 @@ namespace Microsoft.Xna.Framework
 				}
 			}
 
-			//in curve
+			// in curve
 			return GetCurvePosition(position);
 		}
 
