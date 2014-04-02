@@ -1789,10 +1789,10 @@ namespace Microsoft.Xna.Framework
 		/// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
 		public static bool operator ==(Color a, Color b)
 		{
-			return (a.A == b.A &&
-				a.R == b.R &&
-				a.G == b.G &&
-				a.B == b.B);
+			return (	a.A == b.A &&
+					a.R == b.R &&
+					a.G == b.G &&
+					a.B == b.B	);
 		}
 
 		/// <summary>
@@ -1833,7 +1833,8 @@ namespace Microsoft.Xna.Framework
 		/// <returns>Multiplication result.</returns>
 		public static Color Multiply(Color value, float scale)
 		{
-			return new Color((int) (value.R * scale),
+			return new Color(
+				(int) (value.R * scale),
 				(int) (value.G * scale),
 				(int) (value.B * scale),
 				(int) (value.A * scale)
@@ -1848,7 +1849,8 @@ namespace Microsoft.Xna.Framework
 		/// <returns>Multiplication result.</returns>
 		public static Color operator *(Color value, float scale)
 		{
-			return new Color((int) (value.R * scale),
+			return new Color(
+				(int) (value.R * scale),
 				(int) (value.G * scale),
 				(int) (value.B * scale),
 				(int) (value.A * scale)
