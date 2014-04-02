@@ -148,8 +148,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 				EnsureArrayCapacity(numBatchesToProcess);
 				// Draw the batches
-				foreach (SpriteBatchItem item in _batchItemList)
+				for (int i = 0; i < numBatchesToProcess; i += 1, batchIndex += 1)
 				{
+					SpriteBatchItem item = _batchItemList[batchIndex];
 					// if the texture changed, we need to flush and bind the new texture
 					bool shouldFlush = !ReferenceEquals(item.Texture, tex);
 					if (shouldFlush)
