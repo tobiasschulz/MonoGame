@@ -34,11 +34,10 @@ SOFTWARE.
 
 namespace Microsoft.Xna.Framework
 {
-    public enum ContainmentType
-    {
-        Disjoint,
-        Contains,
-        Intersects
-    }
+	public enum ContainmentType
+	{
+		Disjoint,
+		Contains,
+		Intersects
+	}
 }
-
