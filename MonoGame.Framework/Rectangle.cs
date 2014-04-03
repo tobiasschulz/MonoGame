@@ -49,7 +49,7 @@ namespace Microsoft.Xna.Framework
 		public int Left
 		{
 			get
-			{ 
+			{
 				return this.X;
 			}
 		}
@@ -64,7 +64,7 @@ namespace Microsoft.Xna.Framework
 
 		public int Top
 		{
-			get 
+			get
 			{
 				return this.Y;
 			}
@@ -118,9 +118,9 @@ namespace Microsoft.Xna.Framework
 
 		public static Rectangle Empty
 		{
-			get 
-			{ 
-				return emptyRectangle; 
+			get
+			{
+				return emptyRectangle;
 			}
 		}
 
@@ -251,8 +251,8 @@ namespace Microsoft.Xna.Framework
 
 		public void Intersects(ref Rectangle value, out bool result)
 		{
-			result = (	value.Left < Right && 
-					Left < value.Right && 
+			result = (	value.Left < Right &&
+					Left < value.Right &&
 					value.Top  < Bottom &&
 					Top < value.Bottom	);
 		}
@@ -298,7 +298,7 @@ namespace Microsoft.Xna.Framework
 				result = new Rectangle(	left_side,
 							top_side,
 							right_side - left_side,
-							bottom_side - top_side	
+							bottom_side - top_side
 				);
 			}
 			else

@@ -331,7 +331,7 @@ namespace Microsoft.Xna.Framework
 			result.Z = axis.Z * num;
 			result.W = num3;
 		}
-			
+
 		public static Quaternion CreateFromRotationMatrix(Matrix matrix)
 		{
 			float num8 = (matrix.M11 + matrix.M22) + matrix.M33;

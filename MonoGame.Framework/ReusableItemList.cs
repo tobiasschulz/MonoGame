@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework
 				_list[index] = value;
 			}
 		}
-			
+
 		public int Count
 		{
 			get

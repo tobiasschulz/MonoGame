@@ -23,11 +23,35 @@ namespace Microsoft.Xna.Framework
 	{
 		#region Public Properties
 
-		public long PreviousTime { get; set; }
-		public long TotalTime { get; set; }
-		public long MaxTime { get; set; }
-		public long HitCount { get; set; }
-		public string Name { get; set; }
+		public long PreviousTime
+		{
+			get;
+			set;
+		}
+
+		public long TotalTime
+		{
+			get;
+			set;
+		}
+
+		public long MaxTime
+		{
+			get;
+			set;
+		}
+
+		public long HitCount
+		{
+			get;
+			set;
+		}
+
+		public string Name
+		{
+			get;
+			set;
+		}
 
 		#endregion
 
@@ -46,8 +70,8 @@ namespace Microsoft.Xna.Framework
 				Name,
 				(100*TotalTime) / PerformanceCounter.ElapsedTime,
 				HitCount,
-				TotalTime, 
-				MaxTime, 
+				TotalTime,
+				MaxTime,
 				TotalTime/HitCount
 			);
 		}
@@ -117,12 +141,14 @@ namespace Microsoft.Xna.Framework
 				StackFrame stackFrame = stackTrace.GetFrame(1);
 				MethodBase methodBase = stackFrame.GetMethod();
 
-				item.Name = (	"ID: " +
-						Name +
-						" In " +
-						methodBase.ReflectedType.ToString() +
-						"::" +
-						methodBase.Name	);
+				item.Name = (
+					"ID: " +
+					Name +
+					" In " +
+					methodBase.ReflectedType.ToString() +
+					"::" +
+					methodBase.Name
+				);
 
 				item.PreviousTime = DateTime.Now.Ticks;
 				_list.Add(Name, item);
