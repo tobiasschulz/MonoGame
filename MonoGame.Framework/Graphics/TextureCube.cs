@@ -142,41 +142,45 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new ArgumentNullException("data");
 			}
 
+			int xOffset, yOffset, width, height;
+			if (rect.HasValue)
+			{
+				xOffset = rect.Value.X;
+				yOffset = rect.Value.Y;
+				width = rect.Value.Width;
+				height = rect.Value.Height;
+			}
+			else
+			{
+				xOffset = 0;
+				yOffset = 0;
+				width = Math.Max(1, Size >> level);
+				height = Math.Max(1, Size >> level);
+
+				// For DXT textures the width and height of each level is a multiple of 4.
+				// OpenGL only: The last two mip levels require the width and height to be
+				// passed as 2x2 and 1x1, but there needs to be enough data passed to occupy
+				// a 4x4 block.
+				// Ref: http://www.mentby.com/Group/mac-opengl/issue-with-dxt-mipmapped-textures.html
+				if (	Format == SurfaceFormat.Dxt1 ||
+					Format == SurfaceFormat.Dxt3 ||
+					Format == SurfaceFormat.Dxt5	)
+				{
+					if (width > 4)
+					{
+						width = (width + 3) & ~3;
+					}
+					if (height > 4)
+					{
+						height = (height + 3) & ~3;
+					}
+				}
+			}
+
 			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
 			try
 			{
-				int xOffset, yOffset, width, height;
-				if (rect.HasValue)
-				{
-					xOffset = rect.Value.X;
-					yOffset = rect.Value.Y;
-					width = rect.Value.Width;
-					height = rect.Value.Height;
-				}
-				else
-				{
-					xOffset = 0;
-					yOffset = 0;
-					width = Math.Max(1, Size >> level);
-					height = Math.Max(1, Size >> level);
-
-					// For DXT textures the width and height of each level is a multiple of 4.
-					// OpenGL only: The last two mip levels require the width and height to be
-					// passed as 2x2 and 1x1, but there needs to be enough data passed to occupy
-					// a 4x4 block.
-					// Ref: http://www.mentby.com/Group/mac-opengl/issue-with-dxt-mipmapped-textures.html
-					if (	Format == SurfaceFormat.Dxt1 ||
-						Format == SurfaceFormat.Dxt3 ||
-						Format == SurfaceFormat.Dxt5	)
-					{
-						if (width > 4)
-							width = (width + 3) & ~3;
-						if (height > 4)
-							height = (height + 3) & ~3;
-					}
-				}
-
 				OpenGLDevice.Instance.BindTexture(texture);
 				if (glFormat == (PixelFormat) All.CompressedTextureFormats)
 				{
