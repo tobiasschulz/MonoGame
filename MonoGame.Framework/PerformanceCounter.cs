@@ -20,112 +20,129 @@ namespace Microsoft.Xna.Framework
 {
 
 	internal class PerformanceItem
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        public long PreviousTime { get; set; }
-        public long TotalTime { get; set; }
-        public long MaxTime { get; set; }
-        public long HitCount { get; set; }
-        public string Name { get; set; }
+		public long PreviousTime { get; set; }
+		public long TotalTime { get; set; }
+		public long MaxTime { get; set; }
+		public long HitCount { get; set; }
+		public string Name { get; set; }
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public void Dump()
+		public void Dump()
 		{
 			Debug.WriteLine(ToString());
 		}
-		
-		public override string ToString ()
+
+		public override string ToString()
 		{
-			return string.Format("[{0}({1}%)\t HitCount={2}\t TotalTime={3}ms\t MaxTime={4}ms\t AverageTime={5}ms]", Name,(100*TotalTime)/PerformanceCounter.ElapsedTime,HitCount,TotalTime, MaxTime, TotalTime/HitCount);
+			return string.Format(
+				"[{0}({1}%)\t HitCount={2}\t TotalTime={3}ms\t " +
+					"MaxTime={4}ms\t AverageTime={5}ms]",
+				Name,
+				(100*TotalTime) / PerformanceCounter.ElapsedTime,
+				HitCount,
+				TotalTime, 
+				MaxTime, 
+				TotalTime/HitCount
+			);
 		}
 
-        #endregion
-    }
-	
+		#endregion
+	}
+
 	public static class PerformanceCounter
-    {
-        #region Public Static Properties
+	{
+		#region Public Static Properties
 
-        public static long ElapsedTime
-        {
-            get
-            {
-                return _endTime - _startTime;
-            }
-        }
+		public static long ElapsedTime
+		{
+			get
+			{
+				return _endTime - _startTime;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
-        private static Dictionary<string,PerformanceItem> _list = new Dictionary<string, PerformanceItem>();
+		#region Private Variables
+
+		private static Dictionary<string, PerformanceItem> _list =
+			new Dictionary<string, PerformanceItem>();
 		private static long _startTime = DateTime.Now.Ticks;
 		private static long _endTime;
-        #endregion
 
-        #region Public Static Methods
+		#endregion
 
-        public static void Dump()
+		#region Public Static Methods
+
+		public static void Dump()
 		{
-            _endTime = DateTime.Now.Ticks;
+			_endTime = DateTime.Now.Ticks;
 
-            Debug.WriteLine("Performance count results");
-            Debug.WriteLine("=========================");
-            Debug.WriteLine("Execution Time: " + ElapsedTime + "ms.");
-			
+			Debug.WriteLine("Performance count results");
+			Debug.WriteLine("=========================");
+			Debug.WriteLine("Execution Time: " + ElapsedTime + "ms.");
+
 			foreach (PerformanceItem item in _list.Values)
 			{
 				item.Dump();
 			}
-			
+
 			Debug.WriteLine("=========================");
 		}
-		
+
 		public static void Begin()
 		{
-            _startTime = DateTime.Now.Ticks;
+			_startTime = DateTime.Now.Ticks;
 		}
 
-        public static void BeginMensure(string Name)
-        {
-            PerformanceItem item;
-            if (_list.ContainsKey(Name))
-            {
-                item = _list[Name];
-                item.PreviousTime = DateTime.Now.Ticks;
-            }
-            else
-            {
-                item = new PerformanceItem();
+		public static void BeginMensure(string Name)
+		{
+			PerformanceItem item;
+			if (_list.ContainsKey(Name))
+			{
+				item = _list[Name];
+				item.PreviousTime = DateTime.Now.Ticks;
+			}
+			else
+			{
+				item = new PerformanceItem();
 
-                var stackTrace = new StackTrace();
-                var stackFrame = stackTrace.GetFrame(1);
-                MethodBase methodBase = stackFrame.GetMethod();
+				StackTrace stackTrace = new StackTrace();
+				StackFrame stackFrame = stackTrace.GetFrame(1);
+				MethodBase methodBase = stackFrame.GetMethod();
 
-                item.Name = "ID: " + Name + " In " + methodBase.ReflectedType.ToString() + "::" + methodBase.Name;
+				item.Name = (	"ID: " +
+						Name +
+						" In " +
+						methodBase.ReflectedType.ToString() +
+						"::" +
+						methodBase.Name	);
 
-                item.PreviousTime = DateTime.Now.Ticks;
-                _list.Add(Name, item);
-            }
-        }
+				item.PreviousTime = DateTime.Now.Ticks;
+				_list.Add(Name, item);
+			}
+		}
 
-        public static void EndMensure(string Name)
-        {
-            PerformanceItem item = _list[Name];
-            var elapsedTime = DateTime.Now.Ticks - item.PreviousTime;
-            if (item.MaxTime < elapsedTime)
-            {
-                item.MaxTime = elapsedTime;
-            }
-            item.TotalTime += elapsedTime;
-            item.HitCount++;
-        }	
+		public static void EndMensure(string Name)
+		{
+			PerformanceItem item = _list[Name];
+			long elapsedTime = DateTime.Now.Ticks - item.PreviousTime;
+			if (item.MaxTime < elapsedTime)
+			{
+				item.MaxTime = elapsedTime;
+			}
+			item.TotalTime += elapsedTime;
+			item.HitCount += 1;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
 
 #endif
