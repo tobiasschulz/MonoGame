@@ -121,7 +121,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 

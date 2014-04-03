@@ -103,10 +103,10 @@ namespace Microsoft.Xna.Framework.Graphics
 						TextureTarget.Texture2D,
 						0,
 						glInternalFormat,
-						this.Width,
-						this.Height,
+						Width,
+						Height,
 						0,
-						((this.Width + 3) / 4) * ((this.Height + 3) / 4) * format.Size(),
+						((Width + 3) / 4) * ((Height + 3) / 4) * format.Size(),
 						IntPtr.Zero
 					);
 				}
@@ -116,8 +116,8 @@ namespace Microsoft.Xna.Framework.Graphics
 						TextureTarget.Texture2D,
 						0,
 						glInternalFormat,
-						this.Width,
-						this.Height,
+						Width,
+						Height,
 						0,
 						glFormat,
 						glType,
@@ -134,7 +134,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void SetData<T>(T[] data) where T : struct
 		{
-			this.SetData(
+			SetData(
 				0,
 				null,
 				data,
@@ -148,7 +148,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			int startIndex,
 			int elementCount
 		) where T : struct {
-			this.SetData(
+			SetData(
 				0,
 				null,
 				data,
@@ -259,7 +259,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						// Set pixel alignment to match texel size in bytes
 						GL.PixelStore(
 							PixelStoreParameter.UnpackAlignment,
-							GraphicsExtensions.Size(this.Format)
+							GraphicsExtensions.Size(Format)
 						);
 
 						if (rect.HasValue)
@@ -313,7 +313,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void GetData<T>(T[] data) where T : struct
 		{
-			this.GetData(
+			GetData(
 				0,
 				null,
 				data,

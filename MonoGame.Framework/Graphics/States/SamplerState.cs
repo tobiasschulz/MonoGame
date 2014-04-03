@@ -113,13 +113,13 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public SamplerState()
 		{
-			this.Filter = TextureFilter.Linear;
-			this.AddressU = TextureAddressMode.Wrap;
-			this.AddressV = TextureAddressMode.Wrap;
-			this.AddressW = TextureAddressMode.Wrap;
-			this.MaxAnisotropy = 4;
-			this.MaxMipLevel = 0;
-			this.MipMapLevelOfDetailBias = 0.0f;
+			Filter = TextureFilter.Linear;
+			AddressU = TextureAddressMode.Wrap;
+			AddressV = TextureAddressMode.Wrap;
+			AddressW = TextureAddressMode.Wrap;
+			MaxAnisotropy = 4;
+			MaxMipLevel = 0;
+			MipMapLevelOfDetailBias = 0.0f;
 		}
 
 		#endregion

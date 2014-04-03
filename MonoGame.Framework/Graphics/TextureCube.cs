@@ -158,8 +158,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					xOffset = 0;
 					yOffset = 0;
-					width = Math.Max(1, this.Size >> level);
-					height = Math.Max(1, this.Size >> level);
+					width = Math.Max(1, Size >> level);
+					height = Math.Max(1, Size >> level);
 
 					// For DXT textures the width and height of each level is a multiple of 4.
 					// OpenGL only: The last two mip levels require the width and height to be
