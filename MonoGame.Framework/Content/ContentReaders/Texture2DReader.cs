@@ -251,7 +251,7 @@ namespace Microsoft.Xna.Framework.Content
 				case SurfaceFormat.NormalizedByte4:
 					{
 						levelData = reader.ReadBytes(levelDataSizeInBytes);
-						int bytesPerPixel = surfaceFormat.Size();
+						int bytesPerPixel = 4; // According to Texture.GetFormatSize()
 						int pitch = levelWidth * bytesPerPixel;
 						for (int y = 0; y < levelHeight; y += 1)
 						{

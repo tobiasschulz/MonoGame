@@ -106,7 +106,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						Width,
 						Height,
 						0,
-						((Width + 3) / 4) * ((Height + 3) / 4) * format.Size(),
+						((Width + 3) / 4) * ((Height + 3) / 4) * GetFormatSize(),
 						IntPtr.Zero
 					);
 				}
@@ -259,7 +259,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						// Set pixel alignment to match texel size in bytes
 						GL.PixelStore(
 							PixelStoreParameter.UnpackAlignment,
-							GraphicsExtensions.Size(Format)
+							GetFormatSize()
 						);
 
 						if (rect.HasValue)
