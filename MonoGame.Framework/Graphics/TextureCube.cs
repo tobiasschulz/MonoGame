@@ -51,48 +51,51 @@ namespace Microsoft.Xna.Framework.Graphics
 			Format = format;
 			GetGLSurfaceFormat();
 
-			texture = new OpenGLDevice.OpenGLTexture(
-				TextureTarget.TextureCubeMap,
-				Format,
-				LevelCount > 1
-			);
-			texture.WrapS.Set(TextureAddressMode.Clamp);
-			texture.WrapT.Set(TextureAddressMode.Clamp);
-
-			OpenGLDevice.Instance.BindTexture(texture);
-			for (int i = 0; i < 6; i += 1)
+			Threading.ForceToMainThread(() =>
 			{
-				TextureTarget target = GetGLCubeFace((CubeMapFace) i);
+				texture = new OpenGLDevice.OpenGLTexture(
+					TextureTarget.TextureCubeMap,
+					Format,
+					LevelCount > 1
+				);
+				texture.WrapS.Set(TextureAddressMode.Clamp);
+				texture.WrapT.Set(TextureAddressMode.Clamp);
 
-				if (glFormat == (PixelFormat) All.CompressedTextureFormats)
+				OpenGLDevice.Instance.BindTexture(texture);
+				for (int i = 0; i < 6; i += 1)
 				{
-					throw new NotImplementedException();
+					TextureTarget target = GetGLCubeFace((CubeMapFace) i);
+
+					if (glFormat == (PixelFormat) All.CompressedTextureFormats)
+					{
+						throw new NotImplementedException();
+					}
+					else
+					{
+						GL.TexImage2D(
+							target,
+							0,
+							glInternalFormat,
+							size,
+							size,
+							0,
+							glFormat,
+							glType,
+							IntPtr.Zero
+						);
+					}
 				}
-				else
+				texture.Flush(true);
+
+				if (mipMap)
 				{
-					GL.TexImage2D(
-						target,
-						0,
-						glInternalFormat,
-						size,
-						size,
-						0,
-						glFormat,
-						glType,
-						IntPtr.Zero
+					GL.TexParameter(
+						TextureTarget.TextureCubeMap,
+						TextureParameterName.GenerateMipmap,
+						1
 					);
 				}
-			}
-			texture.Flush(true);
-
-			if (mipMap)
-			{
-				GL.TexParameter(
-					TextureTarget.TextureCubeMap,
-					TextureParameterName.GenerateMipmap,
-					1
-				);
-			}
+			});
 		}
 
 		#endregion
@@ -177,34 +180,37 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 			}
 
-			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			Threading.ForceToMainThread(() =>
+			{
+				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-			try
-			{
-				OpenGLDevice.Instance.BindTexture(texture);
-				if (glFormat == (PixelFormat) All.CompressedTextureFormats)
+				try
 				{
-					throw new NotImplementedException();
+					OpenGLDevice.Instance.BindTexture(texture);
+					if (glFormat == (PixelFormat) All.CompressedTextureFormats)
+					{
+						throw new NotImplementedException();
+					}
+					else
+					{
+						GL.TexSubImage2D(
+							GetGLCubeFace(face),
+							level,
+							xOffset,
+							yOffset,
+							width,
+							height,
+							glFormat,
+							glType,
+							(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)))
+						);
+					}
 				}
-				else
+				finally
 				{
-					GL.TexSubImage2D(
-						GetGLCubeFace(face),
-						level,
-						xOffset,
-						yOffset,
-						width,
-						height,
-						glFormat,
-						glType,
-						(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)))
-					);
+					dataHandle.Free();
 				}
-			}
-			finally
-			{
-				dataHandle.Free();
-			}
+			});
 		}
 
 		#endregion
