@@ -42,7 +42,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int Index
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -51,7 +51,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public string Name
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -60,7 +60,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public ModelBone Parent
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -73,10 +73,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			set;
 		}
 
+		#endregion
+
+		#region Internal Properties
+
 		/// <summary>
 		/// Transform of this node from the root of the model not from the parent
 		/// </summary>
-		public Matrix ModelTransform
+		internal Matrix ModelTransform
 		{
 			get;
 			set;

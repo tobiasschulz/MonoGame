@@ -26,7 +26,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public BoundingSphere BoundingSphere
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -35,7 +35,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public ModelEffectCollection Effects
 		{
 			get;
-			set;
+			private set;
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public ModelMeshPartCollection MeshParts
 		{
 			get;
-			set;
+			private set;
 		}
 
 		/// <summary>
@@ -54,7 +54,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public string Name
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -65,7 +65,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public ModelBone ParentBone
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>

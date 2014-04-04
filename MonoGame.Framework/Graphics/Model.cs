@@ -45,7 +45,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public ModelBone Root
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
