@@ -95,7 +95,6 @@
     <Compile Include="GamerServices\GamerPresenceMode.cs" />
     <Compile Include="GamerServices\GamerPrivileges.cs" />
     <Compile Include="GamerServices\GamerPrivilegeSetting.cs" />
-    <Compile Include="Input\AccelerometerState.cs" />
     <Compile Include="Input\ButtonState.cs" />
     <Compile Include="Input\GamePadState.cs" />
     <Compile Include="Input\KeyboardState.cs" />
@@ -400,7 +399,6 @@
     <Compile Include="Graphics\OcclusionQuery.cs" />
     <Compile Include="Input\Touch\TouchPanelState.cs" />
     <Compile Include="Audio\DynamicSoundEffectInstance.cs" />
-    <Compile Include="Input\AccelerometerCapabilities.cs" />
     <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
     <Compile Include="GamerServices\GameUpdateRequiredException.cs" />
     <Compile Include="FrameworkDispatcher.cs" />
