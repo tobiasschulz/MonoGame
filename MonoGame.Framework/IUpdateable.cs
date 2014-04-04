@@ -15,20 +15,31 @@ namespace Microsoft.Xna.Framework
 {
 	public interface IUpdateable
 	{
-        #region Properties
-        bool Enabled { get; }
+		#region Properties
 
-        int UpdateOrder { get; }
-        #endregion
+		bool Enabled
+		{
+			get;
+		}
 
-        #region Events
-        event EventHandler<EventArgs> EnabledChanged;
+		int UpdateOrder
+		{
+			get;
+		}
 
-        event EventHandler<EventArgs> UpdateOrderChanged;
-        #endregion
-        
-        #region Methods
+		#endregion
+
+		#region Events
+
+		event EventHandler<EventArgs> EnabledChanged;
+		event EventHandler<EventArgs> UpdateOrderChanged;
+
+		#endregion
+
+		#region Methods
+
 		void Update(GameTime gameTime);
+
 		#endregion
 	}
 }

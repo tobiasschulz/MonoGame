@@ -55,10 +55,12 @@ namespace Microsoft.Xna.Framework
 		/// </returns>
 		public static float ClassifyPoint(ref Vector3 point, ref Plane plane)
 		{
-			return (	(point.X * plane.Normal.X) +
-					(point.Y * plane.Normal.Y) +
-					(point.Z * plane.Normal.Z) +
-					plane.D	);
+			return (
+				(point.X * plane.Normal.X) +
+				(point.Y * plane.Normal.Y) +
+				(point.Z * plane.Normal.Z) +
+				plane.D
+			);
 		}
 
 		/// <summary>
@@ -71,13 +73,15 @@ namespace Microsoft.Xna.Framework
 		{
 			// dist = (ax + by + cz + d) / sqrt(a*a + b*b + c*c)
 			return (float) Math.Abs(
-				(	(plane.Normal.X * point.X) +
+				(
+					(plane.Normal.X * point.X) +
 					(plane.Normal.Y * point.Y) +
-					(plane.Normal.Z * point.Z)	) /
-				Math.Sqrt(
+					(plane.Normal.Z * point.Z)
+				) / Math.Sqrt(
 					(plane.Normal.X * plane.Normal.X) +
 					(plane.Normal.Y * plane.Normal.Y) +
-					(plane.Normal.Z * plane.Normal.Z)	)
+					(plane.Normal.Z * plane.Normal.Z)
+				)
 			);
 		}
 
@@ -133,51 +137,60 @@ namespace Microsoft.Xna.Framework
 
 		public float Dot(Vector4 value)
 		{
-			return (	(this.Normal.X * value.X) +
-					(this.Normal.Y * value.Y) +
-					(this.Normal.Z * value.Z) +
-					(this.D * value.W)
+			return (
+				(this.Normal.X * value.X) +
+				(this.Normal.Y * value.Y) +
+				(this.Normal.Z * value.Z) +
+				(this.D * value.W)
 			);
 		}
 
 		public void Dot(ref Vector4 value, out float result)
 		{
-			result = (	(this.Normal.X * value.X) +
-					(this.Normal.Y * value.Y) +
-					(this.Normal.Z * value.Z) +
-					(this.D * value.W)	);
+			result = (
+				(this.Normal.X * value.X) +
+				(this.Normal.Y * value.Y) +
+				(this.Normal.Z * value.Z) +
+				(this.D * value.W)
+			);
 		}
 
 		public float DotCoordinate(Vector3 value)
 		{
-			return (	(this.Normal.X * value.X) +
-					(this.Normal.Y * value.Y) +
-					(this.Normal.Z * value.Z) +
-					this.D
+			return (
+				(this.Normal.X * value.X) +
+				(this.Normal.Y * value.Y) +
+				(this.Normal.Z * value.Z) +
+				this.D
 			);
 		}
 
 		public void DotCoordinate(ref Vector3 value, out float result)
 		{
-			result = (	(this.Normal.X * value.X) +
-					(this.Normal.Y * value.Y) +
-					(this.Normal.Z * value.Z) +
-					this.D	);
+			result = (
+				(this.Normal.X * value.X) +
+				(this.Normal.Y * value.Y) +
+				(this.Normal.Z * value.Z) +
+				this.D
+			);
 		}
 
 		public float DotNormal(Vector3 value)
 		{
-			return (	(this.Normal.X * value.X) +
-					(this.Normal.Y * value.Y) +
-					(this.Normal.Z * value.Z)
+			return (
+				(this.Normal.X * value.X) +
+				(this.Normal.Y * value.Y) +
+				(this.Normal.Z * value.Z)
 			);
 		}
 
 		public void DotNormal(ref Vector3 value, out float result)
 		{
-			result = (	(this.Normal.X * value.X) +
-					(this.Normal.Y * value.Y) +
-					(this.Normal.Z * value.Z)	);
+			result = (
+				(this.Normal.X * value.X) +
+				(this.Normal.Y * value.Y) +
+				(this.Normal.Z * value.Z)
+			);
 		}
 
 		public void Normalize()
@@ -185,12 +198,15 @@ namespace Microsoft.Xna.Framework
 			float factor;
 			Vector3 normal = Normal;
 			Normal = Vector3.Normalize(Normal);
-			factor = (float) Math.Sqrt(	Normal.X * Normal.X +
-							Normal.Y * Normal.Y +
-							Normal.Z * Normal.Z	) /
-				(float) Math.Sqrt(	normal.X * normal.X +
-							normal.Y * normal.Y +
-							normal.Z * normal.Z	);
+			factor = (float) Math.Sqrt(
+				Normal.X * Normal.X +
+				Normal.Y * Normal.Y +
+				Normal.Z * Normal.Z
+			) / (float) Math.Sqrt(
+				normal.X * normal.X +
+				normal.Y * normal.Y +
+				normal.Z * normal.Z
+			);
 			D = D * factor;
 		}
 
