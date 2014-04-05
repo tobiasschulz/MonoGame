@@ -2046,95 +2046,31 @@ namespace Microsoft.Xna.Framework
 
 		public static Matrix operator +(Matrix matrix1, Matrix matrix2)
 		{
-			Matrix.Add(ref matrix1, ref matrix2, out matrix1);
-			return matrix1;
+			return Matrix.Add(matrix1, matrix2);
 		}
 
 
 		public static Matrix operator /(Matrix matrix1, Matrix matrix2)
 		{
-			matrix1.M11 = matrix1.M11 / matrix2.M11;
-			matrix1.M12 = matrix1.M12 / matrix2.M12;
-			matrix1.M13 = matrix1.M13 / matrix2.M13;
-			matrix1.M14 = matrix1.M14 / matrix2.M14;
-			matrix1.M21 = matrix1.M21 / matrix2.M21;
-			matrix1.M22 = matrix1.M22 / matrix2.M22;
-			matrix1.M23 = matrix1.M23 / matrix2.M23;
-			matrix1.M24 = matrix1.M24 / matrix2.M24;
-			matrix1.M31 = matrix1.M31 / matrix2.M31;
-			matrix1.M32 = matrix1.M32 / matrix2.M32;
-			matrix1.M33 = matrix1.M33 / matrix2.M33;
-			matrix1.M34 = matrix1.M34 / matrix2.M34;
-			matrix1.M41 = matrix1.M41 / matrix2.M41;
-			matrix1.M42 = matrix1.M42 / matrix2.M42;
-			matrix1.M43 = matrix1.M43 / matrix2.M43;
-			matrix1.M44 = matrix1.M44 / matrix2.M44;
-			return matrix1;
+			return Matrix.Divide(matrix1, matrix2);
 		}
 
 
 		public static Matrix operator /(Matrix matrix, float divider)
 		{
-			float num = 1f / divider;
-			matrix.M11 = matrix.M11 * num;
-			matrix.M12 = matrix.M12 * num;
-			matrix.M13 = matrix.M13 * num;
-			matrix.M14 = matrix.M14 * num;
-			matrix.M21 = matrix.M21 * num;
-			matrix.M22 = matrix.M22 * num;
-			matrix.M23 = matrix.M23 * num;
-			matrix.M24 = matrix.M24 * num;
-			matrix.M31 = matrix.M31 * num;
-			matrix.M32 = matrix.M32 * num;
-			matrix.M33 = matrix.M33 * num;
-			matrix.M34 = matrix.M34 * num;
-			matrix.M41 = matrix.M41 * num;
-			matrix.M42 = matrix.M42 * num;
-			matrix.M43 = matrix.M43 * num;
-			matrix.M44 = matrix.M44 * num;
-			return matrix;
+			return Matrix.Divide(matrix, divider);
 		}
 
 
 		public static bool operator ==(Matrix matrix1, Matrix matrix2)
 		{
-			return (	matrix1.M11 == matrix2.M11 &&
-					matrix1.M12 == matrix2.M12 &&
-					matrix1.M13 == matrix2.M13 &&
-					matrix1.M14 == matrix2.M14 &&
-					matrix1.M21 == matrix2.M21 &&
-					matrix1.M22 == matrix2.M22 &&
-					matrix1.M23 == matrix2.M23 &&
-					matrix1.M24 == matrix2.M24 &&
-					matrix1.M31 == matrix2.M31 &&
-					matrix1.M32 == matrix2.M32 &&
-					matrix1.M33 == matrix2.M33 &&
-					matrix1.M34 == matrix2.M34 &&
-					matrix1.M41 == matrix2.M41 &&
-					matrix1.M42 == matrix2.M42 &&
-					matrix1.M43 == matrix2.M43 &&
-					matrix1.M44 == matrix2.M44	);
+			return matrix1.Equals(matrix2);
 		}
 
 
 		public static bool operator !=(Matrix matrix1, Matrix matrix2)
 		{
-			return (	matrix1.M11 != matrix2.M11 ||
-					matrix1.M12 != matrix2.M12 ||
-					matrix1.M13 != matrix2.M13 ||
-					matrix1.M14 != matrix2.M14 ||
-					matrix1.M21 != matrix2.M21 ||
-					matrix1.M22 != matrix2.M22 ||
-					matrix1.M23 != matrix2.M23 ||
-					matrix1.M24 != matrix2.M24 ||
-					matrix1.M31 != matrix2.M31 ||
-					matrix1.M32 != matrix2.M32 ||
-					matrix1.M33 != matrix2.M33 ||
-					matrix1.M34 != matrix2.M34 ||
-					matrix1.M41 != matrix2.M41 ||
-					matrix1.M42 != matrix2.M42 ||
-					matrix1.M43 != matrix2.M43 ||
-					matrix1.M44 != matrix2.M44	);
+			return !matrix1.Equals(matrix2);
 		}
 
 		public static Matrix operator *(Matrix matrix1, Matrix matrix2)
