@@ -13,34 +13,34 @@ using System;
 
 namespace Microsoft.Xna.Framework
 {
-    public class GameComponentCollectionEventArgs : EventArgs
-    {
-        #region Public Properties
+	public class GameComponentCollectionEventArgs : EventArgs
+	{
+		#region Public Properties
 
-        public IGameComponent GameComponent
-        {
-            get
-            {
-                return _gameComponent;
-            }
-        }
+		public IGameComponent GameComponent
+		{
+			get
+			{
+				return _gameComponent;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        private IGameComponent _gameComponent;
+		private IGameComponent _gameComponent;
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public GameComponentCollectionEventArgs(IGameComponent gameComponent)
-        {
-            _gameComponent = gameComponent;
-        }
+		public GameComponentCollectionEventArgs(IGameComponent gameComponent)
+		{
+			_gameComponent = gameComponent;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
 

@@ -12,7 +12,7 @@ using System;
 #endregion
 
 namespace Microsoft.Xna.Framework
-{   
+{
     public class GameComponent : IGameComponent, IUpdateable, IComparable<GameComponent>, IDisposable
     {
         #region Public Properties

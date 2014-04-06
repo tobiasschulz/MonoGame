@@ -15,24 +15,36 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Microsoft.Xna.Framework
 {
 	public class GraphicsDeviceInformation
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        public GraphicsAdapter Adapter { get; set; }
+		public GraphicsAdapter Adapter
+		{
+			get;
+			set;
+		}
 
-        public GraphicsProfile GraphicsProfile { get; set; }
+		public GraphicsProfile GraphicsProfile
+		{
+			get;
+			set;
+		}
 
-        public PresentationParameters PresentationParameters { get; set; }
+		public PresentationParameters PresentationParameters
+		{
+			get;
+			set;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public GraphicsDeviceInformation ()
+		public GraphicsDeviceInformation()
 		{
 		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
 
