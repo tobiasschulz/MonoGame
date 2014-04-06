@@ -1,6 +1,8 @@
 #!/bin/bash
 
 git remote add flibit https://github.com/flibitijibibo/MonoGame.git
+git remote set-url origin git@github.com:tobiasschulz/MonoGame-SDL2.git
+
 git pull
 git checkout -f monogame-sdl2
 git fetch flibit
