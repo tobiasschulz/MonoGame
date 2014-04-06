@@ -170,7 +170,7 @@ namespace Microsoft.Xna.Framework
 		private DisplayOrientation _supportedOrientations;
 		private bool _synchronizedWithVerticalRetrace = true;
 		private bool _drawBegun;
-		bool disposed;
+		private bool disposed;
 		private bool _wantFullScreen = false;
 
 		#endregion
@@ -265,7 +265,9 @@ namespace Microsoft.Xna.Framework
 		{
 			// Calling ApplyChanges() before CreateDevice() should have no effect
 			if (_graphicsDevice == null)
+			{
 				return;
+			}
 
 			// Notify DeviceResetting EventHandlers
 			OnDeviceResetting(null);
@@ -386,10 +388,10 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region IGraphicsDeviceService Internal Methods
+		#region Internal IGraphicsDeviceService Methods
 
 		/* FIXME: Why does the GraphicsDeviceManager not know enough about the
-		 *		GraphicsDevice to raise these events without help?
+		 * GraphicsDevice to raise these events without help?
 		 */
 		internal void OnDeviceDisposing(EventArgs e)
 		{
@@ -397,7 +399,7 @@ namespace Microsoft.Xna.Framework
 		}
 
 		/* FIXME: Why does the GraphicsDeviceManager not know enough about the
-		 *		GraphicsDevice to raise these events without help?
+		 * GraphicsDevice to raise these events without help?
 		 */
 		internal void OnDeviceResetting(EventArgs e)
 		{
@@ -405,7 +407,7 @@ namespace Microsoft.Xna.Framework
 		}
 
 		/* FIXME: Why does the GraphicsDeviceManager not know enough about the
-		 *		GraphicsDevice to raise these events without help?
+		 * GraphicsDevice to raise these events without help?
 		 */
 		internal void OnDeviceReset(EventArgs e)
 		{
@@ -413,7 +415,7 @@ namespace Microsoft.Xna.Framework
 		}
 
 		/* FIXME: Why does the GraphicsDeviceManager not know enough about the
-		 *		GraphicsDevice to raise these events without help?
+		 * GraphicsDevice to raise these events without help?
 		 */
 		internal void OnDeviceCreated(EventArgs e)
 		{

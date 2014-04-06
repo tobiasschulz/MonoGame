@@ -23,12 +23,14 @@ namespace Microsoft.Xna.Framework
 			set;
 		}
 
-		public TimeSpan ElapsedGameTime {
+		public TimeSpan ElapsedGameTime
+		{
 			get;
 			set;
 		}
 
-		public bool IsRunningSlowly {
+		public bool IsRunningSlowly
+		{
 			get;
 			set;
 		}
@@ -61,4 +63,3 @@ namespace Microsoft.Xna.Framework
 		#endregion
 	}
 }
-

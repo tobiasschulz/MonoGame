@@ -8,14 +8,16 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Input.Touch;
 using System;
 using System.ComponentModel;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
 #endregion
 
-namespace Microsoft.Xna.Framework {
-	public abstract class GameWindow {
+namespace Microsoft.Xna.Framework
+{
+	public abstract class GameWindow
+	{
 		#region Public Properties
 
 		[DefaultValue(false)]
@@ -131,7 +133,10 @@ namespace Microsoft.Xna.Framework {
 		public abstract void BeginScreenDeviceChange(bool willBeFullScreen);
 
 		public abstract void EndScreenDeviceChange(
-			string screenDeviceName, int clientWidth, int clientHeight);
+			string screenDeviceName,
+			int clientWidth,
+			int clientHeight
+		);
 
 		public void EndScreenDeviceChange(string screenDeviceName)
 		{

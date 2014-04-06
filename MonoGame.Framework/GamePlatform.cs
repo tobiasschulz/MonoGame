@@ -8,9 +8,9 @@
 #endregion
 
 #region Using Statements
+using System;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
-using System;
 #endregion
 
 namespace Microsoft.Xna.Framework
@@ -75,8 +75,6 @@ namespace Microsoft.Xna.Framework
 			{
 				return _window;
 			}
-
-
 			protected set
 			{
 				if (_window == null)
@@ -160,7 +158,7 @@ namespace Microsoft.Xna.Framework
 
 		/// <summary>
 		/// Gives derived classes an opportunity to do work before any
-		/// components are initialized.  Note that the base implementation sets
+		/// components are initialized. Note that the base implementation sets
 		/// IsActive to true, so derived classes should either call the base
 		/// implementation or set IsActive to true by their own means.
 		/// </summary>
@@ -179,7 +177,7 @@ namespace Microsoft.Xna.Framework
 
 		/// <summary>
 		/// Gives derived classes an opportunity to do work just before the
-		/// run loop is begun.  Implementations may also return false to prevent
+		/// run loop is begun. Implementations may also return false to prevent
 		/// the run loop from starting.
 		/// </summary>
 		/// <returns></returns>
@@ -207,7 +205,7 @@ namespace Microsoft.Xna.Framework
 
 		/// <summary>
 		/// Gives derived classes an opportunity to do work just before Update
-		/// is called for all IUpdatable components.  Returning false from this
+		/// is called for all IUpdatable components. Returning false from this
 		/// method will result in this round of Update calls being skipped.
 		/// </summary>
 		/// <param name="gameTime"></param>
@@ -216,7 +214,7 @@ namespace Microsoft.Xna.Framework
 
 		/// <summary>
 		/// Gives derived classes an opportunity to do work just before Draw
-		/// is called for all IDrawable components.  Returning false from this
+		/// is called for all IDrawable components. Returning false from this
 		/// method will result in this round of Draw calls being skipped.
 		/// </summary>
 		/// <param name="gameTime"></param>
@@ -270,9 +268,9 @@ namespace Microsoft.Xna.Framework
 		/// The new height of the game's client window.
 		/// </param>
 		public abstract void EndScreenDeviceChange(
-				 string screenDeviceName,
-				 int clientWidth,
-				 int clientHeight
+			string screenDeviceName,
+			int clientWidth,
+			int clientHeight
 		);
 
 		/// <summary>
@@ -283,7 +281,7 @@ namespace Microsoft.Xna.Framework
 
 		/// <summary>
 		/// MSDN: Use this method if your game is recovering from a slow-running state, and
-		/// ElapsedGameTime is too large to be useful.  Frame timing is generally handled
+		/// ElapsedGameTime is too large to be useful. Frame timing is generally handled
 		/// by the Game class, but some platforms still handle it elsewhere. Once all
 		/// platforms rely on the Game class's functionality, this method and any overrides
 		/// should be removed.
@@ -292,14 +290,14 @@ namespace Microsoft.Xna.Framework
 
 		protected virtual void OnIsMouseVisibleChanged() {}
 
-		public virtual void Present() { }
+		public virtual void Present() {}
 
 		#endregion
 
 		#region Protected Methods
 
 		/// <summary>
-		/// Raises the AsyncRunLoopEnded event.  This method must be called by
+		/// Raises the AsyncRunLoopEnded event. This method must be called by
 		/// derived classes when the asynchronous run loop they start has
 		/// stopped running.
 		/// </summary>
@@ -373,4 +371,3 @@ namespace Microsoft.Xna.Framework
 		#endregion
 	}
 }
-

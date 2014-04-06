@@ -13,118 +13,132 @@ using System;
 
 namespace Microsoft.Xna.Framework
 {
-    public class GameComponent : IGameComponent, IUpdateable, IComparable<GameComponent>, IDisposable
-    {
-        #region Public Properties
+	public class GameComponent : IGameComponent, IUpdateable, IComparable<GameComponent>, IDisposable
+	{
+		#region Public Properties
 
-        public Game Game { get; private set; }
+		public Game Game
+		{
+			get;
+			private set;
+		}
 
-        public bool Enabled
-        {
-            get { return _enabled; }
-            set
-            {
-                if (_enabled != value)
-                {
-                    _enabled = value;
-                    if (this.EnabledChanged != null)
-                        this.EnabledChanged(this, EventArgs.Empty);
-                    OnEnabledChanged(this, null);
-                }
-            }
-        }
+		public bool Enabled
+		{
+			get
+			{
+				return _enabled;
+			}
+			set
+			{
+				if (_enabled != value)
+				{
+					_enabled = value;
+					if (this.EnabledChanged != null)
+					{
+						this.EnabledChanged(this, EventArgs.Empty);
+					}
+					OnEnabledChanged(this, null);
+				}
+			}
+		}
 
-        public int UpdateOrder
-        {
-            get { return _updateOrder; }
-            set
-            {
-                if (_updateOrder != value)
-                {
-                    _updateOrder = value;
-                    if (this.UpdateOrderChanged != null)
-                        this.UpdateOrderChanged(this, EventArgs.Empty);
-                    OnUpdateOrderChanged(this, null);
-                }
-            }
-        }
+		public int UpdateOrder
+		{
+			get
+			{
+				return _updateOrder;
+			}
+			set
+			{
+				if (_updateOrder != value)
+				{
+					_updateOrder = value;
+					if (this.UpdateOrderChanged != null)
+					{
+						this.UpdateOrderChanged(this, EventArgs.Empty);
+					}
+					OnUpdateOrderChanged(this, null);
+				}
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        bool _enabled = true;
-        int _updateOrder;
+		bool _enabled = true;
+		int _updateOrder;
 
-        #endregion
+		#endregion
 
-        #region Events
+		#region Events
 
-        public event EventHandler<EventArgs> EnabledChanged;
-        public event EventHandler<EventArgs> UpdateOrderChanged;
+		public event EventHandler<EventArgs> EnabledChanged;
+		public event EventHandler<EventArgs> UpdateOrderChanged;
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public GameComponent(Game game)
-        {
-            this.Game = game;
-        }
+		public GameComponent(Game game)
+		{
+			this.Game = game;
+		}
 
-        #endregion
+		#endregion
 
-        #region Deconstructor
+		#region Deconstructor
 
-        ~GameComponent()
-        {
-            Dispose(false);
-        }
+		~GameComponent()
+		{
+			Dispose(false);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Dispose Method
+		#region Public Dispose Method
 
-        /// <summary>
-        /// Shuts down the component.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		/// <summary>
+		/// Shuts down the component.
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Virtual Methods
+		#region Public Virtual Methods
 
-        public virtual void Initialize() { }
+		public virtual void Initialize() {}
 
-        public virtual void Update(GameTime gameTime) { }
+		public virtual void Update(GameTime gameTime) {}
 
-        #endregion
+		#endregion
 
-        #region Protected Virtual Methods
+		#region Protected Virtual Methods
 
-        protected virtual void OnUpdateOrderChanged(object sender, EventArgs args) { }
+		protected virtual void OnUpdateOrderChanged(object sender, EventArgs args) {}
 
-        protected virtual void OnEnabledChanged(object sender, EventArgs args) { }
+		protected virtual void OnEnabledChanged(object sender, EventArgs args) {}
 
-        /// <summary>
-        /// Shuts down the component.
-        /// </summary>
-        protected virtual void Dispose(bool disposing) { }
+		/// <summary>
+		/// Shuts down the component.
+		/// </summary>
+		protected virtual void Dispose(bool disposing) {}
 
-        #endregion
+		#endregion
 
-        #region IComparable<GameComponent> Members
+		#region IComparable<GameComponent> Members
 
-        // TODO: Should be removed, as it is not part of XNA 4.0
-        public int CompareTo(GameComponent other)
-        {
-            return other.UpdateOrder - this.UpdateOrder;
-        }
+		// TODO: Should be removed, as it is not part of XNA 4.0
+		public int CompareTo(GameComponent other)
+		{
+			return other.UpdateOrder - this.UpdateOrder;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

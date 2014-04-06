@@ -19,17 +19,9 @@ namespace Microsoft.Xna.Framework
 
 		public IGameComponent GameComponent
 		{
-			get
-			{
-				return _gameComponent;
-			}
+			get;
+			private set;
 		}
-
-		#endregion
-
-		#region Private Variables
-
-		private IGameComponent _gameComponent;
 
 		#endregion
 
@@ -37,10 +29,9 @@ namespace Microsoft.Xna.Framework
 
 		public GameComponentCollectionEventArgs(IGameComponent gameComponent)
 		{
-			_gameComponent = gameComponent;
+			GameComponent = gameComponent;
 		}
 
 		#endregion
 	}
 }
-
