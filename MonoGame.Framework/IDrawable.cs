@@ -13,15 +13,21 @@ using System;
 
 namespace Microsoft.Xna.Framework
 {
-    public interface IDrawable
-    {
-        int DrawOrder { get; }
-        bool Visible { get; }
-		
+	public interface IDrawable
+	{
+		int DrawOrder
+		{
+			get;
+		}
+
+		bool Visible
+		{
+			get;
+		}
+
 		event EventHandler<EventArgs> DrawOrderChanged;
-        event EventHandler<EventArgs> VisibleChanged;
+		event EventHandler<EventArgs> VisibleChanged;
 
-        void Draw(GameTime gameTime);      
-    }
+		void Draw(GameTime gameTime);
+	}
 }
-
