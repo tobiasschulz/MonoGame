@@ -39,57 +39,71 @@ using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework
 {
-    public class GameServiceContainer : IServiceProvider
-    {
-        #region Private Fields
+	public class GameServiceContainer : IServiceProvider
+	{
+		#region Private Fields
 
-        Dictionary<Type, object> services;
+		Dictionary<Type, object> services;
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public GameServiceContainer()
-        {
-            services = new Dictionary<Type, object>();
-        }
+		public GameServiceContainer()
+		{
+			services = new Dictionary<Type, object>();
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public void AddService(Type type, object provider)
-        {
-            if (type == null)
-                throw new ArgumentNullException("type");
-            if (provider == null)
-                throw new ArgumentNullException("provider");
-            if (!type.IsAssignableFrom(provider.GetType()))
-                throw new ArgumentException("The provider does not match the specified service type!");
+		public void AddService(Type type, object provider)
+		{
+			if (type == null)
+			{
+				throw new ArgumentNullException("type");
+			}
+			if (provider == null)
+			{
+				throw new ArgumentNullException("provider");
+			}
+			if (!type.IsAssignableFrom(provider.GetType()))
+			{
+				throw new ArgumentException(
+					"The provider does not match the specified service type!"
+				);
+			}
 
-            services.Add(type, provider);
-        }
+			services.Add(type, provider);
+		}
 
-        public object GetService(Type type)
-        {
-            if (type == null)
-                throw new ArgumentNullException("type");
-						
-            object service;
-            if (services.TryGetValue(type, out service))
-                return service;
+		public object GetService(Type type)
+		{
+			if (type == null)
+			{
+				throw new ArgumentNullException("type");
+			}
 
-            return null;
-        }
+			object service;
+			if (services.TryGetValue(type, out service))
+			{
+				return service;
+			}
 
-        public void RemoveService(Type type)
-        {
-            if (type == null)
-                throw new ArgumentNullException("type");
+			return null;
+		}
 
-            services.Remove(type);
-        }
+		public void RemoveService(Type type)
+		{
+			if (type == null)
+			{
+				throw new ArgumentNullException("type");
+			}
 
-        #endregion
-    }
+			services.Remove(type);
+		}
+
+		#endregion
+	}
 }

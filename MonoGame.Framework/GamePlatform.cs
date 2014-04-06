@@ -15,332 +15,362 @@ using System;
 
 namespace Microsoft.Xna.Framework
 {
-    abstract class GamePlatform : IDisposable
-    {
-        #region Public Properties
+	abstract class GamePlatform : IDisposable
+	{
+		#region Public Properties
 
-        /// <summary>
-        /// When implemented in a derived class, reports the default
-        /// GameRunBehavior for this platform.
-        /// </summary>
-        public abstract GameRunBehavior DefaultRunBehavior { get; }
+		/// <summary>
+		/// When implemented in a derived class, reports the default
+		/// GameRunBehavior for this platform.
+		/// </summary>
+		public abstract GameRunBehavior DefaultRunBehavior
+		{
+			get;
+		}
 
-        /// <summary>
-        /// Gets the Game instance that owns this GamePlatform instance.
-        /// </summary>
-        public Game Game
-        {
-            get;
-            private set;
-        }
+		/// <summary>
+		/// Gets the Game instance that owns this GamePlatform instance.
+		/// </summary>
+		public Game Game
+		{
+			get;
+			private set;
+		}
 
-        public bool IsActive
-        {
-            get { return _isActive; }
-            internal set
-            {
-                if (_isActive != value)
-                {
-                    _isActive = value;
-                    Raise(_isActive ? Activated : Deactivated, EventArgs.Empty);
-                }
-            }
-        }
+		public bool IsActive
+		{
+			get
+			{
+				return _isActive;
+			}
+			internal set
+			{
+				if (_isActive != value)
+				{
+					_isActive = value;
+					Raise(_isActive ? Activated : Deactivated, EventArgs.Empty);
+				}
+			}
+		}
 
-        public bool IsMouseVisible
-        {
-            get { return _isMouseVisible; }
-            set
-            {
-                if (_isMouseVisible != value)
-                {
-                    _isMouseVisible = value;
-                    OnIsMouseVisibleChanged();
-                }
-            }
-        }
+		public bool IsMouseVisible
+		{
+			get
+			{
+				return _isMouseVisible;
+			}
+			set
+			{
+				if (_isMouseVisible != value)
+				{
+					_isMouseVisible = value;
+					OnIsMouseVisibleChanged();
+				}
+			}
+		}
 
-        public GameWindow Window
-        {
-            get { return _window; }
+		public GameWindow Window
+		{
+			get
+			{
+				return _window;
+			}
 
 
-            protected set
-            {
-                if (_window == null)
-                {
-                    Mouse.PrimaryWindow = value;
-                    TouchPanel.PrimaryWindow = value;
-                }
+			protected set
+			{
+				if (_window == null)
+				{
+					Mouse.PrimaryWindow = value;
+					TouchPanel.PrimaryWindow = value;
+				}
 
-                _window = value;
-            }
-        }
+				_window = value;
+			}
+		}
 
-        public virtual bool VSyncEnabled
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-            }
-        }
+		public virtual bool VSyncEnabled
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Protected Fields
+		#region Protected Fields
 
-        protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
-        protected bool _needsToResetElapsedTime = false;
-        protected bool IsDisposed { get { return disposed; } }
+		protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
+		protected bool _needsToResetElapsedTime = false;
 
-        #endregion
+		protected bool IsDisposed
+		{
+			get
+			{
+				return disposed;
+			}
+		}
 
-        #region Private Fields
+		#endregion
 
-        bool disposed;
-        private bool _isActive;
-        private bool _isMouseVisible;
-        private GameWindow _window;
+		#region Private Fields
 
-        #endregion
+		bool disposed;
+		private bool _isActive;
+		private bool _isMouseVisible;
+		private GameWindow _window;
 
-        #region Protected Constructor
+		#endregion
 
-        protected GamePlatform(Game game)
-        {
-            if (game == null)
-                throw new ArgumentNullException("game");
-            Game = game;
-        }
-        
-        #endregion
+		#region Protected Constructor
 
-        #region Deconstructor
+		protected GamePlatform(Game game)
+		{
+			if (game == null)
+			{
+				throw new ArgumentNullException("game");
+			}
+			Game = game;
+		}
 
-        ~GamePlatform()
-        {
-            Dispose(false);
-        }
+		#endregion
 
-        #endregion
+		#region Deconstructor
 
-        #region Events
+		~GamePlatform()
+		{
+			Dispose(false);
+		}
 
-        public event EventHandler<EventArgs> AsyncRunLoopEnded;
-        public event EventHandler<EventArgs> Activated;
-        public event EventHandler<EventArgs> Deactivated;
-        
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Events
 
-        /// <summary>
-        /// Gives derived classes an opportunity to do work before any
-        /// components are initialized.  Note that the base implementation sets
-        /// IsActive to true, so derived classes should either call the base
-        /// implementation or set IsActive to true by their own means.
-        /// </summary>
-        public virtual void BeforeInitialize()
-        {
-            IsActive = true;
-            if (this.Game.GraphicsDevice == null) 
-            {
-                var graphicsDeviceManager = Game.Services.GetService(typeof(IGraphicsDeviceManager)) as IGraphicsDeviceManager;			   
-                graphicsDeviceManager.CreateDevice();
-            }
-        }
+		public event EventHandler<EventArgs> AsyncRunLoopEnded;
+		public event EventHandler<EventArgs> Activated;
+		public event EventHandler<EventArgs> Deactivated;
 
-        /// <summary>
-        /// Gives derived classes an opportunity to do work just before the
-        /// run loop is begun.  Implementations may also return false to prevent
-        /// the run loop from starting.
-        /// </summary>
-        /// <returns></returns>
-        public virtual bool BeforeRun()
-        {
-            return true;
-        }
+		#endregion
 
-        /// <summary>
-        /// When implemented in a derived, ends the active run loop.
-        /// </summary>
-        public abstract void Exit();
+		#region Public Methods
 
-        /// <summary>
-        /// When implemented in a derived, starts the run loop and blocks
-        /// until it has ended.
-        /// </summary>
-        public abstract void RunLoop();
+		/// <summary>
+		/// Gives derived classes an opportunity to do work before any
+		/// components are initialized.  Note that the base implementation sets
+		/// IsActive to true, so derived classes should either call the base
+		/// implementation or set IsActive to true by their own means.
+		/// </summary>
+		public virtual void BeforeInitialize()
+		{
+			IsActive = true;
+			if (this.Game.GraphicsDevice == null)
+			{
+				IGraphicsDeviceManager graphicsDeviceManager = Game.Services.GetService(
+					typeof(IGraphicsDeviceManager)
+				) as IGraphicsDeviceManager;
 
-        /// <summary>
-        /// When implemented in a derived, starts the run loop and returns
-        /// immediately.
-        /// </summary>
-        public abstract void StartRunLoop();
+				graphicsDeviceManager.CreateDevice();
+			}
+		}
 
-        /// <summary>
-        /// Gives derived classes an opportunity to do work just before Update
-        /// is called for all IUpdatable components.  Returning false from this
-        /// method will result in this round of Update calls being skipped.
-        /// </summary>
-        /// <param name="gameTime"></param>
-        /// <returns></returns>
-        public abstract bool BeforeUpdate(GameTime gameTime);
+		/// <summary>
+		/// Gives derived classes an opportunity to do work just before the
+		/// run loop is begun.  Implementations may also return false to prevent
+		/// the run loop from starting.
+		/// </summary>
+		/// <returns></returns>
+		public virtual bool BeforeRun()
+		{
+			return true;
+		}
 
-        /// <summary>
-        /// Gives derived classes an opportunity to do work just before Draw
-        /// is called for all IDrawable components.  Returning false from this
-        /// method will result in this round of Draw calls being skipped.
-        /// </summary>
-        /// <param name="gameTime"></param>
-        /// <returns></returns>
-        public abstract bool BeforeDraw(GameTime gameTime);
+		/// <summary>
+		/// When implemented in a derived, ends the active run loop.
+		/// </summary>
+		public abstract void Exit();
 
-        /// <summary>
-        /// When implemented in a derived class, causes the game to enter
-        /// full-screen mode.
-        /// </summary>
-        public abstract void EnterFullScreen();
+		/// <summary>
+		/// When implemented in a derived, starts the run loop and blocks
+		/// until it has ended.
+		/// </summary>
+		public abstract void RunLoop();
 
-        /// <summary>
-        /// When implemented in a derived class, causes the game to exit
-        /// full-screen mode.
-        /// </summary>
-        public abstract void ExitFullScreen();
+		/// <summary>
+		/// When implemented in a derived, starts the run loop and returns
+		/// immediately.
+		/// </summary>
+		public abstract void StartRunLoop();
 
-        /// <summary>
-        /// Gives derived classes an opportunity to modify
-        /// Game.TargetElapsedTime before it is set.
-        /// </summary>
-        /// <param name="value">The proposed new value of TargetElapsedTime.</param>
-        /// <returns>The new value of TargetElapsedTime that will be set.</returns>
-        public virtual TimeSpan TargetElapsedTimeChanging(TimeSpan value)
-        {
-            return value;
-        }
-        /// <summary>
-        /// Starts a device transition (windowed to full screen or vice versa).
-        /// </summary>
-        /// <param name='willBeFullScreen'>
-        /// Specifies whether the device will be in full-screen mode upon completion of the change.
-        /// </param>
-        public abstract void BeginScreenDeviceChange (
-                 bool willBeFullScreen
-        );
+		/// <summary>
+		/// Gives derived classes an opportunity to do work just before Update
+		/// is called for all IUpdatable components.  Returning false from this
+		/// method will result in this round of Update calls being skipped.
+		/// </summary>
+		/// <param name="gameTime"></param>
+		/// <returns></returns>
+		public abstract bool BeforeUpdate(GameTime gameTime);
 
-        /// <summary>
-        /// Completes a device transition.
-        /// </summary>
-        /// <param name='screenDeviceName'>
-        /// Screen device name.
-        /// </param>
-        /// <param name='clientWidth'>
-        /// The new width of the game's client window.
-        /// </param>
-        /// <param name='clientHeight'>
-        /// The new height of the game's client window.
-        /// </param>
-        public abstract void EndScreenDeviceChange (
-                 string screenDeviceName,
-                 int clientWidth,
-                 int clientHeight
-        );
+		/// <summary>
+		/// Gives derived classes an opportunity to do work just before Draw
+		/// is called for all IDrawable components.  Returning false from this
+		/// method will result in this round of Draw calls being skipped.
+		/// </summary>
+		/// <param name="gameTime"></param>
+		/// <returns></returns>
+		public abstract bool BeforeDraw(GameTime gameTime);
 
-        /// <summary>
-        /// Gives derived classes an opportunity to take action after
-        /// Game.TargetElapsedTime has been set.
-        /// </summary>
-        public virtual void TargetElapsedTimeChanged() {}
+		/// <summary>
+		/// When implemented in a derived class, causes the game to enter
+		/// full-screen mode.
+		/// </summary>
+		public abstract void EnterFullScreen();
 
-        /// <summary>
-        /// MSDN: Use this method if your game is recovering from a slow-running state, and ElapsedGameTime is too large to be useful.
-        /// Frame timing is generally handled by the Game class, but some platforms still handle it elsewhere. Once all platforms
-        /// rely on the Game class's functionality, this method and any overrides should be removed.
-        /// </summary>
-        public virtual void ResetElapsedTime() {}
+		/// <summary>
+		/// When implemented in a derived class, causes the game to exit
+		/// full-screen mode.
+		/// </summary>
+		public abstract void ExitFullScreen();
 
-        protected virtual void OnIsMouseVisibleChanged() {}
+		/// <summary>
+		/// Gives derived classes an opportunity to modify
+		/// Game.TargetElapsedTime before it is set.
+		/// </summary>
+		/// <param name="value">The proposed new value of TargetElapsedTime.</param>
+		/// <returns>The new value of TargetElapsedTime that will be set.</returns>
+		public virtual TimeSpan TargetElapsedTimeChanging(TimeSpan value)
+		{
+			return value;
+		}
 
-        public virtual void Present() { }
+		/// <summary>
+		/// Starts a device transition (windowed to full screen or vice versa).
+		/// </summary>
+		/// <param name='willBeFullScreen'>
+		/// Specifies whether the device will be in full-screen mode upon completion of
+		/// the change.
+		/// </param>
+		public abstract void BeginScreenDeviceChange(
+			bool willBeFullScreen
+		);
 
-        #endregion
+		/// <summary>
+		/// Completes a device transition.
+		/// </summary>
+		/// <param name='screenDeviceName'>
+		/// Screen device name.
+		/// </param>
+		/// <param name='clientWidth'>
+		/// The new width of the game's client window.
+		/// </param>
+		/// <param name='clientHeight'>
+		/// The new height of the game's client window.
+		/// </param>
+		public abstract void EndScreenDeviceChange(
+				 string screenDeviceName,
+				 int clientWidth,
+				 int clientHeight
+		);
 
-        #region Protected Methods
+		/// <summary>
+		/// Gives derived classes an opportunity to take action after
+		/// Game.TargetElapsedTime has been set.
+		/// </summary>
+		public virtual void TargetElapsedTimeChanged() {}
 
-        /// <summary>
-        /// Raises the AsyncRunLoopEnded event.  This method must be called by
-        /// derived classes when the asynchronous run loop they start has
-        /// stopped running.
-        /// </summary>
-        protected void RaiseAsyncRunLoopEnded()
-        {
-            Raise(AsyncRunLoopEnded, EventArgs.Empty);
-        }
+		/// <summary>
+		/// MSDN: Use this method if your game is recovering from a slow-running state, and
+		/// ElapsedGameTime is too large to be useful.  Frame timing is generally handled
+		/// by the Game class, but some platforms still handle it elsewhere. Once all
+		/// platforms rely on the Game class's functionality, this method and any overrides
+		/// should be removed.
+		/// </summary>
+		public virtual void ResetElapsedTime() {}
 
-        #endregion
+		protected virtual void OnIsMouseVisibleChanged() {}
 
-        #region Private Methods
+		public virtual void Present() { }
 
-        private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
-            where TEventArgs : EventArgs
-        {
-            if (handler != null)
-                handler(this, e);
-        }
+		#endregion
 
-        #endregion
+		#region Protected Methods
 
-        #region Public Static Methods
+		/// <summary>
+		/// Raises the AsyncRunLoopEnded event.  This method must be called by
+		/// derived classes when the asynchronous run loop they start has
+		/// stopped running.
+		/// </summary>
+		protected void RaiseAsyncRunLoopEnded()
+		{
+			Raise(AsyncRunLoopEnded, EventArgs.Empty);
+		}
 
-        public static GamePlatform Create(Game game)
-        {
-            /* I suspect you may have an urge to put an #if in here for new
-             * GamePlatform implementations.
-             *
-             * DON'T.
-             *
-             * Determine this at runtime, or load dynamically.
-             * No amount of whining will get me to budge on this.
-             * -flibit
-             */
-            return new SDL2_GamePlatform(game);
-        }
+		#endregion
 
-        #endregion
+		#region Private Methods
 
-        #region IDisposable implementation
+		private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
+			where TEventArgs : EventArgs
+		{
+			if (handler != null)
+			{
+				handler(this, e);
+			}
+		}
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing,
-        /// releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		#endregion
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                disposed = true;
-            }
-        }
-		
+		#region Public Static Methods
+
+		public static GamePlatform Create(Game game)
+		{
+			/* I suspect you may have an urge to put an #if in here for new
+			 * GamePlatform implementations.
+			 *
+			 * DON'T.
+			 *
+			 * Determine this at runtime, or load dynamically.
+			 * No amount of whining will get me to budge on this.
+			 * -flibit
+			 */
+			return new SDL2_GamePlatform(game);
+		}
+
+		#endregion
+
+		#region IDisposable implementation
+
+		/// <summary>
+		/// Performs application-defined tasks associated with freeing,
+		/// releasing, or resetting unmanaged resources.
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposed)
+			{
+				disposed = true;
+			}
+		}
+
 		/// <summary>
 		/// Log the specified Message.
 		/// </summary>
 		/// <param name='Message'>
-		/// 
+		///
 		/// </param>
 		[System.Diagnostics.Conditional("DEBUG")]
-		public virtual void Log(string Message) {}		
+		public virtual void Log(string Message) {}
 
-        #endregion
-    }
+		#endregion
+	}
 }
 
