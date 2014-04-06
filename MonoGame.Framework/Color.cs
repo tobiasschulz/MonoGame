@@ -1159,7 +1159,7 @@ namespace Microsoft.Xna.Framework
 		}
 
 		/// <summary>
-		///  Purple color (R:128,G:0,B:128,A:255).
+		/// Purple color (R:128,G:0,B:128,A:255).
 		/// </summary>
 		public static Color Purple
 		{
@@ -1547,8 +1547,8 @@ namespace Microsoft.Xna.Framework
 			SeaGreen = new Color(0xff578b2e);
 			SeaShell = new Color(0xffeef5ff);
 			Sienna = new Color(0xff2d52a0);
-			Silver  = new Color(0xffc0c0c0);
-			SkyBlue  = new Color(0xffebce87);
+			Silver = new Color(0xffc0c0c0);
+			SkyBlue = new Color(0xffebce87);
 			SlateBlue= new Color(0xffcd5a6a);
 			SlateGray= new Color(0xff908070);
 			Snow= new Color(0xfffafaff);

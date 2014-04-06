@@ -174,7 +174,7 @@ namespace Microsoft.Xna.Framework
 			if ((tMin.HasValue && tMin < 0) && tMax > 0) return 0;
 
 			/* A negative tMin means that the intersection point is behind the ray's
-			 * origin.  We discard these as not hitting the AABB.
+			 * origin. We discard these as not hitting the AABB.
 			 */
 			if (tMin < 0) return null;
 

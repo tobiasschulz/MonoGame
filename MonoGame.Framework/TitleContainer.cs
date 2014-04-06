@@ -64,9 +64,9 @@ namespace Microsoft.Xna.Framework
 
 		#region Internal Static Methods
 
-		/* TODO: This is just path normalization.  Remove this
-		 * and replace it with a proper utility function.  I'm sure
-		 * this same logic is duplicated all over the code base.
+		/* TODO: This is just path normalization.
+		 * Remove this and replace it with a proper utility function.
+		 * I'm sure this same logic is duplicated all over the code base.
 		 */
 		internal static string GetFilename(string name)
 		{

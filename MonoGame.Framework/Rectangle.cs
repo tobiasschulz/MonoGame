@@ -253,7 +253,7 @@ namespace Microsoft.Xna.Framework
 		{
 			result = (	value.Left < Right &&
 					Left < value.Right &&
-					value.Top  < Bottom &&
+					value.Top < Bottom &&
 					Top < value.Bottom	);
 		}
 

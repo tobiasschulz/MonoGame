@@ -243,10 +243,10 @@ namespace Microsoft.Xna.Framework
 			else
 			{
 				result = (
-				        ((2 * v1 - 2 * v2 + t2 + t1) * sCubed) +
-				        ((3 * v2 - 3 * v1 - 2 * t1 - t2) * sSquared) +
-				        (t1 * s) +
-				        v1
+					((2 * v1 - 2 * v2 + t2 + t1) * sCubed) +
+					((3 * v2 - 3 * v1 - 2 * t1 - t2) * sSquared) +
+					(t1 * s) +
+					v1
 				);
 			}
 
