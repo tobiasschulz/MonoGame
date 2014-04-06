@@ -544,24 +544,23 @@ namespace Microsoft.Xna.Framework
 				(quaternion1.Z * quaternion2.Z) +
 				(quaternion1.W * quaternion2.W)
 			);
-			bool flag = false;
+			float flag = 1.0f;
 			if (num4 < 0f)
 			{
-				flag = true;
+				flag = -1.0f;
 				num4 = -num4;
 			}
 			if (num4 > 0.999999f)
 			{
 				num3 = 1f - num;
-				num2 = flag ? -num : num;
+				num2 = num * flag;
 			}
 			else
 			{
 				float num5 = (float) Math.Acos((double) num4);
 				float num6 = (float) (1.0 / Math.Sin((double) num5));
 				num3 = ((float) Math.Sin((double) ((1f - num) * num5))) * num6;
-				num2 = flag ? (((float) Math.Sin((double) (num * num5))) * num6)
-					: (((float) Math.Sin((double) (num * num5))) * num6);
+				num2 = flag * (((float) Math.Sin((double) (num * num5))) * num6);
 			}
 			result.X = (num3 * quaternion1.X) + (num2 * quaternion2.X);
 			result.Y = (num3 * quaternion1.Y) + (num2 * quaternion2.Y);
