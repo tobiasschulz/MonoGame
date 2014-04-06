@@ -69,7 +69,6 @@ namespace Microsoft.Xna.Framework
 				}
 				throw new ArgumentOutOfRangeException();
 			}
-
 			set
 			{
 				switch (index)
@@ -101,7 +100,6 @@ namespace Microsoft.Xna.Framework
 			{
 				return this[(row * 4) + column];
 			}
-
 			set
 			{
 				this[(row * 4) + column] = value;
@@ -122,7 +120,6 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-
 		public Vector3 Down
 		{
 			get
@@ -136,7 +133,6 @@ namespace Microsoft.Xna.Framework
 				M23 = -value.Z;
 			}
 		}
-
 
 		public Vector3 Forward
 		{
@@ -363,8 +359,7 @@ namespace Microsoft.Xna.Framework
 						(M11 * (((M22 * num18) - (M23 * num17)) + (M24 * num16))) -
 						(M12 * (((M21 * num18) - (M23 * num15)) + (M24 * num14)))
 					) + (M13 * (((M21 * num17) - (M22 * num15)) + (M24 * num13)))
-				) -
-				(M14 * (((M21 * num16) - (M22 * num14)) + (M23 * num13)))
+				) - (M14 * (((M21 * num16) - (M22 * num14)) + (M23 * num13)))
 			);
 		}
 
@@ -390,12 +385,7 @@ namespace Microsoft.Xna.Framework
 
 		public override bool Equals(object obj)
 		{
-			bool flag = false;
-			if (obj is Matrix)
-			{
-				flag = Equals((Matrix)obj);
-			}
-			return flag;
+			return (obj is Matrix) && Equals((Matrix) obj);
 		}
 
 		public override int GetHashCode()
@@ -483,9 +473,13 @@ namespace Microsoft.Xna.Framework
 			return result;
 		}
 
-		public static void CreateBillboard(ref Vector3 objectPosition, ref Vector3 cameraPosition,
-			ref Vector3 cameraUpVector, Vector3? cameraForwardVector, out Matrix result)
-		{
+		public static void CreateBillboard(
+			ref Vector3 objectPosition,
+			ref Vector3 cameraPosition,
+			ref Vector3 cameraUpVector,
+			Vector3? cameraForwardVector,
+			out Matrix result
+		) {
 			Vector3 vector;
 			Vector3 vector2;
 			Vector3 vector3;
@@ -495,8 +489,9 @@ namespace Microsoft.Xna.Framework
 			float num = vector.LengthSquared();
 			if (num < 0.0001f)
 			{
-				vector = cameraForwardVector.HasValue ? -cameraForwardVector.Value
-					: Vector3.Forward;
+				vector = cameraForwardVector.HasValue ?
+					-cameraForwardVector.Value :
+					Vector3.Forward;
 			}
 			else
 			{
