@@ -97,7 +97,6 @@
     <Compile Include="GamerServices\GamerPresenceMode.cs" />
     <Compile Include="GamerServices\GamerPrivileges.cs" />
     <Compile Include="GamerServices\GamerPrivilegeSetting.cs" />
-    <Compile Include="Input\AccelerometerState.cs" />
     <Compile Include="Input\ButtonState.cs" />
     <Compile Include="Input\GamePadState.cs" />
     <Compile Include="Input\KeyboardState.cs" />
@@ -140,7 +139,6 @@
     <Compile Include="Graphics\DisplayModeCollection.cs" />
     <Compile Include="Graphics\ClearOptions.cs" />
     <Compile Include="Graphics\GraphicsDeviceStatus.cs" />
-    <Compile Include="Graphics\SpriteBlendMode.cs" />
     <Compile Include="Graphics\GraphicsProfile.cs" />
     <Compile Include="Graphics\SpriteSortMode.cs" />
     <Compile Include="Graphics\SurfaceFormat.cs" />
@@ -338,7 +336,6 @@
     <Compile Include="Graphics\CubeMapFace.cs" />
     <Compile Include="Graphics\GraphicsAdapter.cs" />
     <Compile Include="Graphics\GraphicsDevice.cs" />
-    <Compile Include="Graphics\GraphicsExtensions.cs" />
     <Compile Include="Graphics\Model.cs" />
     <Compile Include="Graphics\ModelBone.cs" />
     <Compile Include="Graphics\ModelBoneCollection.cs" />
@@ -404,7 +401,6 @@
     <Compile Include="Graphics\OcclusionQuery.cs" />
     <Compile Include="Input\Touch\TouchPanelState.cs" />
     <Compile Include="Audio\DynamicSoundEffectInstance.cs" />
-    <Compile Include="Input\AccelerometerCapabilities.cs" />
     <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
     <Compile Include="GamerServices\GameUpdateRequiredException.cs" />
     <Compile Include="FrameworkDispatcher.cs" />

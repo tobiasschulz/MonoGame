@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework.Media
 		public PlaylistCollection Clone()
 		{
 			PlaylistCollection plc = new PlaylistCollection();
-			foreach (Playlist playlist in this.innerlist)
+			foreach (Playlist playlist in innerlist)
 			{
 				plc.Add(playlist);
 			}

@@ -13,6 +13,9 @@ namespace Microsoft.Xna.Framework.Graphics
 	{
 		#region Public Properties
 
+		/// <summary>
+		/// Gets or sets the material Effect for this mesh part.
+		/// </summary>
 		public Effect Effect
 		{
 			get
@@ -57,7 +60,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public IndexBuffer IndexBuffer
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -66,7 +69,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int NumVertices
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -75,7 +78,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int PrimitiveCount
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -84,7 +87,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int StartIndex
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -102,7 +105,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public VertexBuffer VertexBuffer
 		{
 			get;
-			set;
+			internal set;
 		}
 
 		/// <summary>
@@ -111,45 +114,20 @@ namespace Microsoft.Xna.Framework.Graphics
 		public int VertexOffset
 		{
 			get;
-			set;
+			internal set;
 		}
-
-		#endregion
-
-		#region Internal Properties
-
-		internal int VertexBufferIndex
-		{
-			get;
-			set;
-		}
-
-		internal int IndexBufferIndex
-		{
-			get;
-			set;
-		}
-
-		internal int EffectIndex
-		{
-			get;
-			set;
-		}
-
-		#endregion
-
-		#region Private Variables
-
-		/// <summary>
-		/// Gets or sets the material Effect for this mesh part.
-		/// </summary>
-		private Effect INTERNAL_effect;
 
 		#endregion
 
 		#region Internal Variables
 
 		internal ModelMesh parent;
+
+		#endregion
+
+		#region Private Variables
+
+		private Effect INTERNAL_effect;
 
 		#endregion
 	}

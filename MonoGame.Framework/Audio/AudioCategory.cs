@@ -146,22 +146,29 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal void INTERNAL_update()
 		{
-			// Unmanaged Cues are only removed when the user disposes them.
-			for (int i = 0; i < activeCues.Count; i += 1)
+			/* Believe it or not, someone might run the update on a thread.
+			 * So, we're going to give a lock to this method.
+			 * -flibit
+			 */
+			lock (activeCues)
 			{
-				if (!activeCues[i].INTERNAL_update())
+				// Unmanaged Cues are only removed when the user disposes them.
+				for (int i = 0; i < activeCues.Count; i += 1)
 				{
-					cueInstanceCounts[activeCues[i].Name] -= 1;
-					activeCues.RemoveAt(i);
-					i -= 1;
+					if (!activeCues[i].INTERNAL_update())
+					{
+						cueInstanceCounts[activeCues[i].Name] -= 1;
+						activeCues.RemoveAt(i);
+						i -= 1;
+					}
 				}
-			}
-			foreach (Cue curCue in activeCues)
-			{
-				curCue.SetVariable(
-					"NumCueInstances",
-					cueInstanceCounts[curCue.Name]
-				);
+				foreach (Cue curCue in activeCues)
+				{
+					curCue.SetVariable(
+						"NumCueInstances",
+						cueInstanceCounts[curCue.Name]
+					);
+				}
 			}
 		}
 

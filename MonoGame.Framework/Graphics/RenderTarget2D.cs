@@ -129,7 +129,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			Threading.ForceToMainThread(() =>
 			{
-				this.glDepthStencilBuffer = OpenGLDevice.Framebuffer.GenRenderbuffer(
+				glDepthStencilBuffer = OpenGLDevice.Framebuffer.GenRenderbuffer(
 					width,
 					height,
 					preferredDepthFormat
@@ -147,9 +147,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				GraphicsDevice.AddDisposeAction(() =>
 				{
-					if (this.glDepthStencilBuffer != 0)
+					if (glDepthStencilBuffer != 0)
 					{
-						OpenGLDevice.Framebuffer.DeleteRenderbuffer(this.glDepthStencilBuffer);
+						OpenGLDevice.Framebuffer.DeleteRenderbuffer(glDepthStencilBuffer);
 					}
 				});
 			}

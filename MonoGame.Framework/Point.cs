@@ -40,142 +40,156 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Xna.Framework
 {
-    [DataContract]
-    [TypeConverter(typeof(XNAPointConverter))]
-    public struct Point : IEquatable<Point>
-    {
-        #region Public Static Properties
+	[DataContract]
+	[TypeConverter(typeof(XNAPointConverter))]
+	public struct Point : IEquatable<Point>
+	{
+		#region Public Static Properties
 
-        public static Point Zero
-        {
-            get { return zeroPoint; }
-        }
+		public static Point Zero
+		{
+			get
+			{
+				return zeroPoint;
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Fields
+		#region Public Fields
 
-        [DataMember]
-        public int X;
+		[DataMember]
+		public int X;
 
-        [DataMember]
-        public int Y;
+		[DataMember]
+		public int Y;
 
-        #endregion
+		#endregion
 
-        #region Private Static Fields
+		#region Private Static Variables
 
-        private static Point zeroPoint = new Point();
+		private static Point zeroPoint = new Point();
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public Point(int x, int y)
-        {
-            this.X = x;
-            this.Y = y;
-        }
+		public Point(int x, int y)
+		{
+			this.X = x;
+			this.Y = y;
+		}
 
-        #endregion
+		#endregion
 
-        #region Public methods
+		#region Public Methods
 
-        public bool Equals(Point other)
-        {
-            return ((X == other.X) && (Y == other.Y));
-        }
+		public bool Equals(Point other)
+		{
+			return ((X == other.X) && (Y == other.Y));
+		}
 
-        public override bool Equals(object obj)
-        {
-            return (obj is Point) ? Equals((Point)obj) : false;
-        }
+		public override bool Equals(object obj)
+		{
+			return (obj is Point) ? Equals((Point) obj) : false;
+		}
 
-        public override int GetHashCode()
-        {
-            return X ^ Y;
-        }
+		public override int GetHashCode()
+		{
+			return X ^ Y;
+		}
 
-        public override string ToString()
-        {
-            return string.Format("{{X:{0} Y:{1}}}", X, Y);
-        }
+		public override string ToString()
+		{
+			return string.Format("{{X:{0} Y:{1}}}", X, Y);
+		}
 
-        #endregion
+		#endregion
 
-        #region Public Static Operators
+		#region Public Static Operators
 
-        public static Point operator +(Point a, Point b)
-        {
-            return new Point(a.X+b.X,a.Y+b.Y);
-        }
+		public static Point operator +(Point a, Point b)
+		{
+			return new Point(a.X + b.X, a.Y + b.Y);
+		}
 
-        public static Point operator -(Point a, Point b)
-        {
-            return new Point(a.X-b.X,a.Y-b.Y);
-        }
+		public static Point operator -(Point a, Point b)
+		{
+			return new Point(a.X - b.X, a.Y - b.Y);
+		}
 
-        public static Point operator *(Point a, Point b)
-        {
-            return new Point(a.X*b.X,a.Y*b.Y);
-        }
+		public static Point operator *(Point a, Point b)
+		{
+			return new Point(a.X * b.X, a.Y * b.Y);
+		}
 
-        public static Point operator /(Point a, Point b)
-        {
-            return new Point(a.X/b.X,a.Y/b.Y);
-        }
+		public static Point operator /(Point a, Point b)
+		{
+			return new Point(a.X / b.X, a.Y / b.Y);
+		}
 
-        public static bool operator ==(Point a, Point b)
-        {
-            return a.Equals(b);
-        }
+		public static bool operator ==(Point a, Point b)
+		{
+			return a.Equals(b);
+		}
 
-        public static bool operator !=(Point a, Point b)
-        {
-            return !a.Equals(b);
-        }
+		public static bool operator !=(Point a, Point b)
+		{
+			return !a.Equals(b);
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 
-    public class XNAPointConverter : TypeConverter
-    {
-        #region Public Methods
+	#region Point TypeConverter
 
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            if (sourceType == typeof(string))
-            {
-                return true;
-            }
-            return base.CanConvertFrom(context, sourceType);
-        }
+	public class XNAPointConverter : TypeConverter
+	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		{
+			if (sourceType == typeof(string))
+			{
+				return true;
+			}
+			return base.CanConvertFrom(context, sourceType);
+		}
 
-        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
-        {
-            if (value is string)
-            {
-                string[] v = ((string) value).Split(culture.NumberFormat.NumberGroupSeparator.ToCharArray());
-                return new Point(
-                    int.Parse(v[0], culture),
-                    int.Parse(v[1], culture)
-                );
-            }
-            return base.ConvertFrom(context, culture, value);
-        }
+		public override object ConvertFrom(
+			ITypeDescriptorContext context,
+			System.Globalization.CultureInfo culture,
+			object value
+		) {
+			if (value is string)
+			{
+				string[] v = ((string) value).Split(
+					culture.NumberFormat.NumberGroupSeparator.ToCharArray()
+				);
+				return new Point(
+					int.Parse(v[0], culture),
+					int.Parse(v[1], culture)
+				);
+			}
+			return base.ConvertFrom(context, culture, value);
+		}
 
-        public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
-        {
-            if (destinationType == typeof(string))
-            {
-                Point src = (Point) value;
-                return src.X.ToString(culture) + culture.NumberFormat.NumberGroupSeparator + src.Y.ToString(culture);
-            }
-            return base.ConvertTo(context, culture, value, destinationType);
-        }
+		public override object ConvertTo(
+			ITypeDescriptorContext context,
+			System.Globalization.CultureInfo culture,
+			object value,
+			Type destinationType
+		) {
+			if (destinationType == typeof(string))
+			{
+				Point src = (Point) value;
+				return (
+					src.X.ToString(culture) +
+					culture.NumberFormat.NumberGroupSeparator +
+					src.Y.ToString(culture)
+				);
+			}
+			return base.ConvertTo(context, culture, value, destinationType);
+		}
+	}
 
-        #endregion
-    }
+	#endregion
 }
-
-

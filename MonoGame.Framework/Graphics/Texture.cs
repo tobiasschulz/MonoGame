@@ -78,9 +78,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				Format == SurfaceFormat.Dxt3 ||
 				Format == SurfaceFormat.Dxt5	)
 			{
-				return ((width + 3) / 4) * Format.Size();
+				return ((width + 3) / 4) * GetFormatSize();
 			}
-			return width * Format.Size();
+			return width * GetFormatSize();
 		}
 
 		#endregion
@@ -195,6 +195,45 @@ namespace Microsoft.Xna.Framework.Graphics
 					break;
 				default:
 					throw new NotSupportedException();
+			}
+		}
+
+		#endregion
+
+		#region Protected SurfaceFormat Size Method
+
+		protected int GetFormatSize()
+		{
+			switch (Format)
+			{
+				case SurfaceFormat.Dxt1:
+					return 8;
+				case SurfaceFormat.Dxt3:
+				case SurfaceFormat.Dxt5:
+					return 16;
+				case SurfaceFormat.Alpha8:
+					return 1;
+				case SurfaceFormat.Bgr565:
+				case SurfaceFormat.Bgra4444:
+				case SurfaceFormat.Bgra5551:
+				case SurfaceFormat.HalfSingle:
+				case SurfaceFormat.NormalizedByte2:
+					return 2;
+				case SurfaceFormat.Color:
+				case SurfaceFormat.Single:
+				case SurfaceFormat.Rg32:
+				case SurfaceFormat.HalfVector2:
+				case SurfaceFormat.NormalizedByte4:
+				case SurfaceFormat.Rgba1010102:
+					return 4;
+				case SurfaceFormat.HalfVector4:
+				case SurfaceFormat.Rgba64:
+				case SurfaceFormat.Vector2:
+					return 8;
+				case SurfaceFormat.Vector4:
+					return 16;
+				default:
+					throw new ArgumentException();
 			}
 		}
 

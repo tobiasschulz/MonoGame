@@ -266,7 +266,7 @@ namespace Microsoft.Xna.Framework.Input
 		#endregion
 
 		#region Automatic Configuration Method
-  
+
 		// Prepare the MonoGameJoystick configuration system
 		private static void INTERNAL_AutoConfig()
 		{
@@ -521,13 +521,13 @@ namespace Microsoft.Xna.Framework.Input
 		#endregion
 
 		#region Value-To-Input Helper Methods
-  
+
 		// Button reader for ReadState
 		private static Buttons READ_ReadButtons(IntPtr device, float deadZoneSize)
 		{
 			short DeadZone = (short) (deadZoneSize * short.MaxValue);
 			Buttons b = (Buttons) 0;
-   
+
 			// A B X Y
 			if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_A, device, DeadZone))
 			{
@@ -545,7 +545,7 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				b |= Buttons.Y;
 			}
-   
+
 			// Shoulder buttons
 			if (READTYPE_ReadBool(INTERNAL_joystickConfig.SHOULDER_LB, device, DeadZone))
 			{
@@ -555,7 +555,7 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				b |= Buttons.RightShoulder;
 			}
-   
+
 			// Back/Start
 			if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_BACK, device, DeadZone))
 			{
@@ -565,7 +565,7 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				b |= Buttons.Start;
 			}
-   
+
 			// Stick buttons
 			if (READTYPE_ReadBool(INTERNAL_joystickConfig.BUTTON_LSTICK, device, DeadZone))
 			{
@@ -575,7 +575,7 @@ namespace Microsoft.Xna.Framework.Input
 			{
 				b |= Buttons.RightStick;
 			}
-   
+
 			// DPad
 			if (READTYPE_ReadBool(INTERNAL_joystickConfig.DPAD_UP, device, DeadZone))
 			{
@@ -858,7 +858,7 @@ namespace Microsoft.Xna.Framework.Input
 
 			// DPad
 			GamePadDPad dpad = new GamePadDPad(buttons.buttons);
-   
+
 			// Build the GamePadState, increment PacketNumber if state changed.
 			GamePadState builtState = new GamePadState(
 				sticks,

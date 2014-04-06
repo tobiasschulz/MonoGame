@@ -115,29 +115,78 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
+		#region Public Constructors
+
+		public SoundEffect(
+			byte[] buffer,
+			int sampleRate,
+			AudioChannels channels
+		) {
+			INTERNAL_bufferData(
+				buffer,
+				(uint) sampleRate,
+				(uint) channels,
+				0,
+				0,
+				0
+			);
+		}
+
+		public SoundEffect(
+			byte[] buffer,
+			int offset,
+			int count,
+			int sampleRate,
+			AudioChannels channels,
+			int loopStart,
+			int loopLength
+		) {
+			byte[] sendBuf;
+			if (offset != 0 || count != buffer.Length)
+			{
+				// I kind of hate this. -flibit
+				sendBuf = new byte[count];
+				Array.Copy(buffer, offset, sendBuf, 0, count);
+			}
+			else
+			{
+				sendBuf = buffer;
+			}
+
+			INTERNAL_bufferData(
+				sendBuf,
+				(uint) sampleRate,
+				(uint) channels,
+				(uint) loopStart,
+				(uint) (loopStart + loopLength),
+				0
+			);
+		}
+
+		#endregion
+
 		#region Internal Constructors
 
 		internal SoundEffect(string fileName)
 		{
 			if (fileName == string.Empty)
 			{
-				throw new FileNotFoundException("Supported Sound Effect formats are wav, mp3, acc, aiff");
+				throw new ArgumentNullException("fileName");
 			}
 
 			Name = Path.GetFileNameWithoutExtension(fileName);
 
-			Stream s;
 			try
 			{
-				s = File.OpenRead(fileName);
+				using (Stream s = File.OpenRead(fileName))
+				{
+					INTERNAL_loadAudioStream(s);
+				}
 			}
 			catch (IOException e)
 			{
 				throw new Content.ContentLoadException("Could not load audio data", e);
 			}
-
-			INTERNAL_loadAudioStream(s);
-			s.Close();
 		}
 
 		internal SoundEffect(Stream s)
@@ -163,27 +212,6 @@ namespace Microsoft.Xna.Framework.Audio
 				loopStart + loopLength,
 				compressionAlign
 			);
-		}
-
-		#endregion
-
-		#region Public Constructors
-
-		public SoundEffect(byte[] buffer, int sampleRate, AudioChannels channels)
-		{
-			INTERNAL_bufferData(
-				buffer,
-				(uint) sampleRate,
-				(uint) channels,
-				0,
-				0,
-				0
-			);
-		}
-
-		public SoundEffect(byte[] buffer, int offset, int count, int sampleRate, AudioChannels channels, int loopStart, int loopLength)
-		{
-			throw new NotImplementedException();
 		}
 
 		#endregion

@@ -14,33 +14,24 @@ using System;
 namespace Microsoft.Xna.Framework
 {
 	public class PreparingDeviceSettingsEventArgs : EventArgs
-    {
-        #region Public Properties
+	{
+		#region Public Properties
 
-        public GraphicsDeviceInformation GraphicsDeviceInformation
-        {
-            get
-            {
-                return _graphicsDeviceInformation;
-            }
-        }
-
-        #endregion
-
-        #region Private Variables
-
-        private GraphicsDeviceInformation _graphicsDeviceInformation;
-
-        #endregion
-
-        #region Public Constructor
-
-        public PreparingDeviceSettingsEventArgs(GraphicsDeviceInformation graphicsDeviceInformation)
+		public GraphicsDeviceInformation GraphicsDeviceInformation
 		{
-			_graphicsDeviceInformation = graphicsDeviceInformation;
+			get;
+			private set;
 		}
 
-        #endregion
-    }
-}
+		#endregion
 
+		#region Public Constructor
+
+		public PreparingDeviceSettingsEventArgs(GraphicsDeviceInformation graphicsDeviceInformation)
+		{
+			GraphicsDeviceInformation = graphicsDeviceInformation;
+		}
+
+		#endregion
+	}
+}

@@ -51,7 +51,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 
 		public float ToSingle()
 		{
-			return HalfTypeHelper.Convert(this.packedValue);
+			return HalfTypeHelper.Convert(packedValue);
 		}
 
 		#endregion
@@ -65,7 +65,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 
 		Vector4 IPackedVector.ToVector4()
 		{
-			return new Vector4(this.ToSingle(), 0f, 0f, 1f);
+			return new Vector4(ToSingle(), 0f, 0f, 1f);
 		}
 
 		#endregion
@@ -79,7 +79,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 
 		public bool Equals(HalfSingle other)
 		{
-			return this.packedValue == other.packedValue;
+			return packedValue == other.packedValue;
 		}
 
 		public override string ToString()

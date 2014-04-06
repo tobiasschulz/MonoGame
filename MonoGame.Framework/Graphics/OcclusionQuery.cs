@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public OcclusionQuery(GraphicsDevice graphicsDevice)
 		{
-			this.GraphicsDevice = graphicsDevice;
+			GraphicsDevice = graphicsDevice;
 			GL.GenQueries(1, out glQueryId);
 		}
 

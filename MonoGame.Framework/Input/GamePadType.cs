@@ -7,8 +7,6 @@
  */
 #endregion
 
-using System;
-
 namespace Microsoft.Xna.Framework.Input
 {
 	public enum GamePadType
@@ -19,12 +17,9 @@ namespace Microsoft.Xna.Framework.Input
 		Guitar = 4,
 		Unknown = 0,
 		Wheel = 5,
-        AlternateGuitar = 6,
-        BigButtonPad = 7,
-        DrumKit = 8,
-        GamePad = 9,
+		AlternateGuitar = 6,
+		BigButtonPad = 7,
+		DrumKit = 8,
+		GamePad = 9,
 	}
-
-
 }
-
