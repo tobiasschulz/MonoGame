@@ -668,10 +668,10 @@ namespace Microsoft.Xna.Framework
 		#endregion
 	}
 
+	#region Vector2 TypeConverter
+
 	public class XNAVector2Converter : TypeConverter
 	{
-		#region Public Methods
-
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			if (sourceType == typeof(string))
@@ -714,7 +714,7 @@ namespace Microsoft.Xna.Framework
 			}
 			return base.ConvertTo(context, culture, value, destinationType);
 		}
-
-		#endregion
 	}
+
+	#endregion
 }

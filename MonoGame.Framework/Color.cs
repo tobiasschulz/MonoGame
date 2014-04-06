@@ -1879,7 +1879,7 @@ namespace Microsoft.Xna.Framework
 		#endregion
 	}
 
-	#region XNAColorConverter Class
+	#region Color TypeConverter
 
 	public class XNAColorConverter : TypeConverter
 	{

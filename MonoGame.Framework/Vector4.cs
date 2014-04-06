@@ -343,10 +343,12 @@ namespace Microsoft.Xna.Framework
 			ref Vector4 value2,
 			out float result
 		) {
-			result = (	(value1.W - value2.W) * (value1.W - value2.W) +
-					(value1.X - value2.X) * (value1.X - value2.X) +
-					(value1.Y - value2.Y) * (value1.Y - value2.Y) +
-					(value1.Z - value2.Z) * (value1.Z - value2.Z)	);
+			result = (
+				(value1.W - value2.W) * (value1.W - value2.W) +
+				(value1.X - value2.X) * (value1.X - value2.X) +
+				(value1.Y - value2.Y) * (value1.Y - value2.Y) +
+				(value1.Z - value2.Z) * (value1.Z - value2.Z)
+			);
 		}
 
 		public static Vector4 Divide(Vector4 value1, Vector4 value2)
@@ -398,10 +400,12 @@ namespace Microsoft.Xna.Framework
 
 		public static void Dot(ref Vector4 vector1, ref Vector4 vector2, out float result)
 		{
-			result = (	(vector1.X * vector2.X) +
-					(vector1.Y * vector2.Y) +
-					(vector1.Z * vector2.Z) +
-					(vector1.W * vector2.W)	);
+			result = (
+				(vector1.X * vector2.X) +
+				(vector1.Y * vector2.Y) +
+				(vector1.Z * vector2.Z) +
+				(vector1.W * vector2.W)
+			);
 		}
 
 		public static Vector4 Hermite(
@@ -745,10 +749,10 @@ namespace Microsoft.Xna.Framework
 		#endregion
 	}
 
+	#region Vector4 TypeConverter
+
 	public class XNAVector4Converter : TypeConverter
 	{
-		#region Public Methods
-
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			if (sourceType == typeof(string))
@@ -795,7 +799,7 @@ namespace Microsoft.Xna.Framework
 			}
 			return base.ConvertTo(context, culture, value, destinationType);
 		}
-
-		#endregion
 	}
+
+	#endregion
 }

@@ -19,17 +19,9 @@ namespace Microsoft.Xna.Framework
 
 		public GraphicsDeviceInformation GraphicsDeviceInformation
 		{
-			get
-			{
-				return _graphicsDeviceInformation;
-			}
+			get;
+			private set;
 		}
-
-		#endregion
-
-		#region Private Variables
-
-		private GraphicsDeviceInformation _graphicsDeviceInformation;
 
 		#endregion
 
@@ -37,7 +29,7 @@ namespace Microsoft.Xna.Framework
 
 		public PreparingDeviceSettingsEventArgs(GraphicsDeviceInformation graphicsDeviceInformation)
 		{
-			_graphicsDeviceInformation = graphicsDeviceInformation;
+			GraphicsDeviceInformation = graphicsDeviceInformation;
 		}
 
 		#endregion

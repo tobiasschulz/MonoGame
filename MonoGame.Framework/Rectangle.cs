@@ -50,7 +50,7 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return this.X;
+				return X;
 			}
 		}
 
@@ -58,7 +58,7 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (this.X + this.Width);
+				return (X + Width);
 			}
 		}
 
@@ -66,7 +66,7 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return this.Y;
+				return Y;
 			}
 		}
 
@@ -74,7 +74,7 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (this.Y + this.Height);
+				return (Y + Height);
 			}
 		}
 
@@ -82,7 +82,7 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return new Point(this.X, this.Y);
+				return new Point(X, Y);
 			}
 			set
 			{
@@ -96,8 +96,9 @@ namespace Microsoft.Xna.Framework
 			get
 			{
 				return new Point(
-					this.X + (this.Width / 2),
-					this.Y + (this.Height / 2)	);
+					X + (Width / 2),
+					Y + (Height / 2)
+				);
 			}
 		}
 
@@ -105,10 +106,10 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (	(this.Width == 0) &&
-						(this.Height == 0) &&
-						(this.X == 0) &&
-						(this.Y == 0)	);
+				return (	(Width == 0) &&
+						(Height == 0) &&
+						(X == 0) &&
+						(Y == 0)	);
 			}
 		}
 
@@ -152,10 +153,10 @@ namespace Microsoft.Xna.Framework
 
 		public Rectangle(int x, int y, int width, int height)
 		{
-			this.X = x;
-			this.Y = y;
-			this.Width = width;
-			this.Height = height;
+			X = x;
+			Y = y;
+			Width = width;
+			Height = height;
 		}
 
 		#endregion
@@ -221,7 +222,7 @@ namespace Microsoft.Xna.Framework
 
 		public override bool Equals(object obj)
 		{
-			return (obj is Rectangle) ? this == ((Rectangle) obj) : false;
+			return (obj is Rectangle) && this == ((Rectangle) obj);
 		}
 
 		public override string ToString()
@@ -247,7 +248,6 @@ namespace Microsoft.Xna.Framework
 					value.Top < Bottom &&
 					Top < value.Bottom	);
 		}
-
 
 		public void Intersects(ref Rectangle value, out bool result)
 		{
@@ -281,7 +281,6 @@ namespace Microsoft.Xna.Framework
 			return rectangle;
 		}
 
-
 		public static void Intersect(
 			ref Rectangle value1,
 			ref Rectangle value2,
@@ -289,16 +288,21 @@ namespace Microsoft.Xna.Framework
 		) {
 			if (value1.Intersects(value2))
 			{
-				int right_side = Math.Min(	value1.X + value1.Width,
-								value2.X + value2.Width	);
+				int right_side = Math.Min(
+					value1.X + value1.Width,
+					value2.X + value2.Width
+				);
 				int left_side = Math.Max(value1.X, value2.X);
 				int top_side = Math.Max(value1.Y, value2.Y);
-				int bottom_side = Math.Min(	value1.Y + value1.Height,
-								value2.Y + value2.Height	);
-				result = new Rectangle(	left_side,
-							top_side,
-							right_side - left_side,
-							bottom_side - top_side
+				int bottom_side = Math.Min(
+					value1.Y + value1.Height,
+					value2.Y + value2.Height
+				);
+				result = new Rectangle(
+					left_side,
+					top_side,
+					right_side - left_side,
+					bottom_side - top_side
 				);
 			}
 			else

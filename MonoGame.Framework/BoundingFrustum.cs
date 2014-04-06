@@ -209,8 +209,13 @@ namespace Microsoft.Xna.Framework
 		{
 			for (int i = 0; i < PlaneCount; i += 1)
 			{
-				// TODO: we might want to inline this for performance reasons
-				if (PlaneHelper.ClassifyPoint(ref point, ref this.planes[i]) > 0)
+				float classifyPoint = (
+					(point.X * planes[i].Normal.X) +
+					(point.Y * planes[i].Normal.Y) +
+					(point.Z * planes[i].Normal.Z) +
+					planes[i].D
+				);
+				if (classifyPoint > 0)
 				{
 					result = ContainmentType.Disjoint;
 					return;

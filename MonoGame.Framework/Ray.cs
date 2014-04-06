@@ -58,8 +58,8 @@ namespace Microsoft.Xna.Framework
 
 		public Ray(Vector3 position, Vector3 direction)
 		{
-			this.Position = position;
-			this.Direction = direction;
+			Position = position;
+			Direction = direction;
 		}
 
 		#endregion
@@ -69,7 +69,7 @@ namespace Microsoft.Xna.Framework
 
 		public override bool Equals(object obj)
 		{
-			return (obj is Ray) ? this.Equals((Ray) obj) : false;
+			return (obj is Ray) && Equals((Ray) obj);
 		}
 
 
@@ -113,7 +113,9 @@ namespace Microsoft.Xna.Framework
 			if (Math.Abs(Direction.Y) < Epsilon)
 			{
 				if (Position.Y < box.Min.Y || Position.Y > box.Max.Y)
+				{
 					return null;
+				}
 			}
 			else
 			{
@@ -140,7 +142,9 @@ namespace Microsoft.Xna.Framework
 			if (Math.Abs(Direction.Z) < Epsilon)
 			{
 				if (Position.Z < box.Min.Z || Position.Z > box.Max.Z)
+				{
 					return null;
+				}
 			}
 			else
 			{
@@ -155,7 +159,7 @@ namespace Microsoft.Xna.Framework
 				}
 
 				if (	(tMin.HasValue && tMin > tMaxZ) ||
-				    	(tMax.HasValue && tMinZ > tMax))
+					(tMax.HasValue && tMinZ > tMax)	)
 				{
 					return null;
 				}
@@ -254,9 +258,11 @@ namespace Microsoft.Xna.Framework
 			 * if z = the distance we've travelled along the ray
 			 * if x^2 + z^2 - y^2 < 0, we do not intersect
 			 */
-			float dist = (	sphereRadiusSquared +
-					distanceAlongRay * distanceAlongRay -
-					differenceLengthSquared	);
+			float dist = (
+				sphereRadiusSquared +
+				(distanceAlongRay * distanceAlongRay) -
+				differenceLengthSquared
+			);
 
 			result = (dist < 0) ? null : distanceAlongRay - (float?) Math.Sqrt(dist);
 		}

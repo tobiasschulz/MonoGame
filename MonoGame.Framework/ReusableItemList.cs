@@ -48,13 +48,17 @@ namespace Microsoft.Xna.Framework
 			get
 			{
 				if (index >= _listTop)
+				{
 					throw new IndexOutOfRangeException();
+				}
 				return _list[index];
 			}
 			set
 			{
 				if (index >= _listTop)
+				{
 					throw new IndexOutOfRangeException();
+				}
 				_list[index] = value;
 			}
 		}
@@ -139,7 +143,7 @@ namespace Microsoft.Xna.Framework
 			}
 			else
 			{
-				/* Damm...Mono fails in this!
+				/* FIXME: Mono fails at this:
 				 * return (T) Activator.CreateInstance(typeof(T));
 				 */
 				return default(T);

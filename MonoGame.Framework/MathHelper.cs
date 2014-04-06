@@ -143,9 +143,11 @@ namespace Microsoft.Xna.Framework
 			double amountCubed = amountSquared * amount;
 			return (float) (
 				0.5 *
-				(2.0 * value2 +	(value3 - value1) * amount +
-				(2.0 * value1 - 5.0 * value2 + 4.0 * value3 - value4) * amountSquared +
-				(3.0 * value2 - value1 - 3.0 * value3 + value4) * amountCubed)
+				(
+					((2.0 * value2 + (value3 - value1) * amount) +
+					((2.0 * value1 - 5.0 * value2 + 4.0 * value3 - value4) * amountSquared) +
+					(3.0 * value2 - value1 - 3.0 * value3 + value4) * amountCubed)
+				)
 			);
 		}
 
@@ -241,9 +243,9 @@ namespace Microsoft.Xna.Framework
 			else
 			{
 				result = (
-				        (2 * v1 - 2 * v2 + t2 + t1) * sCubed +
-				        (3 * v2 - 3 * v1 - 2 * t1 - t2) * sSquared +
-				        t1 * s +
+				        ((2 * v1 - 2 * v2 + t2 + t1) * sCubed) +
+				        ((3 * v2 - 3 * v1 - 2 * t1 - t2) * sSquared) +
+				        (t1 * s) +
 				        v1
 				);
 			}

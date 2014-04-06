@@ -48,7 +48,10 @@ namespace Microsoft.Xna.Framework
 
 		public static Point Zero
 		{
-			get { return zeroPoint; }
+			get
+			{
+				return zeroPoint;
+			}
 		}
 
 		#endregion
@@ -63,7 +66,7 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region Private Static Fields
+		#region Private Static Variables
 
 		private static Point zeroPoint = new Point();
 
@@ -79,7 +82,7 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region Public methods
+		#region Public Methods
 
 		public bool Equals(Point other)
 		{
@@ -107,22 +110,22 @@ namespace Microsoft.Xna.Framework
 
 		public static Point operator +(Point a, Point b)
 		{
-			return new Point(a.X+b.X,a.Y+b.Y);
+			return new Point(a.X + b.X, a.Y + b.Y);
 		}
 
 		public static Point operator -(Point a, Point b)
 		{
-			return new Point(a.X-b.X,a.Y-b.Y);
+			return new Point(a.X - b.X, a.Y - b.Y);
 		}
 
 		public static Point operator *(Point a, Point b)
 		{
-			return new Point(a.X*b.X,a.Y*b.Y);
+			return new Point(a.X * b.X, a.Y * b.Y);
 		}
 
 		public static Point operator /(Point a, Point b)
 		{
-			return new Point(a.X/b.X,a.Y/b.Y);
+			return new Point(a.X / b.X, a.Y / b.Y);
 		}
 
 		public static bool operator ==(Point a, Point b)
@@ -138,10 +141,10 @@ namespace Microsoft.Xna.Framework
 		#endregion
 	}
 
+	#region Point TypeConverter
+
 	public class XNAPointConverter : TypeConverter
 	{
-		#region Public Methods
-
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			if (sourceType == typeof(string))
@@ -178,13 +181,15 @@ namespace Microsoft.Xna.Framework
 			if (destinationType == typeof(string))
 			{
 				Point src = (Point) value;
-				return (	src.X.ToString(culture) +
-						culture.NumberFormat.NumberGroupSeparator +
-						src.Y.ToString(culture)	);
+				return (
+					src.X.ToString(culture) +
+					culture.NumberFormat.NumberGroupSeparator +
+					src.Y.ToString(culture)
+				);
 			}
 			return base.ConvertTo(context, culture, value, destinationType);
 		}
-
-		#endregion
 	}
+
+	#endregion
 }
