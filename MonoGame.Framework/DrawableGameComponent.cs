@@ -13,100 +13,123 @@ using System;
 
 namespace Microsoft.Xna.Framework
 {
-    public class DrawableGameComponent : GameComponent, IDrawable
-    {
-        #region Public Properties
+	public class DrawableGameComponent : GameComponent, IDrawable
+	{
+		#region Public Properties
 
-        public Graphics.GraphicsDevice GraphicsDevice
-        {
-            get { return this.Game.GraphicsDevice; }
-        }
+		public Graphics.GraphicsDevice GraphicsDevice
+		{
+			get
+			{
+				return this.Game.GraphicsDevice;
+			}
+		}
 
-        public int DrawOrder
-        {
-            get { return _drawOrder; }
-            set
-            {
-                if (_drawOrder != value)
-                {
-                    _drawOrder = value;
-                    if (DrawOrderChanged != null)
-                        DrawOrderChanged(this, null);
-                    OnDrawOrderChanged(this, null);
-                }
-            }
-        }
+		public int DrawOrder
+		{
+			get
+			{
+				return _drawOrder;
+			}
+			set
+			{
+				if (_drawOrder != value)
+				{
+					_drawOrder = value;
+					if (DrawOrderChanged != null)
+					{
+						DrawOrderChanged(this, null);
+					}
+					OnDrawOrderChanged(this, null);
+				}
+			}
+		}
 
-        public bool Visible
-        {
-            get { return _visible; }
-            set
-            {
-                if (_visible != value)
-                {
-                    _visible = value;
-                    if (VisibleChanged != null)
-                        VisibleChanged(this, EventArgs.Empty);
-                    OnVisibleChanged(this, EventArgs.Empty);
-                }
-            }
-        }
+		public bool Visible
+		{
+			get
+			{
+				return _visible;
+			}
+			set
+			{
+				if (_visible != value)
+				{
+					_visible = value;
+					if (VisibleChanged != null)
+					{
+						VisibleChanged(this, EventArgs.Empty);
+					}
+					OnVisibleChanged(this, EventArgs.Empty);
+				}
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        private bool _initialized;
-        private int _drawOrder;
-        private bool _visible = true;
+		private bool _initialized;
+		private int _drawOrder;
+		private bool _visible = true;
 
-        #endregion
+		#endregion
 
-        #region Public Constructors
+		#region Public Constructors
 
-        public DrawableGameComponent(Game game)
-            : base(game)
-        {
-        }
+		public DrawableGameComponent(Game game)
+			: base(game)
+		{
+		}
 
-        #endregion
+		#endregion
 
-        #region Events
+		#region Events
 
-        public event EventHandler<EventArgs> DrawOrderChanged;
-        public event EventHandler<EventArgs> VisibleChanged;
+		public event EventHandler<EventArgs> DrawOrderChanged;
+		public event EventHandler<EventArgs> VisibleChanged;
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public override void Initialize()
-        {
-            if (!_initialized)
-            {
-                _initialized = true;
-                LoadContent();
-            }
-        }
+		public override void Initialize()
+		{
+			if (!_initialized)
+			{
+				_initialized = true;
+				LoadContent();
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region Pubilc Virtual Methods
+		#region Pubilc Virtual Methods
 
-        public virtual void Draw(GameTime gameTime) { }
+		public virtual void Draw(GameTime gameTime)
+		{
+		}
 
-        #endregion
+		#endregion
 
-        #region Protected Virtual Methods
+		#region Protected Virtual Methods
 
-        protected virtual void LoadContent() { }
+		protected virtual void LoadContent()
+		{
+		}
 
-        protected virtual void UnloadContent () { }
+		protected virtual void UnloadContent()
+		{
+		}
 
-        protected virtual void OnVisibleChanged(object sender, EventArgs args) { }
+		protected virtual void OnVisibleChanged(object sender, EventArgs args)
+		{
+		}
 
-        protected virtual void OnDrawOrderChanged(object sender, EventArgs args) { }
+		protected virtual void OnDrawOrderChanged(object sender, EventArgs args)
+		{
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }
