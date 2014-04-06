@@ -241,7 +241,6 @@ namespace Microsoft.Xna.Framework
 			Quaternion quaternion;
 			Concatenate(ref value1, ref value2, out quaternion);
 			return quaternion;
-
 		}
 
 		public static void Concatenate(
