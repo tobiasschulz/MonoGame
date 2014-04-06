@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# git remote add flibit https://github.com/flibitijibibo/MonoGame.git
+git remote add flibit https://github.com/flibitijibibo/MonoGame.git
 git pull
 git checkout -f monogame-sdl2
 git fetch flibit
