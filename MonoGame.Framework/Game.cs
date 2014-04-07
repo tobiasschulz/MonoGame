@@ -8,12 +8,12 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Microsoft.Xna.Framework
@@ -222,7 +222,7 @@ namespace Microsoft.Xna.Framework
 				(d1, d2) => Comparer<int>.Default.Compare(d1.DrawOrder, d2.DrawOrder),
 				(d, handler) => d.DrawOrderChanged += handler,
 				(d, handler) => d.DrawOrderChanged -= handler
-		);
+			);
 
 		private SortingFilteringCollection<IUpdateable> _updateables =
 			new SortingFilteringCollection<IUpdateable>(
@@ -232,7 +232,7 @@ namespace Microsoft.Xna.Framework
 				(u1, u2) => Comparer<int>.Default.Compare(u1.UpdateOrder, u2.UpdateOrder),
 				(u, handler) => u.UpdateOrderChanged += handler,
 				(u, handler) => u.UpdateOrderChanged -= handler
-		);
+			);
 
 		private IGraphicsDeviceManager _graphicsDeviceManager;
 		private IGraphicsDeviceService _graphicsDeviceService;
@@ -240,9 +240,10 @@ namespace Microsoft.Xna.Framework
 		private bool _initialized = false;
 		private bool _isFixedTimeStep = true;
 
-		private TimeSpan _targetElapsedTime =
-			TimeSpan.FromTicks((long) 10000000 /
-			(long) DefaultTargetFramesPerSecond);
+		private TimeSpan _targetElapsedTime = TimeSpan.FromTicks(
+			(long) 10000000 /
+			(long) DefaultTargetFramesPerSecond
+		);
 
 		private TimeSpan _inactiveSleepTime = TimeSpan.FromSeconds(1);
 
@@ -279,11 +280,11 @@ namespace Microsoft.Xna.Framework
 			if (assembly != null)
 			{
 				// Use the Title attribute of the Assembly if possible
-				AssemblyTitleAttribute assemblyTitleAtt =
-					(AssemblyTitleAttribute) AssemblyTitleAttribute.GetCustomAttribute(
+				AssemblyTitleAttribute assemblyTitleAtt = (AssemblyTitleAttribute)
+					AssemblyTitleAttribute.GetCustomAttribute(
 						assembly,
 						typeof(AssemblyTitleAttribute)
-				);
+					);
 
 				if (assemblyTitleAtt != null)
 				{
@@ -425,16 +426,16 @@ namespace Microsoft.Xna.Framework
 
 			if (!_initialized)
 			{
-				DoInitialize ();
+				DoInitialize();
 				_initialized = true;
 			}
 
 			BeginRun();
 
 			// Not quite right..
-			Tick ();
+			Tick();
 
-			EndRun ();
+			EndRun();
 		}
 
 		public void Run()
@@ -452,7 +453,7 @@ namespace Microsoft.Xna.Framework
 
 			if (!_initialized)
 			{
-				DoInitialize ();
+				DoInitialize();
 				_initialized = true;
 			}
 
@@ -472,7 +473,8 @@ namespace Microsoft.Xna.Framework
 					throw new ArgumentException(
 						string.Format(
 							"Handling for the run behavior {0} is not implemented.",
-							runBehavior)
+							runBehavior
+						)
 					);
 			}
 		}
@@ -485,7 +487,7 @@ namespace Microsoft.Xna.Framework
 		public void Tick()
 		{
 			/* NOTE: This code is very sensitive and can break very badly
-			 * with even what looks like a safe change.  Be sure to test
+			 * with even what looks like a safe change. Be sure to test
 			 * any change fully in both the fixed and variable timestep
 			 * modes across multiple devices and platforms.
 			 */
@@ -506,9 +508,9 @@ namespace Microsoft.Xna.Framework
 			 */
 			if (IsFixedTimeStep && _accumulatedElapsedTime < TargetElapsedTime)
 			{
-				int sleepTime =
-					(int) (TargetElapsedTime -
-					_accumulatedElapsedTime).TotalMilliseconds;
+				int sleepTime = (
+					(int) (TargetElapsedTime - _accumulatedElapsedTime).TotalMilliseconds
+				);
 
 				/* If we have had to sleep, we shouldn't report being
 				 * slow regardless of how long we actually sleep for
@@ -534,9 +536,8 @@ namespace Microsoft.Xna.Framework
 			 * Calculate IsRunningSlowly for the fixed time step, but only when the accumulated time
 			 * exceeds the target time, and we haven't slept
 			 */
-			_gameTime.IsRunningSlowly =
-				possibleToBeRunningSlowly &&
-				(_accumulatedElapsedTime > TargetElapsedTime);
+			_gameTime.IsRunningSlowly = (	possibleToBeRunningSlowly &&
+							(_accumulatedElapsedTime > TargetElapsedTime)	);
 
 			if (IsFixedTimeStep)
 			{
@@ -611,9 +612,6 @@ namespace Microsoft.Xna.Framework
 
 		protected virtual void Initialize()
 		{
-			// TODO: We shouldn't need to do this here
-			applyChanges(graphicsDeviceManager);
-
 			/* According to the information given on MSDN (see link below), all
 			 * GameComponents in Components at the time Initialize() is called
 			 * are initialized.
@@ -625,13 +623,13 @@ namespace Microsoft.Xna.Framework
 			_graphicsDeviceService = (IGraphicsDeviceService)
 				Services.GetService(typeof(IGraphicsDeviceService));
 
-			/* FIXME: If this test fails, is LoadContent ever called?  This
-			 * seems like a condition that warrants an exception more
+			/* FIXME: If this test fails, is LoadContent ever called?
+			 * This seems like a condition that warrants an exception more
 			 * than a silent failure.
 			 */
 			if (	_graphicsDeviceService != null &&
-					_graphicsDeviceService.GraphicsDevice != null
-			) {
+				_graphicsDeviceService.GraphicsDevice != null	)
+			{
 				LoadContent();
 			}
 		}
@@ -657,13 +655,13 @@ namespace Microsoft.Xna.Framework
 			Raise(Exiting, args);
 		}
 
-		protected virtual void OnActivated (object sender, EventArgs args)
+		protected virtual void OnActivated(object sender, EventArgs args)
 		{
 			AssertNotDisposed();
 			Raise(Activated, args);
 		}
 
-		protected virtual void OnDeactivated (object sender, EventArgs args)
+		protected virtual void OnDeactivated(object sender, EventArgs args)
 		{
 			AssertNotDisposed();
 			Raise(Deactivated, args);
@@ -674,8 +672,9 @@ namespace Microsoft.Xna.Framework
 		#region Event Handlers
 
 		private void Components_ComponentAdded(
-			object sender, GameComponentCollectionEventArgs e)
-		{
+			object sender,
+			GameComponentCollectionEventArgs e
+		) {
 			/* Since we only subscribe to ComponentAdded after the graphics
 			 * devices are set up, it is safe to just blindly call Initialize
 			 */
@@ -684,8 +683,9 @@ namespace Microsoft.Xna.Framework
 		}
 
 		private void Components_ComponentRemoved(
-			object sender, GameComponentCollectionEventArgs e)
-		{
+			object sender,
+			GameComponentCollectionEventArgs e
+		) {
 			DecategorizeComponent(e.GameComponent);
 		}
 
@@ -712,58 +712,10 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		/* FIXME: We should work toward eliminating internal methods.  They
+		/* FIXME: We should work toward eliminating internal methods. They
 		 * break entirely the possibility that additional platforms could
 		 * be added by third parties without changing MonoGame itself.
 		 */
-
-		internal void applyChanges(GraphicsDeviceManager manager)
-		{
-			/* FIXME: Uhh, until I added this block,
-			 * we were doing nothing with manager.
-			 * Is there something wrong with this???
-			 * -flibit
-			 */
-			manager.GraphicsDevice.PresentationParameters.BackBufferFormat =
-				manager.PreferredBackBufferFormat;
-			manager.GraphicsDevice.PresentationParameters.BackBufferWidth =
-				manager.PreferredBackBufferWidth;
-			manager.GraphicsDevice.PresentationParameters.BackBufferHeight =
-				manager.PreferredBackBufferHeight;
-			manager.GraphicsDevice.PresentationParameters.DepthStencilFormat =
-				manager.PreferredDepthStencilFormat;
-			manager.GraphicsDevice.PresentationParameters.IsFullScreen =
-				manager.IsFullScreen;
-
-			Platform.BeginScreenDeviceChange(GraphicsDevice.PresentationParameters.IsFullScreen);
-			if (GraphicsDevice.PresentationParameters.IsFullScreen)
-			{
-				Platform.EnterFullScreen();
-			}
-			else
-			{
-				Platform.ExitFullScreen();
-			}
-
-			Viewport viewport = new Viewport(
-				0,
-				0,
-				GraphicsDevice.PresentationParameters.BackBufferWidth,
-				GraphicsDevice.PresentationParameters.BackBufferHeight
-			);
-
-			GraphicsDevice.Viewport = viewport;
-
-			// FIXME: What is the behavior of ScissorRect on ApplyChanges anyway? -flibit
-			GraphicsDevice.ScissorRectangle = new Rectangle(
-				0,
-				0,
-				GraphicsDevice.PresentationParameters.BackBufferWidth,
-				GraphicsDevice.PresentationParameters.BackBufferHeight
-			);
-
-			Platform.EndScreenDeviceChange(string.Empty, viewport.Width, viewport.Height);
-		}
 
 		internal void DoUpdate(GameTime gameTime)
 		{
@@ -843,8 +795,8 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		/* FIXME: I am open to a better name for this method.  It does the
-		 * opposite of CategorizeComponents
+		/* FIXME: I am open to a better name for this method.
+		 * It does the opposite of CategorizeComponents
 		 */
 		private void DecategorizeComponents()
 		{
@@ -864,8 +816,8 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		/* FIXME: I am open to a better name for this method.  It does the
-		 * opposite of CategorizeComponent
+		/* FIXME: I am open to a better name for this method.
+		 * It does the opposite of CategorizeComponent
 		 */
 		private void DecategorizeComponent(IGameComponent component)
 		{
@@ -939,7 +891,7 @@ namespace Microsoft.Xna.Framework
 
 			private int CompareAddJournalEntry(AddJournalEntry x, AddJournalEntry y)
 			{
-				int result = _sort((T)x.Item, (T)y.Item);
+				int result = _sort((T) x.Item, (T) y.Item);
 				if (result != 0)
 				{
 					return result;
@@ -1071,7 +1023,7 @@ namespace Microsoft.Xna.Framework
 					return;
 				}
 
-				/* Remove items in reverse.  (Technically there exist faster
+				/* Remove items in reverse. (Technically there exist faster
 				 * ways to bulk-remove from a variable-length array, but List<T>
 				 * does not provide such a method.)
 				 */
@@ -1159,7 +1111,7 @@ namespace Microsoft.Xna.Framework
 				_removeJournal.Add(index);
 
 				/* Until the item is back in place, we don't care about its
-				 * events.  We will re-subscribe when _addJournal is processed
+				 * events. We will re-subscribe when _addJournal is processed
 				 */
 				UnsubscribeFromItemEvents(item);
 				InvalidateCache();

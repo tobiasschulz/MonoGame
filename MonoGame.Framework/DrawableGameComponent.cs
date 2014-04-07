@@ -77,8 +77,7 @@ namespace Microsoft.Xna.Framework
 
 		#region Public Constructors
 
-		public DrawableGameComponent(Game game)
-			: base(game)
+		public DrawableGameComponent(Game game) : base(game)
 		{
 		}
 
