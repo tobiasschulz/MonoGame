@@ -73,6 +73,8 @@ namespace Microsoft.Xna.Framework.Input
 			window.MouseState.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
 			window.MouseState.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
 			window.MouseState.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
+			window.MouseState.XButton1 = (ButtonState) ((flags & SDL.SDL_BUTTON_X1MASK) >> 3);
+			window.MouseState.XButton2 = (ButtonState) ((flags & SDL.SDL_BUTTON_X2MASK) >> 4);
 
 			window.MouseState.ScrollWheelValue = INTERNAL_MouseWheel;
 
