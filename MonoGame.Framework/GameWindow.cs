@@ -8,83 +8,109 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Input.Touch;
 using System;
 using System.ComponentModel;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
 #endregion
 
-namespace Microsoft.Xna.Framework {
-	public abstract class GameWindow {
+namespace Microsoft.Xna.Framework
+{
+	public abstract class GameWindow
+	{
 		#region Public Properties
 
 		[DefaultValue(false)]
-		public abstract bool AllowUserResizing { get; set; }
+		public abstract bool AllowUserResizing
+		{ 
+			get;
+			set;
+		}
 
-		public abstract Rectangle ClientBounds { get; }
+		public abstract Rectangle ClientBounds
+		{
+			get;
+		}
 
-		public abstract DisplayOrientation CurrentOrientation { get; }
+		public abstract DisplayOrientation CurrentOrientation
+		{
+			get;
+		}
 
-		public abstract IntPtr Handle { get; }
+		public abstract IntPtr Handle
+		{
+			get;
+		}
 
-		public abstract string ScreenDeviceName { get; }
+		public abstract string ScreenDeviceName
+		{
+			get;
+		}
 
-		public string Title {
-			get { return _title; }
-			set {
-				if (_title != value) {
+		public string Title
+		{
+			get
+			{
+				return _title;
+			}
+			set
+			{
+				if (_title != value)
+				{
 					SetTitle(value);
 					_title = value;
 				}
 			}
 		}
 
-        /// <summary>
-        /// Determines whether the border of the window is visible. Currently only supported on the WinDX and SDL2 platforms.
-        /// </summary>
-        /// <exception cref="System.NotImplementedException">
-        /// Thrown when trying to use this property on a platform other than the WinDX and SDL2 platforms.
-        /// </exception>
-        public virtual bool IsBorderless
-        {
-            get
-            {
-                return false;
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+		/// <summary>
+		/// Determines whether the border of the window is visible. Currently only
+		/// supported on the WinDX and SDL2 platforms.
+		/// </summary>
+		/// <exception cref="System.NotImplementedException">
+		/// Thrown when trying to use this property on a platform other than the WinDX and
+		/// SDL2 platforms.
+		/// </exception>
+		public virtual bool IsBorderless
+		{
+			get
+			{
+				return false;
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
 
 		#endregion
 
-        #region Internal Variables
+		#region Internal Variables
 
-        internal MouseState MouseState;
-        internal TouchPanelState TouchPanelState;
+		internal MouseState MouseState;
+		internal TouchPanelState TouchPanelState;
 
-        #endregion
+		#endregion
 
-        #region Private Variables
+		#region Private Variables
 
-        private string _title;
+		private string _title;
 
-        #endregion
+		#endregion
 
-        #region Protected Constructors
+		#region Protected Constructors
 
-        protected GameWindow()
-        {
-            // TODO: Fix the AndroidGameWindow!
-            TouchPanelState = new TouchPanelState(this);
-        }
+		protected GameWindow()
+		{
+			// TODO: Fix the AndroidGameWindow!
+			TouchPanelState = new TouchPanelState(this);
+		}
 
-        #endregion
+		#endregion
 
-        #region Events
+		#region Events
 
-        public event EventHandler<EventArgs> ClientSizeChanged;
+		public event EventHandler<EventArgs> ClientSizeChanged;
 		public event EventHandler<EventArgs> OrientationChanged;
 		public event EventHandler<EventArgs> ScreenDeviceNameChanged;
 
@@ -102,61 +128,79 @@ namespace Microsoft.Xna.Framework {
 
 		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public abstract void BeginScreenDeviceChange (bool willBeFullScreen);
+		public abstract void BeginScreenDeviceChange(bool willBeFullScreen);
 
-		public abstract void EndScreenDeviceChange (
-			string screenDeviceName, int clientWidth, int clientHeight);
+		public abstract void EndScreenDeviceChange(
+			string screenDeviceName,
+			int clientWidth,
+			int clientHeight
+		);
 
-		public void EndScreenDeviceChange (string screenDeviceName)
+		public void EndScreenDeviceChange(string screenDeviceName)
 		{
-			EndScreenDeviceChange(screenDeviceName, ClientBounds.Width, ClientBounds.Height);
+			EndScreenDeviceChange(
+				screenDeviceName,
+				ClientBounds.Width,
+				ClientBounds.Height
+			);
 		}
 
-        #endregion
+		#endregion
 
-        #region Protected Methods
+		#region Protected Methods
 
-        protected void OnActivated ()
+		protected void OnActivated()
 		{
 		}
 
-		protected void OnClientSizeChanged ()
+		protected void OnClientSizeChanged()
 		{
 			if (ClientSizeChanged != null)
-				ClientSizeChanged (this, EventArgs.Empty);
+			{
+				ClientSizeChanged(this, EventArgs.Empty);
+			}
 		}
 
-		protected void OnDeactivated ()
+		protected void OnDeactivated()
 		{
 		}
-         
-		protected void OnOrientationChanged ()
+
+		protected void OnOrientationChanged()
 		{
 			if (OrientationChanged != null)
-				OrientationChanged (this, EventArgs.Empty);
+			{
+				OrientationChanged(this, EventArgs.Empty);
+			}
 		}
 
-		protected void OnPaint ()
+		protected void OnPaint()
 		{
 		}
 
-		protected void OnScreenDeviceNameChanged ()
+		protected void OnScreenDeviceNameChanged()
 		{
 			if (ScreenDeviceNameChanged != null)
-				ScreenDeviceNameChanged (this, EventArgs.Empty);
+			{
+				ScreenDeviceNameChanged(this, EventArgs.Empty);
+			}
 		}
 
 		protected void OnTextInput(object sender, TextInputEventArgs e)
 		{
 			if (TextInput != null)
+			{
 				TextInput(sender, e);
+			}
 		}
 
-		protected internal abstract void SetSupportedOrientations (DisplayOrientation orientations);
-		protected abstract void SetTitle (string title);
+		protected internal abstract void SetSupportedOrientations(
+			DisplayOrientation orientations
+		);
 
-        #endregion
-    }
+		protected abstract void SetTitle(string title);
+
+		#endregion
+	}
 }

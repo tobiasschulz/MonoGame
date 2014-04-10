@@ -23,11 +23,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using OpenTK.Audio.OpenAL;
 
 using Microsoft.Xna.Framework.Graphics;
 
-using OpenTK.Audio.OpenAL;
+#if VIDEOPLAYER_OPENGL
 using OpenTK.Graphics.OpenGL;
+#endif
 #endregion
 
 namespace Microsoft.Xna.Framework.Media
@@ -732,12 +734,11 @@ namespace Microsoft.Xna.Framework.Media
 			}
 			catch(Exception e)
 			{
+				// I hope we've still got something in videoTexture!
 				System.Console.WriteLine(
 					"WARNING: THEORA FRAME COPY FAILED: " +
 					e.Message
 				);
-				frameLocked = false;
-				return videoTexture; // Hope this still has something in it...
 			}
 #endif
 

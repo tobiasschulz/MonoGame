@@ -20,30 +20,26 @@ namespace Microsoft.Xna.Framework.Input
 	/// </summary>
 	public static class Mouse
 	{
-		#region Internal Properties and Variables
-
-		internal static GameWindow PrimaryWindow;
-
-		internal static IntPtr INTERNAL_sdlWindowHandle;
+		#region Public Properties
 
 		public static IntPtr WindowHandle
 		{
 			get
 			{
-				return INTERNAL_sdlWindowHandle;
+				return PrimaryWindow.Handle;
 			}
 		}
 
-		internal static int INTERNAL_MouseWheel
-		{
-			get;
-			set;
-		}
+		#endregion
 
-		internal static int INTERNAL_BackbufferWidth = 800;
-		internal static int INTERNAL_BackbufferHeight = 600;
+		#region Internal Variables
+
+		internal static GameWindow PrimaryWindow;
+
 		internal static int INTERNAL_WindowWidth = 800;
 		internal static int INTERNAL_WindowHeight = 600;
+
+		internal static int INTERNAL_MouseWheel = 0;
 
 		internal static bool INTERNAL_IsWarped = false;
 
@@ -61,18 +57,22 @@ namespace Microsoft.Xna.Framework.Input
 			int x, y;
 			uint flags = SDL.SDL_GetMouseState(out x, out y);
 
-			x = (int)((double)x * Graphics.OpenGLDevice.Instance.Backbuffer.Width / INTERNAL_WindowWidth);
-			y = (int)((double)y * Graphics.OpenGLDevice.Instance.Backbuffer.Height / INTERNAL_WindowHeight);
+			// Scale the mouse coordinates for the faux-backbuffer
+			x = (int) ((double) x * Graphics.OpenGLDevice.Instance.Backbuffer.Width / INTERNAL_WindowWidth);
+			y = (int) ((double) y * Graphics.OpenGLDevice.Instance.Backbuffer.Height / INTERNAL_WindowHeight);
 
 			if (!INTERNAL_IsWarped)
 			{
+				// If we warped the mouse, we've already done this.
 				window.MouseState.X = x;
 				window.MouseState.Y = y;
 			}
 
-			window.MouseState.LeftButton = (ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
-			window.MouseState.RightButton = (ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
-			window.MouseState.MiddleButton = (ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
+			window.MouseState.LeftButton =		(ButtonState) (flags & SDL.SDL_BUTTON_LMASK);
+			window.MouseState.MiddleButton =	(ButtonState) ((flags & SDL.SDL_BUTTON_MMASK) >> 1);
+			window.MouseState.RightButton =		(ButtonState) ((flags & SDL.SDL_BUTTON_RMASK) >> 2);
+			window.MouseState.XButton1 =		(ButtonState) ((flags & SDL.SDL_BUTTON_X1MASK) >> 3);
+			window.MouseState.XButton2 =		(ButtonState) ((flags & SDL.SDL_BUTTON_X2MASK) >> 4);
 
 			window.MouseState.ScrollWheelValue = INTERNAL_MouseWheel;
 
@@ -96,12 +96,14 @@ namespace Microsoft.Xna.Framework.Input
 		/// <param name="y">Relative vertical position of the cursor.</param>
 		public static void SetPosition(int x, int y)
 		{
-			x = (int)((double)x * INTERNAL_WindowWidth / Graphics.OpenGLDevice.Instance.Backbuffer.Width);
-			y = (int)((double)y * INTERNAL_WindowHeight / Graphics.OpenGLDevice.Instance.Backbuffer.Height);
+			// Scale the mouse coordinates for the faux-backbuffer
+			x = (int) ((double) x * INTERNAL_WindowWidth / Graphics.OpenGLDevice.Instance.Backbuffer.Width);
+			y = (int) ((double) y * INTERNAL_WindowHeight / Graphics.OpenGLDevice.Instance.Backbuffer.Height);
+
 			PrimaryWindow.MouseState.X = x;
 			PrimaryWindow.MouseState.Y = y;
 
-			SDL.SDL_WarpMouseInWindow(INTERNAL_sdlWindowHandle, x, y);
+			SDL.SDL_WarpMouseInWindow(WindowHandle, x, y);
 			INTERNAL_IsWarped = true;
 		}
 
