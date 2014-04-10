@@ -24,13 +24,11 @@ namespace Microsoft.Xna.Framework.Input
 
 		internal static GameWindow PrimaryWindow;
 
-		internal static IntPtr INTERNAL_sdlWindowHandle;
-
 		public static IntPtr WindowHandle
 		{
 			get
 			{
-				return INTERNAL_sdlWindowHandle;
+				return PrimaryWindow.Handle;
 			}
 		}
 
@@ -40,8 +38,6 @@ namespace Microsoft.Xna.Framework.Input
 			set;
 		}
 
-		internal static int INTERNAL_BackbufferWidth = 800;
-		internal static int INTERNAL_BackbufferHeight = 600;
 		internal static int INTERNAL_WindowWidth = 800;
 		internal static int INTERNAL_WindowHeight = 600;
 
@@ -103,7 +99,7 @@ namespace Microsoft.Xna.Framework.Input
 			PrimaryWindow.MouseState.X = x;
 			PrimaryWindow.MouseState.Y = y;
 
-			SDL.SDL_WarpMouseInWindow(INTERNAL_sdlWindowHandle, x, y);
+			SDL.SDL_WarpMouseInWindow(WindowHandle, x, y);
 			INTERNAL_IsWarped = true;
 		}
 
