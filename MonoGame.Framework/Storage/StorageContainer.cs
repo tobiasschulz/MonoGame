@@ -117,9 +117,22 @@ namespace Microsoft.Xna.Framework.Storage
 			{
 				throw new Exception("StorageContainer: SDL2 platform not handled!");
 			}
-			storagePath = Path.Combine(saved, name);
+			storagePath = Path.Combine(
+				saved,
+				Path.GetFileNameWithoutExtension(
+					System.AppDomain.CurrentDomain.FriendlyName
+				)
+			);
 
-			// Create the root folder, if need be.
+			// Create the title root folder, if needed.
+			if (!Directory.Exists(storagePath))
+			{
+				Directory.CreateDirectory(storagePath);
+			}
+
+			storagePath = Path.Combine(storagePath, name);
+
+			// Create the device root folder, if needed.
 			if (!Directory.Exists(storagePath))
 			{
 				Directory.CreateDirectory(storagePath);
@@ -134,14 +147,14 @@ namespace Microsoft.Xna.Framework.Storage
 			 */
 			if (playerIndex.HasValue)
 			{
-				storagePath = Path.Combine(storagePath, "Player" + ((int) playerIndex.Value + 1));
+				storagePath = Path.Combine(storagePath, "Player" + (int) playerIndex.Value + 1);
 			}
 			else
 			{
 				storagePath = Path.Combine(storagePath, "AllPlayers");
 			}
 
-			// Create the player folder, if need be.
+			// Create the player folder, if needed.
 			if (!Directory.Exists(storagePath))
 			{
 				Directory.CreateDirectory(storagePath);
