@@ -65,11 +65,10 @@ namespace Microsoft.Xna.Framework
 
 		/// <summary>
 		/// Determines whether the border of the window is visible. Currently only
-		/// supported on the WinDX and SDL2 platforms.
+		/// supported on the SDL2 platform.
 		/// </summary>
 		/// <exception cref="System.NotImplementedException">
-		/// Thrown when trying to use this property on a platform other than the WinDX and
-		/// SDL2 platforms.
+		/// Thrown when trying to use this property on a platform other than the SDL2 platform.
 		/// </exception>
 		public virtual bool IsBorderless
 		{
@@ -122,7 +121,7 @@ namespace Microsoft.Xna.Framework
 		/// http://msdn.microsoft.com/en-AU/library/system.windows.forms.control.keypress.aspx
 		/// </summary>
 		/// <remarks>
-		/// This event is only supported on the Windows DirectX and SDL2 platforms.
+		/// This event is only supported on the SDL2 platform.
 		/// </remarks>
 		public event EventHandler<TextInputEventArgs> TextInput;
 

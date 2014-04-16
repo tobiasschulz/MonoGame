@@ -9,6 +9,7 @@
 
 #region Using Statements
 using System;
+using System.Collections.Generic;
 
 using SDL2;
 
@@ -79,6 +80,12 @@ namespace Microsoft.Xna.Framework
 		#region Internal SDL2 Window
 
 		private SDL2_GameWindow INTERNAL_window;
+
+		#endregion
+
+		#region Private DisplayMode List
+
+		private DisplayModeCollection supportedDisplayModes = null;
 
 		#endregion
 
@@ -183,6 +190,61 @@ namespace Microsoft.Xna.Framework
 				INTERNAL_window.INTERNAL_SwapBuffers();
 			}
 		}
+
+		#endregion
+
+		#region Internal GameWindow Methods
+
+		internal override DisplayMode GetCurrentDisplayMode()
+		{
+			SDL.SDL_DisplayMode mode;
+			SDL.SDL_GetCurrentDisplayMode(0, out mode);
+			return new DisplayMode(
+				mode.w,
+				mode.h,
+				SurfaceFormat.Color
+			);
+		}
+
+		internal override DisplayModeCollection GetDisplayModes()
+		{
+			if (supportedDisplayModes == null)
+			{
+				List<DisplayMode> modes = new List<DisplayMode>(new DisplayMode[] { GetCurrentDisplayMode(), });
+				SDL.SDL_DisplayMode filler = new SDL.SDL_DisplayMode();
+				int numModes = SDL.SDL_GetNumDisplayModes(0);
+				for (int i = 0; i < numModes; i += 1)
+				{
+					SDL.SDL_GetDisplayMode(0, i, out filler);
+
+					// Check for dupes caused by varying refresh rates.
+					bool dupe = false;
+					foreach (DisplayMode mode in modes)
+					{
+						if (filler.w == mode.Width && filler.h == mode.Height)
+						{
+							dupe = true;
+						}
+					}
+					if (!dupe)
+					{
+						modes.Add(
+							new DisplayMode(
+								filler.w,
+								filler.h,
+								SurfaceFormat.Color // FIXME: Assumption!
+							)
+						);
+					}
+				}
+				supportedDisplayModes = new DisplayModeCollection(modes);
+			}
+			return supportedDisplayModes;
+		}
+
+		#endregion
+
+		#region Protected GameWindow Methods
 
 		protected override void OnIsMouseVisibleChanged()
 		{

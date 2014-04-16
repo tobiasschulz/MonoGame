@@ -9,7 +9,6 @@
 
 #region Using Statements
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 #endregion
 
@@ -23,13 +22,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				SDL2.SDL.SDL_DisplayMode mode;
-				SDL2.SDL.SDL_GetCurrentDisplayMode(0, out mode);
-				return new DisplayMode(
-					mode.w,
-					mode.h,
-					SurfaceFormat.Color
-				);
+				return Game.Instance.Platform.GetCurrentDisplayMode();
 			}
 		}
 
@@ -37,40 +30,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				if (supportedDisplayModes == null)
-				{
-					List<DisplayMode> modes = new List<DisplayMode>(new DisplayMode[] { CurrentDisplayMode, });
-					SDL2.SDL.SDL_DisplayMode filler = new SDL2.SDL.SDL_DisplayMode();
-					int numModes = SDL2.SDL.SDL_GetNumDisplayModes(0);
-					for (int i = 0; i < numModes; i += 1)
-					{
-						SDL2.SDL.SDL_GetDisplayMode(0, i, out filler);
-
-						// Check for dupes caused by varying refresh rates.
-						bool dupe = false;
-						foreach (DisplayMode mode in modes)
-						{
-							if (filler.w == mode.Width && filler.h == mode.Height)
-							{
-								dupe = true;
-							}
-						}
-						if (dupe)
-						{
-							continue;
-						}
-
-						modes.Add(
-							new DisplayMode(
-								filler.w,
-								filler.h,
-								SurfaceFormat.Color // FIXME: Assumption!
-							)
-						);
-					}
-					supportedDisplayModes = new DisplayModeCollection(modes);
-				}
-				return supportedDisplayModes;
+				return Game.Instance.Platform.GetDisplayModes();
 			}
 		}
 
@@ -198,12 +158,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				return adapters;
 			}
 		}
-
-		#endregion
-
-		#region Private Variables
-
-		private DisplayModeCollection supportedDisplayModes = null;
 
 		#endregion
 
