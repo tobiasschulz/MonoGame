@@ -36,7 +36,7 @@ namespace Microsoft.Xna.Framework.Storage
 				// This only really matters on Windows.
 				try
 				{
-					return new DriveInfo(GetDevicePath()).AvailableFreeSpace;
+					return new DriveInfo(storageRoot).AvailableFreeSpace;
 				}
 				catch
 				{
@@ -55,7 +55,7 @@ namespace Microsoft.Xna.Framework.Storage
 				// This only really matters on Windows.
 				try
 				{
-					return new DriveInfo(GetDevicePath()).IsReady;
+					return new DriveInfo(storageRoot).IsReady;
 				}
 				catch
 				{
@@ -74,7 +74,7 @@ namespace Microsoft.Xna.Framework.Storage
 				// This only really matters on Windows.
 				try
 				{
-					return new DriveInfo(GetDevicePath()).TotalSize;
+					return new DriveInfo(storageRoot).TotalSize;
 				}
 				catch
 				{
@@ -349,22 +349,6 @@ namespace Microsoft.Xna.Framework.Storage
 		private static StorageDevice Show(PlayerIndex? player, int sizeInBytes, int directoryCount)
 		{
 			return new StorageDevice(player, sizeInBytes, directoryCount);
-		}
-
-		#endregion
-
-		#region Private Directory Path Method
-
-		private string GetDevicePath()
-		{
-			/* We may not need to store the StorageContainer in the future
-			 * when we get DeviceChanged events working.
-			 */
-			if (deviceContainer == null)
-			{
-				return storageRoot;
-			}
-			return deviceContainer.storagePath;
 		}
 
 		#endregion

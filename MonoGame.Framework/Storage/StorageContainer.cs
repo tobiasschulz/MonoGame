@@ -66,7 +66,7 @@ namespace Microsoft.Xna.Framework.Storage
 
 		#region Internal Variables
 
-		internal readonly string storagePath;
+		private readonly string storagePath;
 
 		#endregion
 
@@ -119,18 +119,29 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 			storagePath = Path.Combine(saved, name);
 
-			string playerSave = string.Empty;
+			// Create the root folder, if need be.
+			if (!Directory.Exists(storagePath))
+			{
+				Directory.CreateDirectory(storagePath);
+			}
+
+			/* There are two possible subfolders for a StorageContainer.
+			 * The first is PlayerX, X being a specified PlayerIndex.
+			 * The second is AllPlayers, when PlayerIndex is NOT specified.
+			 * Basically, you should NEVER expect to have ANY file in the root
+			 * game save folder.
+			 * -flibit
+			 */
 			if (playerIndex.HasValue)
 			{
-				playerSave = Path.Combine(storagePath, "Player" + (int) playerIndex.Value);
+				storagePath = Path.Combine(storagePath, "Player" + ((int) playerIndex.Value + 1));
 			}
-
-			if (!string.IsNullOrEmpty(playerSave))
+			else
 			{
-				storagePath = Path.Combine(storagePath, "Player" + (int)playerIndex);
+				storagePath = Path.Combine(storagePath, "AllPlayers");
 			}
 
-			// Create the "device", if need be.
+			// Create the player folder, if need be.
 			if (!Directory.Exists(storagePath))
 			{
 				Directory.CreateDirectory(storagePath);
