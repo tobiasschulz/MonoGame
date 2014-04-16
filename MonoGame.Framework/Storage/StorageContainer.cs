@@ -147,7 +147,7 @@ namespace Microsoft.Xna.Framework.Storage
 			 */
 			if (playerIndex.HasValue)
 			{
-				storagePath = Path.Combine(storagePath, "Player" + (int) playerIndex.Value + 1);
+				storagePath = Path.Combine(storagePath, "Player" + ((int) playerIndex.Value + 1));
 			}
 			else
 			{
