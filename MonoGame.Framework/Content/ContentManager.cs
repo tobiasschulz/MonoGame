@@ -91,6 +91,7 @@ namespace Microsoft.Xna.Framework.Content
 			'p', // PlayStationMobile
 			'M', // WindowsPhone8
 			'r', // RaspberryPi
+			'P', // Playstation 4
 		};
 
 		#endregion
