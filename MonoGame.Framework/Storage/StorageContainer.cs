@@ -14,16 +14,6 @@ using System.IO;
 
 namespace Microsoft.Xna.Framework.Storage
 {
-	/* Implementation on Windows
-	 *
-	 * User storage is in the My Documents folder of the user who is currently logged in, in the
-	 * SavedGames folder. A subfolder is created for each game according to the titleName passed
-	 * to the BeginOpenContainer method. When no PlayerIndex is specified, content is saved in
-	 * the AllPlayers folder. When a PlayerIndex is specified, the content is saved in the Player1,
-	 * Player2, Player3, or Player4 folder, depending on which PlayerIndex was passed to
-	 * BeginShowSelector.
-	 */
-
 	/// <summary>
 	/// Contains a logical collection of files used for user-data storage.
 	/// </summary>
