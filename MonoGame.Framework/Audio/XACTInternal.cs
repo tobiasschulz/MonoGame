@@ -7,9 +7,11 @@
  */
 #endregion
 
+#region Using Statements
 using System;
 
 using OpenTK.Audio.OpenAL;
+#endregion
 
 namespace Microsoft.Xna.Framework.Audio
 {

@@ -10,6 +10,7 @@
 #region Using Statements
 using System;
 using System.Diagnostics;
+
 using OpenTK.Graphics.OpenGL;
 #endregion
 
