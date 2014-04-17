@@ -32,12 +32,6 @@ SOFTWARE.
 */
 #endregion
 
-#region Using Statements
-using System;
-using System.Collections.Generic;
-using System.Text;
-#endregion
-
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class Vector3Reader : ContentTypeReader<Vector3>

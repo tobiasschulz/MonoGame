@@ -7,10 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-#endregion
-
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class SByteReader : ContentTypeReader<sbyte>

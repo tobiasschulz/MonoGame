@@ -36,7 +36,6 @@ SOFTWARE.
 #endregion License
 
 #region Using Statements
-using System;
 using System.Globalization;
 using System.Runtime.Serialization;
 #endregion
