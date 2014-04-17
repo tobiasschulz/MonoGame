@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework.Storage
 			storagePath = Path.Combine(
 				saved,
 				Path.GetFileNameWithoutExtension(
-					System.AppDomain.CurrentDomain.FriendlyName
+					AppDomain.CurrentDomain.FriendlyName
 				)
 			);
 
