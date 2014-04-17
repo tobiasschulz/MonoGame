@@ -7,12 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-
-using Microsoft.Xna.Framework.Graphics;
-#endregion
-
 namespace Microsoft.Xna.Framework.Graphics
 {
 	public sealed class DirectionalLight

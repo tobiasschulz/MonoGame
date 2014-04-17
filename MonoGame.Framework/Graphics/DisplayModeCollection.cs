@@ -33,7 +33,6 @@ SOFTWARE.
 #endregion License
 
 #region Using Statements
-using System;
 using System.Collections;
 using System.Collections.Generic;
 #endregion
