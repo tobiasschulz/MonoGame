@@ -7,10 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-#endregion
-
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class UInt16Reader : ContentTypeReader<ushort>

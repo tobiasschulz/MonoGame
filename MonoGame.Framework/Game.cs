@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
@@ -369,7 +370,7 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		[System.Diagnostics.DebuggerNonUserCode]
+		[DebuggerNonUserCode]
 		private void AssertNotDisposed()
 		{
 			if (_isDisposed)
@@ -703,7 +704,7 @@ namespace Microsoft.Xna.Framework
 
 		#region Internal Methods
 
-		[System.Diagnostics.Conditional("DEBUG")]
+		[Conditional("DEBUG")]
 		internal void Log(string Message)
 		{
 			if (Platform != null)

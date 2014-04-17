@@ -8,9 +8,6 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Runtime.InteropServices;
 #endregion
 

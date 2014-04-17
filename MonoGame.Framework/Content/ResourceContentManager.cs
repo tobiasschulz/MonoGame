@@ -9,7 +9,6 @@
 
 #region Using Statements
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Resources;
 #endregion
@@ -41,7 +40,7 @@ namespace Microsoft.Xna.Framework.Content
 
 		#region Protected OpenStream Method
 
-		protected override System.IO.Stream OpenStream(string assetName)
+		protected override Stream OpenStream(string assetName)
 		{
 			object obj = this.resource.GetObject(assetName);
 			if (obj == null)

@@ -7,7 +7,9 @@
  */
 #endregion
 
+#region Using Statements
 using System.Collections.Generic;
+#endregion
 
 namespace Microsoft.Xna.Framework.Media
 {

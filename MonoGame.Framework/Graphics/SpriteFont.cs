@@ -81,10 +81,17 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Private Readonly Variables
 
 		private readonly Dictionary<char, Glyph> _glyphs;
+#pragma warning disable 0414
+		/* These are needed for Reflection purposes.
+		 * Don't worry, SpriteFont's going to get rewritten like everything else
+		 * in this damned library.
+		 * -flibit
+		 */
 		private readonly List<Rectangle> _glyphBounds;
 		private readonly List<Rectangle> _cropping;
 		private readonly List<Vector3> _kerning;
 		private readonly List<char> _characterMap;
+#pragma warning restore 0414
 
 		#endregion
 

@@ -34,9 +34,9 @@ SOFTWARE.
 
 #region Using Statements
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content

@@ -9,6 +9,8 @@
 
 #region Using Statements
 using System;
+
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 #endregion
@@ -291,6 +293,14 @@ namespace Microsoft.Xna.Framework
 		protected virtual void OnIsMouseVisibleChanged() {}
 
 		public virtual void Present() {}
+
+		#endregion
+
+		#region Internal Methods
+
+		internal abstract DisplayMode GetCurrentDisplayMode();
+
+		internal abstract DisplayModeCollection GetDisplayModes();
 
 		#endregion
 

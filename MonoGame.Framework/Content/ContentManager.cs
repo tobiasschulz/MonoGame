@@ -9,17 +9,13 @@
 
 #region Using Statements
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Path = System.IO.Path;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 #endregion
 
@@ -91,6 +87,7 @@ namespace Microsoft.Xna.Framework.Content
 			'p', // PlayStationMobile
 			'M', // WindowsPhone8
 			'r', // RaspberryPi
+			'P', // Playstation 4
 		};
 
 		#endregion

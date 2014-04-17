@@ -14,16 +14,6 @@ using System.IO;
 
 namespace Microsoft.Xna.Framework.Storage
 {
-	/* Implementation on Windows
-	 *
-	 * User storage is in the My Documents folder of the user who is currently logged in, in the
-	 * SavedGames folder. A subfolder is created for each game according to the titleName passed
-	 * to the BeginOpenContainer method. When no PlayerIndex is specified, content is saved in
-	 * the AllPlayers folder. When a PlayerIndex is specified, the content is saved in the Player1,
-	 * Player2, Player3, or Player4 folder, depending on which PlayerIndex was passed to
-	 * BeginShowSelector.
-	 */
-
 	/// <summary>
 	/// Contains a logical collection of files used for user-data storage.
 	/// </summary>
@@ -66,7 +56,7 @@ namespace Microsoft.Xna.Framework.Storage
 
 		#region Internal Variables
 
-		internal readonly string storagePath;
+		private readonly string storagePath;
 
 		#endregion
 
@@ -117,20 +107,44 @@ namespace Microsoft.Xna.Framework.Storage
 			{
 				throw new Exception("StorageContainer: SDL2 platform not handled!");
 			}
-			storagePath = Path.Combine(saved, name);
+			storagePath = Path.Combine(
+				saved,
+				Path.GetFileNameWithoutExtension(
+					AppDomain.CurrentDomain.FriendlyName
+				)
+			);
 
-			string playerSave = string.Empty;
+			// Create the title root folder, if needed.
+			if (!Directory.Exists(storagePath))
+			{
+				Directory.CreateDirectory(storagePath);
+			}
+
+			storagePath = Path.Combine(storagePath, name);
+
+			// Create the device root folder, if needed.
+			if (!Directory.Exists(storagePath))
+			{
+				Directory.CreateDirectory(storagePath);
+			}
+
+			/* There are two possible subfolders for a StorageContainer.
+			 * The first is PlayerX, X being a specified PlayerIndex.
+			 * The second is AllPlayers, when PlayerIndex is NOT specified.
+			 * Basically, you should NEVER expect to have ANY file in the root
+			 * game save folder.
+			 * -flibit
+			 */
 			if (playerIndex.HasValue)
 			{
-				playerSave = Path.Combine(storagePath, "Player" + (int) playerIndex.Value);
+				storagePath = Path.Combine(storagePath, "Player" + ((int) playerIndex.Value + 1));
 			}
-
-			if (!string.IsNullOrEmpty(playerSave))
+			else
 			{
-				storagePath = Path.Combine(storagePath, "Player" + (int)playerIndex);
+				storagePath = Path.Combine(storagePath, "AllPlayers");
 			}
 
-			// Create the "device", if need be.
+			// Create the player folder, if needed.
 			if (!Directory.Exists(storagePath))
 			{
 				Directory.CreateDirectory(storagePath);

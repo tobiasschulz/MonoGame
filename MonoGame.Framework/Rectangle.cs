@@ -34,8 +34,6 @@ SOFTWARE.
 
 #region Using Statements
 using System;
-using System.Globalization;
-using System.ComponentModel;
 using System.Runtime.Serialization;
 #endregion
 

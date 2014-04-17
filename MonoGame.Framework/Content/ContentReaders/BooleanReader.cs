@@ -7,15 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-#endregion
-
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class BooleanReader : ContentTypeReader<bool>

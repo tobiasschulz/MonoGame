@@ -8,12 +8,9 @@
 #endregion
 
 #region Using Statements
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework.Graphics;
-using System.IO;
 using System.Linq;
+
+using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content

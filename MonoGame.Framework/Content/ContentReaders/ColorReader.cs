@@ -7,13 +7,6 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework;
-#endregion
-
 namespace Microsoft.Xna.Framework.Content
 {
 	internal class ColorReader : ContentTypeReader<Color>

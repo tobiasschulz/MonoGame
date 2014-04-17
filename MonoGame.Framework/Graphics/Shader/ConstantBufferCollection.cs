@@ -57,7 +57,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if DIRECTX
         internal void SetConstantBuffers(GraphicsDevice device)
-#elif OPENGL || PSM
+#elif OPENGL || PSM || WEB
         internal void SetConstantBuffers(GraphicsDevice device, int shaderProgram)
 #endif
         {
