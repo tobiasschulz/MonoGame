@@ -34,6 +34,7 @@ SOFTWARE.
 
 #region Using Statements
 using System;
+
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 

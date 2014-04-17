@@ -35,9 +35,9 @@ SOFTWARE.
 #region Using Statements
 using System;
 using System.ComponentModel;
-using System.Text;
 using System.Globalization;
 using System.Runtime.Serialization;
+using System.Text;
 #endregion
 
 namespace Microsoft.Xna.Framework

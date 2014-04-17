@@ -10,6 +10,7 @@
 #region Using Statements
 using System;
 using System.ComponentModel;
+
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 #endregion

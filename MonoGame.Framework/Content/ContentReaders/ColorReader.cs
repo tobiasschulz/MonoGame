@@ -10,8 +10,8 @@
 #region Using Statements
 using System;
 
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content

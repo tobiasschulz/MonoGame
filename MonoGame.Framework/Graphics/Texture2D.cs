@@ -13,9 +13,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-using SDL2;
 using OpenTK.Graphics.OpenGL;
-using GLPixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
+using SDL2;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -215,7 +214,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					IntPtr dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startByte);
 
 					OpenGLDevice.Instance.BindTexture(texture);
-					if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
+					if (glFormat == (PixelFormat) All.CompressedTextureFormats)
 					{
 						int dataLength;
 						if (elementCount > 0)
@@ -357,7 +356,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			OpenGLDevice.Instance.BindTexture(texture);
 
-			if (glFormat == (GLPixelFormat) All.CompressedTextureFormats)
+			if (glFormat == (PixelFormat) All.CompressedTextureFormats)
 			{
 				throw new NotImplementedException("GetData, CompressedTexture");
 			}
