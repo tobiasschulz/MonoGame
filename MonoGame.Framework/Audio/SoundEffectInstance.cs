@@ -11,8 +11,6 @@
 using System;
 
 using OpenTK.Audio.OpenAL;
-
-using Microsoft.Xna.Framework;
 #endregion
 
 namespace Microsoft.Xna.Framework.Audio
