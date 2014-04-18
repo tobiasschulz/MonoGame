@@ -46,20 +46,33 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 
 		/// <summary>
-		/// Returns true if device is connected, false otherwise.
+		/// Returns true if this StorageDevice path is accessible, false otherwise.
 		/// </summary>
 		public bool IsConnected
 		{
 			get
 			{
-				try
+				if (	SDL2_GamePlatform.OSVersion.Equals("Linux") ||
+					SDL2_GamePlatform.OSVersion.Equals("Mac OS X")	)
 				{
-					return new DriveInfo(storageRoot).IsReady;
-				}
-				catch
-				{
+					/* Linux and Mac use locally connected storage in the user's
+					 * home location, which should always be "connected".
+					 */
 					return true;
 				}
+				else if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+				{
+					try
+					{
+						return new DriveInfo(storageRoot).IsReady;
+					}
+					catch
+					{
+						// The storageRoot path is invalid / has been removed.
+						return false;
+					}
+				}
+				throw new Exception("SDL2 platform not handled!");
 			}
 		}
 
