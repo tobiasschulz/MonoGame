@@ -80,7 +80,7 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <param name='playerIndex'>
 		/// The index of the player whose data is being saved, or null if data is for all
 		/// players.
-		/// .</param>
+		/// </param>
 		internal StorageContainer(
 			StorageDevice device,
 			string name,
