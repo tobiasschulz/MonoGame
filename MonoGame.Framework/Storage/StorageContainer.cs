@@ -26,7 +26,7 @@ namespace Microsoft.Xna.Framework.Storage
 		#region Public Properties
 
 		/// <summary>
-		/// Returns display name of the title.
+		/// The title's (i.e. "game's") filename.
 		/// </summary>
 		public string DisplayName
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 
 		/// <summary>
-		/// Gets a bool value indicating whether the instance has been disposed.
+		/// A bool value indicating whether the instance has been disposed.
 		/// </summary>
 		public bool IsDisposed
 		{
@@ -44,7 +44,7 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 
 		/// <summary>
-		/// Returns the <see cref="StorageDevice"/> that holds logical files for the container.
+		/// The <see cref="StorageDevice"/> that holds logical files for the container.
 		/// </summary>
 		public StorageDevice StorageDevice
 		{
@@ -63,8 +63,8 @@ namespace Microsoft.Xna.Framework.Storage
 		#region Events
 
 		/// <summary>
-		/// Fired when <see cref="Dispose"/> is called or object if finalized or collected by the
-		/// garbage collector.
+		/// Fired when <see cref="Dispose"/> is called or object is finalized or collected
+		/// by the garbage collector.
 		/// </summary>
 		public event EventHandler<EventArgs> Disposing;
 
@@ -73,11 +73,14 @@ namespace Microsoft.Xna.Framework.Storage
 		#region Internal Constructors
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Microsoft.Xna.Framework.Storage.StorageContainer"/> class.
+		/// Initializes a new instance of the <see cref="StorageContainer"/> class.
 		/// </summary>
 		/// <param name='device'>The attached storage-device.</param>
-		/// <param name='name'> name.</param>
-		/// <param name='playerIndex'>The player index of the player to save the data.</param>
+		/// <param name='name'>The title's filename.</param>
+		/// <param name='playerIndex'>
+		/// The index of the player whose data is being saved, or null if data is for all
+		/// players.
+		/// .</param>
 		internal StorageContainer(
 			StorageDevice device,
 			string name,
@@ -91,16 +94,16 @@ namespace Microsoft.Xna.Framework.Storage
 			StorageDevice = device;
 			DisplayName = name;
 
-			// From the examples the root is based on MyDocuments folder
 			string saved;
 			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
 			{
+				// The root on Windows is the "My Documents" folder
 				saved = Path.Combine(StorageDevice.storageRoot, "SavedGames");
 			}
 			else if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") ||
 					SDL2_GamePlatform.OSVersion.Equals("Linux") )
 			{
-				// Unix systems are expected to have a dedicated userdata folder.
+				// Unix-like systems are expected to have a dedicated userdata folder.
 				saved = StorageDevice.storageRoot;
 			}
 			else
@@ -114,7 +117,7 @@ namespace Microsoft.Xna.Framework.Storage
 				)
 			);
 
-			// Create the title root folder, if needed.
+			// Create the root folder for all titles, if needed.
 			if (!Directory.Exists(storagePath))
 			{
 				Directory.CreateDirectory(storagePath);
@@ -122,14 +125,14 @@ namespace Microsoft.Xna.Framework.Storage
 
 			storagePath = Path.Combine(storagePath, name);
 
-			// Create the device root folder, if needed.
+			// Create the sub-folder for this container/title's files, if needed.
 			if (!Directory.Exists(storagePath))
 			{
 				Directory.CreateDirectory(storagePath);
 			}
 
-			/* There are two possible subfolders for a StorageContainer.
-			 * The first is PlayerX, X being a specified PlayerIndex.
+			/* There are two types of subfolders within a StorageContainer.
+			 * The first is a PlayerX folder, X being a specified PlayerIndex.
 			 * The second is AllPlayers, when PlayerIndex is NOT specified.
 			 * Basically, you should NEVER expect to have ANY file in the root
 			 * game save folder.
@@ -182,7 +185,7 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter directory must contain a value.");
 			}
 
-			// Relative, so combine with our path.
+			// Directory name is relative, so combine with our path.
 			string dirPath = Path.Combine(storagePath, directory);
 
 			// Now let's try to create it.
@@ -201,7 +204,7 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
-			// Relative, so combine with our path.
+			// File name is relative, so combine with our path.
 			string filePath = Path.Combine(storagePath, file);
 
 			// Return a new file with read/write access.
@@ -213,7 +216,7 @@ namespace Microsoft.Xna.Framework.Storage
 		#region Public Delete Methods
 
 		/// <summary>
-		/// Deletes specified directory for the storage-container.
+		/// Deletes specified directory from the storage-container.
 		/// </summary>
 		/// <param name="directory">The relative path of the directory to be deleted.</param>
 		public void DeleteDirectory(string directory)
@@ -223,7 +226,7 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter directory must contain a value.");
 			}
 
-			// Relative, so combine with our path.
+			// Directory name is relative, so combine with our path.
 			string dirPath = Path.Combine(storagePath, directory);
 
 			// Now let's try to delete it.
@@ -255,8 +258,8 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns true if specified path exists in the storage-container, false otherwise.
 		/// </summary>
-		/// <param name="directory">The relative path of directory to query for.</param>
-		/// <returns>True if queried directory exists, false otherwise.</returns>
+		/// <param name="directory">The relative path of the directory to query for.</param>
+		/// <returns>True if the directory path exists, false otherwise.</returns>
 		public bool DirectoryExists(string directory)
 		{
 			if (string.IsNullOrEmpty(directory))
@@ -264,7 +267,7 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter directory must contain a value.");
 			}
 
-			// Relative, so combine with our path.
+			// Directory name is relative, so combine with our path.
 			string dirPath = Path.Combine(storagePath, directory);
 
 			return Directory.Exists(dirPath);
@@ -273,8 +276,8 @@ namespace Microsoft.Xna.Framework.Storage
 		/// <summary>
 		/// Returns true if the specified file exists in the storage-container, false otherwise.
 		/// </summary>
-		/// <param name="file">The relative path of file to query for.</param>
-		/// <returns>True if queried file exists, false otherwise.</returns>
+		/// <param name="file">The relative path of the file to query for.</param>
+		/// <returns>True if file exists, false otherwise.</returns>
 		public bool FileExists(string file)
 		{
 			if (string.IsNullOrEmpty(file))
@@ -282,7 +285,7 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
-			// Relative, so combine with our path.
+			// File name is relative, so combine with our path.
 			string filePath = Path.Combine(storagePath, file);
 
 			// Return a new file with read/write access.
@@ -294,21 +297,22 @@ namespace Microsoft.Xna.Framework.Storage
 		#region Public GetNames Methods
 
 		/// <summary>
-		/// Returns list of directory names in the storage-container.
+		/// Returns an array of the directory names in the storage-container.
 		/// </summary>
-		/// <returns>List of directory names.</returns>
+		/// <returns>Array of directory names.</returns>
 		public string[] GetDirectoryNames()
 		{
 			return Directory.GetDirectories(storagePath);
 		}
 
 		/// <summary>
-		/// Returns list of directory names with given search pattern.
+		/// Returns an array of directory names with given search pattern.
 		/// </summary>
 		/// <param name="searchPattern">
-		/// A search pattern that supports single-character ("?") and multicharacter ("*") wildcards.
+		/// A search pattern that supports single-character ("?") and multicharacter ("*")
+		/// wildcards.
 		/// </param>
-		/// <returns>List of matched directory names.</returns>
+		/// <returns>Array of matched directory names.</returns>
 		public string[] GetDirectoryNames(string searchPattern)
 		{
 			if (string.IsNullOrEmpty(searchPattern))
@@ -320,19 +324,22 @@ namespace Microsoft.Xna.Framework.Storage
 		}
 
 		/// <summary>
-		/// Returns list of file names in the storage-container.
+		/// Returns an array of file names in the storage-container.
 		/// </summary>
-		/// <returns>List of file names.</returns>
+		/// <returns>Array of file names.</returns>
 		public string[] GetFileNames()
 		{
 			return Directory.GetFiles(storagePath);
 		}
 
 		/// <summary>
-		/// Returns list of file names with given search pattern.
+		/// Returns an array of file names with given search pattern.
 		/// </summary>
-		/// <param name="searchPattern">A search pattern that supports single-character ("?") and multicharacter ("*") wildcards.</param>
-		/// <returns>List of matched file names.</returns>
+		/// <param name="searchPattern">
+		/// A search pattern that supports single-character ("?") and multicharacter ("*")
+		/// wildcards.
+		/// </param>
+		/// <returns>Array of matched file names.</returns>
 		public string[] GetFileNames(string searchPattern)
 		{
 			if (string.IsNullOrEmpty(searchPattern))
@@ -351,7 +358,9 @@ namespace Microsoft.Xna.Framework.Storage
 		/// Opens a file contained in storage-container.
 		/// </summary>
 		/// <param name="file">Relative path of the file.</param>
-		/// <param name="fileMode"><see cref="FileMode"/> that specifies how the file is opened.</param>
+		/// <param name="fileMode">
+		/// <see cref="FileMode"/> that specifies how the file is to be opened.
+		/// </param>
 		/// <returns><see cref="Stream"/> object for the opened file.</returns>
 		public Stream OpenFile(
 			string file,
@@ -369,8 +378,12 @@ namespace Microsoft.Xna.Framework.Storage
 		/// Opens a file contained in storage-container.
 		/// </summary>
 		/// <param name="file">Relative path of the file.</param>
-		/// <param name="fileMode"><see cref="FileMode"/> that specifies how the file is opened.</param>
-		/// <param name="fileAccess"><see cref="FileAccess"/> that specifies access mode.</param>
+		/// <param name="fileMode">
+		/// <see cref="FileMode"/> that specifies how the file is to be opened.
+		/// </param>
+		/// <param name="fileAccess">
+		/// <see cref="FileAccess"/> that specifies access mode.
+		/// </param>
 		/// <returns><see cref="Stream"/> object for the opened file.</returns>
 		public Stream OpenFile(
 			string file,
@@ -389,8 +402,12 @@ namespace Microsoft.Xna.Framework.Storage
 		/// Opens a file contained in storage-container.
 		/// </summary>
 		/// <param name="file">Relative path of the file.</param>
-		/// <param name="fileMode"><see cref="FileMode"/> that specifies how the file is opened.</param>
-		/// <param name="fileAccess"><see cref="FileAccess"/> that specifies access mode.</param>
+		/// <param name="fileMode">
+		/// <see cref="FileMode"/> that specifies how the file is to be opened.
+		/// </param>
+		/// <param name="fileAccess">
+		/// <see cref="FileAccess"/> that specifies access mode.
+		/// </param>
 		/// <param name="fileShare">A bitwise combination of <see cref="FileShare"/>
 		/// enumeration values that specifies access modes for other stream objects.</param>
 		/// <returns><see cref="Stream"/> object for the opened file.</returns>
@@ -405,7 +422,7 @@ namespace Microsoft.Xna.Framework.Storage
 				throw new ArgumentNullException("Parameter file must contain a value.");
 			}
 
-			// Relative, so combine with our path.
+			// Filename is relative, so combine with our path.
 			string filePath = Path.Combine(storagePath, file);
 
 			return File.Open(filePath, fileMode, fileAccess, fileShare);

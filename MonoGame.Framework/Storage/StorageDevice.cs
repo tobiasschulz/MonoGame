@@ -33,14 +33,14 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// This only really matters on Windows.
 				try
 				{
 					return new DriveInfo(storageRoot).AvailableFreeSpace;
 				}
 				catch
 				{
-					return 0; // Hmm...
+					// Storage root was invalid or unavailable.
+					return 0;
 				}
 			}
 		}
@@ -52,7 +52,6 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// This only really matters on Windows.
 				try
 				{
 					return new DriveInfo(storageRoot).IsReady;
@@ -71,14 +70,14 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// This only really matters on Windows.
 				try
 				{
 					return new DriveInfo(storageRoot).TotalSize;
 				}
 				catch
 				{
-					return 0; // Hmm...
+					// Storage root is invalid or removed.
+					return 0;
 				}
 			}
 		}
@@ -118,14 +117,12 @@ namespace Microsoft.Xna.Framework.Storage
 
 		#region Private Delegates
 
-		// The delegate must have the same signature as the method it will call asynchronously.
 		private delegate StorageDevice ShowSelectorAsynchronous(
 			PlayerIndex? player,
 			int sizeInBytes,
 			int directoryCount
 		);
 
-		// The delegate must have the same signature as the method it will call asynchronously.
 		private delegate StorageContainer OpenContainerAsynchronous(string displayName);
 
 		#endregion
@@ -166,7 +163,7 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 			finally
 			{
-				// Hmm....
+				// TODO:  No resources to clean up?  Remove this finally block?
 			}
 		}
 
