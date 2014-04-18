@@ -7,8 +7,6 @@
  */
 #endregion
 
-// TODO: Get this to use the OpenGLDevice instead of raw OpenGL -flibit
-
 #region VIDEOPLAYER_OPENGL Option
 /* By default we use a small fragment shader to perform the YUV-RGBA conversion.
  * If for some reason you need to use the software converter in TheoraPlay,
@@ -79,23 +77,14 @@ namespace Microsoft.Xna.Framework.Media
 
 		// Used to restore our previous GL state.
 		private int[] oldTextures;
+		private TextureTarget[] oldTargets;
 		private int oldShader;
-		private int oldFramebuffer;
-		private int oldActiveTexture;
-		private int[] oldViewport;
-		private bool oldCullState;
-		private bool oldDepthMask;
-		private bool oldDepthTest;
-		private bool oldAlphaTest;
-		private bool oldBlendState;
 
 		private void GL_initialize()
 		{
-			// Initialize the old viewport array.
-			oldViewport = new int[4];
-
-			// Initialize the texture storage array.
+			// Initialize the sampler storage arrays.
 			oldTextures = new int[3];
+			oldTargets = new TextureTarget[3];
 
 			// Create the YUV textures.
 			yuvTextures = new int[3];
@@ -141,6 +130,23 @@ namespace Microsoft.Xna.Framework.Media
 			GL.LinkProgram(shaderProgram);
 			GL.DeleteShader(vshader_id);
 			GL.DeleteShader(fshader_id);
+
+			// Set uniform values now. They won't change, promise!
+			GL.GetInteger(GetPName.CurrentProgram, out oldShader);
+			GL.UseProgram(shaderProgram);
+			GL.Uniform1(
+				GL.GetUniformLocation(shaderProgram, "samp0"),
+				0
+			);
+			GL.Uniform1(
+				GL.GetUniformLocation(shaderProgram, "samp1"),
+				1
+			);
+			GL.Uniform1(
+				GL.GetUniformLocation(shaderProgram, "samp2"),
+				2
+			);
+			GL.UseProgram(oldShader);
 		}
 
 		private void GL_dispose()
@@ -214,15 +220,20 @@ namespace Microsoft.Xna.Framework.Media
 
 		private void GL_setupTargets(int width, int height)
 		{
-			// We're going to be messing with things to do this...
-			GL_pushState();
-
-			// We'll just use this for all the texture work.
-			GL.ActiveTexture(TextureUnit.Texture0);
+			// We're going to mess with sampler 0's texture.
+			TextureTarget prevTarget = OpenGLDevice.Instance.Samplers[0].Target.GetCurrent();
+			int prevTexture = OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle;
 
 			// Attach the Texture2D to the framebuffer.
 			OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
 			OpenGLDevice.Framebuffer.AttachColor(videoTexture.texture.Handle, 0);
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+
+			// Be careful about non-2D textures currently bound...
+			if (prevTarget != TextureTarget.Texture2D)
+			{
+				GL.BindTexture(prevTarget, 0);
+			}
 
 			// Allocate YUV GL textures
 			GL_internal_genTexture(
@@ -251,59 +262,99 @@ namespace Microsoft.Xna.Framework.Media
 			);
 
 			// Aaand we should be set now.
-			GL_popState();
+			if (prevTarget != TextureTarget.Texture2D)
+			{
+				GL.BindTexture(TextureTarget.Texture2D, 0);
+			}
+			GL.BindTexture(prevTarget, prevTexture);
 		}
 
 		private void GL_pushState()
 		{
-			GL.GetInteger(GetPName.Viewport, oldViewport);
+			/* Argh, a glGet!
+			 * We could in theory store this, but when we do direct MojoShader,
+			 * that will be obscured away. It sucks, but at least it's just
+			 * this one time!
+			 * -flibit
+			 */
 			GL.GetInteger(GetPName.CurrentProgram, out oldShader);
-			GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
-			GL.ActiveTexture(TextureUnit.Texture0);
-			GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[0]);
-			GL.ActiveTexture(TextureUnit.Texture1);
-			GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[1]);
-			GL.ActiveTexture(TextureUnit.Texture2);
-			GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[2]);
-			GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
-			oldCullState = GL.IsEnabled(EnableCap.CullFace);
-			GL.Disable(EnableCap.CullFace);
-			GL.GetBoolean(GetPName.DepthWritemask, out oldDepthMask);
-			GL.DepthMask(false);
-			oldDepthTest = GL.IsEnabled(EnableCap.DepthTest);
-			GL.Disable(EnableCap.DepthTest);
-			oldAlphaTest = GL.IsEnabled(EnableCap.AlphaTest);
-			GL.Disable(EnableCap.AlphaTest);
-			oldBlendState = GL.IsEnabled(EnableCap.Blend);
-			GL.Disable(EnableCap.Blend);
+
+			// Prep our samplers
+			for (int i = 0; i < 2; i += 1)
+			{
+				oldTargets[i] = OpenGLDevice.Instance.Samplers[i].Target.GetCurrent();
+				oldTextures[i] = OpenGLDevice.Instance.Samplers[i].Texture.GetCurrent().Handle;
+				if (oldTargets[i] != TextureTarget.Texture2D)
+				{
+					GL.ActiveTexture(TextureUnit.Texture0 + i);
+					GL.BindTexture(oldTargets[i], 0);
+				}
+			}
+
+			// Disable various GL options
+			if (OpenGLDevice.Instance.AlphaBlendEnable.GetCurrent())
+			{
+				GL.Disable(EnableCap.Blend);
+			}
+			if (OpenGLDevice.Instance.ZEnable.GetCurrent())
+			{
+				GL.Disable(EnableCap.DepthTest);
+			}
+			if (OpenGLDevice.Instance.CullFrontFace.GetCurrent() != CullMode.None)
+			{
+				GL.Disable(EnableCap.CullFace);
+			}
+			if (OpenGLDevice.Instance.ScissorTestEnable.GetCurrent())
+			{
+				GL.Disable(EnableCap.ScissorTest);
+			}
 		}
 
 		private void GL_popState()
 		{
-			GL.Viewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
+			// Flush the viewport, reset.
+			Rectangle oldViewport = OpenGLDevice.Instance.GLViewport.Flush();
+			GL.Viewport(
+				oldViewport.X,
+				oldViewport.Y,
+				oldViewport.Width,
+				oldViewport.Height
+			);
+
+			// Restore the program we got from glGet :(
 			GL.UseProgram(oldShader);
+
+			// Restore the sampler bindings
+			for (int i = 0; i < 2; i += 1)
+			{
+				GL.ActiveTexture(TextureUnit.Texture0 + i);
+				if (oldTargets[i] != TextureTarget.Texture2D)
+				{
+					GL.BindTexture(TextureTarget.Texture2D, 0);
+				}
+				GL.BindTexture(oldTargets[i], oldTextures[i]);
+			}
+
+			// Keep this state sane.
 			GL.ActiveTexture(TextureUnit.Texture0);
-			GL.BindTexture(TextureTarget.Texture2D, oldTextures[0]);
-			GL.ActiveTexture(TextureUnit.Texture1);
-			GL.BindTexture(TextureTarget.Texture2D, oldTextures[1]);
-			GL.ActiveTexture(TextureUnit.Texture2);
-			GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
-			GL.ActiveTexture((TextureUnit) oldActiveTexture);
-			OpenGLDevice.Framebuffer.BindFramebuffer(oldFramebuffer);
-			if (oldCullState)
+
+			// Restore the active framebuffer
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+
+			// Flush various GL states, if applicable
+			if (OpenGLDevice.Instance.ScissorTestEnable.Flush())
+			{
+				GL.Enable(EnableCap.ScissorTest);
+			}
+			if (OpenGLDevice.Instance.CullFrontFace.GetCurrent() != CullMode.None)
 			{
 				GL.Enable(EnableCap.CullFace);
 			}
-			GL.DepthMask(oldDepthMask);
-			if (oldDepthTest)
+			if (OpenGLDevice.Instance.ZEnable.Flush())
 			{
 				GL.Enable(EnableCap.DepthTest);
 			}
-			if (oldAlphaTest)
-			{
-				GL.Enable(EnableCap.AlphaTest);
-			}
-			if (oldBlendState)
+			if (OpenGLDevice.Instance.AlphaBlendEnable.Flush())
 			{
 				GL.Enable(EnableCap.Blend);
 			}
@@ -619,20 +670,6 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Bind our shader program.
 			GL.UseProgram(shaderProgram);
-
-			// Set uniform values.
-			GL.Uniform1(
-				GL.GetUniformLocation(shaderProgram, "samp0"),
-				0
-			);
-			GL.Uniform1(
-				GL.GetUniformLocation(shaderProgram, "samp1"),
-				1
-			);
-			GL.Uniform1(
-				GL.GetUniformLocation(shaderProgram, "samp2"),
-				2
-			);
 
 			// Set up the vertex pointers/arrays.
 			OpenGLDevice.Instance.Attributes[0].CurrentBuffer = int.MaxValue;
