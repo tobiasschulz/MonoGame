@@ -96,22 +96,22 @@ namespace Microsoft.Xna.Framework.Media
 			// Create our pile of vertices.
 			vert_pos = new float[2 * 4]; // 2 dimensions * 4 vertices
 			vert_tex = new float[2 * 4];
-					vert_pos[0] = -1.0f;
-					vert_pos[1] =  1.0f;
-					vert_tex[0] =  0.0f;
-					vert_tex[1] =  1.0f;
-					vert_pos[2] =  1.0f;
-					vert_pos[3] =  1.0f;
-					vert_tex[2] =  1.0f;
-					vert_tex[3] =  1.0f;
-					vert_pos[4] = -1.0f;
-					vert_pos[5] = -1.0f;
-					vert_tex[4] =  0.0f;
-					vert_tex[5] =  0.0f;
-					vert_pos[6] =  1.0f;
-					vert_pos[7] = -1.0f;
-					vert_tex[6] =  1.0f;
-					vert_tex[7] =  0.0f;
+				vert_pos[0] = -1.0f;
+				vert_pos[1] =  1.0f;
+				vert_tex[0] =  0.0f;
+				vert_tex[1] =  1.0f;
+				vert_pos[2] =  1.0f;
+				vert_pos[3] =  1.0f;
+				vert_tex[2] =  1.0f;
+				vert_tex[3] =  1.0f;
+				vert_pos[4] = -1.0f;
+				vert_pos[5] = -1.0f;
+				vert_tex[4] =  0.0f;
+				vert_tex[5] =  0.0f;
+				vert_pos[6] =  1.0f;
+				vert_pos[7] = -1.0f;
+				vert_tex[6] =  1.0f;
+				vert_tex[7] =  0.0f;
 
 			// Create the vertex/fragment shaders.
 			int vshader_id = GL.CreateShader(ShaderType.VertexShader);
