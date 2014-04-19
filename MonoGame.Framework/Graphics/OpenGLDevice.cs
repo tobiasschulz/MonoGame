@@ -1712,7 +1712,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				colorAttachment = GL.GenTexture();
 				depthStencilAttachment = GL.GenTexture();
 
-				Framebuffer.BindFramebuffer(Handle);
 				GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
 				GL.TexImage2D(
 					TextureTarget.Texture2D,
@@ -1737,6 +1736,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					PixelType.UnsignedByte,
 					IntPtr.Zero
 				);
+				Framebuffer.BindFramebuffer(Handle);
 				Framebuffer.AttachColor(
 					colorAttachment,
 					0
