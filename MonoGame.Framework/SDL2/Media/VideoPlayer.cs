@@ -917,7 +917,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		#endregion
 
-		#region The Theora Audio Decoder Thread
+		#region Private Theora Audio Stream Methods
 
 		private bool StreamAudio()
 		{
