@@ -20,13 +20,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 
-using OpenTK.Audio.OpenAL;
 #if VIDEOPLAYER_OPENGL
 using OpenTK.Graphics.OpenGL;
 #endif
 
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 
@@ -446,9 +445,6 @@ namespace Microsoft.Xna.Framework.Media
 		// Store this to optimize things on our end.
 		private Texture2D videoTexture;
 
-		// Used to sync the A/V output on thread start.
-		private volatile bool audioStarted;
-
 		#endregion
 
 		#region Private Member Data: TheoraPlay
@@ -458,14 +454,11 @@ namespace Microsoft.Xna.Framework.Media
 		private TheoraPlay.THEORAPLAY_VideoFrame nextVideo;
 		private IntPtr previousFrame;
 
-		// Audio's done separately from the player thread.
-		private Thread audioDecoderThread;
-
 		#endregion
 
 		#region Private Member Data: OpenAL
 
-		private int audioSourceIndex;
+		private DynamicSoundEffectInstance audioStream;
 
 		#endregion
 
@@ -485,17 +478,17 @@ namespace Microsoft.Xna.Framework.Media
 
 		private void UpdateVolume()
 		{
-			if (audioSourceIndex == -1)
+			if (audioStream == null)
 			{
 				return;
 			}
 			if (IsMuted)
 			{
-				AL.Source(audioSourceIndex, ALSourcef.Gain, 0.0f);
+				audioStream.Volume = 0.0f;
 			}
 			else
 			{
-				AL.Source(audioSourceIndex, ALSourcef.Gain, Volume);
+				audioStream.Volume = Volume;
 			}
 		}
 
@@ -505,9 +498,6 @@ namespace Microsoft.Xna.Framework.Media
 
 		public VideoPlayer()
 		{
-			// Initialize OpenAL members.
-			audioSourceIndex = -1;
-
 			// Initialize public members.
 			IsDisposed = false;
 			IsLooped = false;
@@ -517,7 +507,6 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Initialize private members.
 			timer = new Stopwatch();
-			audioStarted = false;
 
 			// Initialize this here to prevent null GetTexture returns.
 			videoTexture = new Texture2D(
@@ -541,6 +530,13 @@ namespace Microsoft.Xna.Framework.Media
 			// Destroy the OpenGL bits.
 			GL_dispose();
 #endif
+
+			// Dispose the DynamicSoundEffectInstance
+			if (audioStream != null)
+			{
+				audioStream.Dispose();
+				audioStream = null;
+			}
 
 			// Dispose the Texture.
 			videoTexture.Dispose();
@@ -594,15 +590,13 @@ namespace Microsoft.Xna.Framework.Media
 					// If looping, go back to the start. Otherwise, we'll be exiting.
 					if (IsLooped && State == MediaState.Playing)
 					{
-						// Wait for the audio thread to end.
-						State = MediaState.Stopped;
-						if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+						// Kill the audio, no matter what.
+						if (audioStream != null)
 						{
-							audioDecoderThread.Join();
+							audioStream.Stop();
+							audioStream.Dispose();
+							audioStream = null;
 						}
-
-						// Now we pretend we're playing again.
-						State = MediaState.Playing;
 
 						// Free everything and start over.
 						TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
@@ -615,12 +609,7 @@ namespace Microsoft.Xna.Framework.Media
 						// Grab the initial audio again.
 						if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
 						{
-							audioDecoderThread = new Thread(new ThreadStart(DecodeAudio));
-							audioDecoderThread.Start();
-						}
-						else
-						{
-							audioStarted = true; // Welp.
+							InitAudioStream();
 						}
 
 						// Grab the initial video again.
@@ -636,23 +625,22 @@ namespace Microsoft.Xna.Framework.Media
 							nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
 						}
 
-						// FIXME: Maybe use an actual thread synchronization technique.
-						while (!audioStarted);
-
 						// Start! Again!
 						timer.Start();
-						if (audioSourceIndex != -1)
+						if (audioStream != null)
 						{
-							AL.SourcePlay(audioSourceIndex);
+							audioStream.Play();
 						}
 					}
 					else
 					{
 						// Stop everything, clean up. We out.
 						State = MediaState.Stopped;
-						if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+						if (audioStream != null)
 						{
-							audioDecoderThread.Join();
+							audioStream.Stop();
+							audioStream.Dispose();
+							audioStream = null;
 						}
 						TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
 						Video.AttachedToPlayer = false;
@@ -799,15 +787,6 @@ namespace Microsoft.Xna.Framework.Media
 				return;
 			}
 
-			// In rare cases, the thread might still be going. Wait until it's done.
-			if (audioDecoderThread != null && audioDecoderThread.IsAlive)
-			{
-				Stop();
-			}
-
-			// Create new Thread instances in case we use this player multiple times.
-			audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
-
 			// Update the player state now, for the thread we're about to make.
 			State = MediaState.Playing;
 
@@ -820,11 +799,7 @@ namespace Microsoft.Xna.Framework.Media
 			// Grab the first bit of audio. We're trying to start the decoding ASAP.
 			if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
 			{
-				audioDecoderThread.Start();
-			}
-			else
-			{
-				audioStarted = true; // Welp.
+				InitAudioStream();
 			}
 
 			// Grab the first bit of video, set up the texture.
@@ -858,11 +833,10 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Initialize the thread!
 			System.Console.Write("Starting Theora player...");
-			while (!audioStarted);
 			timer.Start();
-			if (audioSourceIndex != -1)
+			if (audioStream != null)
 			{
-				AL.SourcePlay(audioSourceIndex);
+				audioStream.Play();
 			}
 			System.Console.WriteLine(" Done!");
 		}
@@ -884,9 +858,11 @@ namespace Microsoft.Xna.Framework.Media
 			System.Console.Write("Signaled Theora player to stop, waiting...");
 			timer.Stop();
 			timer.Reset();
-			if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+			if (audioStream != null)
 			{
-				audioDecoderThread.Join();
+				audioStream.Stop();
+				audioStream.Dispose();
+				audioStream = null;
 			}
 			if (previousFrame != IntPtr.Zero)
 			{
@@ -912,9 +888,9 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Pause timer, audio.
 			timer.Stop();
-			if (audioSourceIndex != -1)
+			if (audioStream != null)
 			{
-				AL.SourcePause(audioSourceIndex);
+				audioStream.Pause();
 			}
 		}
 
@@ -933,9 +909,9 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Unpause timer, audio.
 			timer.Start();
-			if (audioSourceIndex != -1)
+			if (audioStream != null)
 			{
-				AL.SourcePlay(audioSourceIndex);
+				audioStream.Resume();
 			}
 		}
 
@@ -943,7 +919,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		#region The Theora Audio Decoder Thread
 
-		private bool StreamAudio(int buffer)
+		private bool StreamAudio()
 		{
 			// The size of our abstracted buffer.
 			const int BUFFER_SIZE = 4096 * 2;
@@ -956,16 +932,14 @@ namespace Microsoft.Xna.Framework.Media
 			currentAudio.channels = 0;
 			currentAudio.freq = 0;
 
+			// There might be an initial period of silence, so forcibly push through.
+			while (	audioStream.State == SoundState.Stopped &&
+				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) == 0	);
+
 			// Add to the buffer from the decoder until it's large enough.
-			while (
-				State != MediaState.Stopped &&
-				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) == 0
-			);
-			while (
-				data.Count < BUFFER_SIZE &&
-				State != MediaState.Stopped &&
-				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) > 0
-			) {
+			while (	data.Count < BUFFER_SIZE &&
+				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) > 0	)
+			{
 				IntPtr audioPtr = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
 				currentAudio = TheoraPlay.getAudioPacket(audioPtr);
 				data.AddRange(
@@ -980,11 +954,9 @@ namespace Microsoft.Xna.Framework.Media
 			// If we actually got data, buffer it into OpenAL.
 			if (data.Count > 0)
 			{
-				AL.BufferData(
-					buffer,
-					(currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
+				audioStream.SubmitFloatBuffer(
 					data.ToArray(),
-					data.Count * 2 * currentAudio.channels, // Dear OpenAL: WTF?! Love, flibit
+					currentAudio.channels,
 					currentAudio.freq
 				);
 				return true;
@@ -992,68 +964,33 @@ namespace Microsoft.Xna.Framework.Media
 			return false;
 		}
 
-		private void DecodeAudio()
+		private void OnBufferRequest(object sender, EventArgs args)
 		{
-			// The number of AL buffers to queue into the source.
+			if (!StreamAudio())
+			{
+				// Okay, we ran out. No need for this!
+				audioStream.BufferNeeded -= OnBufferRequest;
+			}
+		}
+
+		private void InitAudioStream()
+		{
+			// The number of buffers to queue into the source.
 			const int NUM_BUFFERS = 4;
 
 			// Generate the source.
-			audioSourceIndex = AL.GenSource();
+			audioStream = new DynamicSoundEffectInstance();
+			audioStream.BufferNeeded += OnBufferRequest;
 			UpdateVolume();
-
-			// Generate the alternating buffers.
-			int[] buffers = AL.GenBuffers(NUM_BUFFERS);
 
 			// Fill and queue the buffers.
 			for (int i = 0; i < NUM_BUFFERS; i += 1)
 			{
-				if (!StreamAudio(buffers[i]))
+				if (!StreamAudio())
 				{
 					break;
 				}
 			}
-			AL.SourceQueueBuffers(audioSourceIndex, NUM_BUFFERS, buffers);
-
-			// We now have some audio to start with. Go!
-			audioStarted = true;
-
-			while (State != MediaState.Stopped)
-			{
-				// Emergency use only
-				if (Game.Instance == null)
-				{
-					System.Console.WriteLine("Game exited before Video! Bailing.");
-					AL.SourceStop(audioSourceIndex);
-					AL.DeleteSource(audioSourceIndex);
-					AL.DeleteBuffers(buffers);
-					return;
-				}
-
-				// When a buffer has been processed, refill it.
-				int processed;
-				AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processed);
-				while (processed-- > 0)
-				{
-					int buffer = AL.SourceUnqueueBuffer(audioSourceIndex);
-					if (!StreamAudio(buffer))
-					{
-						break;
-					}
-					AL.SourceQueueBuffer(audioSourceIndex, buffer);
-				}
-			}
-
-			// Force stop the OpenAL source and destroy it with the buffers.
-			if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
-			{
-				AL.SourceStop(audioSourceIndex);
-			}
-			AL.DeleteSource(audioSourceIndex);
-			AL.DeleteBuffers(buffers);
-
-			// Audio is done.
-			audioStarted = false;
-			audioSourceIndex = -1;
 		}
 
 		#endregion
