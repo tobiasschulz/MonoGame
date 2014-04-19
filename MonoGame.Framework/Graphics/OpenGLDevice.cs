@@ -1139,6 +1139,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (currentAttachments[i] != 0)
 				{
 					Framebuffer.AttachColor(0, i);
+				    currentAttachments[i] = 0;
 				}
 				i += 1;
 			}
