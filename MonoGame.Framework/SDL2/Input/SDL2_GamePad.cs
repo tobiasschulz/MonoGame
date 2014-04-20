@@ -202,7 +202,7 @@ namespace Microsoft.Xna.Framework.Input
 			if (INTERNAL_isGameController[which])
 			{
 				System.Console.WriteLine(
-					"Controller " + which + ", " +
+					"Controller " + which.ToString() + ", " +
 					SDL.SDL_GameControllerName(INTERNAL_devices[which]) +
 					", will use SDL_GameController support."
 				);
@@ -210,7 +210,7 @@ namespace Microsoft.Xna.Framework.Input
 			else
 			{
 				System.Console.WriteLine(
-					"Controller " + which + ", " +
+					"Controller " + which.ToString() + ", " +
 					SDL.SDL_JoystickName(INTERNAL_devices[which]) +
 					", will use generic MonoGameJoystick support."
 				);
@@ -222,7 +222,7 @@ namespace Microsoft.Xna.Framework.Input
 			int output;
 			if (!INTERNAL_instanceList.TryGetValue(which, out output))
 			{
-				System.Console.WriteLine("Ignoring device removal, ID: " + which);
+				System.Console.WriteLine("Ignoring device removal, ID: " + which.ToString());
 				return;
 			}
 			INTERNAL_states[which] = GamePadState.InitializedState;
@@ -247,7 +247,7 @@ namespace Microsoft.Xna.Framework.Input
 			// A lot of errors can happen here, but honestly, they can be ignored...
 			SDL.SDL_ClearError();
 
-			System.Console.WriteLine("Removed device, player: " + output);
+			System.Console.WriteLine("Removed device, player: " + output.ToString());
 		}
 
 		#endregion

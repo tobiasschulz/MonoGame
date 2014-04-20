@@ -110,7 +110,7 @@ namespace Microsoft.Xna.Framework
 
 			Debug.WriteLine("Performance count results");
 			Debug.WriteLine("=========================");
-			Debug.WriteLine("Execution Time: " + ElapsedTime + "ms.");
+			Debug.WriteLine("Execution Time: " + ElapsedTime.ToString() + "ms.");
 
 			foreach (PerformanceItem item in _list.Values)
 			{

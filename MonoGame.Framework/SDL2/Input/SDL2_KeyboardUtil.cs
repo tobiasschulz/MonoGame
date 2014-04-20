@@ -166,7 +166,7 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			else
 			{
-				System.Console.WriteLine("KEY MISSING FROM SDL2->XNA DICTIONARY: " + key);
+				System.Console.WriteLine("KEY MISSING FROM SDL2->XNA DICTIONARY: " + key.ToString());
 				return Keys.None;
 			}
 		}

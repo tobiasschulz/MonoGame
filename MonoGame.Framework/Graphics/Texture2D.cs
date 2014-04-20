@@ -348,8 +348,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (data.Length < startIndex + elementCount)
 			{
 				throw new ArgumentException(
-					"The data passed has a length of " + data.Length +
-					" but " + elementCount + " pixels have been requested."
+					"The data passed has a length of " + data.Length.ToString() +
+					" but " + elementCount.ToString() + " pixels have been requested."
 				);
 			}
 

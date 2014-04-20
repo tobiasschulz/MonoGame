@@ -504,7 +504,7 @@ namespace Microsoft.Xna.Framework.Audio
 					}
 					else
 					{
-						throw new Exception("RPC Parameter Type: " + curRPC.Value.Parameter);
+						throw new Exception("RPC Parameter Type: " + curRPC.Value.Parameter.ToString());
 					}
 				}
 			}
