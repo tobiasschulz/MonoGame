@@ -1500,7 +1500,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 				else
 				{
-					throw new Exception("Unhandled DepthFormat: " + format);
+					throw new Exception("Unhandled DepthFormat: " + format.ToString());
 				}
 
 				// Actual GL calls!

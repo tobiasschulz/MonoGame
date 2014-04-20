@@ -235,12 +235,12 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			return (
 				"{" +
-				"X:" + x +
-				" Y:" + y +
-				" Width:" + width +
-				" Height:" + height +
-				" MinDepth:" + minDepth +
-				" MaxDepth:" + maxDepth +
+				"X:" + x.ToString() +
+				" Y:" + y.ToString() +
+				" Width:" + width.ToString() +
+				" Height:" + height.ToString() +
+				" MinDepth:" + minDepth.ToString() +
+				" MaxDepth:" + maxDepth.ToString() +
 				"}"
 			);
 		}
