@@ -191,7 +191,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			lock (resourcesLock)
 			{
-				foreach (WeakReference resource in resources)
+				foreach (WeakReference resource in resources.ToArray())
 				{
 					object target = resource.Target;
 					if (target != null)
