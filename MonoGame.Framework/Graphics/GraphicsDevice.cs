@@ -523,7 +523,34 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void GetBackBufferData<T>(T[] data) where T : struct
 		{
-			throw new NotImplementedException("FIXME: flibit put this here.");
+			if (OpenGLDevice.Instance.CurrentFramebuffer != OpenGLDevice.Instance.Backbuffer.Handle)
+			{
+				OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+			}
+			GL.ReadPixels(
+				0, 0,
+				OpenGLDevice.Instance.Backbuffer.Width,
+				OpenGLDevice.Instance.Backbuffer.Height,
+				PixelFormat.Rgba,
+				PixelType.UnsignedByte,
+				data
+			);
+			if (OpenGLDevice.Instance.CurrentFramebuffer != OpenGLDevice.Instance.Backbuffer.Handle)
+			{
+				OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+			}
+
+			// Now we get to do a software-based flip! Yes, really! -flibit
+			int width = OpenGLDevice.Instance.Backbuffer.Width;
+			int height = OpenGLDevice.Instance.Backbuffer.Height;
+			int pitch = width * 4 / Marshal.SizeOf(typeof(T));
+			T[] tempRow = new T[pitch];
+			for (int row = 0; row < height / 2; row += 1)
+			{
+				Array.Copy(data, row * pitch, tempRow, 0, pitch);
+				Array.Copy(data, (height - row - 1) * pitch, data, row * pitch, pitch);
+				Array.Copy(tempRow, 0, data, (height - row - 1) * pitch, pitch);
+			}
 		}
 
 		#endregion

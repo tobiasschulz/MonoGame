@@ -206,7 +206,18 @@ namespace Microsoft.Xna.Framework.Graphics
 			out DepthFormat selectedDepthFormat,
 			out int selectedMultiSampleCount)
 		{
-			throw new NotImplementedException("flibit put this here.");
+			/* FIXME: MultiSampleCount could actually be dynamic.
+			 * However, the rest is essentially what we decide when doing
+			 * the faux-backbuffer, so here's me caring.
+			 * -flibit
+			 */
+			selectedFormat = SurfaceFormat.Color; // Seriously?
+			selectedDepthFormat = depthFormat;
+			selectedMultiSampleCount = 0; // Okay, sure, sorry.
+
+			return (	format == selectedFormat &&
+					depthFormat == selectedDepthFormat &&
+					multiSampleCount == selectedMultiSampleCount	);
 		}
 
 		#endregion
