@@ -594,7 +594,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 			foreach (uint curDSP in INTERNAL_activeSound.DSPCodes)
 			{
-				int handle = INTERNAL_baseEngine.INTERNAL_getDSP(curDSP);
+				DSPEffect handle = INTERNAL_baseEngine.INTERNAL_getDSP(curDSP);
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					// FIXME: This only applies the last DSP!

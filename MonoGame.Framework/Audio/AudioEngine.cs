@@ -545,10 +545,10 @@ namespace Microsoft.Xna.Framework.Audio
 			return INTERNAL_RPCs[code];
 		}
 
-		internal int INTERNAL_getDSP(uint code)
+		internal DSPEffect INTERNAL_getDSP(uint code)
 		{
-			return INTERNAL_dspPresets[code].Handle;
-		} 
+			return INTERNAL_dspPresets[code].Effect;
+		}
 
 		internal AudioCategory INTERNAL_initCue(Cue newCue, ushort category)
 		{
