@@ -116,7 +116,7 @@ namespace Microsoft.Xna.Framework.Media
 			}
 			set
 			{
-				INTERNAL_volume = value;
+				INTERNAL_volume = MathHelper.Clamp(value, 0.0f, 1.0f);
 
 				if (Queue.ActiveSong == null)
 				{
