@@ -209,16 +209,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 			}
 
-			public void Generate2DMipmaps()
-			{
-				GL.BindTexture(Target, Handle);
-				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-				GL.BindTexture(
-					OpenGLDevice.Instance.Samplers[0].Target.GetCurrent(),
-					OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle
-				);
-			}
-
 			// We can't set a SamplerState Texture to null, so use this.
 			private OpenGLTexture()
 			{
