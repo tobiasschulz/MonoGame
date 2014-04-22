@@ -50,7 +50,7 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 
 		#endregion
-		
+
 		#region Public Dispose Method
 
 		public void Dispose()
