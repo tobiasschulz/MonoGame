@@ -82,25 +82,9 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region Internal Static Fields
+		#region Public Static Readonly Fields
 
-		internal static float MachineEpsilonFloat
-		{
-			get
-			{
-				if (!_machineEpsilonFloat.HasValue)
-				{
-					_machineEpsilonFloat = GetMachineEpsilonFloat();
-				}
-				return _machineEpsilonFloat.Value;
-			}
-		}
-
-		#endregion
-
-		#region Private Static Fields
-
-		private static float? _machineEpsilonFloat;
+		public static readonly float MachineEpsilonFloat = GetMachineEpsilonFloat();
 
 		#endregion
 
@@ -401,21 +385,6 @@ namespace Microsoft.Xna.Framework
 
 		#region Internal Static Methods
 
-		internal static float GetMachineEpsilonFloat()
-		{
-			float machineEpsilon = 1.0f;
-			float comparison;
-
-			do
-			{
-				machineEpsilon *= 0.5f;
-				comparison = 1.0f + machineEpsilon;
-			}
-			while (comparison > 1.0f);
-
-			return machineEpsilon;
-		}
-
 		internal static bool WithinEpsilon(float floatA, float floatB)
 		{
 			return WithinEpsilon(floatA, floatB, MachineEpsilonFloat);
@@ -424,6 +393,32 @@ namespace Microsoft.Xna.Framework
 		internal static bool WithinEpsilon(float floatA, float floatB, float epsilon)
 		{
 			return Math.Abs(floatA - floatB) < epsilon;
+		}
+
+		#endregion
+
+		#region Private Static Methods
+
+		/// <summary>
+		/// Find the current machine's Epsilon for the float data type.
+		/// (That is, the largest float, e,  where e == 0.0f is true.)
+		/// </summary>
+		private static float GetMachineEpsilonFloat()
+		{
+			float machineEpsilon = 1.0f;
+			float comparison;
+
+			/* Keep halving the working value of machineEpsilon until we get a number that
+			 * when added to 1.0f will still evaluate as equal to 1.0f
+			 */
+			do
+			{
+				machineEpsilon *= 0.5f;
+				comparison = 1.0f + machineEpsilon;
+			}
+			while (comparison > 1.0f);
+
+			return machineEpsilon;
 		}
 
 		#endregion

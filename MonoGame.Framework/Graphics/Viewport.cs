@@ -246,9 +246,5 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		#endregion
-
-		#region Private Static Methods
-
-		#endregion
 	}
 }

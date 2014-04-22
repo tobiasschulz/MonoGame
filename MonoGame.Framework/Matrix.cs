@@ -329,8 +329,8 @@ namespace Microsoft.Xna.Framework
 			scale.Z = zs * (float) Math.Sqrt(M31 * M31 + M32 * M32 + M33 * M33);
 
 			if (	MathHelper.WithinEpsilon(scale.X, 0.0f) ||
-					MathHelper.WithinEpsilon(scale.Y, 0.0f) ||
-					MathHelper.WithinEpsilon(scale.Z, 0.0f)	)
+				MathHelper.WithinEpsilon(scale.Y, 0.0f) ||
+				MathHelper.WithinEpsilon(scale.Z, 0.0f)	)
 			{
 				rotation = Quaternion.Identity;
 				return false;
