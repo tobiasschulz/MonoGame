@@ -130,8 +130,8 @@ namespace Microsoft.Xna.Framework
 
 		public bool Equals(Vector2 other)
 		{
-			return (	(X == other.X) &&
-					(Y == other.Y)	);
+			return (	(MathHelper.WithinEpsilon(X, other.X)) &&
+					(MathHelper.WithinEpsilon(Y, other.Y))	);
 		}
 
 		public override int GetHashCode()
@@ -596,15 +596,15 @@ namespace Microsoft.Xna.Framework
 
 		public static bool operator ==(Vector2 value1, Vector2 value2)
 		{
-			return (	(value1.X == value2.X) &&
-					(value1.Y == value2.Y)	);
+			return (	(MathHelper.WithinEpsilon(value1.X, value2.X)) &&
+					(MathHelper.WithinEpsilon(value1.Y, value2.Y))	);
 		}
 
 
 		public static bool operator !=(Vector2 value1, Vector2 value2)
 		{
-			return (	(value1.X != value2.X) ||
-					(value1.Y != value2.Y)	);
+			return (	(MathHelper.WithinEpsilon(value1.X, value2.X)) ||
+					(MathHelper.WithinEpsilon(value1.Y, value2.Y))	);
 		}
 
 

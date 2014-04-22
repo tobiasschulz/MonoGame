@@ -82,6 +82,28 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
+		#region Internal Static Fields
+
+		internal static float MachineEpsilonFloat
+		{
+			get
+			{
+				if (!_machineEpsilonFloat.HasValue)
+				{
+					_machineEpsilonFloat = GetMachineEpsilonFloat();
+				}
+				return _machineEpsilonFloat.Value;
+			}
+		}
+
+		#endregion
+
+		#region Private Static Fields
+
+		private static float? _machineEpsilonFloat;
+
+		#endregion
+
 		#region Public Static Methods
 
 		/// <summary>
@@ -230,11 +252,11 @@ namespace Microsoft.Xna.Framework
 			double sCubed = s * s * s;
 			double sSquared = s * s;
 
-			if (amount == 0f)
+			if (WithinEpsilon(amount, 0f))
 			{
 				result = value1;
 			}
-			else if (amount == 1f)
+			else if (WithinEpsilon(amount, 1f))
 			{
 				result = value2;
 			}
@@ -373,6 +395,35 @@ namespace Microsoft.Xna.Framework
 		public static bool IsPowerOfTwo(int value)
 		{
 			return (value > 0) && ((value & (value - 1)) == 0);
+		}
+
+		#endregion
+
+		#region Internal Static Methods
+
+		internal static float GetMachineEpsilonFloat()
+		{
+			float machineEpsilon = 1.0f;
+			float comparison;
+
+			do
+			{
+				machineEpsilon *= 0.5f;
+				comparison = 1.0f + machineEpsilon;
+			}
+			while (comparison > 1.0f);
+
+			return machineEpsilon;
+		}
+
+		internal static bool WithinEpsilon(float floatA, float floatB)
+		{
+			return WithinEpsilon(floatA, floatB, MachineEpsilonFloat);
+		}
+
+		internal static bool WithinEpsilon(float floatA, float floatB, float epsilon)
+		{
+			return Math.Abs(floatA - floatB) < epsilon;
 		}
 
 		#endregion

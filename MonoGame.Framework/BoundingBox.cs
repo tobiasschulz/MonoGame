@@ -273,12 +273,12 @@ namespace Microsoft.Xna.Framework
 				result = ContainmentType.Disjoint;
 			}
 			// or if point is on box because coordonate of point is lesser or equal
-			else if (	point.X == this.Min.X ||
-					point.X == this.Max.X ||
-					point.Y == this.Min.Y ||
-					point.Y == this.Max.Y ||
-					point.Z == this.Min.Z ||
-					point.Z == this.Max.Z	)
+			else if (	MathHelper.WithinEpsilon(point.X, this.Min.X) ||
+					MathHelper.WithinEpsilon(point.X, this.Max.X) ||
+					MathHelper.WithinEpsilon(point.Y, this.Min.Y) ||
+					MathHelper.WithinEpsilon(point.Y, this.Max.Y) ||
+					MathHelper.WithinEpsilon(point.Z, this.Min.Z) ||
+					MathHelper.WithinEpsilon(point.Z, this.Max.Z)	)
 			{
 				result = ContainmentType.Intersects;
 			}
