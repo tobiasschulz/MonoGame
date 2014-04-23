@@ -594,8 +594,7 @@ namespace Microsoft.Xna.Framework
 
 		public static bool operator !=(Vector2 value1, Vector2 value2)
 		{
-			return (	(MathHelper.WithinEpsilon(value1.X, value2.X)) ||
-					(MathHelper.WithinEpsilon(value1.Y, value2.Y))	);
+			return !(value1 == value2);
 		}
 
 
