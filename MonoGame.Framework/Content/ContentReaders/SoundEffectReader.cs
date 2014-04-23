@@ -83,7 +83,7 @@ namespace Microsoft.Xna.Framework.Content
 				loopStart,
 				loopLength,
 				format == 2,
-				(uint) ((format == 2) ? (((blockAlign / channels) - 6) * 2) : bitDepth)
+				(uint) ((format == 2) ? (((blockAlign / channels) - 6) * 2) : (bitDepth / 16))
 			);
 		}
 
