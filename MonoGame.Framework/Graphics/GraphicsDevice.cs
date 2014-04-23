@@ -738,7 +738,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			int primitiveCount
 		) {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unsigned short or unsigned int?
 			bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
@@ -791,7 +791,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unsigned short or unsigned int?
 			bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
@@ -853,7 +853,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexDeclaration vertexDeclaration
 		) where T : struct {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unbind current VBOs.
 			OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -886,8 +886,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public void DrawPrimitives(PrimitiveType primitiveType, int vertexStart, int primitiveCount)
 		{
 			// Flush the GL state before moving on!
-			ApplyState(true);
-			OpenGLDevice.Instance.FlushGLState();
+			ApplyState();
 
 			// Set up the vertex buffers
 			foreach (VertexBufferBinding vertBuffer in vertexBufferBindings)
@@ -949,7 +948,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexDeclaration vertexDeclaration
 		) where T : struct {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unbind current buffer objects.
 			OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -1016,7 +1015,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexDeclaration vertexDeclaration
 		) where T : struct, IVertexType {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unbind current buffer objects.
 			OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -1093,7 +1092,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private State Flush Methods
 
-		private void ApplyState(bool applyShaders)
+		private void ApplyState()
 		{
 			// Apply BlendState
 			OpenGLDevice.Instance.AlphaBlendEnable.Set(
@@ -1156,12 +1155,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.SlopeScaleDepthBias.Set(RasterizerState.SlopeScaleDepthBias);
 
 			// TODO: MSAA?
-
-			// If we're not applying shaders then drop out now.
-			if (!applyShaders)
-			{
-				return;
-			}
 
 			if (VertexShader == null)
 			{
