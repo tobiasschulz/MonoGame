@@ -56,7 +56,7 @@ namespace Microsoft.Xna.Framework.Content
 			// Block alignment, needed for MSADPCM
 			ushort blockAlign = input.ReadUInt16();
 
-			// Bit depth, unused
+			// Bit depth
 			ushort bitDepth = input.ReadUInt16();
 
 			// cbSize, unused
