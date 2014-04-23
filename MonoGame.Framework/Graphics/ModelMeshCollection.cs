@@ -9,6 +9,7 @@
 
 #region Using Statements
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 #endregion
@@ -80,6 +81,75 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			value = null;
 			return false;
+		}
+
+		#endregion
+
+		#region Enumerator
+
+		/// <summary>
+		/// Returns a ModelMeshCollection.Enumerator that can iterate through a ModelMeshCollection.
+		/// </summary>
+		/// <returns></returns>
+		public new Enumerator GetEnumerator()
+		{
+			return new Enumerator(this);
+		}
+
+		/// <summary>
+		/// Provides the ability to iterate through the bones in an ModelMeshCollection.
+		/// </summary>
+		public struct Enumerator : IEnumerator<ModelMesh>
+		{
+			private readonly ModelMeshCollection collection;
+			private int position;
+
+			internal Enumerator(ModelMeshCollection collection)
+			{
+				this.collection = collection;
+				position = -1;
+			}
+
+
+			/// <summary>
+			/// Gets the current element in the ModelMeshCollection.
+			/// </summary>
+			public ModelMesh Current
+			{
+				get
+				{
+					return collection[position];
+				}
+			}
+
+			/// <summary>
+			/// Advances the enumerator to the next element of the ModelMeshCollection.
+			/// </summary>
+			public bool MoveNext()
+			{
+				position += 1;
+				return (position < collection.Count);
+			}
+
+			/// <summary>
+			/// Immediately releases the unmanaged resources used by this object.
+			/// </summary>
+			public void Dispose()
+			{
+			}
+
+			object IEnumerator.Current
+			{
+				get
+				{
+					return collection[position];
+				}
+			}
+
+			public void Reset()
+			{
+				position = -1;
+			}
 		}
 
 		#endregion

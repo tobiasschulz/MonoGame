@@ -207,10 +207,8 @@ namespace Microsoft.Xna.Framework
 			float amount2,
 			out Vector2 result
 		) {
-			result = new Vector2(
-				MathHelper.Barycentric(value1.X, value2.X, value3.X, amount1, amount2),
-				MathHelper.Barycentric(value1.Y, value2.Y, value3.Y, amount1, amount2)
-			);
+			result.X = MathHelper.Barycentric(value1.X, value2.X, value3.X, amount1, amount2);
+			result.Y = MathHelper.Barycentric(value1.Y, value2.Y, value3.Y, amount1, amount2);
 		}
 
 		public static Vector2 CatmullRom(
@@ -234,10 +232,8 @@ namespace Microsoft.Xna.Framework
 			float amount,
 			out Vector2 result
 		) {
-			result = new Vector2(
-				MathHelper.CatmullRom(value1.X, value2.X, value3.X, value4.X, amount),
-				MathHelper.CatmullRom(value1.Y, value2.Y, value3.Y, value4.Y, amount)
-			);
+			result.X = MathHelper.CatmullRom(value1.X, value2.X, value3.X, value4.X, amount);
+			result.Y = MathHelper.CatmullRom(value1.Y, value2.Y, value3.Y, value4.Y, amount);
 		}
 
 		public static Vector2 Clamp(Vector2 value1, Vector2 min, Vector2 max)
@@ -254,10 +250,8 @@ namespace Microsoft.Xna.Framework
 			ref Vector2 max,
 			out Vector2 result
 		) {
-			result = new Vector2(
-				MathHelper.Clamp(value1.X, min.X, max.X),
-				MathHelper.Clamp(value1.Y, min.Y, max.Y)
-			);
+			result.X = MathHelper.Clamp(value1.X, min.X, max.X);
+			result.Y = MathHelper.Clamp(value1.Y, min.Y, max.Y);
 		}
 
 		public static float Distance(Vector2 value1, Vector2 value2)
@@ -379,10 +373,8 @@ namespace Microsoft.Xna.Framework
 			float amount,
 			out Vector2 result
 		) {
-			result = new Vector2(
-				MathHelper.Lerp(value1.X, value2.X, amount),
-				MathHelper.Lerp(value1.Y, value2.Y, amount)
-			);
+			result.X = MathHelper.Lerp(value1.X, value2.X, amount);
+			result.Y = MathHelper.Lerp(value1.Y, value2.Y, amount);
 		}
 
 		public static Vector2 Max(Vector2 value1, Vector2 value2)
@@ -481,10 +473,8 @@ namespace Microsoft.Xna.Framework
 			float amount,
 			out Vector2 result
 		) {
-			result = new Vector2(
-				MathHelper.SmoothStep(value1.X, value2.X, amount),
-				MathHelper.SmoothStep(value1.Y, value2.Y, amount)
-			);
+			result.X = MathHelper.SmoothStep(value1.X, value2.X, amount);
+			result.Y = MathHelper.SmoothStep(value1.Y, value2.Y, amount);
 		}
 
 		public static Vector2 Subtract(Vector2 value1, Vector2 value2)
@@ -511,10 +501,10 @@ namespace Microsoft.Xna.Framework
 			ref Matrix matrix,
 			out Vector2 result
 		) {
-			result = new Vector2(
-				(position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M41,
-				(position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M42
-			);
+			float x = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M41;
+			float y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M42;
+			result.X = x;
+			result.Y = y;
 		}
 
 		public static Vector2 Transform(Vector2 position, Quaternion quat)
@@ -533,7 +523,8 @@ namespace Microsoft.Xna.Framework
 			Quaternion.Multiply(ref quat, ref v, out t);
 			Quaternion.Multiply(ref t, ref i, out v);
 
-			result = new Vector2(v.X, v.Y);
+			result.X = v.X;
+			result.Y = v.Y;
 		}
 
 		public static void Transform(
@@ -576,10 +567,10 @@ namespace Microsoft.Xna.Framework
 			ref Matrix matrix,
 			out Vector2 result
 		) {
-			result = new Vector2(
-					(normal.X * matrix.M11) + (normal.Y * matrix.M21),
-					(normal.X * matrix.M12) + (normal.Y * matrix.M22)
-			);
+			float x = (normal.X * matrix.M11) + (normal.Y * matrix.M21);
+			float y = (normal.X * matrix.M12) + (normal.Y * matrix.M22);
+			result.X = x;
+			result.Y = y;
 		}
 
 		#endregion
