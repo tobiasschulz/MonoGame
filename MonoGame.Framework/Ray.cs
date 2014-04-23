@@ -87,14 +87,14 @@ namespace Microsoft.Xna.Framework
 		// Adapted from http://www.scratchapixel.com/lessons/3d-basic-lessons/lesson-7-intersecting-simple-shapes/ray-box-intersection/
 		public float? Intersects(BoundingBox box)
 		{
-			const float Epsilon = 1e-6f;
-
 			float? tMin = null, tMax = null;
 
-			if (Math.Abs(Direction.X) < Epsilon)
+			if (MathHelper.WithinEpsilon(Direction.X, 0.0f))
 			{
 				if (Position.X < box.Min.X || Position.X > box.Max.X)
+				{
 					return null;
+				}
 			}
 			else
 			{
@@ -109,7 +109,7 @@ namespace Microsoft.Xna.Framework
 				}
 			}
 
-			if (Math.Abs(Direction.Y) < Epsilon)
+			if (MathHelper.WithinEpsilon(Direction.Y, 0.0f))
 			{
 				if (Position.Y < box.Min.Y || Position.Y > box.Max.Y)
 				{
@@ -138,7 +138,7 @@ namespace Microsoft.Xna.Framework
 				if (!tMax.HasValue || tMaxY < tMax) tMax = tMaxY;
 			}
 
-			if (Math.Abs(Direction.Z) < Epsilon)
+			if (MathHelper.WithinEpsilon(Direction.Z, 0.0f))
 			{
 				if (Position.Z < box.Min.Z || Position.Z > box.Max.Z)
 				{

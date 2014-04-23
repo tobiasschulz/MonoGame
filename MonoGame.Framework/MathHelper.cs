@@ -82,6 +82,12 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
+		#region Public Static Readonly Fields
+
+		public static readonly float MachineEpsilonFloat = GetMachineEpsilonFloat();
+
+		#endregion
+
 		#region Public Static Methods
 
 		/// <summary>
@@ -230,11 +236,11 @@ namespace Microsoft.Xna.Framework
 			double sCubed = s * s * s;
 			double sSquared = s * s;
 
-			if (amount == 0f)
+			if (WithinEpsilon(amount, 0f))
 			{
 				result = value1;
 			}
-			else if (amount == 1f)
+			else if (WithinEpsilon(amount, 1f))
 			{
 				result = value2;
 			}
@@ -373,6 +379,46 @@ namespace Microsoft.Xna.Framework
 		public static bool IsPowerOfTwo(int value)
 		{
 			return (value > 0) && ((value & (value - 1)) == 0);
+		}
+
+		#endregion
+
+		#region Internal Static Methods
+
+		internal static bool WithinEpsilon(float floatA, float floatB)
+		{
+			return WithinEpsilon(floatA, floatB, MachineEpsilonFloat);
+		}
+
+		internal static bool WithinEpsilon(float floatA, float floatB, float epsilon)
+		{
+			return Math.Abs(floatA - floatB) < epsilon;
+		}
+
+		#endregion
+
+		#region Private Static Methods
+
+		/// <summary>
+		/// Find the current machine's Epsilon for the float data type.
+		/// (That is, the largest float, e,  where e == 0.0f is true.)
+		/// </summary>
+		private static float GetMachineEpsilonFloat()
+		{
+			float machineEpsilon = 1.0f;
+			float comparison;
+
+			/* Keep halving the working value of machineEpsilon until we get a number that
+			 * when added to 1.0f will still evaluate as equal to 1.0f
+			 */
+			do
+			{
+				machineEpsilon *= 0.5f;
+				comparison = 1.0f + machineEpsilon;
+			}
+			while (comparison > 1.0f);
+
+			return machineEpsilon;
 		}
 
 		#endregion

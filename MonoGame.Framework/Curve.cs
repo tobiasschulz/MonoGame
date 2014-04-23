@@ -255,7 +255,7 @@ namespace Microsoft.Xna.Framework
 					break;
 				case CurveTangent.Smooth:
 					float pn = p1 - p0;
-					if (Math.Abs(pn) < float.Epsilon)
+					if (MathHelper.WithinEpsilon(pn, 0.0f))
 					{
 						key.TangentIn = 0;
 					}

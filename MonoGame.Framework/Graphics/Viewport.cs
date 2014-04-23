@@ -190,7 +190,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			Vector3 vector = Vector3.Transform(source, matrix);
 
 			float a = (((source.X * matrix.M14) + (source.Y * matrix.M24)) + (source.Z * matrix.M34)) + matrix.M44;
-			if (!WithinEpsilon(a, 1f))
+			if (!MathHelper.WithinEpsilon(a, 1.0f))
 			{
 				vector.X = vector.X / a;
 				vector.Y = vector.Y / a;
@@ -217,7 +217,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			Vector3 vector = Vector3.Transform(source, matrix);
 
 			float a = (((source.X * matrix.M14) + (source.Y * matrix.M24)) + (source.Z * matrix.M34)) + matrix.M44;
-			if (!WithinEpsilon(a, 1f))
+			if (!MathHelper.WithinEpsilon(a, 1.0f))
 			{
 				vector.X = vector.X / a;
 				vector.Y = vector.Y / a;
@@ -243,16 +243,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				" MaxDepth:" + maxDepth.ToString() +
 				"}"
 			);
-		}
-
-		#endregion
-
-		#region Private Static Methods
-
-		private static bool WithinEpsilon(float a, float b)
-		{
-			float num = a - b;
-			return ((-1.401298E-45f <= num) && (num <= float.Epsilon));
 		}
 
 		#endregion
