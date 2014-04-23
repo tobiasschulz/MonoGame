@@ -401,8 +401,6 @@ namespace Microsoft.Xna.Framework
 #endif
 				while (SDL.SDL_PollEvent(out evt) == 1)
 				{
-					// TODO: All events...
-
 					// Keyboard
 					if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
 					{
