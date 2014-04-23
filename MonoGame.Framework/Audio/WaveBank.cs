@@ -84,6 +84,12 @@ namespace Microsoft.Xna.Framework.Audio
 				private set;
 			}
 
+			public uint BitDepth
+			{
+				get;
+				private set;
+			}
+
 			public SoundStreamEntry(
 				uint playOffset,
 				uint playLength,
@@ -92,7 +98,8 @@ namespace Microsoft.Xna.Framework.Audio
 				uint channels,
 				uint loopOffset,
 				uint loopLength,
-				uint alignment
+				uint alignment,
+				uint bitDepth
 			) {
 				PlayOffset = playOffset;
 				PlayLength = playLength;
@@ -102,6 +109,7 @@ namespace Microsoft.Xna.Framework.Audio
 				LoopOffset = loopOffset;
 				LoopLength = loopLength;
 				Alignment = alignment;
+				BitDepth = bitDepth;
 			}
 		}
 
@@ -424,6 +432,7 @@ namespace Microsoft.Xna.Framework.Audio
 				uint entryChannels =	(entryFormat >> 2)		& ((1 << 3) - 1);
 				uint entryFrequency =	(entryFormat >> (2 + 3))	& ((1 << 18) - 1);
 				uint entryAlignment =	(entryFormat >> (2 + 3 + 18))	& ((1 << 8) - 1);
+				uint entryBitDepth =	(entryFormat >> (2 + 3 + 18 + 8));
 
 				if (streaming)
 				{
@@ -435,7 +444,8 @@ namespace Microsoft.Xna.Framework.Audio
 						entryChannels,
 						entryLoopOffset,
 						entryLoopLength,
-						entryAlignment
+						entryAlignment,
+						entryBitDepth
 					);
 				}
 				else
@@ -448,7 +458,8 @@ namespace Microsoft.Xna.Framework.Audio
 						entryChannels,
 						entryLoopOffset,
 						entryLoopLength,
-						entryAlignment
+						entryAlignment,
+						entryBitDepth
 					);
 					LoadWaveEntry(filler, (ushort) curEntry, reader);
 				}
@@ -482,7 +493,8 @@ namespace Microsoft.Xna.Framework.Audio
 					entry.Channels,
 					entry.LoopOffset,
 					entry.LoopLength,
-					0
+					false,
+					entry.BitDepth
 				);
 			}
 			else if (entry.Codec == 0x2) // ADPCM
@@ -494,6 +506,7 @@ namespace Microsoft.Xna.Framework.Audio
 					entry.Channels,
 					entry.LoopOffset,
 					entry.LoopLength,
+					true,
 					(entry.Alignment + 16) * 2
 				);
 			}
