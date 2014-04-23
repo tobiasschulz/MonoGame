@@ -234,7 +234,11 @@ namespace Microsoft.Xna.Framework.Media
 		/// </summary>
 		internal void SetEventHandler(FinishedPlayingHandler handler)
 		{
-			// No-op
+			// No-op.  We always use MediaPlayer.OnSongFinishedPlaying as handler.
+
+			/* TODO:  Remove this function, and the call in Song.cs, since we've
+			 * completely forked MediaPlayer.cs?
+			 */
 		}
 
 		internal void OnFinishedPlaying()
