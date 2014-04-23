@@ -321,7 +321,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 				if (audio_format == 1)
 				{
-					formatParameter = bitDepth / 16; // 1 for 16, 0 for 8
+					formatParameter = (uint) (bitDepth / 16); // 1 for 16, 0 for 8
 				}
 				else if (audio_format != 2)
 				{
