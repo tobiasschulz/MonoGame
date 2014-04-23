@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 
 using SDL2;
@@ -71,17 +72,33 @@ namespace Microsoft.Xna.Framework.Input
 
 	public static class GamePad
 	{
+		#region Internal Haptic Type Enum
+
+		private enum HapticType
+		{
+			Simple = 0,
+			LeftRight = 1,
+			LeftRightMacHack = 2
+		}
+
+		#endregion
+
 		#region Internal SDL2_GamePad Variables
 
-		// The SDL device lists
+		// Controller device information
 		private static IntPtr[] INTERNAL_devices = new IntPtr[4];
-		private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
 		private static bool[] INTERNAL_isGameController = new bool[4];
-		private static GamePadState[] INTERNAL_states = new GamePadState[4];
 		private static Dictionary<int, int> INTERNAL_instanceList = new Dictionary<int, int>();
 
+		// Haptic device information
+		private static IntPtr[] INTERNAL_haptics = new IntPtr[4];
+		private static HapticType[] INTERNAL_hapticTypes = new HapticType[4];
+
+		// Cached GamePadStates
+		private static GamePadState[] INTERNAL_states = new GamePadState[4];
+
 		// We use this to apply XInput-like rumble effects.
-		private static SDL.SDL_HapticEffect INTERNAL_effect = new SDL.SDL_HapticEffect
+		private static SDL.SDL_HapticEffect INTERNAL_leftRightEffect = new SDL.SDL_HapticEffect
 		{
 			type = SDL.SDL_HAPTIC_LEFTRIGHT,
 			leftright = new SDL.SDL_HapticLeftRight
@@ -90,6 +107,24 @@ namespace Microsoft.Xna.Framework.Input
 				length = SDL.SDL_HAPTIC_INFINITY,
 				large_magnitude = ushort.MaxValue,
 				small_magnitude = ushort.MaxValue
+			}
+		};
+
+		// We use this to get left/right support on OSX via a nice driver workaround!
+		private static ushort[] leftRightMacHackData = {0, 0};
+		private static GCHandle leftRightMacHackPArry = GCHandle.Alloc(leftRightMacHackData, GCHandleType.Pinned);
+		private static IntPtr leftRightMacHackPtr = leftRightMacHackPArry.AddrOfPinnedObject();
+		private static SDL.SDL_HapticEffect INTERNAL_leftRightMacHackEffect = new SDL.SDL_HapticEffect
+		{
+			type = SDL.SDL_HAPTIC_CUSTOM,
+			custom = new SDL.SDL_HapticCustom
+			{
+				type = SDL.SDL_HAPTIC_CUSTOM,
+				length = SDL.SDL_HAPTIC_INFINITY,
+				channels = 2,
+				period = 1,
+				samples = 2,
+				data = leftRightMacHackPtr
 			}
 		};
 
@@ -188,13 +223,28 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			if (INTERNAL_haptics[which] != IntPtr.Zero)
 			{
-				if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_effect) == 1)
+				if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") &&
+					SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_leftRightMacHackEffect) == 1	)
 				{
-					SDL.SDL_HapticNewEffect(INTERNAL_haptics[which], ref INTERNAL_effect);
+					INTERNAL_hapticTypes[which] = HapticType.LeftRightMacHack;
+					SDL.SDL_HapticNewEffect(INTERNAL_haptics[which], ref INTERNAL_leftRightMacHackEffect);
+				}
+				else if (	!SDL2_GamePlatform.OSVersion.Equals("Mac OS X") &&
+						SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_leftRightEffect) == 1	)
+				{
+					INTERNAL_hapticTypes[which] = HapticType.LeftRight;
+					SDL.SDL_HapticNewEffect(INTERNAL_haptics[which], ref INTERNAL_leftRightEffect);
 				}
 				else if (SDL.SDL_HapticRumbleSupported(INTERNAL_haptics[which]) == 1)
 				{
+					INTERNAL_hapticTypes[which] = HapticType.Simple;
 					SDL.SDL_HapticRumbleInit(INTERNAL_haptics[which]);
+				}
+				else
+				{
+					// We can't even play simple rumble, this haptic device is useless to us.
+					SDL.SDL_HapticClose(INTERNAL_haptics[which]);
+					INTERNAL_haptics[which] = IntPtr.Zero;
 				}
 			}
 
@@ -248,19 +298,6 @@ namespace Microsoft.Xna.Framework.Input
 			SDL.SDL_ClearError();
 
 			System.Console.WriteLine("Removed device, player: " + output.ToString());
-		}
-
-		#endregion
-
-		#region Haptic Support Check Helper
-
-		// Convenience method to check for Rumble support
-		private static bool INTERNAL_HapticSupported(PlayerIndex playerIndex)
-		{
-			IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
-			return (	haptic != IntPtr.Zero &&
-				(	SDL.SDL_HapticEffectSupported(haptic, ref INTERNAL_effect) == 1 ||
-					SDL.SDL_HapticRumbleSupported(haptic) == 1	)	);
 		}
 
 		#endregion
@@ -911,8 +948,8 @@ namespace Microsoft.Xna.Framework.Input
 					HasRightXThumbStick = true,
 					HasRightYThumbStick = true,
 					HasBigButton = true,
-					HasLeftVibrationMotor = INTERNAL_HapticSupported(playerIndex),
-					HasRightVibrationMotor = INTERNAL_HapticSupported(playerIndex),
+					HasLeftVibrationMotor = INTERNAL_haptics[(int) playerIndex] != IntPtr.Zero,
+					HasRightVibrationMotor = INTERNAL_haptics[(int) playerIndex] != IntPtr.Zero,
 					HasVoiceSupport = false
 				};
 			}
@@ -951,8 +988,8 @@ namespace Microsoft.Xna.Framework.Input
 				HasRightXThumbStick =		INTERNAL_joystickConfig.AXIS_RX.INPUT_TYPE		!= InputType.None,
 				HasRightYThumbStick =		INTERNAL_joystickConfig.AXIS_RY.INPUT_TYPE		!= InputType.None,
 
-				HasLeftVibrationMotor = INTERNAL_HapticSupported(playerIndex),
-				HasRightVibrationMotor = INTERNAL_HapticSupported(playerIndex),
+				HasLeftVibrationMotor = INTERNAL_haptics[(int) playerIndex] != IntPtr.Zero,
+				HasRightVibrationMotor = INTERNAL_haptics[(int) playerIndex] != IntPtr.Zero,
 				HasVoiceSupport = false,
 				HasBigButton = false
 			};
@@ -983,26 +1020,44 @@ namespace Microsoft.Xna.Framework.Input
 
 		public static bool SetVibration(PlayerIndex playerIndex, float leftMotor, float rightMotor)
 		{
-			if (!INTERNAL_HapticSupported(playerIndex))
+			IntPtr haptic = INTERNAL_haptics[(int) playerIndex];
+			HapticType type = INTERNAL_hapticTypes[(int) playerIndex];
+
+			if (haptic == IntPtr.Zero)
 			{
 				return false;
 			}
 
 			if (leftMotor <= 0.0f && rightMotor <= 0.0f)
 			{
-				SDL.SDL_HapticStopAll(INTERNAL_haptics[(int)playerIndex]);
+				SDL.SDL_HapticStopAll(haptic);
 			}
-			else if (SDL.SDL_HapticEffectSupported(INTERNAL_haptics[(int) playerIndex], ref INTERNAL_effect) == 1)
+			else if (type == HapticType.LeftRight)
 			{
-				INTERNAL_effect.leftright.large_magnitude = (ushort) (65535.0f * leftMotor);
-				INTERNAL_effect.leftright.small_magnitude = (ushort) (65535.0f * rightMotor);
+				INTERNAL_leftRightEffect.leftright.large_magnitude = (ushort) (65535.0f * leftMotor);
+				INTERNAL_leftRightEffect.leftright.small_magnitude = (ushort) (65535.0f * rightMotor);
 				SDL.SDL_HapticUpdateEffect(
-					INTERNAL_haptics[(int) playerIndex],
+					haptic,
 					0,
-					ref INTERNAL_effect
+					ref INTERNAL_leftRightEffect
 				);
 				SDL.SDL_HapticRunEffect(
-					INTERNAL_haptics[(int) playerIndex],
+					haptic,
+					0,
+					1
+				);
+			}
+			else if (type == HapticType.LeftRightMacHack)
+			{
+				leftRightMacHackData[0] = (ushort) (65535.0f * leftMotor);
+				leftRightMacHackData[1] = (ushort) (65535.0f * rightMotor);
+				SDL.SDL_HapticUpdateEffect(
+					haptic,
+					0,
+					ref INTERNAL_leftRightMacHackEffect
+				);
+				SDL.SDL_HapticRunEffect(
+					haptic,
 					0,
 					1
 				);
@@ -1019,9 +1074,9 @@ namespace Microsoft.Xna.Framework.Input
 					strength = rightMotor;
 				}
 				SDL.SDL_HapticRumblePlay(
-					INTERNAL_haptics[(int) playerIndex],
+					haptic,
 					strength,
-					uint.MaxValue // Oh dear...
+					SDL.SDL_HAPTIC_INFINITY // Oh dear...
 				);
 			}
 			return true;
