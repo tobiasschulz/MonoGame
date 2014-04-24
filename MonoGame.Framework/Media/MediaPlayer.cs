@@ -291,7 +291,6 @@ namespace Microsoft.Xna.Framework.Media
 
 		private static void PlaySong(Song song)
 		{
-			song.SetEventHandler(OnSongFinishedPlaying);
 			song.Volume = IsMuted ? 0.0f : Volume;
 			song.Play();
 			State = MediaState.Playing;

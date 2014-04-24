@@ -170,7 +170,7 @@ namespace Microsoft.Xna.Framework.Media
 				return FileName + ".ogg";
 			}
 
-			return null;	// File not found with supported extension.
+			return null; // File not found with supported extension.
 		}
 
 		#endregion
