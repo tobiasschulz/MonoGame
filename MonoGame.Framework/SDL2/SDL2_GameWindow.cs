@@ -401,8 +401,6 @@ namespace Microsoft.Xna.Framework
 #endif
 				while (SDL.SDL_PollEvent(out evt) == 1)
 				{
-					// TODO: All events...
-
 					// Keyboard
 					if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
 					{
@@ -488,7 +486,8 @@ namespace Microsoft.Xna.Framework
 					// Mouse Wheel
 					else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
 					{
-						Mouse.INTERNAL_MouseWheel += evt.wheel.y;
+						// 120 units per notch. Because reasons.
+						Mouse.INTERNAL_MouseWheel += evt.wheel.y * 120;
 					}
 
 					// Controller device management

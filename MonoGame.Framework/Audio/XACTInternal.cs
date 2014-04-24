@@ -9,8 +9,6 @@
 
 #region Using Statements
 using System;
-
-using OpenTK.Audio.OpenAL;
 #endregion
 
 namespace Microsoft.Xna.Framework.Audio
@@ -332,8 +330,7 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
-		private int effectHandle;
-		public int Handle
+		public DSPEffect Effect
 		{
 			get;
 			private set;
@@ -362,20 +359,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 			if (Name.Equals("Reverb"))
 			{
-				// Obtain EFX entry points
-				EffectsExtension EFX = OpenALDevice.Instance.EFX;
-
-				// Generate the EffectSlot and Effect
-				Handle = EFX.GenAuxiliaryEffectSlot();
-				effectHandle = EFX.GenEffect();
-
-				// Set up the Revert Effect
-				EFX.BindEffect(effectHandle, EfxEffectType.EaxReverb);
-
-				// TODO: Use DSP Parameters on EAXReverb Effect. They don't bind very cleanly. :/
-
-				// Bind the Effect to the EffectSlot. XACT will use the EffectSlot.
-				EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
+				Effect = new DSPReverbEffect(Parameters);
 			}
 			else
 			{
@@ -385,12 +369,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Dispose()
 		{
-			// Obtain EFX entry points
-			EffectsExtension EFX = OpenALDevice.Instance.EFX;
-
-			// Delete EFX data
-			EFX.DeleteAuxiliaryEffectSlot(Handle);
-			EFX.DeleteEffect(effectHandle);
+			Effect.Dispose();
 		}
 
 		public void SetParameter(int index, float value)
@@ -398,30 +377,24 @@ namespace Microsoft.Xna.Framework.Audio
 			Parameters[index].Value = value;
 			if (Name.Equals("Reverb"))
 			{
-				// Obtain EFX entry points
-				EffectsExtension EFX = OpenALDevice.Instance.EFX;
+				DSPReverbEffect effect = (DSPReverbEffect) Effect;
 	
 				// Apply the value to the parameter
 				if (index == 17)
 				{
-					EFX.Effect(
-						effectHandle,
-						EfxEffectf.EaxReverbGain,
-						Parameters[index].Value
-					);
-					EFX.BindEffectToAuxiliarySlot(Handle, effectHandle);
+					effect.SetGain(Parameters[index].Value);
 				}
 				else if (index == 18)
 				{
-					// TODO: Decay Time
+					effect.SetDecayTime(Parameters[index].Value);
 				}
 				else if (index == 19)
 				{
-					// TODO: Density
+					effect.SetDensity(Parameters[index].Value);
 				}
 				else
 				{
-					throw new Exception("DSP parameter unhandled: " + index);
+					throw new Exception("DSP parameter unhandled: " + index.ToString());
 				}
 			}
 			else

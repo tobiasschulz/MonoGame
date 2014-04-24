@@ -338,9 +338,9 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#region Internal EFX Methods
 
-		internal void INTERNAL_applyEffect(int effectSlotHandle)
+		internal void INTERNAL_applyEffect(DSPEffect effectSlotHandle)
 		{
-			INTERNAL_alEffectSlot = effectSlotHandle;
+			INTERNAL_alEffectSlot = effectSlotHandle.Handle;
 			if (INTERNAL_alSource != -1)
 			{
 				AL.Source(

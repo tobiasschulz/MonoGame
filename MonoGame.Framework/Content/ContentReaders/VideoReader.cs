@@ -20,9 +20,7 @@ namespace Microsoft.Xna.Framework.Content
 	{
 		#region Private Supported File Extensions Variable
 
-		static string[] supportedExtensions = new string[] {
-			".ogv", ".ogg"
-		};
+		static string[] supportedExtensions = new string[] { ".ogv", ".ogg" };
 
 		#endregion
 
@@ -41,17 +39,26 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader input,
 			Video existingInstance
 		) {
-			string path = input.ReadObject<string>();
+			string path = input.ReadString();
 			path = Path.Combine(input.ContentManager.RootDirectory, path);
 			path = TitleContainer.GetFilename(path);
 
-			/*int durationMS =*/ input.ReadObject<int>();
-			/*int width =*/ input.ReadObject<int>();
-			/*int height =*/ input.ReadObject<int>();
-			/*float framesPerSecond =*/ input.ReadObject<Single>();
-			// 0 = Music, 1 = Dialog, 2 = Music and dialog
-			/*int soundTrackType =*/ input.ReadObject<int>();
-			return new Video(path);
+			/* The path string includes the ".wmv" extension. Let's see if this
+			 * file exists in a format we actually support...
+			 */
+			path = Normalize(Path.GetFileNameWithoutExtension(path));
+			if (String.IsNullOrEmpty(path))
+			{
+				throw new ContentLoadException();
+			}
+
+			int durationMS = input.ReadObject<int>();
+			int width = input.ReadObject<int>();
+			int height = input.ReadObject<int>();
+			float framesPerSecond = input.ReadObject<Single>();
+			VideoSoundtrackType soundTrackType = (VideoSoundtrackType) input.ReadObject<int>();
+
+			return new Video(path, durationMS, width, height, framesPerSecond, soundTrackType);
 		}
 
 		#endregion

@@ -169,7 +169,7 @@ namespace Microsoft.Xna.Framework.Audio
 				return;
 			}
 
-			System.Console.WriteLine("OpenAL Error: " + err);
+			System.Console.WriteLine("OpenAL Error: " + err.ToString());
 		}
 
 		private bool CheckALCError(string message)
@@ -181,7 +181,7 @@ namespace Microsoft.Xna.Framework.Audio
 				return false;
 			}
 
-			throw new Exception(message + " - OpenAL Device Error: " + err);
+			throw new Exception(message + " - OpenAL Device Error: " + err.ToString());
 		}
 
 		#endregion

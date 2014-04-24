@@ -242,7 +242,8 @@ namespace Microsoft.Xna.Framework
 
 		public bool Equals(BoundingSphere other)
 		{
-			return this.Center == other.Center && this.Radius == other.Radius;
+			return (	this.Center == other.Center &&
+					MathHelper.WithinEpsilon(this.Radius, other.Radius)	);
 		}
 
 		#endregion

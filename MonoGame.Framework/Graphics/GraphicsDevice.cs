@@ -523,7 +523,34 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public void GetBackBufferData<T>(T[] data) where T : struct
 		{
-			throw new NotImplementedException("FIXME: flibit put this here.");
+			if (OpenGLDevice.Instance.CurrentFramebuffer != OpenGLDevice.Instance.Backbuffer.Handle)
+			{
+				OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+			}
+			GL.ReadPixels(
+				0, 0,
+				OpenGLDevice.Instance.Backbuffer.Width,
+				OpenGLDevice.Instance.Backbuffer.Height,
+				PixelFormat.Rgba,
+				PixelType.UnsignedByte,
+				data
+			);
+			if (OpenGLDevice.Instance.CurrentFramebuffer != OpenGLDevice.Instance.Backbuffer.Handle)
+			{
+				OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+			}
+
+			// Now we get to do a software-based flip! Yes, really! -flibit
+			int width = OpenGLDevice.Instance.Backbuffer.Width;
+			int height = OpenGLDevice.Instance.Backbuffer.Height;
+			int pitch = width * 4 / Marshal.SizeOf(typeof(T));
+			T[] tempRow = new T[pitch];
+			for (int row = 0; row < height / 2; row += 1)
+			{
+				Array.Copy(data, row * pitch, tempRow, 0, pitch);
+				Array.Copy(data, (height - row - 1) * pitch, data, row * pitch, pitch);
+				Array.Copy(tempRow, 0, data, (height - row - 1) * pitch, pitch);
+			}
 		}
 
 		#endregion
@@ -711,7 +738,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			int primitiveCount
 		) {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unsigned short or unsigned int?
 			bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
@@ -764,7 +791,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unsigned short or unsigned int?
 			bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
@@ -826,7 +853,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexDeclaration vertexDeclaration
 		) where T : struct {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unbind current VBOs.
 			OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -859,8 +886,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public void DrawPrimitives(PrimitiveType primitiveType, int vertexStart, int primitiveCount)
 		{
 			// Flush the GL state before moving on!
-			ApplyState(true);
-			OpenGLDevice.Instance.FlushGLState();
+			ApplyState();
 
 			// Set up the vertex buffers
 			foreach (VertexBufferBinding vertBuffer in vertexBufferBindings)
@@ -922,7 +948,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexDeclaration vertexDeclaration
 		) where T : struct {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unbind current buffer objects.
 			OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -989,7 +1015,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexDeclaration vertexDeclaration
 		) where T : struct, IVertexType {
 			// Flush the GL state before moving on!
-			ApplyState(true);
+			ApplyState();
 
 			// Unbind current buffer objects.
 			OpenGLDevice.Instance.BindVertexBuffer(0);
@@ -1066,7 +1092,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private State Flush Methods
 
-		private void ApplyState(bool applyShaders)
+		private void ApplyState()
 		{
 			// Apply BlendState
 			OpenGLDevice.Instance.AlphaBlendEnable.Set(
@@ -1129,12 +1155,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.SlopeScaleDepthBias.Set(RasterizerState.SlopeScaleDepthBias);
 
 			// TODO: MSAA?
-
-			// If we're not applying shaders then drop out now.
-			if (!applyShaders)
-			{
-				return;
-			}
 
 			if (VertexShader == null)
 			{

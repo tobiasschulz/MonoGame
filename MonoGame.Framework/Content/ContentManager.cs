@@ -460,7 +460,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			else if ((typeof(T) == typeof(Video)))
 			{
-				return Video.Normalize(assetName);
+				return VideoReader.Normalize(assetName);
 			}
 			else if ((typeof(T) == typeof(Effect)))
 			{

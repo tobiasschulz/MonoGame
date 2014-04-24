@@ -494,7 +494,7 @@ namespace Microsoft.Xna.Framework.Audio
 				}
 				else
 				{
-					throw new Exception("RPC Parameter Type: " + curRPC.Parameter);
+					throw new Exception("RPC Parameter Type: " + curRPC.Parameter.ToString());
 				}
 			}
 			for (int i = 0; i < INTERNAL_instancePool.Count; i += 1)
@@ -594,7 +594,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 			foreach (uint curDSP in INTERNAL_activeSound.DSPCodes)
 			{
-				int handle = INTERNAL_baseEngine.INTERNAL_getDSP(curDSP);
+				DSPEffect handle = INTERNAL_baseEngine.INTERNAL_getDSP(curDSP);
 				foreach (SoundEffectInstance sfi in INTERNAL_instancePool)
 				{
 					// FIXME: This only applies the last DSP!

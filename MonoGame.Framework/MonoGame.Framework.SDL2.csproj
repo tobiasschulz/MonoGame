@@ -345,7 +345,6 @@
     <Compile Include="Graphics\ModelMeshPartCollection.cs" />
     <Compile Include="Graphics\PresentationParameters.cs" />
     <Compile Include="Graphics\RenderTarget2D.cs" />
-    <Compile Include="Graphics\ResourceType.cs" />
     <Compile Include="Graphics\SpriteBatch.cs" />
     <Compile Include="Graphics\SpriteBatcher.cs" />
     <Compile Include="Graphics\SpriteFont.cs" />
@@ -403,6 +402,7 @@
     <Compile Include="GamerServices\GamerServicesDispatcher.cs" />
     <Compile Include="GamerServices\GameUpdateRequiredException.cs" />
     <Compile Include="FrameworkDispatcher.cs" />
+    <Compile Include="Audio\DSPEffect.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">

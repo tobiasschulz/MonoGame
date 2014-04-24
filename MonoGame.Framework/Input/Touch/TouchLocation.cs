@@ -217,13 +217,13 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		public override string ToString()
 		{
 			return (
-				"Touch id:" + id +
-				" state:" + state +
-				" position:" + position +
-				" pressure:" + pressure +
-				" prevState:" + previousState +
-				" prevPosition:" + previousPosition +
-				" previousPressure:" + previousPressure
+				"Touch id:" + id.ToString() +
+				" state:" + state.ToString() +
+				" position:" + position.ToString() +
+				" pressure:" + pressure.ToString() +
+				" prevState:" + previousState.ToString() +
+				" prevPosition:" + previousPosition.ToString() +
+				" previousPressure:" + previousPressure.ToString()
 			);
 		}
 

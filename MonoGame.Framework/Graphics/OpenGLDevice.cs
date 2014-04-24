@@ -209,16 +209,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 			}
 
-			public void Generate2DMipmaps()
-			{
-				GL.BindTexture(Target, Handle);
-				GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-				GL.BindTexture(
-					OpenGLDevice.Instance.Samplers[0].Target.GetCurrent(),
-					OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle
-				);
-			}
-
 			// We can't set a SamplerState Texture to null, so use this.
 			private OpenGLTexture()
 			{
@@ -413,7 +403,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Render Target Cache Variables
 
-		private int currentFramebuffer = 0;
+		public int CurrentFramebuffer
+		{
+			get;
+			private set;
+		}
 		private int targetFramebuffer = 0;
 		private int[] currentAttachments;
 		private int currentDrawBuffers;
@@ -534,6 +528,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDeviceManager.DefaultBackBufferHeight,
 				DepthFormat.Depth16
 			);
+			CurrentFramebuffer = Backbuffer.Handle;
 
 			// Initialize sampler state array
 			int numSamplers;
@@ -1106,17 +1101,17 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Bind the right framebuffer, if needed
 			if (attachments == null)
 			{
-				if (Backbuffer.Handle != currentFramebuffer)
+				if (Backbuffer.Handle != CurrentFramebuffer)
 				{
 					Framebuffer.BindFramebuffer(Backbuffer.Handle);
-					currentFramebuffer = Backbuffer.Handle;
+					CurrentFramebuffer = Backbuffer.Handle;
 				}
 				return;
 			}
-			else if (targetFramebuffer != currentFramebuffer)
+			else if (targetFramebuffer != CurrentFramebuffer)
 			{
 				Framebuffer.BindFramebuffer(targetFramebuffer);
-				currentFramebuffer = targetFramebuffer;
+				CurrentFramebuffer = targetFramebuffer;
 			}
 
 			// Update the color attachments, DrawBuffers state
@@ -1134,6 +1129,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (currentAttachments[i] != 0)
 				{
 					Framebuffer.AttachColor(0, i);
+					currentAttachments[i] = 0;
 				}
 				i += 1;
 			}
@@ -1497,7 +1493,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 				else
 				{
-					throw new Exception("Unhandled DepthFormat: " + format);
+					throw new Exception("Unhandled DepthFormat: " + format.ToString());
 				}
 
 				// Actual GL calls!
@@ -1709,7 +1705,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				colorAttachment = GL.GenTexture();
 				depthStencilAttachment = GL.GenTexture();
 
-				Framebuffer.BindFramebuffer(Handle);
 				GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
 				GL.TexImage2D(
 					TextureTarget.Texture2D,
@@ -1734,6 +1729,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					PixelType.UnsignedByte,
 					IntPtr.Zero
 				);
+				Framebuffer.BindFramebuffer(Handle);
 				Framebuffer.AttachColor(
 					colorAttachment,
 					0

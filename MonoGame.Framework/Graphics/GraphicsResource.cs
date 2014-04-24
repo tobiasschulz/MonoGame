@@ -44,6 +44,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
+		#region Private Variables
+
+		private WeakReference selfReference;
+
+		#endregion
+
 		#region Private Static Variables
 
 		// Resources may be added to and removed from the list from many threads.
@@ -68,7 +74,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			lock (resourcesLock)
 			{
-				resources.Add(new WeakReference(this));
+				selfReference = new WeakReference(this);
+				resources.Add(selfReference);
 			}
 		}
 
@@ -112,7 +119,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		internal protected virtual void GraphicsDeviceResetting()
 		{
-
 		}
 
 		#endregion
@@ -140,14 +146,17 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			// Do not trigger the event if called from the finalizer
 			if (disposing && Disposing != null)
+			{
 				Disposing(this, EventArgs.Empty);
+			}
 
 			// Remove from the global list of graphics resources
 			lock (resourcesLock)
 			{
-				resources.Remove(new WeakReference(this));
+				resources.Remove(selfReference);
 			}
 
+			selfReference = null;
 			GraphicsDevice = null;
 			IsDisposed = true;
 			//}
@@ -182,7 +191,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			lock (resourcesLock)
 			{
-				foreach (WeakReference resource in resources)
+				foreach (WeakReference resource in resources.ToArray())
 				{
 					object target = resource.Target;
 					if (target != null)

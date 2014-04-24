@@ -7,8 +7,6 @@
  */
 #endregion
 
-// TODO: Get this to use the OpenGLDevice instead of raw OpenGL -flibit
-
 #region VIDEOPLAYER_OPENGL Option
 /* By default we use a small fragment shader to perform the YUV-RGBA conversion.
  * If for some reason you need to use the software converter in TheoraPlay,
@@ -22,13 +20,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 
-using OpenTK.Audio.OpenAL;
 #if VIDEOPLAYER_OPENGL
 using OpenTK.Graphics.OpenGL;
 #endif
 
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 
@@ -79,23 +76,14 @@ namespace Microsoft.Xna.Framework.Media
 
 		// Used to restore our previous GL state.
 		private int[] oldTextures;
+		private TextureTarget[] oldTargets;
 		private int oldShader;
-		private int oldFramebuffer;
-		private int oldActiveTexture;
-		private int[] oldViewport;
-		private bool oldCullState;
-		private bool oldDepthMask;
-		private bool oldDepthTest;
-		private bool oldAlphaTest;
-		private bool oldBlendState;
 
 		private void GL_initialize()
 		{
-			// Initialize the old viewport array.
-			oldViewport = new int[4];
-
-			// Initialize the texture storage array.
+			// Initialize the sampler storage arrays.
 			oldTextures = new int[3];
+			oldTargets = new TextureTarget[3];
 
 			// Create the YUV textures.
 			yuvTextures = new int[3];
@@ -107,22 +95,22 @@ namespace Microsoft.Xna.Framework.Media
 			// Create our pile of vertices.
 			vert_pos = new float[2 * 4]; // 2 dimensions * 4 vertices
 			vert_tex = new float[2 * 4];
-					vert_pos[0] = -1.0f;
-					vert_pos[1] =  1.0f;
-					vert_tex[0] =  0.0f;
-					vert_tex[1] =  1.0f;
-					vert_pos[2] =  1.0f;
-					vert_pos[3] =  1.0f;
-					vert_tex[2] =  1.0f;
-					vert_tex[3] =  1.0f;
-					vert_pos[4] = -1.0f;
-					vert_pos[5] = -1.0f;
-					vert_tex[4] =  0.0f;
-					vert_tex[5] =  0.0f;
-					vert_pos[6] =  1.0f;
-					vert_pos[7] = -1.0f;
-					vert_tex[6] =  1.0f;
-					vert_tex[7] =  0.0f;
+				vert_pos[0] = -1.0f;
+				vert_pos[1] =  1.0f;
+				vert_tex[0] =  0.0f;
+				vert_tex[1] =  1.0f;
+				vert_pos[2] =  1.0f;
+				vert_pos[3] =  1.0f;
+				vert_tex[2] =  1.0f;
+				vert_tex[3] =  1.0f;
+				vert_pos[4] = -1.0f;
+				vert_pos[5] = -1.0f;
+				vert_tex[4] =  0.0f;
+				vert_tex[5] =  0.0f;
+				vert_pos[6] =  1.0f;
+				vert_pos[7] = -1.0f;
+				vert_tex[6] =  1.0f;
+				vert_tex[7] =  0.0f;
 
 			// Create the vertex/fragment shaders.
 			int vshader_id = GL.CreateShader(ShaderType.VertexShader);
@@ -141,6 +129,23 @@ namespace Microsoft.Xna.Framework.Media
 			GL.LinkProgram(shaderProgram);
 			GL.DeleteShader(vshader_id);
 			GL.DeleteShader(fshader_id);
+
+			// Set uniform values now. They won't change, promise!
+			GL.GetInteger(GetPName.CurrentProgram, out oldShader);
+			GL.UseProgram(shaderProgram);
+			GL.Uniform1(
+				GL.GetUniformLocation(shaderProgram, "samp0"),
+				0
+			);
+			GL.Uniform1(
+				GL.GetUniformLocation(shaderProgram, "samp1"),
+				1
+			);
+			GL.Uniform1(
+				GL.GetUniformLocation(shaderProgram, "samp2"),
+				2
+			);
+			GL.UseProgram(oldShader);
 		}
 
 		private void GL_dispose()
@@ -214,15 +219,20 @@ namespace Microsoft.Xna.Framework.Media
 
 		private void GL_setupTargets(int width, int height)
 		{
-			// We're going to be messing with things to do this...
-			GL_pushState();
-
-			// We'll just use this for all the texture work.
-			GL.ActiveTexture(TextureUnit.Texture0);
+			// We're going to mess with sampler 0's texture.
+			TextureTarget prevTarget = OpenGLDevice.Instance.Samplers[0].Target.GetCurrent();
+			int prevTexture = OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle;
 
 			// Attach the Texture2D to the framebuffer.
 			OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
 			OpenGLDevice.Framebuffer.AttachColor(videoTexture.texture.Handle, 0);
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+
+			// Be careful about non-2D textures currently bound...
+			if (prevTarget != TextureTarget.Texture2D)
+			{
+				GL.BindTexture(prevTarget, 0);
+			}
 
 			// Allocate YUV GL textures
 			GL_internal_genTexture(
@@ -251,59 +261,99 @@ namespace Microsoft.Xna.Framework.Media
 			);
 
 			// Aaand we should be set now.
-			GL_popState();
+			if (prevTarget != TextureTarget.Texture2D)
+			{
+				GL.BindTexture(TextureTarget.Texture2D, 0);
+			}
+			GL.BindTexture(prevTarget, prevTexture);
 		}
 
 		private void GL_pushState()
 		{
-			GL.GetInteger(GetPName.Viewport, oldViewport);
+			/* Argh, a glGet!
+			 * We could in theory store this, but when we do direct MojoShader,
+			 * that will be obscured away. It sucks, but at least it's just
+			 * this one time!
+			 * -flibit
+			 */
 			GL.GetInteger(GetPName.CurrentProgram, out oldShader);
-			GL.GetInteger(GetPName.ActiveTexture, out oldActiveTexture);
-			GL.ActiveTexture(TextureUnit.Texture0);
-			GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[0]);
-			GL.ActiveTexture(TextureUnit.Texture1);
-			GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[1]);
-			GL.ActiveTexture(TextureUnit.Texture2);
-			GL.GetInteger(GetPName.TextureBinding2D, out oldTextures[2]);
-			GL.GetInteger(GetPName.FramebufferBinding, out oldFramebuffer);
-			oldCullState = GL.IsEnabled(EnableCap.CullFace);
-			GL.Disable(EnableCap.CullFace);
-			GL.GetBoolean(GetPName.DepthWritemask, out oldDepthMask);
-			GL.DepthMask(false);
-			oldDepthTest = GL.IsEnabled(EnableCap.DepthTest);
-			GL.Disable(EnableCap.DepthTest);
-			oldAlphaTest = GL.IsEnabled(EnableCap.AlphaTest);
-			GL.Disable(EnableCap.AlphaTest);
-			oldBlendState = GL.IsEnabled(EnableCap.Blend);
-			GL.Disable(EnableCap.Blend);
+
+			// Prep our samplers
+			for (int i = 0; i < 2; i += 1)
+			{
+				oldTargets[i] = OpenGLDevice.Instance.Samplers[i].Target.GetCurrent();
+				oldTextures[i] = OpenGLDevice.Instance.Samplers[i].Texture.GetCurrent().Handle;
+				if (oldTargets[i] != TextureTarget.Texture2D)
+				{
+					GL.ActiveTexture(TextureUnit.Texture0 + i);
+					GL.BindTexture(oldTargets[i], 0);
+				}
+			}
+
+			// Disable various GL options
+			if (OpenGLDevice.Instance.AlphaBlendEnable.GetCurrent())
+			{
+				GL.Disable(EnableCap.Blend);
+			}
+			if (OpenGLDevice.Instance.ZEnable.GetCurrent())
+			{
+				GL.Disable(EnableCap.DepthTest);
+			}
+			if (OpenGLDevice.Instance.CullFrontFace.GetCurrent() != CullMode.None)
+			{
+				GL.Disable(EnableCap.CullFace);
+			}
+			if (OpenGLDevice.Instance.ScissorTestEnable.GetCurrent())
+			{
+				GL.Disable(EnableCap.ScissorTest);
+			}
 		}
 
 		private void GL_popState()
 		{
-			GL.Viewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
+			// Flush the viewport, reset.
+			Rectangle oldViewport = OpenGLDevice.Instance.GLViewport.Flush();
+			GL.Viewport(
+				oldViewport.X,
+				oldViewport.Y,
+				oldViewport.Width,
+				oldViewport.Height
+			);
+
+			// Restore the program we got from glGet :(
 			GL.UseProgram(oldShader);
+
+			// Restore the sampler bindings
+			for (int i = 0; i < 2; i += 1)
+			{
+				GL.ActiveTexture(TextureUnit.Texture0 + i);
+				if (oldTargets[i] != TextureTarget.Texture2D)
+				{
+					GL.BindTexture(TextureTarget.Texture2D, 0);
+				}
+				GL.BindTexture(oldTargets[i], oldTextures[i]);
+			}
+
+			// Keep this state sane.
 			GL.ActiveTexture(TextureUnit.Texture0);
-			GL.BindTexture(TextureTarget.Texture2D, oldTextures[0]);
-			GL.ActiveTexture(TextureUnit.Texture1);
-			GL.BindTexture(TextureTarget.Texture2D, oldTextures[1]);
-			GL.ActiveTexture(TextureUnit.Texture2);
-			GL.BindTexture(TextureTarget.Texture2D, oldTextures[2]);
-			GL.ActiveTexture((TextureUnit) oldActiveTexture);
-			OpenGLDevice.Framebuffer.BindFramebuffer(oldFramebuffer);
-			if (oldCullState)
+
+			// Restore the active framebuffer
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+
+			// Flush various GL states, if applicable
+			if (OpenGLDevice.Instance.ScissorTestEnable.Flush())
+			{
+				GL.Enable(EnableCap.ScissorTest);
+			}
+			if (OpenGLDevice.Instance.CullFrontFace.GetCurrent() != CullMode.None)
 			{
 				GL.Enable(EnableCap.CullFace);
 			}
-			GL.DepthMask(oldDepthMask);
-			if (oldDepthTest)
+			if (OpenGLDevice.Instance.ZEnable.Flush())
 			{
 				GL.Enable(EnableCap.DepthTest);
 			}
-			if (oldAlphaTest)
-			{
-				GL.Enable(EnableCap.AlphaTest);
-			}
-			if (oldBlendState)
+			if (OpenGLDevice.Instance.AlphaBlendEnable.Flush())
 			{
 				GL.Enable(EnableCap.Blend);
 			}
@@ -395,9 +445,6 @@ namespace Microsoft.Xna.Framework.Media
 		// Store this to optimize things on our end.
 		private Texture2D videoTexture;
 
-		// Used to sync the A/V output on thread start.
-		private volatile bool audioStarted;
-
 		#endregion
 
 		#region Private Member Data: TheoraPlay
@@ -407,14 +454,11 @@ namespace Microsoft.Xna.Framework.Media
 		private TheoraPlay.THEORAPLAY_VideoFrame nextVideo;
 		private IntPtr previousFrame;
 
-		// Audio's done separately from the player thread.
-		private Thread audioDecoderThread;
-
 		#endregion
 
 		#region Private Member Data: OpenAL
 
-		private int audioSourceIndex;
+		private DynamicSoundEffectInstance audioStream;
 
 		#endregion
 
@@ -434,17 +478,17 @@ namespace Microsoft.Xna.Framework.Media
 
 		private void UpdateVolume()
 		{
-			if (audioSourceIndex == -1)
+			if (audioStream == null)
 			{
 				return;
 			}
 			if (IsMuted)
 			{
-				AL.Source(audioSourceIndex, ALSourcef.Gain, 0.0f);
+				audioStream.Volume = 0.0f;
 			}
 			else
 			{
-				AL.Source(audioSourceIndex, ALSourcef.Gain, Volume);
+				audioStream.Volume = Volume;
 			}
 		}
 
@@ -454,9 +498,6 @@ namespace Microsoft.Xna.Framework.Media
 
 		public VideoPlayer()
 		{
-			// Initialize OpenAL members.
-			audioSourceIndex = -1;
-
 			// Initialize public members.
 			IsDisposed = false;
 			IsLooped = false;
@@ -466,7 +507,6 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Initialize private members.
 			timer = new Stopwatch();
-			audioStarted = false;
 
 			// Initialize this here to prevent null GetTexture returns.
 			videoTexture = new Texture2D(
@@ -490,6 +530,13 @@ namespace Microsoft.Xna.Framework.Media
 			// Destroy the OpenGL bits.
 			GL_dispose();
 #endif
+
+			// Dispose the DynamicSoundEffectInstance
+			if (audioStream != null)
+			{
+				audioStream.Dispose();
+				audioStream = null;
+			}
 
 			// Dispose the Texture.
 			videoTexture.Dispose();
@@ -543,15 +590,13 @@ namespace Microsoft.Xna.Framework.Media
 					// If looping, go back to the start. Otherwise, we'll be exiting.
 					if (IsLooped && State == MediaState.Playing)
 					{
-						// Wait for the audio thread to end.
-						State = MediaState.Stopped;
-						if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+						// Kill the audio, no matter what.
+						if (audioStream != null)
 						{
-							audioDecoderThread.Join();
+							audioStream.Stop();
+							audioStream.Dispose();
+							audioStream = null;
 						}
-
-						// Now we pretend we're playing again.
-						State = MediaState.Playing;
 
 						// Free everything and start over.
 						TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
@@ -564,12 +609,7 @@ namespace Microsoft.Xna.Framework.Media
 						// Grab the initial audio again.
 						if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
 						{
-							audioDecoderThread = new Thread(new ThreadStart(DecodeAudio));
-							audioDecoderThread.Start();
-						}
-						else
-						{
-							audioStarted = true; // Welp.
+							InitAudioStream();
 						}
 
 						// Grab the initial video again.
@@ -585,23 +625,22 @@ namespace Microsoft.Xna.Framework.Media
 							nextVideo = TheoraPlay.getVideoFrame(Video.videoStream);
 						}
 
-						// FIXME: Maybe use an actual thread synchronization technique.
-						while (!audioStarted);
-
 						// Start! Again!
 						timer.Start();
-						if (audioSourceIndex != -1)
+						if (audioStream != null)
 						{
-							AL.SourcePlay(audioSourceIndex);
+							audioStream.Play();
 						}
 					}
 					else
 					{
 						// Stop everything, clean up. We out.
 						State = MediaState.Stopped;
-						if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+						if (audioStream != null)
 						{
-							audioDecoderThread.Join();
+							audioStream.Stop();
+							audioStream.Dispose();
+							audioStream = null;
 						}
 						TheoraPlay.THEORAPLAY_freeVideo(previousFrame);
 						Video.AttachedToPlayer = false;
@@ -619,20 +658,6 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Bind our shader program.
 			GL.UseProgram(shaderProgram);
-
-			// Set uniform values.
-			GL.Uniform1(
-				GL.GetUniformLocation(shaderProgram, "samp0"),
-				0
-			);
-			GL.Uniform1(
-				GL.GetUniformLocation(shaderProgram, "samp1"),
-				1
-			);
-			GL.Uniform1(
-				GL.GetUniformLocation(shaderProgram, "samp2"),
-				2
-			);
 
 			// Set up the vertex pointers/arrays.
 			OpenGLDevice.Instance.Attributes[0].CurrentBuffer = int.MaxValue;
@@ -762,15 +787,6 @@ namespace Microsoft.Xna.Framework.Media
 				return;
 			}
 
-			// In rare cases, the thread might still be going. Wait until it's done.
-			if (audioDecoderThread != null && audioDecoderThread.IsAlive)
-			{
-				Stop();
-			}
-
-			// Create new Thread instances in case we use this player multiple times.
-			audioDecoderThread = new Thread(new ThreadStart(this.DecodeAudio));
-
 			// Update the player state now, for the thread we're about to make.
 			State = MediaState.Playing;
 
@@ -783,11 +799,7 @@ namespace Microsoft.Xna.Framework.Media
 			// Grab the first bit of audio. We're trying to start the decoding ASAP.
 			if (TheoraPlay.THEORAPLAY_hasAudioStream(Video.theoraDecoder) != 0)
 			{
-				audioDecoderThread.Start();
-			}
-			else
-			{
-				audioStarted = true; // Welp.
+				InitAudioStream();
 			}
 
 			// Grab the first bit of video, set up the texture.
@@ -821,11 +833,10 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Initialize the thread!
 			System.Console.Write("Starting Theora player...");
-			while (!audioStarted);
 			timer.Start();
-			if (audioSourceIndex != -1)
+			if (audioStream != null)
 			{
-				AL.SourcePlay(audioSourceIndex);
+				audioStream.Play();
 			}
 			System.Console.WriteLine(" Done!");
 		}
@@ -847,9 +858,11 @@ namespace Microsoft.Xna.Framework.Media
 			System.Console.Write("Signaled Theora player to stop, waiting...");
 			timer.Stop();
 			timer.Reset();
-			if (audioDecoderThread.ThreadState != System.Threading.ThreadState.Unstarted)
+			if (audioStream != null)
 			{
-				audioDecoderThread.Join();
+				audioStream.Stop();
+				audioStream.Dispose();
+				audioStream = null;
 			}
 			if (previousFrame != IntPtr.Zero)
 			{
@@ -875,9 +888,9 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Pause timer, audio.
 			timer.Stop();
-			if (audioSourceIndex != -1)
+			if (audioStream != null)
 			{
-				AL.SourcePause(audioSourceIndex);
+				audioStream.Pause();
 			}
 		}
 
@@ -896,17 +909,17 @@ namespace Microsoft.Xna.Framework.Media
 
 			// Unpause timer, audio.
 			timer.Start();
-			if (audioSourceIndex != -1)
+			if (audioStream != null)
 			{
-				AL.SourcePlay(audioSourceIndex);
+				audioStream.Resume();
 			}
 		}
 
 		#endregion
 
-		#region The Theora Audio Decoder Thread
+		#region Private Theora Audio Stream Methods
 
-		private bool StreamAudio(int buffer)
+		private bool StreamAudio()
 		{
 			// The size of our abstracted buffer.
 			const int BUFFER_SIZE = 4096 * 2;
@@ -919,16 +932,14 @@ namespace Microsoft.Xna.Framework.Media
 			currentAudio.channels = 0;
 			currentAudio.freq = 0;
 
+			// There might be an initial period of silence, so forcibly push through.
+			while (	audioStream.State == SoundState.Stopped &&
+				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) == 0	);
+
 			// Add to the buffer from the decoder until it's large enough.
-			while (
-				State != MediaState.Stopped &&
-				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) == 0
-			);
-			while (
-				data.Count < BUFFER_SIZE &&
-				State != MediaState.Stopped &&
-				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) > 0
-			) {
+			while (	data.Count < BUFFER_SIZE &&
+				TheoraPlay.THEORAPLAY_availableAudio(Video.theoraDecoder) > 0	)
+			{
 				IntPtr audioPtr = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
 				currentAudio = TheoraPlay.getAudioPacket(audioPtr);
 				data.AddRange(
@@ -943,11 +954,9 @@ namespace Microsoft.Xna.Framework.Media
 			// If we actually got data, buffer it into OpenAL.
 			if (data.Count > 0)
 			{
-				AL.BufferData(
-					buffer,
-					(currentAudio.channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
+				audioStream.SubmitFloatBuffer(
 					data.ToArray(),
-					data.Count * 2 * currentAudio.channels, // Dear OpenAL: WTF?! Love, flibit
+					currentAudio.channels,
 					currentAudio.freq
 				);
 				return true;
@@ -955,68 +964,33 @@ namespace Microsoft.Xna.Framework.Media
 			return false;
 		}
 
-		private void DecodeAudio()
+		private void OnBufferRequest(object sender, EventArgs args)
 		{
-			// The number of AL buffers to queue into the source.
+			if (!StreamAudio())
+			{
+				// Okay, we ran out. No need for this!
+				audioStream.BufferNeeded -= OnBufferRequest;
+			}
+		}
+
+		private void InitAudioStream()
+		{
+			// The number of buffers to queue into the source.
 			const int NUM_BUFFERS = 4;
 
 			// Generate the source.
-			audioSourceIndex = AL.GenSource();
+			audioStream = new DynamicSoundEffectInstance();
+			audioStream.BufferNeeded += OnBufferRequest;
 			UpdateVolume();
-
-			// Generate the alternating buffers.
-			int[] buffers = AL.GenBuffers(NUM_BUFFERS);
 
 			// Fill and queue the buffers.
 			for (int i = 0; i < NUM_BUFFERS; i += 1)
 			{
-				if (!StreamAudio(buffers[i]))
+				if (!StreamAudio())
 				{
 					break;
 				}
 			}
-			AL.SourceQueueBuffers(audioSourceIndex, NUM_BUFFERS, buffers);
-
-			// We now have some audio to start with. Go!
-			audioStarted = true;
-
-			while (State != MediaState.Stopped)
-			{
-				// Emergency use only
-				if (Game.Instance == null)
-				{
-					System.Console.WriteLine("Game exited before Video! Bailing.");
-					AL.SourceStop(audioSourceIndex);
-					AL.DeleteSource(audioSourceIndex);
-					AL.DeleteBuffers(buffers);
-					return;
-				}
-
-				// When a buffer has been processed, refill it.
-				int processed;
-				AL.GetSource(audioSourceIndex, ALGetSourcei.BuffersProcessed, out processed);
-				while (processed-- > 0)
-				{
-					int buffer = AL.SourceUnqueueBuffer(audioSourceIndex);
-					if (!StreamAudio(buffer))
-					{
-						break;
-					}
-					AL.SourceQueueBuffer(audioSourceIndex, buffer);
-				}
-			}
-
-			// Force stop the OpenAL source and destroy it with the buffers.
-			if (AL.GetSourceState(audioSourceIndex) != ALSourceState.Stopped)
-			{
-				AL.SourceStop(audioSourceIndex);
-			}
-			AL.DeleteSource(audioSourceIndex);
-			AL.DeleteBuffers(buffers);
-
-			// Audio is done.
-			audioStarted = false;
-			audioSourceIndex = -1;
 		}
 
 		#endregion

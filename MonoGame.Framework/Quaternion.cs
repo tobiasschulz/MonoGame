@@ -131,10 +131,10 @@ namespace Microsoft.Xna.Framework
 
 		public bool Equals(Quaternion other)
 		{
-			return (	(this.X == other.X) &&
-					(this.Y == other.Y) &&
-					(this.Z == other.Z) &&
-					(this.W == other.W)	);
+			return (	(MathHelper.WithinEpsilon(this.X, other.X)) &&
+					(MathHelper.WithinEpsilon(this.Y, other.Y)) &&
+					(MathHelper.WithinEpsilon(this.Z, other.Z)) &&
+					(MathHelper.WithinEpsilon(this.W, other.W))	);
 		}
 
 		public override int GetHashCode()

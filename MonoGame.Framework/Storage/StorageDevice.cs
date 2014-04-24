@@ -33,34 +33,46 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// This only really matters on Windows.
 				try
 				{
 					return new DriveInfo(storageRoot).AvailableFreeSpace;
 				}
 				catch
 				{
-					return 0; // Hmm...
+					// Storage root was invalid or unavailable.
+					return 0;
 				}
 			}
 		}
 
 		/// <summary>
-		/// Returns true if device is connected, false otherwise.
+		/// Returns true if this StorageDevice path is accessible, false otherwise.
 		/// </summary>
 		public bool IsConnected
 		{
 			get
 			{
-				// This only really matters on Windows.
-				try
+				if (	SDL2_GamePlatform.OSVersion.Equals("Linux") ||
+					SDL2_GamePlatform.OSVersion.Equals("Mac OS X")	)
 				{
-					return new DriveInfo(storageRoot).IsReady;
-				}
-				catch
-				{
+					/* Linux and Mac use locally connected storage in the user's
+					 * home location, which should always be "connected".
+					 */
 					return true;
 				}
+				else if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+				{
+					try
+					{
+						return new DriveInfo(storageRoot).IsReady;
+					}
+					catch
+					{
+						// The storageRoot path is invalid / has been removed.
+						return false;
+					}
+				}
+				throw new Exception("SDL2 platform not handled!");
 			}
 		}
 
@@ -71,14 +83,14 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				// This only really matters on Windows.
 				try
 				{
 					return new DriveInfo(storageRoot).TotalSize;
 				}
 				catch
 				{
-					return 0; // Hmm...
+					// Storage root is invalid or removed.
+					return 0;
 				}
 			}
 		}
@@ -118,14 +130,12 @@ namespace Microsoft.Xna.Framework.Storage
 
 		#region Private Delegates
 
-		// The delegate must have the same signature as the method it will call asynchronously.
 		private delegate StorageDevice ShowSelectorAsynchronous(
 			PlayerIndex? player,
 			int sizeInBytes,
 			int directoryCount
 		);
 
-		// The delegate must have the same signature as the method it will call asynchronously.
 		private delegate StorageContainer OpenContainerAsynchronous(string displayName);
 
 		#endregion
@@ -166,7 +176,7 @@ namespace Microsoft.Xna.Framework.Storage
 			}
 			finally
 			{
-				// Hmm....
+				// TODO:  No resources to clean up?  Remove this finally block?
 			}
 		}
 

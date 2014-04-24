@@ -66,6 +66,22 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
+		#region Internal Constructor
+
+		internal DynamicSoundEffectInstance() : base(null)
+		{
+			/* Internally, we are going to provide a float32 buffer format.
+			 * This is currently being used for the VideoPlayer.
+			 * -flibit
+			 */
+			PendingBufferCount = 0;
+			queuedBuffers = new Queue<int>();
+			buffersToQueue = new Queue<int>();
+			availableBuffers = new Queue<int>();
+		}
+
+		#endregion
+
 		#region Destructor
 
 		~DynamicSoundEffectInstance()
@@ -81,11 +97,25 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			if (!IsDisposed)
 			{
-				Stop();
+				base.Dispose(); // Will call Stop(true);
+
+				// Delete all known buffer objects
+				while (queuedBuffers.Count > 0)
+				{
+					AL.DeleteBuffer(queuedBuffers.Dequeue());
+				}
+				queuedBuffers = null;
 				while (availableBuffers.Count > 0)
 				{
 					AL.DeleteBuffer(availableBuffers.Dequeue());
 				}
+				availableBuffers = null;
+				while (buffersToQueue.Count > 0)
+				{
+					AL.DeleteBuffer(buffersToQueue.Dequeue());
+				}
+				buffersToQueue = null;
+
 				IsDisposed = true;
 			}
 		}
@@ -163,10 +193,10 @@ namespace Microsoft.Xna.Framework.Audio
 				AL.SourceStop(INTERNAL_alSource);
 				AL.DeleteSource(INTERNAL_alSource);
 				INTERNAL_alSource = -1;
-				while (queuedBuffers.Count > 0)
-				{
-					availableBuffers.Enqueue(queuedBuffers.Dequeue());
-				}
+			}
+			while (queuedBuffers.Count > 0)
+			{
+				availableBuffers.Enqueue(queuedBuffers.Dequeue());
 			}
 
 			INTERNAL_alSource = AL.GenSource();
@@ -261,6 +291,47 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 
 			return true;
+		}
+
+		#endregion
+
+		#region Internal SubmitFloatBuffer Method
+
+		internal void SubmitFloatBuffer(float[] buffer, int channels, int sampleRate)
+		{
+			/* For more on why this delicious copypasta is here, see the
+			 * internal constructor.
+			 * -flibit
+			 */
+
+			// Generate a buffer if we don't have any to use.
+			if (availableBuffers.Count == 0)
+			{
+				availableBuffers.Enqueue(AL.GenBuffer());
+			}
+
+			// Push the data to OpenAL.
+			int newBuf = availableBuffers.Dequeue();
+			AL.BufferData(
+				newBuf,
+				(channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
+				buffer,
+				buffer.Length * 2 * channels,
+				sampleRate
+			);
+
+			// If we're already playing, queue immediately.
+			if (State == SoundState.Playing)
+			{
+				AL.SourceQueueBuffer(INTERNAL_alSource, newBuf);
+				queuedBuffers.Enqueue(newBuf);
+			}
+			else
+			{
+				buffersToQueue.Enqueue(newBuf);
+			}
+
+			PendingBufferCount += 1;
 		}
 
 		#endregion

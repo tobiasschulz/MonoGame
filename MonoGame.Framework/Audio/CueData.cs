@@ -585,7 +585,7 @@ namespace Microsoft.Xna.Framework.Audio
 					 * -flibit
 					 */
 					throw new Exception(
-						"EVENT TYPE " + eventType + " NOT IMPLEMENTED!"
+						"EVENT TYPE " + eventType.ToString() + " NOT IMPLEMENTED!"
 					);
 				}
 			}
@@ -806,7 +806,7 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				throw new Exception(
 					"Variation Playlist Type unhandled: " +
-					INTERNAL_variationType
+					INTERNAL_variationType.ToString()
 				);
 			}
 		}

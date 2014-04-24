@@ -65,7 +65,8 @@ namespace Microsoft.Xna.Framework.Input
 		/// <returns>true if <paramref name="left"/> and <paramref name="right"/> are equal; otherwise, false.</returns>
 		public static bool operator ==(GamePadTriggers left, GamePadTriggers right)
 		{
-			return	(left.left == right.left) && (left.right == right.right);
+			return (	(MathHelper.WithinEpsilon(left.left, right.left)) &&
+					(MathHelper.WithinEpsilon(left.right, right.right))	);
 		}
 
 		/// <summary>

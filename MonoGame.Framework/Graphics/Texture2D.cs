@@ -181,25 +181,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				y = 0;
 				w = Math.Max(Width >> level, 1);
 				h = Math.Max(Height >> level, 1);
-
-				// For DXT textures the width and height of each level is a multiple of 4.
-				// OpenGL only: The last two mip levels require the width and height to be
-				// passed as 2x2 and 1x1, but there needs to be enough data passed to occupy
-				// a 4x4 block.
-				// Ref: http://www.mentby.com/Group/mac-opengl/issue-with-dxt-mipmapped-textures.html
-				if (	Format == SurfaceFormat.Dxt1 ||
-					Format == SurfaceFormat.Dxt3 ||
-					Format == SurfaceFormat.Dxt5	)
-				{
-					if (w > 4)
-					{
-						w = (w + 3) & ~3;
-					}
-					if (h > 4)
-					{
-						h = (h + 3) & ~3;
-					}
-				}
 			}
 
 			Threading.ForceToMainThread(() =>
@@ -348,8 +329,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (data.Length < startIndex + elementCount)
 			{
 				throw new ArgumentException(
-					"The data passed has a length of " + data.Length +
-					" but " + elementCount + " pixels have been requested."
+					"The data passed has a length of " + data.Length.ToString() +
+					" but " + elementCount.ToString() + " pixels have been requested."
 				);
 			}
 
@@ -480,19 +461,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				(pngOut[36])
 			) + 41 + 57; // 41 - header, 57 - footer
 			stream.Write(pngOut, 0, size);
-		}
-
-		#endregion
-
-		#region Internal GenerateMipmaps Method
-
-		// TODO: You could extend the XNA API with this...
-		internal void GenerateMipmaps()
-		{
-			Threading.ForceToMainThread(() =>
-			{
-				texture.Generate2DMipmaps();
-			});
 		}
 
 		#endregion

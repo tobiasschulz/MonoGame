@@ -128,7 +128,8 @@ namespace Microsoft.Xna.Framework.Audio
 				(uint) channels,
 				0,
 				0,
-				0
+				false,
+				1
 			);
 		}
 
@@ -159,7 +160,8 @@ namespace Microsoft.Xna.Framework.Audio
 				(uint) channels,
 				(uint) loopStart,
 				(uint) (loopStart + loopLength),
-				0
+				false,
+				1
 			);
 		}
 
@@ -201,7 +203,8 @@ namespace Microsoft.Xna.Framework.Audio
 			uint channels,
 			uint loopStart,
 			uint loopLength,
-			uint compressionAlign
+			bool isADPCM,
+			uint formatParameter
 		) {
 			Name = name;
 			INTERNAL_bufferData(
@@ -210,7 +213,8 @@ namespace Microsoft.Xna.Framework.Audio
 				channels,
 				loopStart,
 				loopStart + loopLength,
-				compressionAlign
+				isADPCM,
+				formatParameter
 			);
 		}
 
@@ -277,6 +281,8 @@ namespace Microsoft.Xna.Framework.Audio
 			byte[] data;
 			uint sampleRate = 0;
 			uint numChannels = 0;
+			bool isADPCM = false;
+			uint formatParameter = 0;
 
 			using (BinaryReader reader = new BinaryReader(s))
 			{
@@ -310,12 +316,21 @@ namespace Microsoft.Xna.Framework.Audio
 				numChannels = reader.ReadUInt16();		// 4
 				sampleRate = reader.ReadUInt32();		// 8
 				reader.ReadUInt32();				// 12, Byte Rate
-				reader.ReadUInt16();				// 14, Block Align
-				reader.ReadUInt16();				// 16, Bits Per Sample
+				ushort blockAlign = reader.ReadUInt16();	// 14, Block Align
+				ushort bitDepth = reader.ReadUInt16();		// 16, Bits Per Sample
 
-				if (audio_format != 1)
+				if (audio_format == 1)
 				{
-					throw new NotSupportedException("Wave compression is not supported.");
+					formatParameter = (uint) (bitDepth / 16); // 1 for 16, 0 for 8
+				}
+				else if (audio_format != 2)
+				{
+					isADPCM = true;
+					formatParameter = (((blockAlign / numChannels) - 6) * 2);
+				}
+				else
+				{
+					throw new NotSupportedException("Wave format is not supported.");
 				}
 
 				// Reads residual bytes
@@ -346,7 +361,8 @@ namespace Microsoft.Xna.Framework.Audio
 				numChannels,
 				0,
 				0,
-				0
+				isADPCM,
+				formatParameter
 			);
 		}
 
@@ -356,7 +372,8 @@ namespace Microsoft.Xna.Framework.Audio
 			uint channels,
 			uint loopStart,
 			uint loopEnd,
-			uint compressionAlign
+			bool isADPCM,
+			uint formatParameter
 		) {
 			// FIXME: MSADPCM Duration
 			Duration = TimeSpan.FromSeconds(data.Length / 2 / channels / ((double) sampleRate));
@@ -365,14 +382,21 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_buffer = AL.GenBuffer();
 
 			ALFormat format;
-			if (compressionAlign > 0)
+			if (isADPCM)
 			{
 				format = (channels == 2) ? ALFormat.StereoMsadpcmSoft : ALFormat.MonoMsadpcmSoft;
-				AL.Buffer(INTERNAL_buffer, ALBufferi.UnpackBlockAlignmentSoft, compressionAlign);
+				AL.Buffer(INTERNAL_buffer, ALBufferi.UnpackBlockAlignmentSoft, formatParameter);
 			}
 			else
 			{
-				format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+				if (formatParameter == 1)
+				{
+					format = (channels == 2) ? ALFormat.Stereo16 : ALFormat.Mono16;
+				}
+				else
+				{
+					format = (channels == 2) ? ALFormat.Stereo8 : ALFormat.Mono8;
+				}
 			}
 
 			// Load it!
