@@ -38,31 +38,20 @@ namespace Microsoft.Xna.Framework.Content
 		protected internal override Song Read(ContentReader input, Song existingInstance)
 		{
 			string path = input.ReadString();
-			if (!String.IsNullOrEmpty(path))
+			path = Path.Combine(input.ContentManager.RootDirectory, path);
+			path = TitleContainer.GetFilename(path);
+
+			/* The path string includes the ".wma" extension. Let's see if this
+			 * file exists in a format we actually support...
+			 */
+			path = Normalize(Path.GetFileNameWithoutExtension(path));
+			if (String.IsNullOrEmpty(path))
 			{
-				const char notSeparator = '\\';
-				char separator = Path.DirectorySeparatorChar;
-				path = path.Replace(notSeparator, separator);
-				// Get a uri for the asset path using the file:// schema and no host
-				Uri src = new Uri(
-					"file:///" +
-					input.AssetName.Replace(notSeparator, separator)
-				);
-				// Add the relative path to the external reference
-				Uri dst = new Uri(src, path);
-				/* The uri now contains the path to the external reference within
-				 * the content manager
-				 * Get the local path and skip the first character
-				 * (the path separator)
-				 */
-				path = dst.LocalPath.Substring(1);
-				// Adds the ContentManager's RootDirectory
-				path = Path.Combine(
-					input.ContentManager.RootDirectoryFullPath,
-					path
-				);
+				throw new ContentLoadException();
 			}
+
 			int durationMs = input.ReadObject<int>();
+
 			return new Song(path, durationMs);
 		}
 

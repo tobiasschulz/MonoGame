@@ -46,17 +46,16 @@ namespace Microsoft.Xna.Framework.Media
 			private set;
 		}
 
-		private float INTERNAL_fps = 0.0f;
 		public float FramesPerSecond
 		{
-			get
-			{
-				return INTERNAL_fps;
-			}
-			internal set
-			{
-				INTERNAL_fps = value;
-			}
+			get;
+			internal set;
+		}
+
+		public VideoSoundtrackType VideoSoundtrackType
+		{
+			get;
+			private set;
 		}
 
 		// FIXME: This is hacked, look up "This is a part of the Duration hack!"
@@ -91,16 +90,11 @@ namespace Microsoft.Xna.Framework.Media
 
 		#endregion
 
-		#region Internal Video Constructor
+		#region Internal Constructors
 
 		internal Video(string fileName)
 		{
-			// Check out the file...
-			FileName = Normalize(fileName);
-			if (FileName == null)
-			{
-				throw new Exception("File " + fileName + " does not exist!");
-			}
+			FileName = fileName;
 
 			// Set everything to NULL. Yes, this actually matters later.
 			theoraDecoder = IntPtr.Zero;
@@ -113,6 +107,36 @@ namespace Microsoft.Xna.Framework.Media
 
 			// FIXME: This is a part of the Duration hack!
 			Duration = TimeSpan.MaxValue;
+		}
+
+		internal Video(
+			string fileName,
+			int durationMS,
+			int width,
+			int height,
+			float framesPerSecond,
+			VideoSoundtrackType soundtrackType
+		) : this(fileName) {
+			/* If you got here, you've still got the XNB file! Well done!
+			 * Except if you're running FNA, you're not using the WMV anymore.
+			 * But surely it's the same video, right...?
+			 * Well, consider this a check more than anything. If this bothers
+			 * you, just remove the XNB file and we'll read the OGV straight up.
+			 * -flibit
+			 */
+			if (width != Width || height != Height)
+			{
+				throw new Exception("XNB/OGV width/height mismatch!");
+			}
+			if (!MathHelper.WithinEpsilon(FramesPerSecond, framesPerSecond))
+			{
+				throw new Exception("XNB/OGV framesPerSecond mismatch!");
+			}
+
+			// FIXME: Oh, hey! I wish we had this info in TheoraPlay!
+			Duration = TimeSpan.FromMilliseconds(durationMS);
+
+			VideoSoundtrackType = soundtrackType;
 		}
 
 		#endregion
@@ -141,36 +165,6 @@ namespace Microsoft.Xna.Framework.Media
 			}
 
 			IsDisposed = true;
-		}
-
-		#endregion
-
-		#region Internal Filename Normalizer
-
-		internal static string Normalize(string FileName)
-		{
-			if (File.Exists(FileName))
-			{
-				return FileName;
-			}
-
-			// Valid video asset names should not already have an extension, 
-			if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
-			{
-				return null;
-			}
-
-			// Concat the file name with valid extensions
-			if (File.Exists(FileName + ".ogv"))
-			{
-				return FileName + ".ogv";
-			}
-			if (File.Exists(FileName + ".ogg"))
-			{
-				return FileName + ".ogg";
-			}
-
-			return null; // File not found with supported extension.
 		}
 
 		#endregion

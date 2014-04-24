@@ -285,6 +285,13 @@ namespace Microsoft.Xna.Framework.Content
 				)
 			);
 			preparedType = preparedType.Replace(
+				", Microsoft.Xna.Framework.Video",
+				string.Format(
+					", {0}",
+					assemblyName
+				)
+			);
+			preparedType = preparedType.Replace(
 				", Microsoft.Xna.Framework",
 				string.Format(
 					", {0}",
