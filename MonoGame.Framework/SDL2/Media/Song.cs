@@ -229,14 +229,6 @@ namespace Microsoft.Xna.Framework.Media
 
 		#region Internal Event Handler Methods
 
-		/// <summary>
-		/// Set the event handler for "Finished Playing". Done this way to prevent multiple bindings.
-		/// </summary>
-		internal void SetEventHandler(FinishedPlayingHandler handler)
-		{
-			// No-op
-		}
-
 		internal void OnFinishedPlaying()
 		{
 			MediaPlayer.OnSongFinishedPlaying(null, null);

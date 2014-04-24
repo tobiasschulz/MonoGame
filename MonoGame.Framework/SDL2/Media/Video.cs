@@ -154,7 +154,7 @@ namespace Microsoft.Xna.Framework.Media
 				return FileName;
 			}
 
-			// Check the file extension
+			// Valid video asset names should not already have an extension, 
 			if (!string.IsNullOrEmpty(Path.GetExtension(FileName)))
 			{
 				return null;
@@ -170,7 +170,7 @@ namespace Microsoft.Xna.Framework.Media
 				return FileName + ".ogg";
 			}
 
-			return null;
+			return null; // File not found with supported extension.
 		}
 
 		#endregion
@@ -187,7 +187,7 @@ namespace Microsoft.Xna.Framework.Media
 			// Initialize the decoder.
 			theoraDecoder = TheoraPlay.THEORAPLAY_startDecodeFile(
 				FileName,
-				150, // Arbitrarily 5 seconds in a 30fps movie.
+				150, // Max frames to buffer.  Arbitrarily set 5 seconds, assuming 30fps.
 #if VIDEOPLAYER_OPENGL
 				TheoraPlay.THEORAPLAY_VideoFormat.THEORAPLAY_VIDFMT_IYUV
 #else

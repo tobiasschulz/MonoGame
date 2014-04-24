@@ -323,7 +323,8 @@ namespace Microsoft.Xna.Framework.Input
 				osConfigFile += Environment.GetEnvironmentVariable("HOME");
 				if (osConfigFile.Length == 0)
 				{
-					osConfigFile += "MonoGameJoystick.cfg"; // Oh well.
+					// Home wasn't found, so just try file in current directory.
+					osConfigFile = "MonoGameJoystick.cfg";
 				}
 				else
 				{
@@ -339,7 +340,8 @@ namespace Microsoft.Xna.Framework.Input
 					osConfigFile += Environment.GetEnvironmentVariable("HOME");
 					if (osConfigFile.Length == 0)
 					{
-						osConfigFile += "MonoGameJoystick.cfg"; // Oh well.
+						// Home wasn't found, so just try file in current directory.
+						osConfigFile = "MonoGameJoystick.cfg";
 					}
 					else
 					{
