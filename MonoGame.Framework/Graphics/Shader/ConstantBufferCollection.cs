@@ -1,6 +1,8 @@
 ﻿using System;
 
-#if SDL2
+#if MONOMAC
+using MonoMac.OpenGL;
+#elif (WINDOWS && !DIRECTX) || LINUX || SDL2
 using OpenTK.Graphics.OpenGL;
 #elif PSM
 using Sce.PlayStation.Core.Graphics;
@@ -57,8 +59,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if DIRECTX
         internal void SetConstantBuffers(GraphicsDevice device)
-#elif OPENGL || PSM || WEB
+#elif WEB
         internal void SetConstantBuffers(GraphicsDevice device, int shaderProgram)
+#elif OPENGL || PSM
+        internal void SetConstantBuffers(GraphicsDevice device, ShaderProgram shaderProgram)
 #endif
         {
             // If there are no constant buffers then skip it.
@@ -73,9 +77,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (buffer != null)
                 {
 #if DIRECTX
-                    buffer.Apply(device, _stage, i);
-#elif OPENGL || PSM
-                    buffer.Apply(device, shaderProgram);
+                    buffer.PlatformApply(device, _stage, i);
+#elif OPENGL || PSM || WEB
+                    buffer.PlatformApply(device, shaderProgram);
 #endif
                 }
 

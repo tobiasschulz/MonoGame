@@ -1,23 +1,17 @@
-﻿using System;
+﻿// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-#if OPENGL
-#if SDL2
-using OpenTK.Graphics.OpenGL;
-#elif GLES
-using OpenTK.Graphics.ES20;
-#endif
-#elif PSM
-using Sce.PlayStation.Core.Graphics;
-#endif
-
 namespace Microsoft.Xna.Framework.Graphics
 {
-    internal class ConstantBuffer : GraphicsResource
+    internal partial class ConstantBuffer : GraphicsResource
     {
         private readonly byte[] _buffer;
 
@@ -35,24 +29,6 @@ namespace Microsoft.Xna.Framework.Graphics
             get { return _dirty; }
         }
 
-#if DIRECTX
-
-        private SharpDX.Direct3D11.Buffer _cbuffer;
-
-#elif OPENGL
-
-        private int _program = -1;
-        private int _location;
-
-        static ConstantBuffer _lastConstantBufferApplied = null;
-
-        /// <summary>
-        /// A hash value which can be used to compare constant buffers.
-        /// </summary>
-        internal int HashKey { get; private set; }
-
-#endif
-
         public ConstantBuffer(ConstantBuffer cloneSource)
         {
             GraphicsDevice = cloneSource.GraphicsDevice;
@@ -64,7 +40,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             // Clone the mutable types.
             _buffer = (byte[])cloneSource._buffer.Clone();
-            Initialize();
+            PlatformInitialize();
         }
 
         public ConstantBuffer(GraphicsDevice device,
@@ -82,46 +58,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
             _name = name;
 
-            Initialize();
-        }
-
-        private void Initialize()
-        {
-#if DIRECTX
-
-            // Allocate the hardware constant buffer.
-            var desc = new SharpDX.Direct3D11.BufferDescription();
-            desc.SizeInBytes = _buffer.Length;
-            desc.Usage = SharpDX.Direct3D11.ResourceUsage.Default;
-            desc.BindFlags = SharpDX.Direct3D11.BindFlags.ConstantBuffer;
-            desc.CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None;
-            lock (GraphicsDevice._d3dContext)
-                _cbuffer = new SharpDX.Direct3D11.Buffer(GraphicsDevice._d3dDevice, desc);
-
-#elif OPENGL 
-
-            var data = new byte[_parameters.Length];
-            for (var i = 0; i < _parameters.Length; i++)
-            {
-                data[i] = (byte)(_parameters[i] | _offsets[i]);
-            }
-
-            HashKey = MonoGame.Utilities.Hash.ComputeHash(data);
-
-#endif
+            PlatformInitialize();
         }
 
         internal void Clear()
         {
-#if OPENGL
-            // Force the uniform location to be looked up again
-            _program = -1;
-#endif
-
-#if DIRECTX
-            SharpDX.Utilities.Dispose(ref _cbuffer);
-            _dirty = true;
-#endif
+            PlatformClear();
         }
 
         private void SetData(int offset, int rows, int columns, object data)
@@ -235,112 +177,5 @@ namespace Microsoft.Xna.Framework.Graphics
 
             _stateKey = EffectParameter.NextStateKey;
         }
-
-#if DIRECTX
-
-        internal void Apply(GraphicsDevice device, ShaderStage stage, int slot)
-        {
-            if (_cbuffer == null)
-                Initialize();
-
-            // NOTE: We make the assumption here that the caller has
-            // locked the d3dContext for us to use.
-            var d3dContext = GraphicsDevice._d3dContext;
-
-            // Update the hardware buffer.
-            if (_dirty)
-            {
-                d3dContext.UpdateSubresource(_buffer, _cbuffer);
-                _dirty = false;
-            }
-            
-            // Set the buffer to the right stage.
-            if (stage == ShaderStage.Vertex)
-                d3dContext.VertexShader.SetConstantBuffer(slot, _cbuffer);
-            else
-                d3dContext.PixelShader.SetConstantBuffer(slot, _cbuffer);
-        }
-
-#elif OPENGL || PSM
-
-#if OPENGL
-        private struct UniformLocationKey {
-            public readonly int Program;
-            public readonly string Name;
-
-            public UniformLocationKey (int program, string name) {
-                Program = program;
-                Name = name;
-            }
-        }
-
-        private static readonly Dictionary<UniformLocationKey, int> UniformLocationCache = new Dictionary<UniformLocationKey, int>();
-
-        internal static void FlushUniformLocationCache () {
-            UniformLocationCache.Clear();
-        }
-
-        internal static int GetUniformLocationCached (int program, string name) {
-            int result;
-
-            var key = new UniformLocationKey(program, name);
-            if (!UniformLocationCache.TryGetValue(key, out result)) {
-                result = UniformLocationCache[key] = GL.GetUniformLocation(program, name);
-            }
-
-            return result;
-        }
-#endif
-
-        public unsafe void Apply(GraphicsDevice device, int program)
-        {
-#if OPENGL
-            // NOTE: We assume here the program has 
-            // already been set on the device.
-
-            // If the program changed then lookup the
-            // uniform again and apply the state.
-            if (_program != program)
-            {
-                var location = GetUniformLocationCached(program, _name);
-                if (location == -1)
-                    return;
-
-                _program = program;
-                _location = location;
-                _dirty = true;
-            }
-
-            // If the shader program is the same, the effect may still be different and have different values in the buffer
-            if (!Object.ReferenceEquals(this, _lastConstantBufferApplied))
-                _dirty = true;
-
-            // If the buffer content hasn't changed then we're
-            // done... use the previously set uniform state.
-            if (!_dirty)
-                return;
-
-            fixed (byte* bytePtr = _buffer)
-            {
-                // TODO: We need to know the type of buffer float/int/bool
-                // and cast this correctly... else it doesn't work as i guess
-                // GL is checking the type of the uniform.
-
-                GL.Uniform4(_location, _buffer.Length / 16, (float*)bytePtr);
-            }
-
-            // Clear the dirty flag.
-            _dirty = false;
-
-            _lastConstantBufferApplied = this;
-#endif
-            
-#if PSM
-#warning Unimplemented
-#endif
-        }
-
-#endif
-
     }
 }

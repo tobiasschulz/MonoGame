@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 
-#if SDL2
+#if MONOMAC
+using MonoMac.OpenGL;
+#elif WINDOWS || LINUX || SDL2
 using OpenTK.Graphics.OpenGL;
 #elif PSM
 using Sce.PlayStation.Core.Graphics;
@@ -21,10 +23,26 @@ using ProgramParameter = OpenTK.Graphics.ES20.All;
 namespace Microsoft.Xna.Framework.Graphics
 {
 
-    internal struct ShaderProgramInfo
+    internal class ShaderProgram
     {
-        public int program;
-        public int posFixupLoc;
+        public readonly int Program;
+
+        private readonly Dictionary<string, int> _uniformLocations = new Dictionary<string, int>();
+
+        public ShaderProgram(int program)
+        {
+            Program = program;
+        }
+
+        public int GetUniformLocation(string name)
+        {
+            if (_uniformLocations.ContainsKey(name))
+                return _uniformLocations[name];
+
+            var location = GL.GetUniformLocation(Program, name);
+            _uniformLocations[name] = location;
+            return location;
+        }
     }
 
     /// <summary>
@@ -34,7 +52,7 @@ namespace Microsoft.Xna.Framework.Graphics
     /// </summary>
     internal class ShaderProgramCache : IDisposable
     {
-        private readonly Dictionary<int, ShaderProgramInfo> _programCache = new Dictionary<int, ShaderProgramInfo>();
+        private readonly Dictionary<int, ShaderProgram> _programCache = new Dictionary<int, ShaderProgram>();
         bool disposed;
 
         ~ShaderProgramCache()
@@ -49,15 +67,19 @@ namespace Microsoft.Xna.Framework.Graphics
         {
             foreach (var pair in _programCache)
             {
-                if (GL.IsProgram(pair.Value.program))
+                if (GL.IsProgram(pair.Value.Program))
                 {
-                    GL.DeleteProgram(pair.Value.program);
+#if MONOMAC
+                    GL.DeleteProgram(pair.Value.Program, null);
+#else
+                    GL.DeleteProgram(pair.Value.Program);
+#endif
                 }
             }
             _programCache.Clear();
         }
 
-        public ShaderProgramInfo GetProgramInfo(Shader vertexShader, Shader pixelShader)
+        public ShaderProgram GetProgram(Shader vertexShader, Shader pixelShader)
         {
             // TODO: We should be hashing in the mix of constant 
             // buffers here as well.  This would allow us to optimize
@@ -67,7 +89,7 @@ namespace Microsoft.Xna.Framework.Graphics
             if (!_programCache.ContainsKey(key))
             {
                 // the key does not exist so we need to link the programs
-                Link(vertexShader, pixelShader);    
+                Link(vertexShader, pixelShader);
             }
 
             return _programCache[key];
@@ -109,17 +131,17 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
                 GL.DetachShader(program, vertexShader.GetShaderHandle());
                 GL.DetachShader(program, pixelShader.GetShaderHandle());
+#if MONOMAC
+                GL.DeleteProgram(1, ref program);
+#else
                 GL.DeleteProgram(program);
+#endif
                 throw new InvalidOperationException("Unable to link effect program");
             }
 
-            ShaderProgramInfo info;
-            info.program = program;
-            info.posFixupLoc = GL.GetUniformLocation(program, "posFixup");
+            ShaderProgram shaderProgram = new ShaderProgram(program);
 
-            _programCache.Add(vertexShader.HashKey | pixelShader.HashKey, info);
-
-            ConstantBuffer.FlushUniformLocationCache();
+            _programCache.Add(vertexShader.HashKey | pixelShader.HashKey, shaderProgram);
         }
 
 
