@@ -229,7 +229,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		private bool vertexShaderDirty;
 		private bool pixelShaderDirty;
 
-		private int shaderProgram;
+		private ShaderProgram shaderProgram;
 		private readonly ShaderProgramCache programCache = new ShaderProgramCache();
 
 		private readonly ConstantBufferCollection vertexConstantBuffers = new ConstantBufferCollection(ShaderStage.Vertex, 16);
@@ -399,7 +399,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			// Free all the cached shader programs.
 			programCache.Clear();
-			shaderProgram = -1;
+			shaderProgram = null;
 		}
 
 		~GraphicsDevice()
@@ -1208,20 +1208,21 @@ namespace Microsoft.Xna.Framework.Graphics
 		private void ActivateShaderProgram()
 		{
 			// Lookup the shader program.
-			ShaderProgramInfo info = programCache.GetProgramInfo(VertexShader, PixelShader);
-			if (info.program == -1)
+			ShaderProgram program = programCache.GetProgram(VertexShader, PixelShader);
+			if (program.Program == -1)
 			{
 				return;
 			}
 
 			// Set the new program if it has changed.
-			if (shaderProgram != info.program)
+			if (shaderProgram != program)
 			{
-				GL.UseProgram(info.program);
-				shaderProgram = info.program;
+				GL.UseProgram(program.Program);
+				shaderProgram = program;
 			}
 
-			if (info.posFixupLoc == -1)
+			int posFixupLoc = shaderProgram.GetUniformLocation("posFixup");
+			if (posFixupLoc == -1)
 			{
 				return;
 			}
@@ -1264,7 +1265,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				posFixup[3] *= -1.0f;
 			}
 
-			GL.Uniform4(info.posFixupLoc, 1, posFixup);
+			GL.Uniform4(posFixupLoc, 1, posFixup);
 		}
 
 		#endregion

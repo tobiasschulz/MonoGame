@@ -1,32 +1,16 @@
+<<<<<<< HEAD
 using System;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+=======
+// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
+>>>>>>> monogame-sdl2
 
-#if OPENGL
-#if SDL2
-using OpenTK.Graphics.OpenGL;
-#elif GLES
-using System.Text;
-using OpenTK.Graphics.ES20;
-using ShaderType = OpenTK.Graphics.ES20.All;
-using ShaderParameter = OpenTK.Graphics.ES20.All;
-using TextureUnit = OpenTK.Graphics.ES20.All;
-using TextureTarget = OpenTK.Graphics.ES20.All;
-#endif
-#elif DIRECTX
-using SharpDX;
-using SharpDX.Direct3D;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-#elif PSM
-enum ShaderType //FIXME: Major Hack
-{
-	VertexShader,
-	FragmentShader
-}
-#endif
+using System.IO;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -53,57 +37,8 @@ namespace Microsoft.Xna.Framework.Graphics
         public int parameter;
     }
 
-    internal class Shader : GraphicsResource
+    internal partial class Shader : GraphicsResource
 	{
-#if OPENGL
-
-        // The shader handle.
-	    private int _shaderHandle = -1;
-
-        // We keep this around for recompiling on context lost and debugging.
-        private readonly string _glslCode;
-
-        private struct Attribute
-        {
-            public VertexElementUsage usage;
-            public int index;
-            public string name;
-            public short format;
-            public int location;
-        }
-
-        private Attribute[] _attributes;
-
-#elif DIRECTX
-
-        private VertexShader _vertexShader;
-        private PixelShader _pixelShader;
-        private byte[] _shaderBytecode;
-
-        public byte[] Bytecode { get; private set; }
-
-        internal VertexShader VertexShader
-        {
-            get
-            {
-                if (_vertexShader == null)
-                    CreateVertexShader();
-                return _vertexShader;
-            }
-        }
-
-        internal PixelShader PixelShader
-        {
-            get
-            {
-                if (_pixelShader == null)
-                    CreatePixelShader();
-                return _pixelShader;
-            }
-        }
-
-#endif
-
         /// <summary>
         /// A hash value which can be used to compare shaders.
         /// </summary>
@@ -390,6 +325,7 @@ namespace Microsoft.Xna.Framework.Graphics
             for (var c = 0; c < cbufferCount; c++)
                 CBuffers[c] = reader.ReadByte();
 
+<<<<<<< HEAD
             readableCode += "#monogame BeginShader("+EffectUtilities.Params(
                 "stage", (isVertexShader ? "vertex" : "pixel"),
                 "constantBuffers", EffectUtilities.Join(CBuffers)
@@ -539,74 +475,25 @@ namespace Microsoft.Xna.Framework.Graphics
                     GL.Uniform1(loc, sampler.textureSlot);
                 }
             }
+=======
+            PlatformConstruct(reader, isVertexShader, shaderBytecode);
+>>>>>>> monogame-sdl2
         }
-
-#endif // OPENGL
 
         internal protected override void GraphicsDeviceResetting()
         {
-#if OPENGL
-            if (_shaderHandle != -1)
-            {
-                if (GL.IsShader(_shaderHandle))
-                {
-                    GL.DeleteShader(_shaderHandle);
-                }
-                _shaderHandle = -1;
-            }
-#endif
-
-#if DIRECTX
-
-            SharpDX.Utilities.Dispose(ref _vertexShader);
-            SharpDX.Utilities.Dispose(ref _pixelShader);
-
-#endif
+            PlatformGraphicsDeviceResetting();
         }
 
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)
             {
-#if OPENGL
-                GraphicsDevice.AddDisposeAction(() =>
-                    {
-                        if (_shaderHandle != -1)
-                        {
-                            if (GL.IsShader(_shaderHandle))
-                            {
-                                GL.DeleteShader(_shaderHandle);
-                            }
-                            _shaderHandle = -1;
-                        }
-                    });
-#endif
-
-#if DIRECTX
-
-                GraphicsDeviceResetting();
-
-#endif
+                PlatformDispose();
             }
 
             base.Dispose(disposing);
         }
-
-#if DIRECTX
-
-        private void CreatePixelShader()
-        {
-            System.Diagnostics.Debug.Assert(Stage == ShaderStage.Pixel);
-            _pixelShader = new PixelShader(GraphicsDevice._d3dDevice, _shaderBytecode);
-        }
-
-        private void CreateVertexShader()
-        {
-            System.Diagnostics.Debug.Assert(Stage == ShaderStage.Vertex);
-            _vertexShader = new VertexShader(GraphicsDevice._d3dDevice, _shaderBytecode, null);
-        }
-
-#endif
 	}
 }
 

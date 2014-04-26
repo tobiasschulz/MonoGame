@@ -1,11 +1,9 @@
-﻿using System;
+﻿// MonoGame - Copyright (C) The MonoGame Team
+// This file is subject to the terms and conditions defined in
+// file 'LICENSE.txt', which is part of this source code package.
 
-#if SDL2
-using OpenTK.Graphics.OpenGL;
-#elif PSM
+#if PSM
 using Sce.PlayStation.Core.Graphics;
-#elif GLES
-using OpenTK.Graphics.ES20;
 #endif
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -57,8 +55,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if DIRECTX
         internal void SetConstantBuffers(GraphicsDevice device)
-#elif OPENGL || PSM || WEB
+#elif WEB
         internal void SetConstantBuffers(GraphicsDevice device, int shaderProgram)
+#elif OPENGL || PSM
+        internal void SetConstantBuffers(GraphicsDevice device, ShaderProgram shaderProgram)
 #endif
         {
             // If there are no constant buffers then skip it.
@@ -73,9 +73,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 if (buffer != null)
                 {
 #if DIRECTX
-                    buffer.Apply(device, _stage, i);
-#elif OPENGL || PSM
-                    buffer.Apply(device, shaderProgram);
+                    buffer.PlatformApply(device, _stage, i);
+#elif OPENGL || PSM || WEB
+                    buffer.PlatformApply(device, shaderProgram);
 #endif
                 }
 
