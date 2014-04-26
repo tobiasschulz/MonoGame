@@ -1,16 +1,10 @@
-<<<<<<< HEAD
-using System;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-=======
 // MonoGame - Copyright (C) The MonoGame Team
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
->>>>>>> monogame-sdl2
 
 using System.IO;
+using System.Collections.Generic;
+using System;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
@@ -325,159 +319,7 @@ namespace Microsoft.Xna.Framework.Graphics
             for (var c = 0; c < cbufferCount; c++)
                 CBuffers[c] = reader.ReadByte();
 
-<<<<<<< HEAD
-            readableCode += "#monogame BeginShader("+EffectUtilities.Params(
-                "stage", (isVertexShader ? "vertex" : "pixel"),
-                "constantBuffers", EffectUtilities.Join(CBuffers)
-            )+")\n";
-
-            for (var s = 0; s < samplerCount; s++)
-            {
-                readableCode += "#monogame Sampler("+EffectUtilities.Params(
-                    "name", Samplers[s].name,
-                    "type", Samplers[s].type,
-                    "textureSlot", Samplers[s].textureSlot,
-                    "samplerSlot", Samplers[s].samplerSlot,
-                    "parameter", Samplers[s].parameter
-                    )+")\n";
-            }
-
-#if DIRECTX
-
-            _shaderBytecode = shaderBytecode;
-
-            // We need the bytecode later for allocating the
-            // input layout from the vertex declaration.
-            Bytecode = shaderBytecode;
-                
-            HashKey = MonoGame.Utilities.Hash.ComputeHash(Bytecode);
-
-            if (isVertexShader)
-                CreateVertexShader();
-            else
-                CreatePixelShader();
-
-#endif // DIRECTX
-
-#if OPENGL
-            _glslCode = System.Text.Encoding.ASCII.GetString(shaderBytecode);
-
-            HashKey = MonoGame.Utilities.Hash.ComputeHash(shaderBytecode);
-
-            var attributeCount = (int)reader.ReadByte();
-            _attributes = new Attribute[attributeCount];
-            for (var a = 0; a < attributeCount; a++)
-            {
-                _attributes[a].name = reader.ReadString();
-                _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
-                _attributes[a].index = reader.ReadByte();
-                _attributes[a].format = reader.ReadInt16();
-
-                readableCode += "#monogame Attribute("+EffectUtilities.Params(
-                    "name", _attributes[a].name,
-                    "usage", _attributes[a].usage,
-                    "index", _attributes[a].index
-                    // "format", _attributes[a].format // seems to be always 0
-                    )+")\n";
-            }
-
-            string readableGlslCode = _glslCode;
-            // remove posFixup
-            readableGlslCode = string.Join("\n", from line in readableGlslCode.Split(new string []{"\n"}, StringSplitOptions.None) where !line.Contains("posFixup") select line);
-            
-            readableCode += "\n";
-            readableCode += readableGlslCode;
-            readableCode += "\n";
-            readableCode += "#monogame EndShader()\n";
-
-#endif // OPENGL
-        }
-
-#if OPENGL
-        internal int GetShaderHandle()
-        {
-            // If the shader has already been created then return it.
-            if (_shaderHandle != -1)
-                return _shaderHandle;
-            
-            //
-            _shaderHandle = GL.CreateShader(Stage == ShaderStage.Vertex ? ShaderType.VertexShader : ShaderType.FragmentShader);
-#if GLES
-			GL.ShaderSource(_shaderHandle, 1, new string[] { _glslCode }, (int[])null);
-#else
-            GL.ShaderSource(_shaderHandle, _glslCode);
-#endif
-            GL.CompileShader(_shaderHandle);
-
-            var compiled = 0;
-#if GLES
-			GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, ref compiled);
-#else
-            GL.GetShader(_shaderHandle, ShaderParameter.CompileStatus, out compiled);
-#endif
-            if (compiled == (int)All.False)
-            {
-#if GLES
-                string log = "";
-                int length = 0;
-				GL.GetShader(_shaderHandle, ShaderParameter.InfoLogLength, ref length);
-                GraphicsExtensions.CheckGLError();
-                if (length > 0)
-                {
-                    var logBuilder = new StringBuilder(length);
-					GL.GetShaderInfoLog(_shaderHandle, length, ref length, logBuilder);
-                    GraphicsExtensions.CheckGLError();
-                    log = logBuilder.ToString();
-                }
-#else
-                var log = GL.GetShaderInfoLog(_shaderHandle);
-#endif
-                Console.WriteLine(log);
-
-                if (GL.IsShader(_shaderHandle))
-                {
-                    GL.DeleteShader(_shaderHandle);
-                }
-                _shaderHandle = -1;
-
-                throw new InvalidOperationException("Shader Compilation Failed");
-            }
-
-            return _shaderHandle;
-        }
-
-        internal void GetVertexAttributeLocations(int program)
-        {
-            for (int i = 0; i < _attributes.Length; ++i)
-            {
-                _attributes[i].location = GL.GetAttribLocation(program, _attributes[i].name);
-            }
-        }
-
-        internal int GetAttribLocation(VertexElementUsage usage, int index)
-        {
-            for (int i = 0; i < _attributes.Length; ++i)
-            {
-                if ((_attributes[i].usage == usage) && (_attributes[i].index == index))
-                    return _attributes[i].location;
-            }
-            return -1;
-        }
-
-        internal void ApplySamplerTextureUnits(int program)
-        {
-            // Assign the texture unit index to the sampler uniforms.
-            foreach (var sampler in Samplers)
-            {
-                var loc = GL.GetUniformLocation(program, sampler.name);
-                if (loc != -1)
-                {
-                    GL.Uniform1(loc, sampler.textureSlot);
-                }
-            }
-=======
-            PlatformConstruct(reader, isVertexShader, shaderBytecode);
->>>>>>> monogame-sdl2
+            PlatformConstruct(reader, isVertexShader, shaderBytecode, ref readableCode);
         }
 
         internal protected override void GraphicsDeviceResetting()

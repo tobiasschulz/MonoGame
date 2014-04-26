@@ -53,39 +53,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
             _name = name;
 
-<<<<<<< HEAD
-            Initialize();
-        }
-
-        private void Initialize()
-        {
-#if DIRECTX
-
-            // Allocate the hardware constant buffer.
-            var desc = new SharpDX.Direct3D11.BufferDescription();
-            desc.SizeInBytes = _buffer.Length;
-            desc.Usage = SharpDX.Direct3D11.ResourceUsage.Default;
-            desc.BindFlags = SharpDX.Direct3D11.BindFlags.ConstantBuffer;
-            desc.CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None;
-            lock (GraphicsDevice._d3dContext)
-                _cbuffer = new SharpDX.Direct3D11.Buffer(GraphicsDevice._d3dDevice, desc);
-
-#elif OPENGL 
-            Console.WriteLine("_parameters="+EffectUtilities.Join(_parameters));
-            Console.WriteLine("_offsets="+EffectUtilities.Join(_offsets));
-
-            var data = new byte[_parameters.Length];
-            for (var i = 0; i < _parameters.Length; i++)
-            {
-                data[i] = (byte)(_parameters[i] | _offsets[i]);
-            }
-
-            HashKey = MonoGame.Utilities.Hash.ComputeHash(data);
-
-#endif
-=======
             PlatformInitialize();
->>>>>>> monogame-sdl2
         }
 
         internal void Clear()

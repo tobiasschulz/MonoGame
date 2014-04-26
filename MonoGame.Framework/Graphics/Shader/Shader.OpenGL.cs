@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 
 #if MONOMAC
 using MonoMac.OpenGL;
@@ -39,8 +40,24 @@ namespace Microsoft.Xna.Framework.Graphics
 
         private Attribute[] _attributes;
 
-        private void PlatformConstruct(BinaryReader reader, bool isVertexShader, byte[] shaderBytecode)
+        private void PlatformConstruct(BinaryReader reader, bool isVertexShader, byte[] shaderBytecode, ref string readableCode)
         {
+            readableCode += "#monogame BeginShader("+EffectUtilities.Params(
+                "stage", (isVertexShader ? "vertex" : "pixel"),
+                "constantBuffers", EffectUtilities.Join(CBuffers)
+                )+")\n";
+
+            for (var s = 0; s < Samplers.Length; s++)
+            {
+                readableCode += "#monogame Sampler("+EffectUtilities.Params(
+                    "name", Samplers[s].name,
+                    "type", Samplers[s].type,
+                    "textureSlot", Samplers[s].textureSlot,
+                    "samplerSlot", Samplers[s].samplerSlot,
+                    "parameter", Samplers[s].parameter
+                    )+")\n";
+            }
+
             _glslCode = System.Text.Encoding.ASCII.GetString(shaderBytecode);
 
             HashKey = MonoGame.Utilities.Hash.ComputeHash(shaderBytecode);
@@ -53,7 +70,23 @@ namespace Microsoft.Xna.Framework.Graphics
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
                 _attributes[a].index = reader.ReadByte();
                 _attributes[a].format = reader.ReadInt16();
+
+                readableCode += "#monogame Attribute("+EffectUtilities.Params(
+                    "name", _attributes[a].name,
+                    "usage", _attributes[a].usage,
+                    "index", _attributes[a].index
+                    // "format", _attributes[a].format // seems to be always 0
+                    )+")\n";
             }
+
+            string readableGlslCode = _glslCode;
+            // remove posFixup
+            readableGlslCode = string.Join("\n", from line in readableGlslCode.Split(new string []{"\n"}, StringSplitOptions.None) where !line.Contains("posFixup") select line);
+
+            readableCode += "\n";
+            readableCode += readableGlslCode;
+            readableCode += "\n";
+            readableCode += "#monogame EndShader()\n";
         }
 
         internal int GetShaderHandle()
