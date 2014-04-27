@@ -102,7 +102,6 @@ namespace Microsoft.Xna.Framework
 
 		protected GameWindow()
 		{
-			// TODO: Fix the AndroidGameWindow!
 			TouchPanelState = new TouchPanelState(this);
 		}
 
