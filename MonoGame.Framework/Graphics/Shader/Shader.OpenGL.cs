@@ -157,7 +157,6 @@ namespace Microsoft.Xna.Framework.Graphics
                 {
                     if (_shaderHandle != -1)
                     {
-                        GL.DeleteShader(_shaderHandle);
                         if (GL.IsShader(_shaderHandle))
                         {
                             GL.DeleteShader(_shaderHandle);
