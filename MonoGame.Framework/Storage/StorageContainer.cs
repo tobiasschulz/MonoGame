@@ -95,20 +95,20 @@ namespace Microsoft.Xna.Framework.Storage
 			DisplayName = name;
 
 			string saved;
-			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+			if (Game.Instance.Platform.OSVersion.Equals("Windows"))
 			{
 				// The root on Windows is the "My Documents" folder
 				saved = Path.Combine(StorageDevice.storageRoot, "SavedGames");
 			}
-			else if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") ||
-					SDL2_GamePlatform.OSVersion.Equals("Linux") )
+			else if (	Game.Instance.Platform.OSVersion.Equals("Mac OS X") ||
+					Game.Instance.Platform.OSVersion.Equals("Linux")	)
 			{
 				// Unix-like systems are expected to have a dedicated userdata folder.
 				saved = StorageDevice.storageRoot;
 			}
 			else
 			{
-				throw new Exception("StorageContainer: SDL2 platform not handled!");
+				throw new Exception("StorageContainer: Platform.OSVersion not handled!");
 			}
 			storagePath = Path.Combine(
 				saved,

@@ -517,7 +517,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			 * This is incredibly stupid, but it works!
 			 * -flibit
 			 */
-			if (SupportsHardwareInstancing && SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			if (SupportsHardwareInstancing) // TODO: Let's just load our own entry points.
 			{
 				SupportsHardwareInstancing = SDL2.SDL.SDL_GL_GetProcAddress("glVertexAttribDivisorARB") != IntPtr.Zero;
 			}

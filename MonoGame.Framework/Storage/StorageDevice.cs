@@ -52,15 +52,15 @@ namespace Microsoft.Xna.Framework.Storage
 		{
 			get
 			{
-				if (	SDL2_GamePlatform.OSVersion.Equals("Linux") ||
-					SDL2_GamePlatform.OSVersion.Equals("Mac OS X")	)
+				if (	Game.Instance.Platform.OSVersion.Equals("Linux") ||
+					Game.Instance.Platform.OSVersion.Equals("Mac OS X")	)
 				{
 					/* Linux and Mac use locally connected storage in the user's
 					 * home location, which should always be "connected".
 					 */
 					return true;
 				}
-				else if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+				else if (Game.Instance.Platform.OSVersion.Equals("Windows"))
 				{
 					try
 					{
@@ -72,7 +72,7 @@ namespace Microsoft.Xna.Framework.Storage
 						return false;
 					}
 				}
-				throw new Exception("SDL2 platform not handled!");
+				throw new Exception("StorageDevice: Platform.OSVersion not handled!");
 			}
 		}
 
@@ -367,11 +367,11 @@ namespace Microsoft.Xna.Framework.Storage
 
 		private static string GetStorageRoot()
 		{
-			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+			if (Game.Instance.Platform.OSVersion.Equals("Windows"))
 			{
 				return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			}
-			if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
 			{
 				string osConfigDir = Environment.GetEnvironmentVariable("HOME");
 				if (String.IsNullOrEmpty(osConfigDir))
@@ -381,7 +381,7 @@ namespace Microsoft.Xna.Framework.Storage
 				osConfigDir += "/Library/Application Support";
 				return osConfigDir;
 			}
-			if (SDL2_GamePlatform.OSVersion.Equals("Linux"))
+			if (Game.Instance.Platform.OSVersion.Equals("Linux"))
 			{
 				// Assuming a non-OSX Unix platform will follow the XDG. Which it should.
 				string osConfigDir = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
@@ -396,7 +396,7 @@ namespace Microsoft.Xna.Framework.Storage
 				}
 				return osConfigDir;
 			}
-			throw new Exception("StorageDevice: SDL2 platform not handled!");
+			throw new Exception("StorageDevice: Platform.OSVersion not handled!");
 		}
 
 		#endregion
