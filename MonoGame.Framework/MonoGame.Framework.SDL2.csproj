@@ -403,6 +403,7 @@
     <Compile Include="GamerServices\GameUpdateRequiredException.cs" />
     <Compile Include="FrameworkDispatcher.cs" />
     <Compile Include="Audio\DSPEffect.cs" />
+    <Compile Include="Utilities\AssemblyHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.SDL2.csproj">
