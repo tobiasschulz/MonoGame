@@ -152,7 +152,6 @@ namespace Microsoft.Xna.Framework.Audio
 			 */
 			lock (activeCues)
 			{
-				// Unmanaged Cues are only removed when the user disposes them.
 				for (int i = 0; i < activeCues.Count; i += 1)
 				{
 					if (!activeCues[i].INTERNAL_update())
