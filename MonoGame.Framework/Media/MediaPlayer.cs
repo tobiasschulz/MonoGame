@@ -184,7 +184,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		/// <summary>
 		/// The Play method clears the current playback queue and queues the specified song
-		/// for playback.  Playback starts immediately at the beginning of the song.
+		/// for playback. Playback starts immediately at the beginning of the song.
 		/// </summary>
 		public static void Play(Song song)
 		{
