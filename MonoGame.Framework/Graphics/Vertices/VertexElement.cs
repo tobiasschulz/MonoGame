@@ -15,60 +15,27 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public int Offset
 		{
-			get
-			{
-				return offset;
-			}
-			set
-			{
-				offset = value;
-			}
+			get;
+			set;
 		}
 
 		public VertexElementFormat VertexElementFormat
 		{
-			get
-			{
-				return elementFormat;
-			}
-			set
-			{
-				elementFormat = value;
-			}
+			get;
+			set;
 		}
 
 		public VertexElementUsage VertexElementUsage
 		{
-			get
-			{
-				return elementUsage;
-			}
-			set
-			{
-				elementUsage = value;
-			}
+			get;
+			set;
 		}
 
 		public int UsageIndex
 		{
-			get
-			{
-				return usageIndex;
-			}
-			set
-			{
-				usageIndex = value;
-			}
+			get;
+			set;
 		}
-
-		#endregion
-
-		#region Internal Varialbes
-
-		private int offset;
-		private VertexElementFormat elementFormat;
-		private VertexElementUsage elementUsage;
-		private int usageIndex;
 
 		#endregion
 
@@ -79,11 +46,11 @@ namespace Microsoft.Xna.Framework.Graphics
 			VertexElementFormat elementFormat,
 			VertexElementUsage elementUsage,
 			int usageIndex
-		) {
-			this.offset = offset;
-			this.usageIndex = usageIndex;
-			this.elementFormat = elementFormat;
-			this.elementUsage = elementUsage;
+		) : this() {
+			Offset = offset;
+			UsageIndex = usageIndex;
+			VertexElementFormat = elementFormat;
+			VertexElementUsage = elementUsage;
 		}
 
 		#endregion

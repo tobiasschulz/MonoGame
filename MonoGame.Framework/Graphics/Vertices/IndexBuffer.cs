@@ -276,8 +276,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Pointer to the start of data to read in the index buffer
 			ptr = new IntPtr(ptr.ToInt64() + offsetInBytes);
 
-			// If data is already a byte[] we can skip the temporary buffer
-			// Copy from the index buffer to the destination array
+			/* If data is already a byte[] we can skip the temporary buffer.
+			 * Copy from the index buffer to the destination array.
+			 */
 			if (typeof(T) == typeof(byte))
 			{
 				byte[] buffer = data as byte[];
@@ -286,12 +287,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			else
 			{
 				int elementSizeInBytes = Marshal.SizeOf(typeof(T));
-
-				// Temporary buffer to store the copied section of data
 				byte[] buffer = new byte[elementCount * elementSizeInBytes];
-				// Copy from the index buffer to the temporary buffer
 				Marshal.Copy(ptr, buffer, 0, buffer.Length);
-				// Copy from the temporary buffer to the destination array
 				Buffer.BlockCopy(buffer, 0, data, startIndex * elementSizeInBytes, elementCount * elementSizeInBytes);
 			}
 
