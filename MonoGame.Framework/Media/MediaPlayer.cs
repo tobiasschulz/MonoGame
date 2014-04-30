@@ -272,6 +272,18 @@ namespace Microsoft.Xna.Framework.Media
 
 		private static void NextSong(int direction)
 		{
+			if (IsRepeating && Queue.ActiveSongIndex >= Queue.Count - 1)
+			{
+				Queue.ActiveSongIndex = 0;
+
+				/* Setting direction to 0 will force the first song
+				 * in the queue to be played.
+				 * if we're on "shuffle", then it'll pick a random one
+				 * anyway, regardless of the "direction".
+				 */
+				direction = 0;
+			}
+
 			Song nextSong = Queue.GetNextSong(direction, IsShuffled);
 
 			if (nextSong == null)
