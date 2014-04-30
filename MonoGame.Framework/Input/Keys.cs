@@ -103,43 +103,43 @@ namespace Microsoft.Xna.Framework.Input
 		/// </summary>
 		Help = 47,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit zero key.
 		/// </summary>
 		D0 = 48,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit one key.
 		/// </summary>
 		D1 = 49,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit two key.
 		/// </summary>
 		D2 = 50,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit three key.
 		/// </summary>
 		D3 = 51,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit four key.
 		/// </summary>
 		D4 = 52,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit five key.
 		/// </summary>
 		D5 = 53,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit six key.
 		/// </summary>
 		D6 = 54,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit seven key.
 		/// </summary>
 		D7 = 55,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit eight key.
 		/// </summary>
 		D8 = 56,
 		/// <summary>
-		/// Used for miscellaneous characters; it can vary by keyboard.
+		/// Digit nine key.
 		/// </summary>
 		D9 = 57,
 		/// <summary>
