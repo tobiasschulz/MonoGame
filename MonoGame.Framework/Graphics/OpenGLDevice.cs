@@ -997,6 +997,37 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
+		#region glDeleteTexture Method
+
+		public void DeleteTexture(OpenGLTexture texture)
+		{
+			for (int i = 0; i < currentAttachments.Length; i += 1)
+			{
+				if (texture.Handle == currentAttachments[i])
+				{
+					// Force an attachment update, this no longer exists!
+					currentAttachments[i] = -1;
+				}
+			}
+			texture.Dispose();
+		}
+
+		#endregion
+
+		#region glDeleteRenderbuffer Method
+
+		public void DeleteRenderbuffer(uint renderbuffer)
+		{
+			if (renderbuffer == currentRenderbuffer)
+			{
+				// Force a renderbuffer update, this no longer exists!
+				currentRenderbuffer = uint.MaxValue;
+			}
+			Framebuffer.DeleteRenderbuffer(renderbuffer);
+		}
+
+		#endregion
+
 		#region glEnable/glDisable Method
 
 		private void ToggleGLState(EnableCap feature, bool enable)
