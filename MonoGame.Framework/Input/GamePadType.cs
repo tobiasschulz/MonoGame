@@ -11,11 +11,11 @@ namespace Microsoft.Xna.Framework.Input
 {
 	public enum GamePadType
 	{
+		Unknown = 0,
 		ArcadeStick = 1,
 		DancePad = 2,
 		FlightStick = 3,
 		Guitar = 4,
-		Unknown = 0,
 		Wheel = 5,
 		AlternateGuitar = 6,
 		BigButtonPad = 7,

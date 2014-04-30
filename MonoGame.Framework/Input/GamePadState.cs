@@ -10,9 +10,8 @@
 namespace Microsoft.Xna.Framework.Input
 {
 	/// <summary>
-	/// Represents specific information about the state of an Xbox 360 Controller,
-	/// including the current state of buttons and sticks. Reference page contains
-	/// links to related code samples.
+	/// Represents specific information about the state of a controller,
+	/// including the current state of buttons and sticks.
 	/// </summary>
 	public struct GamePadState
 	{
@@ -20,8 +19,7 @@ namespace Microsoft.Xna.Framework.Input
 		#region Public Properties
 
 		/// <summary>
-		/// Indicates whether the Xbox 360 Controller is connected. Reference page contains
-		/// links to related code samples.
+		/// Indicates whether the controller is connected.
 		/// </summary>
 		public bool IsConnected
 		{
@@ -29,8 +27,7 @@ namespace Microsoft.Xna.Framework.Input
 			internal set;
 		}
 		/// <summary>
-		/// Gets the packet number associated with this state. Reference page contains
-		/// links to related code samples.
+		/// Gets the packet number associated with this state.
 		/// </summary>
 		public int PacketNumber
 		{
@@ -39,8 +36,8 @@ namespace Microsoft.Xna.Framework.Input
 		}
 
 		/// <summary>
-		/// Returns a structure that identifies what buttons on the Xbox 360 controller
-		/// are pressed. Reference page contains links to related code samples.
+		/// Returns a structure that identifies which buttons on the controller
+		/// are pressed.
 		/// </summary>
 		public GamePadButtons Buttons
 		{
@@ -49,8 +46,8 @@ namespace Microsoft.Xna.Framework.Input
 		}
 
 		/// <summary>
-		/// Returns a structure that identifies what directions of the directional pad
-		/// on the Xbox 360 Controller are pressed.
+		/// Returns a structure that identifies which directions of the directional pad
+		/// on the controller are pressed.
 		/// </summary>
 		public GamePadDPad DPad
 		{
@@ -59,8 +56,7 @@ namespace Microsoft.Xna.Framework.Input
 		}
 
 		/// <summary>
-		/// Returns a structure that indicates the position of the Xbox 360 Controller
-		/// sticks (thumbsticks).
+		/// Returns a structure that indicates the position of the controller thumbsticks.
 		/// </summary>
 		public GamePadThumbSticks ThumbSticks
 		{
@@ -69,8 +65,7 @@ namespace Microsoft.Xna.Framework.Input
 		}
 
 		/// <summary>
-		/// Returns a structure that identifies the position of triggers on the Xbox
-		/// 360 controller.
+		/// Returns a structure that identifies the position of triggers on the controller.
 		/// </summary>
 		public GamePadTriggers Triggers
 		{
@@ -172,7 +167,8 @@ namespace Microsoft.Xna.Framework.Input
 		}
 
 		/// <summary>
-		/// Determines whether specified input device buttons are up (not pressed) in this GamePadState.
+		/// Determines whether specified input device buttons are up (not pressed) in this
+		/// GamePadState.
 		/// </summary>
 		/// <param name="button">
 		/// Buttons to query. Specify a single button, or combine multiple buttons using
@@ -260,7 +256,8 @@ namespace Microsoft.Xna.Framework.Input
 		}
 
 		/// <summary>
-		/// Returns a value that indicates whether the current instance is equal to a specified object.
+		/// Returns a value that indicates whether the current instance is equal to a
+		/// specified object.
 		/// </summary>
 		/// <param name="obj">Object with which to make the comparison.</param>
 		public override bool Equals(object obj)
