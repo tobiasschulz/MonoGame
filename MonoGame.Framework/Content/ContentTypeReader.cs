@@ -88,7 +88,7 @@ namespace Microsoft.Xna.Framework.Content
 
 			foreach (string ext in extensions)
 			{
-				// Concat the file name with valid extensions
+				// Concatenate the file name with valid extensions.
 				string fileNamePlusExt = fileName + ext;
 				if (File.Exists(fileNamePlusExt))
 				{
@@ -122,19 +122,22 @@ namespace Microsoft.Xna.Framework.Content
 
 		protected ContentTypeReader() : base(typeof(T))
 		{
-			// Nothing
 		}
 
 		#endregion
 
 		#region Protected Read Methods
 
+		/// <summary>
+		/// Reads an object from the input stream.
+		/// </summary>
+		/// <param name="input">The input stream.</param>
+		/// <param name="existingInstance">
+		/// Existing instance of an object to receive the data, or null if a new object
+		/// instance should be created.
+		/// </param>
 		protected internal override object Read(ContentReader input, object existingInstance)
 		{
-			/* As per the documentation http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.content.contenttypereader.read.aspx
-			 * existingInstance
-			 * The object receiving the data, or null if a new instance of the object should be created.
-			 */
 			if (existingInstance == null)
 			{
 				return this.Read(input, default(T));
