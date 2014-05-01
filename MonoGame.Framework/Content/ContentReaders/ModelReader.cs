@@ -94,7 +94,7 @@ namespace Microsoft.Xna.Framework.Content
 
 			List<ModelMesh> meshes = new List<ModelMesh>();
 
-			//// Read the mesh data.
+			// Read the mesh data.
 			int meshCount = reader.ReadInt32();
 
 			for (int i = 0; i < meshCount; i += 1)
