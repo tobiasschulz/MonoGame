@@ -14,7 +14,8 @@ using System;
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
 	/// <summary>
-	/// Packed vector type containing unsigned normalized values, ranging from 0 to 1, using 4 bits each for x, y, z, and w.
+	/// Packed vector type containing unsigned normalized values, ranging from 0 to 1, using
+	/// 4 bits each for x, y, z, and w.
 	/// </summary>
 	public struct Bgra4444 : IPackedVector<UInt16>, IEquatable<Bgra4444>
 	{
@@ -61,7 +62,9 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// <summary>
 		/// Creates a new instance of Bgra4444.
 		/// </summary>
-		/// <param name="vector">Vector containing the components for the packed vector.</param>
+		/// <param name="vector">
+		/// Vector containing the components for the packed vector.
+		/// </param>
 		public Bgra4444(Vector4 vector)
 		{
 			packedValue = Pack(vector.X, vector.Y, vector.Z, vector.W);
@@ -108,7 +111,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// Compares an object with the packed vector.
 		/// </summary>
 		/// <param name="obj">The object to compare.</param>
-		/// <returns>true if the object is equal to the packed vector.</returns>
+		/// <returns>True if the object is equal to the packed vector.</returns>
 		public override bool Equals(object obj)
 		{
 			return (obj is Bgra4444) && Equals((Bgra4444) obj);
@@ -118,7 +121,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// Compares another Bgra4444 packed vector with the packed vector.
 		/// </summary>
 		/// <param name="other">The Bgra4444 packed vector to compare.</param>
-		/// <returns>true if the packed vectors are equal.</returns>
+		/// <returns>True if the packed vectors are equal.</returns>
 		public bool Equals(Bgra4444 other)
 		{
 			return packedValue == other.packedValue;
