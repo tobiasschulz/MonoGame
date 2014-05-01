@@ -136,8 +136,9 @@ namespace Microsoft.Xna.Framework.Content
 				Uri src = new Uri("file:///" + assetName.Replace(notSeparator, separator));
 				// Add the relative path to the external reference
 				Uri dst = new Uri(src, externalReference);
-				/* The uri now contains the path to the external reference within the content manager
-				 * Get the local path and skip the first character (the path separator)
+				/* The uri now contains the path to the external reference within the
+				 * content manager. Get the local path and skip the first character
+				 * (the path separator).
 				 */
 				return contentManager.Load<T>(dst.LocalPath.Substring(1));
 			}

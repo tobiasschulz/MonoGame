@@ -289,8 +289,9 @@ namespace Microsoft.Xna.Framework.Content
 		{
 			Debug.Assert(disposable != null, "The disposable is null!");
 
-			/* Avoid recording disposable objects twice. ReloadAsset will try to record the disposables again.
-			 * We don't know which asset recorded which disposable so just guard against storing multiple of the same instance.
+			/* Avoid recording disposable objects twice. ReloadAsset will try to record
+			 * the disposables again. We don't know which asset recorded which
+			 * disposable so just guard against storing multiple of the same instance.
 			 */
 			if (!disposableAssets.Contains(disposable))
 			{
@@ -302,8 +303,9 @@ namespace Microsoft.Xna.Framework.Content
 
 		#region Protected Dispose Method
 
-		/* If disposing is true, it was called explicitly and we should dispose managed objects.
-		 * If disposing is false, it was called by the finalizer and managed objects should not be disposed.
+		/* If disposing is true, it was called explicitly and we should dispose managed
+		 * objects. If disposing is false, it was called by the finalizer and managed
+		 * objects should not be disposed.
 		 */
 		protected virtual void Dispose(bool disposing)
 		{
@@ -408,7 +410,12 @@ namespace Microsoft.Xna.Framework.Content
 				assetName = Normalize<T>(assetName);
 				if (string.IsNullOrEmpty(assetName))
 				{
-					throw new ContentLoadException("Could not load " + originalAssetName + " asset as a non-content file!", ex);
+					throw new ContentLoadException(
+						"Could not load " +
+						originalAssetName +
+						" asset as a non-content file!",
+						ex
+					);
 				}
 				result = ReadRawAsset<T>(assetName, originalAssetName);
 				/* Because Raw Assets skip the ContentReader step, they need to have their
@@ -646,7 +653,7 @@ namespace Microsoft.Xna.Framework.Content
 			ContentReader reader;
 			if (compressed)
 			{
-				/* Decompress the xnb
+				/* Decompress the XNB
 				 * Thanks to ShinAli (https://bitbucket.org/alisci01/xnbdecompressor)
 				 */
 				int compressedSize = xnbLength - 14;
@@ -660,14 +667,14 @@ namespace Microsoft.Xna.Framework.Content
 
 				while (pos - startPos < compressedSize)
 				{
-					/* The compressed stream is seperated into blocks that will decompress
-					 * into 32kB or some other size if specified.
-					 * Normal, 32kB output blocks will have a short indicating the size
-					 * of the block before the block starts.
-					 * Blocks that have a defined output will be preceded by a byte of value
-					 * 0xFF (255), then a short indicating the output size and another
-					 * for the block size.
-					 * All shorts for these cases are encoded in big endian order.
+					/* The compressed stream is separated into blocks that will
+					 * decompress into 32kB or some other size if specified.
+					 * Normal, 32kB output blocks will have a short indicating
+					 * the size of the block before the block starts. Blocks
+					 * that have a defined output will be preceded by a byte of
+					 * value 0xFF (255), then a short indicating the output size
+					 * and another for the block size. All shorts for these
+					 * cases are encoded in big endian order.
 					 */
 					int hi = stream.ReadByte();
 					int lo = stream.ReadByte();
@@ -696,14 +703,16 @@ namespace Microsoft.Xna.Framework.Content
 					dec.Decompress(stream, block_size, decompressedStream, frame_size);
 					pos += block_size;
 					decodedBytes += frame_size;
-					/* Reset the position of the input just in case the bit buffer
-					 * read in some unused bytes
+					/* Reset the position of the input just in case the bit
+					 * buffer read in some unused bytes.
 					 */
 					stream.Seek(pos, SeekOrigin.Begin);
 				}
 				if (decompressedStream.Position != decompressedSize)
 				{
-					throw new ContentLoadException("Decompression of " + originalAssetName + " failed. ");
+					throw new ContentLoadException(
+						"Decompression of " + originalAssetName + " failed. "
+					);
 				}
 				decompressedStream.Seek(0, SeekOrigin.Begin);
 				reader = new ContentReader(

@@ -179,8 +179,11 @@ namespace Microsoft.Xna.Framework.Content
 						}
 						catch (TargetInvocationException ex)
 						{
-							/* If you are getting here, the Mono runtime is most likely not able to JIT the type.
-							 * In particular, MonoTouch needs help instantiating types that are only defined in strings in Xnb files.
+							/* If you are getting here, the Mono runtime
+							 * is most likely not able to JIT the type.
+							 * In particular, MonoTouch needs help
+							 * instantiating types that are only defined
+							 * in strings in Xnb files.
 							 */
 							throw new InvalidOperationException(
 								"Failed to get default constructor for ContentTypeReader.\n" +
@@ -276,7 +279,6 @@ namespace Microsoft.Xna.Framework.Content
 					"$1"
 				);
 			}
-			// TODO: For WinRT this is most likely broken!
 			preparedType = preparedType.Replace(
 				", Microsoft.Xna.Framework.Graphics",
 				string.Format(
