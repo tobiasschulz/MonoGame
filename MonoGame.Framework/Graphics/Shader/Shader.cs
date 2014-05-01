@@ -78,7 +78,6 @@ namespace Microsoft.Xna.Framework.Graphics
                             string usageStr = EffectUtilities.ParseParam (command, "usage", "");
                             attribute.usage = (VertexElementUsage)Enum.Parse (typeof(VertexElementUsage), usageStr);
                             attribute.index = indices [i];
-                            attribute.format = (short)EffectUtilities.ParseParam (command, "format", 0);
                             AttributeList.Add (attribute);
                         }
                     }
@@ -88,7 +87,6 @@ namespace Microsoft.Xna.Framework.Graphics
                         string usageStr = EffectUtilities.ParseParam (command, "usage", "");
                         attribute.usage = (VertexElementUsage)Enum.Parse (typeof(VertexElementUsage), usageStr);
                         attribute.index = indices [0];
-                        attribute.format = (short)EffectUtilities.ParseParam (command, "format", 0);
                         AttributeList.Add (attribute);
                     }
                     else {

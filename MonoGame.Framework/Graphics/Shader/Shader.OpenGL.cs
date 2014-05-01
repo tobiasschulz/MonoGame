@@ -68,8 +68,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 _attributes[a].name = reader.ReadString();
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
                 _attributes[a].index = reader.ReadByte();
-<<<<<<< HEAD
-                _attributes[a].format = reader.ReadInt16();
+                reader.ReadInt16(); // format, unused
 
                 readableCode += "#monogame Attribute("+EffectUtilities.Params(
                     "name", _attributes[a].name,
@@ -77,9 +76,6 @@ namespace Microsoft.Xna.Framework.Graphics
                     "index", _attributes[a].index
                     // "format", _attributes[a].format // seems to be always 0
                     )+")\n";
-=======
-                reader.ReadInt16(); // format, unused
->>>>>>> monogame-sdl2
             }
 
             string readableGlslCode = _glslCode;
