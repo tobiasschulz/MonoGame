@@ -332,7 +332,7 @@ namespace Microsoft.Xna.Framework
 			}
 
 			// OSX has some fancy fullscreen features, let's use them!
-			if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			if (platform.OSVersion.Equals("Mac OS X"))
 			{
 				string hint = SDL.SDL_GetHint(SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
 				INTERNAL_useFullscreenSpaces = (String.IsNullOrEmpty(hint) || hint.Equals("1"));

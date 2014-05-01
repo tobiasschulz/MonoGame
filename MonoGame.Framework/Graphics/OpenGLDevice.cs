@@ -268,8 +268,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public OpenGLState<bool> AlphaBlendEnable = new OpenGLState<bool>(false);
 
-		// TODO: AlphaTestEnable? -flibit
-
 		public OpenGLState<Color> BlendColor = new OpenGLState<Color>(Color.TransparentBlack);
 
 		public OpenGLState<Blend> SrcBlend = new OpenGLState<Blend>(Blend.One);
@@ -283,8 +281,6 @@ namespace Microsoft.Xna.Framework.Graphics
 		public OpenGLState<BlendFunction> BlendOp = new OpenGLState<BlendFunction>(BlendFunction.Add);
 
 		public OpenGLState<BlendFunction> BlendOpAlpha = new OpenGLState<BlendFunction>(BlendFunction.Add);
-
-		// TODO: glAlphaFunc? -flibit
 
 		#endregion
 
@@ -499,25 +495,25 @@ namespace Microsoft.Xna.Framework.Graphics
 			Extensions = GL.GetString(StringName.Extensions);
 			Framebuffer.Initialize();
 			SupportsS3tc = (
-				OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_s3tc") ||
-				OpenGLDevice.Instance.Extensions.Contains("GL_OES_texture_compression_S3TC") ||
-				OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt3") ||
-				OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt5")
+				Extensions.Contains("GL_EXT_texture_compression_s3tc") ||
+				Extensions.Contains("GL_OES_texture_compression_S3TC") ||
+				Extensions.Contains("GL_EXT_texture_compression_dxt3") ||
+				Extensions.Contains("GL_EXT_texture_compression_dxt5")
 			);
 			SupportsDxt1 = (
 				SupportsS3tc ||
-				OpenGLDevice.Instance.Extensions.Contains("GL_EXT_texture_compression_dxt1")
+				Extensions.Contains("GL_EXT_texture_compression_dxt1")
 			);
 			SupportsHardwareInstancing = (
-				OpenGLDevice.Instance.Extensions.Contains("GL_ARB_draw_instanced") &&
-				OpenGLDevice.Instance.Extensions.Contains("GL_ARB_instanced_arrays")
+				Extensions.Contains("GL_ARB_draw_instanced") &&
+				Extensions.Contains("GL_ARB_instanced_arrays")
 			);
 
 			/* So apparently OSX Lion likes to lie about hardware instancing support.
 			 * This is incredibly stupid, but it works!
 			 * -flibit
 			 */
-			if (SupportsHardwareInstancing && SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			if (SupportsHardwareInstancing) // TODO: Let's just load our own entry points.
 			{
 				SupportsHardwareInstancing = SDL2.SDL.SDL_GL_GetProcAddress("glVertexAttribDivisorARB") != IntPtr.Zero;
 			}
@@ -602,8 +598,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				ToggleGLState(EnableCap.Blend, AlphaBlendEnable.Flush());
 			}
 
-			// TODO: AlphaTestEnable? -flibit
-
 			if (AlphaBlendEnable.GetCurrent() && (force || BlendColor.NeedsFlush()))
 			{
 				Color color = BlendColor.Flush();
@@ -640,8 +634,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					XNAToGL.BlendEquation[BlendOpAlpha.Flush()]
 				);
 			}
-
-			// TODO: glAlphaFunc? -flibit
 
 			// END ALPHA BLENDING STATES
 
@@ -1001,6 +993,37 @@ namespace Microsoft.Xna.Framework.Graphics
 				Samplers[0].Target.Flush(),
 				Samplers[0].Texture.Flush().Handle
 			);
+		}
+
+		#endregion
+
+		#region glDeleteTexture Method
+
+		public void DeleteTexture(OpenGLTexture texture)
+		{
+			for (int i = 0; i < currentAttachments.Length; i += 1)
+			{
+				if (texture.Handle == currentAttachments[i])
+				{
+					// Force an attachment update, this no longer exists!
+					currentAttachments[i] = -1;
+				}
+			}
+			texture.Dispose();
+		}
+
+		#endregion
+
+		#region glDeleteRenderbuffer Method
+
+		public void DeleteRenderbuffer(uint renderbuffer)
+		{
+			if (renderbuffer == currentRenderbuffer)
+			{
+				// Force a renderbuffer update, this no longer exists!
+				currentRenderbuffer = uint.MaxValue;
+			}
+			Framebuffer.DeleteRenderbuffer(renderbuffer);
 		}
 
 		#endregion

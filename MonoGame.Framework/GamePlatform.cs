@@ -100,6 +100,12 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
+		public abstract string OSVersion
+		{
+			get;
+			protected set;
+		}
+
 		#endregion
 
 		#region Protected Fields

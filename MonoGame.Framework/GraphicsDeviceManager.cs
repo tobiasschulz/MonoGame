@@ -290,7 +290,7 @@ namespace Microsoft.Xna.Framework
 				GraphicsDevice.PresentationParameters.IsFullScreen
 			);
 			_game.Platform.EndScreenDeviceChange(
-				"SDL2",
+				"FNA",
 				GraphicsDevice.PresentationParameters.BackBufferWidth,
 				GraphicsDevice.PresentationParameters.BackBufferHeight
 			);

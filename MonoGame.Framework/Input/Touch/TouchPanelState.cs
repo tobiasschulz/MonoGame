@@ -255,7 +255,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// <returns><see cref="GestureSample"/></returns>
 		public GestureSample ReadGesture()
 		{
-			// Return the next gesture.
 			return GestureList.Dequeue();
 		}
 

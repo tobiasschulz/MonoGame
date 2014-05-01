@@ -235,8 +235,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			if (typeof(T) == typeof(byte))
 			{
-				// If data is already a byte[] we can skip the temporary buffer.
-				// Copy from the vertex buffer to the destination array.
+				/* If data is already a byte[] we can skip the temporary buffer.
+				 * Copy from the vertex buffer to the destination array.
+				 */
 				byte[] buffer = data as byte[];
 				Marshal.Copy(ptr, buffer, 0, buffer.Length);
 			}
@@ -247,10 +248,10 @@ namespace Microsoft.Xna.Framework.Graphics
 
 				// Copy from the vertex buffer to the temporary buffer
 				Marshal.Copy(ptr, buffer, 0, buffer.Length);
-				
+
 				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 				IntPtr dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)));
-				
+
 				// Copy from the temporary buffer to the destination array
 				int dataSize = Marshal.SizeOf(typeof(T));
 				if (dataSize == vertexStride)
@@ -266,10 +267,8 @@ namespace Microsoft.Xna.Framework.Graphics
 						dataPtr = (IntPtr)(dataPtr.ToInt64() + dataSize);
 					}
 				}
-				
+
 				dataHandle.Free();
-				
-				//Buffer.BlockCopy(buffer, 0, data, startIndex * elementSizeInByte, elementCount * elementSizeInByte);
 			}
 
 			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
@@ -385,7 +384,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			OpenGLDevice.Instance.BindVertexBuffer(Handle);
 
 			int sizeInBytes = elementSizeInBytes * elementCount;
-			
+
 			if (options == SetDataOptions.Discard)
 			{
 				GL.BufferData(

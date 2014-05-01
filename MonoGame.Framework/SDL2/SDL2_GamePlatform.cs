@@ -43,7 +43,7 @@ namespace Microsoft.Xna.Framework
 			{
 				if (value)
 				{
-					if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+					if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
 					{
 						// Apple is a big fat liar about swap_control_tear. Use stock VSync.
 						SDL.SDL_GL_SetSwapInterval(1);
@@ -69,11 +69,11 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		#endregion
-
-		#region SDL2 OS String
-
-		public static readonly string OSVersion = SDL.SDL_GetPlatform();
+		public override string OSVersion
+		{
+			get;
+			protected set;
+		}
 
 		#endregion
 
@@ -93,6 +93,9 @@ namespace Microsoft.Xna.Framework
 
 		public SDL2_GamePlatform(Game game) : base(game)
 		{
+			// Assign the OSVersion string
+			OSVersion = SDL.SDL_GetPlatform();
+
 			// Set and initialize the SDL2 window
 			INTERNAL_window = new SDL2_GameWindow(game, this);
 			this.Window = INTERNAL_window;
@@ -144,7 +147,7 @@ namespace Microsoft.Xna.Framework
 		{
 			BeginScreenDeviceChange(true);
 			EndScreenDeviceChange(
-				"SDL2",
+				"FNA",
 				Graphics.OpenGLDevice.Instance.Backbuffer.Width,
 				Graphics.OpenGLDevice.Instance.Backbuffer.Height
 			);
@@ -154,7 +157,7 @@ namespace Microsoft.Xna.Framework
 		{
 			BeginScreenDeviceChange(false);
 			EndScreenDeviceChange(
-				"SDL2",
+				"FNA",
 				Graphics.OpenGLDevice.Instance.Backbuffer.Width,
 				Graphics.OpenGLDevice.Instance.Backbuffer.Height
 			);

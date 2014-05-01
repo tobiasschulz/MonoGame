@@ -223,13 +223,13 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			if (INTERNAL_haptics[which] != IntPtr.Zero)
 			{
-				if (	SDL2_GamePlatform.OSVersion.Equals("Mac OS X") &&
+				if (	Game.Instance.Platform.OSVersion.Equals("Mac OS X") &&
 					SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_leftRightMacHackEffect) == 1	)
 				{
 					INTERNAL_hapticTypes[which] = HapticType.LeftRightMacHack;
 					SDL.SDL_HapticNewEffect(INTERNAL_haptics[which], ref INTERNAL_leftRightMacHackEffect);
 				}
-				else if (	!SDL2_GamePlatform.OSVersion.Equals("Mac OS X") &&
+				else if (	!Game.Instance.Platform.OSVersion.Equals("Mac OS X") &&
 						SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_leftRightEffect) == 1	)
 				{
 					INTERNAL_hapticTypes[which] = HapticType.LeftRight;
@@ -314,11 +314,11 @@ namespace Microsoft.Xna.Framework.Input
 
 			// Get the intended config file path.
 			string osConfigFile = "";
-			if (SDL2_GamePlatform.OSVersion.Equals("Windows"))
+			if (Game.Instance.Platform.OSVersion.Equals("Windows"))
 			{
 				osConfigFile = "MonoGameJoystick.cfg"; // Oh well.
 			}
-			else if (SDL2_GamePlatform.OSVersion.Equals("Mac OS X"))
+			else if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
 			{
 				osConfigFile += Environment.GetEnvironmentVariable("HOME");
 				if (osConfigFile.Length == 0)
@@ -331,7 +331,7 @@ namespace Microsoft.Xna.Framework.Input
 					osConfigFile += "/Library/Application Support/MonoGame/MonoGameJoystick.cfg";
 				}
 			}
-			else if (SDL2_GamePlatform.OSVersion.Equals("Linux"))
+			else if (Game.Instance.Platform.OSVersion.Equals("Linux"))
 			{
 				// Assuming a non-OSX Unix platform will follow the XDG. Which it should.
 				osConfigFile += Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
@@ -355,7 +355,7 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			else
 			{
-				throw new Exception("SDL2_GamePad: SDL2 platform not handled!");
+				throw new Exception("SDL2_GamePad: Platform.OSVersion not handled!");
 			}
 
 			// Check to see if we've already got a config...

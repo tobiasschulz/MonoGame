@@ -508,6 +508,7 @@ namespace Microsoft.Xna.Framework.Audio
 			// Finally, check if we're still active.
 			if (IsStopped && !INTERNAL_queuedPlayback && !INTERNAL_userControlledPlaying)
 			{
+				// If this is managed, we're done here.
 				if (INTERNAL_isManaged)
 				{
 					Dispose();
