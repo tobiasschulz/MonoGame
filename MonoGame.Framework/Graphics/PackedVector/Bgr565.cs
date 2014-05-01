@@ -14,7 +14,8 @@ using System;
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
 	/// <summary>
-	/// Packed vector type containing unsigned normalized values ranging from 0 to 1. The x and z components use 5 bits, and the y component uses 6 bits.
+	/// Packed vector type containing unsigned normalized values ranging from 0 to 1. 
+	/// The x and z components use 5 bits, and the y component uses 6 bits.
 	/// </summary>
 	public struct Bgr565 : IPackedVector<UInt16>, IEquatable<Bgr565>, IPackedVector
 	{
@@ -60,7 +61,9 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// <summary>
 		/// Creates a new instance of Bgr565.
 		/// </summary>
-		/// <param name="vector">Vector containing the components for the packed vector.</param>
+		/// <param name="vector">
+		/// Vector containing the components for the packed vector.
+		/// </param>
 		public Bgr565(Vector3 vector)
 		{
 			packedValue = Pack(vector.X, vector.Y, vector.Z);
@@ -117,7 +120,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// Compares an object with the packed vector.
 		/// </summary>
 		/// <param name="obj">The object to compare.</param>
-		/// <returns>true if the object is equal to the packed vector.</returns>
+		/// <returns>True if the object is equal to the packed vector.</returns>
 		public override bool Equals(object obj)
 		{
 			return (obj is Bgr565) && Equals((Bgr565) obj);
@@ -127,7 +130,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// Compares another Bgr565 packed vector with the packed vector.
 		/// </summary>
 		/// <param name="other">The Bgr565 packed vector to compare.</param>
-		/// <returns>true if the packed vectors are equal.</returns>
+		/// <returns>True if the packed vectors are equal.</returns>
 		public bool Equals(Bgr565 other)
 		{
 			return packedValue == other.packedValue;
