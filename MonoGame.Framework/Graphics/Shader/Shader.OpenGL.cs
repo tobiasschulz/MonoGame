@@ -51,7 +51,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 _attributes[a].name = reader.ReadString();
                 _attributes[a].usage = (VertexElementUsage)reader.ReadByte();
                 _attributes[a].index = reader.ReadByte();
-                reader.ReadInt16(); // format, unused
+                reader.ReadInt16(); //format, unused
             }
         }
 
