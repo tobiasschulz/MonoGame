@@ -54,7 +54,6 @@ namespace Microsoft.Xna.Framework.Content
 
 		internal Texture2DReader()
 		{
-			// Do nothing
 		}
 
 		#endregion
