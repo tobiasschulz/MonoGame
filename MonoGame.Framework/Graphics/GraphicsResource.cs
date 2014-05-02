@@ -137,6 +137,18 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </remarks>
 		protected virtual void Dispose(bool disposing)
 		{
+			// FIXME: What was this? No, really, what? -flibit
+			//if (!IsDisposed)
+			//{
+			//if (disposing)
+			//{
+			// Release managed objects
+			// ...
+			//}
+
+			// Release native objects
+			// ...
+
 			// Do not trigger the event if called from the finalizer
 			if (disposing && Disposing != null)
 			{
@@ -152,6 +164,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			selfReference = null;
 			GraphicsDevice = null;
 			IsDisposed = true;
+			//}
 		}
 
 		#endregion
