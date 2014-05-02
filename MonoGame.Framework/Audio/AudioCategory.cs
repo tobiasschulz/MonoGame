@@ -18,7 +18,7 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audiocategory.aspx
 	public struct AudioCategory : IEquatable<AudioCategory>
 	{
-		#region Private Float Instance Class
+		#region Private Primitive Type Container Class
 
 		private class PrimitiveInstance<T>
 		{
@@ -55,8 +55,8 @@ namespace Microsoft.Xna.Framework.Audio
 
 		private byte maxCueInstances;
 		private MaxInstanceBehavior maxCueBehavior;
-		ushort maxFadeInMS;
-		ushort maxFadeOutMS;
+		private ushort maxFadeInMS;
+		private ushort maxFadeOutMS;
 
 		// TODO: Right now only Queue has fade behavior. -flibit
 		private PrimitiveInstance<bool> fading;
