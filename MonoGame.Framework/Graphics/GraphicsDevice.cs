@@ -31,8 +31,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				// We will just return IsDisposed, as that
-				// is the only case I can see for now.
+				/* We will just return IsDisposed, as that
+				 * is the only case I can see for now.
+				 */
 				return IsDisposed;
 			}
 		}
@@ -161,8 +162,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				OpenGLDevice.Instance.DepthRangeMin.Set(value.MinDepth);
 				OpenGLDevice.Instance.DepthRangeMax.Set(value.MaxDepth);
 
-				// In OpenGL we have to re-apply the special "posFixup"
-				// vertex shader uniform if the viewport changes.
+				/* In OpenGL we have to re-apply the special "posFixup"
+				 * vertex shader uniform if the viewport changes.
+				 */
 				vertexShaderDirty = true;
 			}
 		}
@@ -422,7 +424,9 @@ namespace Microsoft.Xna.Framework.Graphics
 					// Invoke the Disposing Event
 					OnDisposing();
 
-					// Dispose of all remaining graphics resources before disposing of the GraphicsDevice
+					/* Dispose of all remaining graphics resources before
+					 * disposing of the GraphicsDevice.
+					 */
 					GraphicsResource.DisposeAll();
 
 					// Free all the cached shader programs.
@@ -438,8 +442,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Internal Resource Disposal Method
 
 		/// <summary>
-		/// Adds a dispose action to the list of pending dispose actions. These are executed at the end of each call to Present().
-		/// This allows GL resources to be disposed from other threads, such as the finalizer.
+		/// Adds a dispose action to the list of pending dispose actions. These are executed
+		/// at the end of each call to Present(). This allows GL resources to be disposed
+		/// from other threads, such as the finalizer.
 		/// </summary>
 		/// <param name="disposeAction">The action to execute for the dispose.</param>
 		internal static void AddDisposeAction(Action disposeAction)
@@ -723,12 +728,22 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// Draw geometry by indexing into the vertex buffer.
 		/// </summary>
 		/// <param name="primitiveType">The type of primitives in the index buffer.</param>
-		/// <param name="baseVertex">Used to offset the vertex range indexed from the vertex buffer.</param>
-		/// <param name="minVertexIndex">A hint of the lowest vertex indexed relative to baseVertex.</param>
+		/// <param name="baseVertex">
+		/// Used to offset the vertex range indexed from the vertex buffer.
+		/// </param>
+		/// <param name="minVertexIndex">
+		/// A hint of the lowest vertex indexed relative to baseVertex.
+		/// </param>
 		/// <param name="numVertices">An hint of the maximum vertex indexed.</param>
-		/// <param name="startIndex">The index within the index buffer to start drawing from.</param>
-		/// <param name="primitiveCount">The number of primitives to render from the index buffer.</param>
-		/// <remarks>Note that minVertexIndex and numVertices are unused in MonoGame and will be ignored.</remarks>
+		/// <param name="startIndex">
+		/// The index within the index buffer to start drawing from.
+		/// </param>
+		/// <param name="primitiveCount">
+		/// The number of primitives to render from the index buffer.
+		/// </param>
+		/// <remarks>
+		/// Note that minVertexIndex and numVertices are unused in MonoGame and will be ignored.
+		/// </remarks>
 		public void DrawIndexedPrimitives(
 			PrimitiveType primitiveType,
 			int baseVertex,
@@ -743,7 +758,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Unsigned short or unsigned int?
 			bool shortIndices = Indices.IndexElementSize == IndexElementSize.SixteenBits;
 
-			// Set up the vertex buffers
+			// Set up the vertex buffers.
 			foreach (VertexBufferBinding vertBuffer in vertexBufferBindings)
 			{
 				if (vertBuffer.VertexBuffer != null)
@@ -888,7 +903,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Flush the GL state before moving on!
 			ApplyState();
 
-			// Set up the vertex buffers
+			// Set up the vertex buffers.
 			foreach (VertexBufferBinding vertBuffer in vertexBufferBindings)
 			{
 				if (vertBuffer.VertexBuffer != null)
@@ -1227,31 +1242,34 @@ namespace Microsoft.Xna.Framework.Graphics
 				return;
 			}
 
-			// Apply vertex shader fix:
-			// The following two lines are appended to the end of vertex shaders
-			// to account for rendering differences between OpenGL and DirectX:
-			//
-			// gl_Position.y = gl_Position.y * posFixup.y;
-			// gl_Position.xy += posFixup.zw * gl_Position.ww;
-			//
-			// (the following paraphrased from wine, wined3d/state.c and wined3d/glsl_shader.c)
-			//
-			// - We need to flip along the y-axis in case of offscreen rendering.
-			// - D3D coordinates refer to pixel centers while GL coordinates refer
-			//   to pixel corners.
-			// - D3D has a top-left filling convention. We need to maintain this
-			//   even after the y-flip mentioned above.
-			// In order to handle the last two points, we translate by
-			// (63.0 / 128.0) / VPw and (63.0 / 128.0) / VPh. This is equivalent to
-			// translating slightly less than half a pixel. We want the difference to
-			// be large enough that it doesn't get lost due to rounding inside the
-			// driver, but small enough to prevent it from interfering with any
-			// anti-aliasing.
-			//
-			// OpenGL coordinates specify the center of the pixel while d3d coords specify
-			// the corner. The offsets are stored in z and w in posFixup. posFixup.y contains
-			// 1.0 or -1.0 to turn the rendering upside down for offscreen rendering. PosFixup.x
-			// contains 1.0 to allow a mad.
+			/* Apply vertex shader fix:
+			 * The following two lines are appended to the end of vertex shaders
+			 * to account for rendering differences between OpenGL and DirectX:
+			 * 
+			 * gl_Position.y = gl_Position.y * posFixup.y;
+			 * gl_Position.xy += posFixup.zw * gl_Position.ww;
+			 * 
+			 * (the following paraphrased from wine, wined3d/state.c and
+			 * wined3d/glsl_shader.c)
+			 * 
+			 * - We need to flip along the y-axis in case of offscreen rendering.
+			 * - D3D coordinates refer to pixel centers while GL coordinates refer
+			 *   to pixel corners.
+			 * - D3D has a top-left filling convention. We need to maintain this
+			 *   even after the y-flip mentioned above.
+			 * 
+			 * In order to handle the last two points, we translate by
+			 * (63.0 / 128.0) / VPw and (63.0 / 128.0) / VPh. This is equivalent to
+			 * translating slightly less than half a pixel. We want the difference to
+			 * be large enough that it doesn't get lost due to rounding inside the
+			 * driver, but small enough to prevent it from interfering with any
+			 * anti-aliasing.
+			 * 
+			 * OpenGL coordinates specify the center of the pixel while d3d coords
+			 * specify the corner. The offsets are stored in z and w in posFixup.
+			 * posFixup.y contains 1.0 or -1.0 to turn the rendering upside down for
+			 * offscreen rendering.
+			 */
 
 			posFixup[0] = 1.0f;
 			posFixup[1] = 1.0f;

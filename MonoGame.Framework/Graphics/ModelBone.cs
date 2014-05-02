@@ -14,8 +14,7 @@ using System.Collections.Generic;
 namespace Microsoft.Xna.Framework.Graphics
 {
 	/// <summary>
-	/// Represents bone data for a model. Reference page contains links to related
-	/// conceptual articles.
+	/// Represents bone data for a model.
 	/// </summary>
 	public sealed class ModelBone
 	{

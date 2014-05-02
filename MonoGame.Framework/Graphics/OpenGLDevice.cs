@@ -1781,7 +1781,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				Width = width;
 				Height = height;
 #else
-				// Update our color attachment to the new resolution
+				// Update our color attachment to the new resolution.
 				GL.BindTexture(TextureTarget.Texture2D, colorAttachment);
 				GL.TexImage2D(
 					TextureTarget.Texture2D,

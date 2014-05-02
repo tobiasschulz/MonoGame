@@ -14,15 +14,15 @@ using System.Collections.Generic;
 namespace Microsoft.Xna.Framework.Graphics
 {
 	/// <summary>
-	/// This class handles the queueing of batch items into the GPU by creating the triangle tesselations
-	/// that are used to draw the sprite textures. This class supports int.MaxValue number of sprites to be
-	/// batched and will process them into short.MaxValue groups (strided by 6 for the number of vertices
-	/// sent to the GPU).
+	/// This class handles the queueing of batch items into the GPU by creating the triangle
+	/// tesselations that are used to draw the sprite textures. This class supports int.MaxValue
+	/// number of sprites to be batched and will process them into short.MaxValue groups
+	/// (strided by 6 for the number of vertices sent to the GPU).
 	/// </summary>
 	internal class SpriteBatcher
 	{
-		/* Note that this class is fundamental to high performance for SpriteBatch games. Please exercise
-		 * caution when making changes to this class.
+		/* Note that this class is fundamental to high performance for SpriteBatch games.
+		 * Please exercise caution when making changes to this class.
 		 */
 
 		#region Private Variables
@@ -81,10 +81,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Public Methods
 
 		/// <summary>
-		/// Create an instance of SpriteBatchItem if there is none available in the free item queue. Otherwise,
-		/// a previously allocated SpriteBatchItem is reused.
+		/// Create an instance of SpriteBatchItem if there is none available in the free
+		/// item queue. Otherwise, a previously allocated SpriteBatchItem is reused.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>The SpriteBatchItem instance.</returns>
 		public SpriteBatchItem CreateBatchItem()
 		{
 			SpriteBatchItem item;
@@ -104,19 +104,19 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		/// <summary>
-		/// Sorts the batch items and then groups batch drawing into maximal allowed batch sets that do not
-		/// overflow the 16 bit array indices for vertices.
+		/// Sorts the batch items and then groups batch drawing into maximal allowed batch
+		/// sets that do not overflow the 16 bit array indices for vertices.
 		/// </summary>
 		/// <param name="sortMode">The type of depth sorting desired for the rendering.</param>
 		public void DrawBatch(SpriteSortMode sortMode)
 		{
-			// nothing to do
+			// Nothing to do
 			if (_batchItemList.Count == 0)
 			{
 				return;
 			}
 
-			// sort the batch items
+			// Sort the batch items
 			switch (sortMode)
 			{
 				case SpriteSortMode.Texture:
@@ -130,7 +130,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					break;
 			}
 
-			// Determine how many iterations through the drawing code we need to make
+			// Determine how many iterations through the drawing code we need to make.
 			int batchIndex = 0;
 			int batchCount = _batchItemList.Count;
 			// Iterate through the batches, doing short.MaxValue sets of vertices only.
@@ -162,7 +162,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						_device.Textures[0] = tex;
 					}
 
-					// store the SpriteBatchItem data in our vertexArray
+					// Store the SpriteBatchItem data in our vertexArray
 					_vertexArray[index++] = item.vertexTL;
 					_vertexArray[index++] = item.vertexTR;
 					_vertexArray[index++] = item.vertexBL;
@@ -172,10 +172,12 @@ namespace Microsoft.Xna.Framework.Graphics
 					item.Texture = null;
 					_freeBatchItemQueue.Enqueue(item);
 				}
-				// flush the remaining vertexArray data
+				// Flush the remaining vertexArray data
 				FlushVertexArray(startIndex, index);
-				// Update our batch count to continue the process of culling down
-				// large batches
+
+				/* Update our batch count to continue the process of culling down
+				 * large batches
+				 */
 				batchCount -= numBatchesToProcess;
 			}
 			_batchItemList.Clear();
@@ -186,9 +188,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Private Methods
 
 		/// <summary>
-		/// Resize and recreate the missing indices for the index and vertex position color buffers.
+		/// Resize and recreate the missing indices for the index and vertex position color
+		/// buffers.
 		/// </summary>
-		/// <param name="numBatchItems"></param>
+		/// <param name="numBatchItems">The number of SpriteBatchItems.</param>
 		private void EnsureArrayCapacity(int numBatchItems)
 		{
 			int neededCapacity = 6 * numBatchItems;
@@ -230,10 +233,17 @@ namespace Microsoft.Xna.Framework.Graphics
 		}
 
 		/// <summary>
-		/// Sends the triangle list to the graphics device. Here is where the actual drawing starts.
+		/// Sends the triangle list to the graphics device. Here is where the actual drawing
+		/// starts.
 		/// </summary>
-		/// <param name="start">Start index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
-		/// <param name="end">End index of vertices to draw. Not used except to compute the count of vertices to draw.</param>
+		/// <param name="start">
+		/// Start index of vertices to draw. Not used except to compute the count of
+		/// vertices to draw.
+		/// </param>
+		/// <param name="end">
+		/// End index of vertices to draw. Not used except to compute the count of vertices
+		/// to draw.
+		/// </param>
 		private void FlushVertexArray(int start, int end)
 		{
 			if (start == end)
@@ -260,10 +270,11 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Private Static Methods
 
 		/// <summary>
-		/// Reference comparison of the underlying Texture objects for each given SpriteBatchitem.
+		/// Reference comparison of the underlying Texture objects for each given
+		/// SpriteBatchitem.
 		/// </summary>
-		/// <param name="a"></param>
-		/// <param name="b"></param>
+		/// <param name="a">A SpriteBatchItem to compare.</param>
+		/// <param name="b">A SpriteBatchItem to compare.<./param>
 		/// <returns>0 if they are not reference equal, and 1 if so.</returns>
 		static int CompareTexture(SpriteBatchItem a, SpriteBatchItem b)
 		{
@@ -274,8 +285,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// Compares the Depth of a against b returning -1 if a is less than b,
 		/// 0 if equal, and 1 if a is greater than b. The test uses float.CompareTo(float)
 		/// </summary>
-		/// <param name="a"></param>
-		/// <param name="b"></param>
+		/// <param name="a">A SpriteBatchItem to compare.</param>
+		/// <param name="b">A SpriteBatchItem to compare.</param>
 		/// <returns>-1 if a is less than b, 0 if equal, and 1 if a is greater than b</returns>
 		static int CompareDepth(SpriteBatchItem a, SpriteBatchItem b)
 		{
@@ -285,8 +296,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Implements the opposite of CompareDepth, where b is compared against a.
 		/// </summary>
-		/// <param name="a"></param>
-		/// <param name="b"></param>
+		/// <param name="a">A SpriteBatchItem to compare.</param>
+		/// <param name="b">A SpriteBatchItem to compare.</param>
 		/// <returns>-1 if b is less than a, 0 if equal, and 1 if b is greater than a</returns>
 		static int CompareReverseDepth(SpriteBatchItem a, SpriteBatchItem b)
 		{
