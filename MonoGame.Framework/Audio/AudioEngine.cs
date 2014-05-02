@@ -158,15 +158,15 @@ namespace Microsoft.Xna.Framework.Audio
 				INTERNAL_categories = new List<AudioCategory>();
 				for (int i = 0; i < numCategories; i += 1)
 				{
-					// Maximum instances, Unused
-					reader.ReadByte();
+					// Maximum instances
+					byte maxInstances = reader.ReadByte();
 
-					// Fade In/Out, Unused
-					reader.ReadUInt16();
-					reader.ReadUInt16();
+					// Fade In/Out
+					ushort fadeInMS = reader.ReadUInt16();
+					ushort fadeOutMS = reader.ReadUInt16();
 
-					// Instance Behavior Flags, Unused
-					reader.ReadByte();
+					// Instance Behavior Flags
+					int maxBehavior = reader.ReadByte() & 0x0F; // FIXME: What?
 
 					// Unknown value
 					reader.ReadUInt16();
@@ -181,7 +181,11 @@ namespace Microsoft.Xna.Framework.Audio
 					INTERNAL_categories.Add(
 						new AudioCategory(
 							categoryNames[i],
-							volume
+							volume,
+							maxInstances,
+							maxBehavior,
+							fadeInMS,
+							fadeOutMS
 						)
 					);
 				}

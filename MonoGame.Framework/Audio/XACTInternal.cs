@@ -45,6 +45,15 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 	}
 
+	internal enum MaxInstanceBehavior : byte
+	{
+		Fail,
+		Queue,
+		ReplaceOldest,
+		ReplaceQuietest,
+		ReplaceLowestPriority
+	}
+
 	internal class Variable
 	{
 		public string Name

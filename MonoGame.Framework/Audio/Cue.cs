@@ -295,30 +295,33 @@ namespace Microsoft.Xna.Framework.Audio
 
 			if (GetVariable("NumCueInstances") >= INTERNAL_data.InstanceLimit)
 			{
-				if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Fail)
+				if (INTERNAL_data.MaxCueBehavior == MaxInstanceBehavior.Fail)
 				{
 					return; // Just ignore us...
 				}
-				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.Queue)
+				else if (INTERNAL_data.MaxCueBehavior == MaxInstanceBehavior.Queue)
 				{
 					throw new Exception("Cue Queueing not handled!");
 				}
-				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceOldest)
+				else if (INTERNAL_data.MaxCueBehavior == MaxInstanceBehavior.ReplaceOldest)
 				{
 					INTERNAL_category.INTERNAL_removeOldestCue(Name);
 				}
-				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceQuietest)
+				else if (INTERNAL_data.MaxCueBehavior == MaxInstanceBehavior.ReplaceQuietest)
 				{
 					INTERNAL_category.INTERNAL_removeQuietestCue(Name);
 				}
-				else if (INTERNAL_data.MaxCueBehavior == CueData.MaxInstanceBehavior.ReplaceLowestPriority)
+				else if (INTERNAL_data.MaxCueBehavior == MaxInstanceBehavior.ReplaceLowestPriority)
 				{
 					// FIXME: Priority?
 					INTERNAL_category.INTERNAL_removeOldestCue(Name);
 				}
 			}
 
-			INTERNAL_category.INTERNAL_addCue(this);
+			if (!INTERNAL_category.INTERNAL_addCue(this))
+			{
+				return;
+			}
 
 			if (!INTERNAL_calculateNextSound())
 			{
