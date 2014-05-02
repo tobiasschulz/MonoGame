@@ -201,7 +201,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// <summary>
 		/// Gets a copy of cube texture data specifying a cubemap face.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="T">Generic type for data array element.</typeparam>
 		/// <param name="cubeMapFace">The cube map face.</param>
 		/// <param name="data">The data.</param>
 		public void GetData<T>(

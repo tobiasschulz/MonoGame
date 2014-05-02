@@ -55,9 +55,10 @@ namespace Microsoft.Xna.Framework.Graphics
 		// Resources may be added to and removed from the list from many threads.
 		private static object resourcesLock = new object();
 
-		// Use WeakReference for the global resources list as we do not know when a resource
-		// may be disposed and collected. We do not want to prevent a resource from being
-		// collected by holding a strong reference to it in this list.
+		/* Use WeakReference for the global resources list as we do not know when a resource
+		 * may be disposed and collected. We do not want to prevent a resource from being
+		 * collected by holding a strong reference to it in this list.
+		 */
 		private static List<WeakReference> resources = new List<WeakReference>();
 
 		#endregion
@@ -126,24 +127,16 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Protected Dispose Method
 
 		/// <summary>
-		/// The method that derived classes should override to implement disposing of managed and native resources.
+		/// The method that derived classes should override to implement disposing of
+		/// managed and native resources.
 		/// </summary>
 		/// <param name="disposing">True if managed objects should be disposed.</param>
-		/// <remarks>Native resources should always be released regardless of the value of the disposing parameter.</remarks>
+		/// <remarks>
+		/// Native resources should always be released regardless of the value of the
+		/// disposing parameter.
+		/// </remarks>
 		protected virtual void Dispose(bool disposing)
 		{
-			// FIXME: What was this? No, really, what? -flibit
-			//if (!IsDisposed)
-			//{
-			//if (disposing)
-			//{
-			// Release managed objects
-			// ...
-			//}
-
-			// Release native objects
-			// ...
-
 			// Do not trigger the event if called from the finalizer
 			if (disposing && Disposing != null)
 			{
@@ -159,7 +152,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			selfReference = null;
 			GraphicsDevice = null;
 			IsDisposed = true;
-			//}
 		}
 
 		#endregion
