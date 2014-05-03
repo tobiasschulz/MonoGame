@@ -182,46 +182,35 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				if (fading.Value)
 				{
-					if (fadingCue.Value != null)
+					float fadeOutPerc = (maxFadeOutMS - fadeTimer.ElapsedMilliseconds) / (float) maxFadeOutMS;
+					float fadeInPerc = fadeTimer.ElapsedMilliseconds / (float) maxFadeInMS;
+					if (fadeInPerc >= 1.0f && fadeOutPerc <= 0.0f)
 					{
-						// Fading out!
-						if (fadeTimer.ElapsedMilliseconds > maxFadeOutMS)
-						{
-							fadingCue.Value.Stop(AudioStopOptions.Immediate);
-							fadingCue.Value = null;
-							fadeTimer.Reset();
-							fadeTimer.Start();
-						}
-						else
-						{
-							float perc = (maxFadeOutMS - fadeTimer.ElapsedMilliseconds) / (float) maxFadeOutMS;
-							fadingCue.Value.SetVariable("Volume", fadingCueVolume.Value * perc);
-						}
+						fadingCue.Value.Stop(AudioStopOptions.Immediate);
+						queuedCue.Value.SetVariable("Volume", INTERNAL_volume.Value);
+						fadingCue = null;
+						queuedCue = null;
+						fading.Value = false;
+						fadeTimer.Stop();
 					}
-					else
+					if (fadeOutPerc > 0.0f)
 					{
-						// Fading in!
-						float perc = fadeTimer.ElapsedMilliseconds / (float) maxFadeInMS;
-						if (perc <= 1.0f)
-						{
-							queuedCue.Value.SetVariable(
-								"Volume",
-								INTERNAL_volume.Value * perc
-							);
-							queuedCue.Value.INTERNAL_update();
-						}
-						else
-						{
-							// Cue is all set, we out.
-							fading.Value = false;
-							fadeTimer.Stop();
-						}
+						fadingCue.Value.SetVariable(
+							"Volume",
+							fadingCueVolume.Value * fadeOutPerc
+						);
+					}
+					if (fadeInPerc < 1.0f)
+					{
+						queuedCue.Value.SetVariable(
+							"Volume",
+							INTERNAL_volume.Value * fadeInPerc
+						);
 					}
 				}
 				for (int i = 0; i < activeCues.Count; i += 1)
 				{
-					if (	activeCues[i] != queuedCue.Value &&
-						!activeCues[i].INTERNAL_update()	)
+					if (!activeCues[i].INTERNAL_update())
 					{
 						cueInstanceCounts[activeCues[i].Name] -= 1;
 						activeCues.RemoveAt(i);
