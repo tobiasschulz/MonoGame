@@ -221,7 +221,7 @@ namespace Microsoft.Xna.Framework
 				GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
 			}
 
-			// Needs to be before ApplyChanges()
+			// Needs to be before ApplyChanges().
 			graphicsDevice = new GraphicsDevice(
 				GraphicsAdapter.DefaultAdapter,
 				GraphicsProfile,
@@ -269,13 +269,13 @@ namespace Microsoft.Xna.Framework
 
 		public void ApplyChanges()
 		{
-			// Calling ApplyChanges() before CreateDevice() should have no effect
+			// Calling ApplyChanges() before CreateDevice() should have no effect.
 			if (graphicsDevice == null)
 			{
 				return;
 			}
 
-			// Notify DeviceResetting EventHandlers
+			// Notify DeviceResetting EventHandlers.
 			OnDeviceResetting(null);
 			GraphicsDevice.OnDeviceResetting();
 
@@ -311,7 +311,7 @@ namespace Microsoft.Xna.Framework
 					PresentInterval.Immediate
 			);
 
-			// Notify DeviceReset EventHandlers
+			// Notify DeviceReset EventHandlers.
 			OnDeviceReset(null);
 			GraphicsDevice.OnDeviceReset();
 
