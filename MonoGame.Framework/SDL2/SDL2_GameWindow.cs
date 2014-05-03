@@ -60,7 +60,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Microsoft.Xna.Framework
 {
-	public class SDL2_GameWindow : GameWindow
+	class SDL2_GameWindow : GameWindow
 	{
 		#region Wii U GamePad Support, libdrc Interop
 

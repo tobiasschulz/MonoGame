@@ -16,7 +16,7 @@ using System.Reflection;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public static class ContentExtensions
+	internal static class ContentExtensions
 	{
 		#region Public Static Constructor Extractor Method
 
