@@ -30,130 +30,65 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return _graphicsDevice;
+				return graphicsDevice;
 			}
 		}
 
 		public bool IsFullScreen
 		{
-			get
-			{
-				if (_graphicsDevice != null)
-				{
-					return _graphicsDevice.PresentationParameters.IsFullScreen;
-				}
-				else
-				{
-					return _wantFullScreen;
-				}
-			}
-			set
-			{
-				_wantFullScreen = value;
-				if (_graphicsDevice != null)
-				{
-					_graphicsDevice.PresentationParameters.IsFullScreen = value;
-				}
-			}
+			get;
+			set;
 		}
 
 		public bool PreferMultiSampling
 		{
-			get
-			{
-				return _preferMultiSampling;
-			}
-			set
-			{
-				_preferMultiSampling = value;
-			}
+			get;
+			set;
 		}
 
 		public SurfaceFormat PreferredBackBufferFormat
 		{
-			get
-			{
-				return _preferredBackBufferFormat;
-			}
-			set
-			{
-				_preferredBackBufferFormat = value;
-			}
+			get;
+			set;
 		}
 
 		public int PreferredBackBufferHeight
 		{
-			get
-			{
-				return _preferredBackBufferHeight;
-			}
-			set
-			{
-				_preferredBackBufferHeight = value;
-			}
+			get;
+			set;
 		}
 
 		public int PreferredBackBufferWidth
 		{
-			get
-			{
-				return _preferredBackBufferWidth;
-			}
-			set
-			{
-				_preferredBackBufferWidth = value;
-			}
+			get;
+			set;
 		}
 
 		public DepthFormat PreferredDepthStencilFormat
 		{
-			get
-			{
-				return _preferredDepthStencilFormat;
-			}
-			set
-			{
-				_preferredDepthStencilFormat = value;
-			}
+			get;
+			set;
 		}
 
 		public bool SynchronizeWithVerticalRetrace
 		{
-			get
-			{
-				return _synchronizedWithVerticalRetrace;
-			}
-			set
-			{
-				_synchronizedWithVerticalRetrace = value;
-			}
+			get;
+			set;
 		}
 
 		public DisplayOrientation SupportedOrientations
 		{
 			get
 			{
-				return _supportedOrientations;
+				return supportedOrientations;
 			}
 			set
 			{
-				_supportedOrientations = value;
-				if (_game.Window != null)
+				supportedOrientations = value;
+				if (game.Window != null)
 				{
-					_game.Window.SetSupportedOrientations(_supportedOrientations);
+					game.Window.SetSupportedOrientations(supportedOrientations);
 				}
-			}
-		}
-
-		#endregion
-
-		#region Private Properties
-
-		private bool _SynchronizedWithVerticalRetrace
-		{
-			get
-			{
-				return _synchronizedWithVerticalRetrace;
 			}
 		}
 
@@ -161,18 +96,11 @@ namespace Microsoft.Xna.Framework
 
 		#region Private Variables
 
-		private Game _game;
-		private GraphicsDevice _graphicsDevice;
-		private int _preferredBackBufferHeight;
-		private int _preferredBackBufferWidth;
-		private SurfaceFormat _preferredBackBufferFormat;
-		private DepthFormat _preferredDepthStencilFormat;
-		private bool _preferMultiSampling;
-		private DisplayOrientation _supportedOrientations;
-		private bool _synchronizedWithVerticalRetrace = true;
-		private bool _drawBegun;
+		private Game game;
+		private GraphicsDevice graphicsDevice;
+		private DisplayOrientation supportedOrientations;
+		private bool drawBegun;
 		private bool disposed;
-		private bool _wantFullScreen = false;
 
 		#endregion
 
@@ -192,24 +120,23 @@ namespace Microsoft.Xna.Framework
 				throw new ArgumentNullException("The game cannot be null!");
 			}
 
-			_game = game;
+			this.game = game;
 
-			_supportedOrientations = DisplayOrientation.Default;
+			supportedOrientations = DisplayOrientation.Default;
 
-			_preferredBackBufferHeight = DefaultBackBufferHeight;
-			_preferredBackBufferWidth = DefaultBackBufferWidth;
+			PreferredBackBufferHeight = DefaultBackBufferHeight;
+			PreferredBackBufferWidth = DefaultBackBufferWidth;
 
-			_preferredBackBufferFormat = SurfaceFormat.Color;
-			_preferredDepthStencilFormat = DepthFormat.Depth24;
-			_synchronizedWithVerticalRetrace = true;
+			PreferredBackBufferFormat = SurfaceFormat.Color;
+			PreferredDepthStencilFormat = DepthFormat.Depth24;
 
-			if (_game.Services.GetService(typeof(IGraphicsDeviceManager)) != null)
+			if (game.Services.GetService(typeof(IGraphicsDeviceManager)) != null)
 			{
 				throw new ArgumentException("Graphics Device Manager Already Present");
 			}
 
-			_game.Services.AddService(typeof(IGraphicsDeviceManager), this);
-			_game.Services.AddService(typeof(IGraphicsDeviceService), this);
+			game.Services.AddService(typeof(IGraphicsDeviceManager), this);
+			game.Services.AddService(typeof(IGraphicsDeviceService), this);
 		}
 
 		#endregion
@@ -244,28 +171,28 @@ namespace Microsoft.Xna.Framework
 
 		public bool BeginDraw()
 		{
-			if (_graphicsDevice == null)
+			if (graphicsDevice == null)
 			{
 				return false;
 			}
 
-			_drawBegun = true;
+			drawBegun = true;
 			return true;
 		}
 
 		public void EndDraw()
 		{
-			if (_graphicsDevice != null && _drawBegun)
+			if (graphicsDevice != null && drawBegun)
 			{
-				_drawBegun = false;
-				_graphicsDevice.Present();
+				drawBegun = false;
+				graphicsDevice.Present();
 			}
 		}
 
 		public void ApplyChanges()
 		{
 			// Calling ApplyChanges() before CreateDevice() should have no effect
-			if (_graphicsDevice == null)
+			if (graphicsDevice == null)
 			{
 				return;
 			}
@@ -283,20 +210,21 @@ namespace Microsoft.Xna.Framework
 				PreferredBackBufferHeight;
 			GraphicsDevice.PresentationParameters.DepthStencilFormat =
 				PreferredDepthStencilFormat;
-			IsFullScreen = _wantFullScreen;
+			GraphicsDevice.PresentationParameters.IsFullScreen =
+				IsFullScreen;
 
 			// Make the Platform device changes.
-			_game.Platform.BeginScreenDeviceChange(
+			game.Platform.BeginScreenDeviceChange(
 				GraphicsDevice.PresentationParameters.IsFullScreen
 			);
-			_game.Platform.EndScreenDeviceChange(
+			game.Platform.EndScreenDeviceChange(
 				"FNA",
 				GraphicsDevice.PresentationParameters.BackBufferWidth,
 				GraphicsDevice.PresentationParameters.BackBufferHeight
 			);
 
 			// This platform uses VSyncEnabled rather than PresentationInterval.
-			_game.Platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
+			game.Platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
 
 			// ... But we still need to apply the PresentInterval.
 			GraphicsDevice.PresentationParameters.PresentationInterval = (
@@ -317,9 +245,9 @@ namespace Microsoft.Xna.Framework
 			 * those working.
 			 */
 			TouchPanel.DisplayWidth =
-				_graphicsDevice.PresentationParameters.BackBufferWidth;
+				graphicsDevice.PresentationParameters.BackBufferWidth;
 			TouchPanel.DisplayHeight =
-				_graphicsDevice.PresentationParameters.BackBufferHeight;
+				graphicsDevice.PresentationParameters.BackBufferHeight;
 		}
 
 		public void ToggleFullScreen()
@@ -332,11 +260,11 @@ namespace Microsoft.Xna.Framework
 			 */
 			if (IsFullScreen)
 			{
-				_game.Platform.EnterFullScreen();
+				game.Platform.EnterFullScreen();
 			}
 			else
 			{
-				_game.Platform.ExitFullScreen();
+				game.Platform.ExitFullScreen();
 			}
 		}
 
@@ -356,10 +284,10 @@ namespace Microsoft.Xna.Framework
 			{
 				if (disposing)
 				{
-					if (_graphicsDevice != null)
+					if (graphicsDevice != null)
 					{
-						_graphicsDevice.Dispose();
-						_graphicsDevice = null;
+						graphicsDevice.Dispose();
+						graphicsDevice = null;
 					}
 				}
 				disposed = true;
@@ -461,7 +389,7 @@ namespace Microsoft.Xna.Framework
 			}
 
 			// Needs to be before ApplyChanges()
-			_graphicsDevice = new GraphicsDevice(
+			graphicsDevice = new GraphicsDevice(
 				GraphicsAdapter.DefaultAdapter,
 				GraphicsProfile,
 				presentationParameters
@@ -476,11 +404,11 @@ namespace Microsoft.Xna.Framework
 			 * those working.
 			 */
 			TouchPanel.DisplayWidth =
-				_graphicsDevice.PresentationParameters.BackBufferWidth;
+				graphicsDevice.PresentationParameters.BackBufferWidth;
 			TouchPanel.DisplayHeight =
-				_graphicsDevice.PresentationParameters.BackBufferHeight;
+				graphicsDevice.PresentationParameters.BackBufferHeight;
 			TouchPanel.DisplayOrientation =
-				_graphicsDevice.PresentationParameters.DisplayOrientation;
+				graphicsDevice.PresentationParameters.DisplayOrientation;
 		}
 
 		#endregion

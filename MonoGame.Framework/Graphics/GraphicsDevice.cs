@@ -72,11 +72,15 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			get
 			{
-				return new DisplayMode(
-					OpenGLDevice.Instance.Backbuffer.Width,
-					OpenGLDevice.Instance.Backbuffer.Height,
-					SurfaceFormat.Color
-				);
+				if (PresentationParameters.IsFullScreen)
+				{
+					return new DisplayMode(
+						OpenGLDevice.Instance.Backbuffer.Width,
+						OpenGLDevice.Instance.Backbuffer.Height,
+						SurfaceFormat.Color
+					);
+				}
+				return Adapter.CurrentDisplayMode;
 			}
 		}
 
