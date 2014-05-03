@@ -106,12 +106,22 @@ namespace Microsoft.Xna.Framework
 
 		#region Public Static Fields
 
-		public static readonly int DefaultBackBufferHeight = 480;
 		public static readonly int DefaultBackBufferWidth = 800;
+		public static readonly int DefaultBackBufferHeight = 480;
 
 		#endregion
 
-		#region Public Constructors
+		#region IGraphicsDeviceService Events
+
+		public event EventHandler<EventArgs> DeviceCreated;
+		public event EventHandler<EventArgs> DeviceDisposing;
+		public event EventHandler<EventArgs> DeviceReset;
+		public event EventHandler<EventArgs> DeviceResetting;
+		public event EventHandler<PreparingDeviceSettingsEventArgs> PreparingDeviceSettings;
+
+		#endregion
+
+		#region Public Constructor
 
 		public GraphicsDeviceManager(Game game)
 		{
@@ -150,13 +160,29 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region IGraphicsDeviceService Events
+		#region Dispose Methods
 
-		public event EventHandler<EventArgs> DeviceCreated;
-		public event EventHandler<EventArgs> DeviceDisposing;
-		public event EventHandler<EventArgs> DeviceReset;
-		public event EventHandler<EventArgs> DeviceResetting;
-		public event EventHandler<PreparingDeviceSettingsEventArgs> PreparingDeviceSettings;
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposed)
+			{
+				if (disposing)
+				{
+					if (graphicsDevice != null)
+					{
+						graphicsDevice.Dispose();
+						graphicsDevice = null;
+					}
+				}
+				disposed = true;
+			}
+		}
 
 		#endregion
 
@@ -164,8 +190,60 @@ namespace Microsoft.Xna.Framework
 
 		public void CreateDevice()
 		{
-			Initialize();
+			PresentationParameters presentationParameters = new PresentationParameters();
+			presentationParameters.DepthStencilFormat = DepthFormat.Depth24;
 
+			// It's bad practice to start fullscreen.
+			presentationParameters.IsFullScreen = false;
+
+			// TODO: Implement multisampling (aka anti-aliasing) for all platforms!
+			if (PreparingDeviceSettings != null)
+			{
+				GraphicsDeviceInformation gdi = new GraphicsDeviceInformation();
+
+				// Microsoft defaults this to Reach.
+				gdi.GraphicsProfile = GraphicsProfile;
+
+				gdi.Adapter = GraphicsAdapter.DefaultAdapter;
+				gdi.PresentationParameters = presentationParameters;
+				PreparingDeviceSettingsEventArgs pe =
+					new PreparingDeviceSettingsEventArgs(gdi);
+				PreparingDeviceSettings(this, pe);
+				presentationParameters =
+					pe.GraphicsDeviceInformation.PresentationParameters;
+
+				/* FIXME: PreparingDeviceSettings may change these parameters,
+				 * update ours too? -flibit
+				 */
+				PreferredBackBufferFormat = presentationParameters.BackBufferFormat;
+				PreferredDepthStencilFormat = presentationParameters.DepthStencilFormat;
+
+				GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
+			}
+
+			// Needs to be before ApplyChanges()
+			graphicsDevice = new GraphicsDevice(
+				GraphicsAdapter.DefaultAdapter,
+				GraphicsProfile,
+				presentationParameters
+			);
+
+			ApplyChanges();
+
+			/* Set the new display size on the touch panel.
+			 *
+			 * TODO: In XNA this seems to be done as part of the
+			 * GraphicsDevice.DeviceReset event... we need to get
+			 * those working.
+			 */
+			TouchPanel.DisplayWidth =
+				graphicsDevice.PresentationParameters.BackBufferWidth;
+			TouchPanel.DisplayHeight =
+				graphicsDevice.PresentationParameters.BackBufferHeight;
+			TouchPanel.DisplayOrientation =
+				graphicsDevice.PresentationParameters.DisplayOrientation;
+
+			// Call the DeviceCreated Event
 			OnDeviceCreated(EventArgs.Empty);
 		}
 
@@ -268,53 +346,6 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		#endregion
-
-		#region Protected Methods
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposed)
-			{
-				if (disposing)
-				{
-					if (graphicsDevice != null)
-					{
-						graphicsDevice.Dispose();
-						graphicsDevice = null;
-					}
-				}
-				disposed = true;
-			}
-		}
-
-		#endregion
-
-		#region Internal Methods
-
-		/// <summary>
-		/// This method is used by MonoGame Android to adjust the game's drawn to area to fill
-		/// as much of the screen as possible whilst retaining the aspect ratio inferred from
-		/// aspectRatio = (PreferredBackBufferWidth / PreferredBackBufferHeight)
-		///
-		/// NOTE: this is a hack that should be removed if proper back buffer to screen scaling
-		/// is implemented. To disable it's effect, in the game's constructor use:
-		///
-		///	 graphics.IsFullScreen = true;
-		///	 graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
-		///	 graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
-		///
-		/// </summary>
-		internal void ResetClientBounds()
-		{
-		}
-
 		#endregion
 
 		#region Internal IGraphicsDeviceService Methods
@@ -353,67 +384,7 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region Private Methods
-
-		private void Initialize()
-		{
-			PresentationParameters presentationParameters = new PresentationParameters();
-			presentationParameters.DepthStencilFormat = DepthFormat.Depth24;
-
-			// It's bad practice to start fullscreen.
-			presentationParameters.IsFullScreen = false;
-
-			// TODO: Implement multisampling (aka anti-aliasing) for all platforms!
-			if (PreparingDeviceSettings != null)
-			{
-				GraphicsDeviceInformation gdi = new GraphicsDeviceInformation();
-
-				// Microsoft defaults this to Reach.
-				gdi.GraphicsProfile = GraphicsProfile;
-
-				gdi.Adapter = GraphicsAdapter.DefaultAdapter;
-				gdi.PresentationParameters = presentationParameters;
-				PreparingDeviceSettingsEventArgs pe =
-					new PreparingDeviceSettingsEventArgs(gdi);
-				PreparingDeviceSettings(this, pe);
-				presentationParameters =
-					pe.GraphicsDeviceInformation.PresentationParameters;
-
-				/* FIXME: PreparingDeviceSettings may change these parameters,
-				 * update ours too? -flibit
-				 */
-				PreferredBackBufferFormat = presentationParameters.BackBufferFormat;
-				PreferredDepthStencilFormat = presentationParameters.DepthStencilFormat;
-
-				GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
-			}
-
-			// Needs to be before ApplyChanges()
-			graphicsDevice = new GraphicsDevice(
-				GraphicsAdapter.DefaultAdapter,
-				GraphicsProfile,
-				presentationParameters
-			);
-
-			ApplyChanges();
-
-			/* Set the new display size on the touch panel.
-			 * 
-			 * TODO: In XNA this seems to be done as part of the
-			 * GraphicsDevice.DeviceReset event... we need to get
-			 * those working.
-			 */
-			TouchPanel.DisplayWidth =
-				graphicsDevice.PresentationParameters.BackBufferWidth;
-			TouchPanel.DisplayHeight =
-				graphicsDevice.PresentationParameters.BackBufferHeight;
-			TouchPanel.DisplayOrientation =
-				graphicsDevice.PresentationParameters.DisplayOrientation;
-		}
-
-		#endregion
-
-		#region IGraphicsDeviceService Private Methods
+		#region Private IGraphicsDeviceService Methods
 
 		private void Raise<TEventArgs>(EventHandler<TEventArgs> handler, TEventArgs e)
 			where TEventArgs : EventArgs
