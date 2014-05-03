@@ -331,6 +331,7 @@ namespace Microsoft.Xna.Framework
 		public void ToggleFullScreen()
 		{
 			IsFullScreen = !IsFullScreen;
+			graphicsDevice.PresentationParameters.IsFullScreen = IsFullScreen;
 
 			/* FIXME: This wasn't here before.
 			 * Shouldn't this toggle happen immediately?
