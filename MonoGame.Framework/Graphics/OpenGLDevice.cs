@@ -1674,7 +1674,7 @@ namespace Microsoft.Xna.Framework.Graphics
 						0, 0, srcWidth, srcHeight,
 						0, 0, dstWidth, dstHeight,
 						ClearBufferMask.ColorBufferBit,
-						(ExtFramebufferBlit) BlitFramebufferFilter.Linear
+						BlitFramebufferFilter.Linear
 					);
 					GL.Ext.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
 				}
