@@ -192,54 +192,43 @@ namespace Microsoft.Xna.Framework
 		{
 			PresentationParameters presentationParameters = new PresentationParameters();
 			presentationParameters.DepthStencilFormat = DepthFormat.Depth24;
-
-			// It's bad practice to start fullscreen.
 			presentationParameters.IsFullScreen = false;
 
-			// TODO: Implement multisampling (aka anti-aliasing) for all platforms!
 			if (PreparingDeviceSettings != null)
 			{
+				// Generate default information to provide to the application.
 				GraphicsDeviceInformation gdi = new GraphicsDeviceInformation();
-
-				// Microsoft defaults this to Reach.
 				gdi.GraphicsProfile = GraphicsProfile;
-
 				gdi.Adapter = GraphicsAdapter.DefaultAdapter;
 				gdi.PresentationParameters = presentationParameters;
-				PreparingDeviceSettingsEventArgs pe =
-					new PreparingDeviceSettingsEventArgs(gdi);
-				PreparingDeviceSettings(this, pe);
-				presentationParameters =
-					pe.GraphicsDeviceInformation.PresentationParameters;
 
-				/* FIXME: PreparingDeviceSettings may change these parameters,
-				 * update ours too? -flibit
-				 */
+				// Prepare the settings, pass to the application, apply the changes.
+				PreparingDeviceSettingsEventArgs settings = new PreparingDeviceSettingsEventArgs(gdi);
+				PreparingDeviceSettings(this, settings);
+				presentationParameters = settings.GraphicsDeviceInformation.PresentationParameters;
+
+				// Set the GraphicsProfile based on the new settings.
+				GraphicsProfile = settings.GraphicsDeviceInformation.GraphicsProfile;
+
+				// Change our settings based on the new PresentationParameters.
 				PreferredBackBufferFormat = presentationParameters.BackBufferFormat;
 				PreferredDepthStencilFormat = presentationParameters.DepthStencilFormat;
-
-				GraphicsProfile = pe.GraphicsDeviceInformation.GraphicsProfile;
 			}
 
-			// Needs to be before ApplyChanges().
+			// Create the GraphicsDevice, apply the initial settings.
 			graphicsDevice = new GraphicsDevice(
 				GraphicsAdapter.DefaultAdapter,
 				GraphicsProfile,
 				presentationParameters
 			);
-
 			ApplyChanges();
 
-			/* Set the new display size on the touch panel.
+			/* Set the new display orientation on the touch panel.
 			 *
 			 * TODO: In XNA this seems to be done as part of the
 			 * GraphicsDevice.DeviceReset event... we need to get
 			 * those working.
 			 */
-			TouchPanel.DisplayWidth =
-				graphicsDevice.PresentationParameters.BackBufferWidth;
-			TouchPanel.DisplayHeight =
-				graphicsDevice.PresentationParameters.BackBufferHeight;
 			TouchPanel.DisplayOrientation =
 				graphicsDevice.PresentationParameters.DisplayOrientation;
 
@@ -312,7 +301,6 @@ namespace Microsoft.Xna.Framework
 			OnDeviceReset(null);
 			GraphicsDevice.OnDeviceReset();
 
-
 			/* Set the new display size on the touch panel.
 			 * 
 			 * TODO: In XNA this seems to be done as part of the
@@ -327,21 +315,17 @@ namespace Microsoft.Xna.Framework
 
 		public void ToggleFullScreen()
 		{
+			// Change settings.
 			IsFullScreen = !IsFullScreen;
 			graphicsDevice.PresentationParameters.IsFullScreen = IsFullScreen;
 
-			/* FIXME: This wasn't here before.
-			 * Shouldn't this toggle happen immediately?
-			 * -flibit
-			 */
-			if (IsFullScreen)
-			{
-				game.Platform.EnterFullScreen();
-			}
-			else
-			{
-				game.Platform.ExitFullScreen();
-			}
+			// Apply settings.
+			game.Platform.BeginScreenDeviceChange(IsFullScreen);
+			game.Platform.EndScreenDeviceChange(
+				"FNA",
+				Graphics.OpenGLDevice.Instance.Backbuffer.Width,
+				Graphics.OpenGLDevice.Instance.Backbuffer.Height
+			);
 		}
 
 		#endregion

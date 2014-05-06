@@ -416,7 +416,7 @@ namespace Microsoft.Xna.Framework
 
 		public override void StartRunLoop()
 		{
-			throw new NotImplementedException("SDL2_GamePlatform does not use this!");
+			throw new NotSupportedException();
 		}
 
 		public override void Exit()
@@ -442,26 +442,6 @@ namespace Microsoft.Xna.Framework
 		public override bool BeforeDraw(GameTime gameTime)
 		{
 			return true;
-		}
-
-		public override void EnterFullScreen()
-		{
-			BeginScreenDeviceChange(true);
-			EndScreenDeviceChange(
-				"FNA",
-				Graphics.OpenGLDevice.Instance.Backbuffer.Width,
-				Graphics.OpenGLDevice.Instance.Backbuffer.Height
-			);
-		}
-
-		public override void ExitFullScreen()
-		{
-			BeginScreenDeviceChange(false);
-			EndScreenDeviceChange(
-				"FNA",
-				Graphics.OpenGLDevice.Instance.Backbuffer.Width,
-				Graphics.OpenGLDevice.Instance.Backbuffer.Height
-			);
 		}
 
 		public override void BeginScreenDeviceChange(bool willBeFullScreen)
