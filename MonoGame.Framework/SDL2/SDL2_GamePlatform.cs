@@ -175,11 +175,6 @@ namespace Microsoft.Xna.Framework
 			// This _should_ be the first real SDL call we make...
 			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
 
-			INTERNAL_runApplication = true;
-
-			// Initialize Active Key List
-			keys = new List<Keys>();
-
 			// Set and initialize the SDL2 window
 			Window = new SDL2_GameWindow(game);
 
@@ -215,9 +210,6 @@ namespace Microsoft.Xna.Framework
 			INTERNAL_GLContext = SDL.SDL_GL_CreateContext(Window.Handle);
 			OpenTK.Graphics.GraphicsContext.CurrentContext = INTERNAL_GLContext;
 
-			// Assume we will have focus.
-			IsActive = true;
-
 #if THREADED_GL
 			// Create a background context
 			SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
@@ -234,9 +226,21 @@ namespace Microsoft.Xna.Framework
 			// Set up the OpenGL Device. Loads entry points.
 			new OpenGLDevice();
 
+			// Create the OpenAL device
+			new OpenALDevice();
+
+			// Initialize Active Key List
+			keys = new List<Keys>();
+
 			// Setup Text Input Control Character Arrays (Only 4 control keys supported at this time)
 			INTERNAL_TextInputControlDown = new bool[4];
 			INTERNAL_TextInputControlRepeat = new int[4];
+
+			// Assume we will have focus.
+			IsActive = true;
+
+			// Ready to run the loop!
+			INTERNAL_runApplication = true;
 
 #if WIIU_GAMEPAD
 			wiiuStream = DRC.drc_new_streamer();
@@ -255,9 +259,6 @@ namespace Microsoft.Xna.Framework
 			DRC.drc_enable_system_input_feeder(wiiuStream);
 			wiiuPixelData = new byte[startWidth * startHeight * 4];
 #endif
-
-			// Create the OpenAL device
-			new OpenALDevice();
 		}
 
 		#endregion
@@ -657,6 +658,11 @@ namespace Microsoft.Xna.Framework
 					Window = null;
 				}
 
+				if (OpenALDevice.Instance != null)
+				{
+					OpenALDevice.Instance.Dispose();
+				}
+
 #if WIIU_GAMEPAD
 				if (wiiuStream != IntPtr.Zero)
 				{
@@ -665,11 +671,6 @@ namespace Microsoft.Xna.Framework
 					wiiuStream = IntPtr.Zero;
 				}
 #endif
-
-				if (OpenALDevice.Instance != null)
-				{
-					OpenALDevice.Instance.Dispose();
-				}
 
 				// This _should_ be the last SDL call we make...
 				SDL.SDL_Quit();
