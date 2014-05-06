@@ -31,50 +31,6 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		public override bool VSyncEnabled
-		{
-			get
-			{
-				int result = 0;
-				result = SDL.SDL_GL_GetSwapInterval();
-				return (result == 1 || result == -1);
-			}
-			set
-			{
-				if (value)
-				{
-					if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
-					{
-						// Apple is a big fat liar about swap_control_tear. Use stock VSync.
-						SDL.SDL_GL_SetSwapInterval(1);
-					}
-					else
-					{
-						if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
-						{
-							System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
-						}
-						else
-						{
-							System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
-							SDL.SDL_ClearError();
-							SDL.SDL_GL_SetSwapInterval(1);
-						}
-					}
-				}
-				else
-				{
-					SDL.SDL_GL_SetSwapInterval(0);
-				}
-			}
-		}
-
-		public override string OSVersion
-		{
-			get;
-			protected set;
-		}
-
 		#endregion
 
 		#region Internal SDL2 Window
@@ -91,11 +47,8 @@ namespace Microsoft.Xna.Framework
 
 		#region Public Constructor
 
-		public SDL2_GamePlatform(Game game) : base(game)
+		public SDL2_GamePlatform(Game game) : base(game, SDL.SDL_GetPlatform())
 		{
-			// Assign the OSVersion string
-			OSVersion = SDL.SDL_GetPlatform();
-
 			// Set and initialize the SDL2 window
 			INTERNAL_window = new SDL2_GameWindow(game, this);
 			this.Window = INTERNAL_window;
@@ -243,6 +196,43 @@ namespace Microsoft.Xna.Framework
 				supportedDisplayModes = new DisplayModeCollection(modes);
 			}
 			return supportedDisplayModes;
+		}
+
+		internal override void SetPresentationInterval(PresentInterval interval)
+		{
+			if (interval == PresentInterval.Default || interval == PresentInterval.One)
+			{
+				if (OSVersion.Equals("Mac OS X"))
+				{
+					// Apple is a big fat liar about swap_control_tear. Use stock VSync.
+					SDL.SDL_GL_SetSwapInterval(1);
+				}
+				else
+				{
+					if (SDL.SDL_GL_SetSwapInterval(-1) != -1)
+					{
+						System.Console.WriteLine("Using EXT_swap_control_tear VSync!");
+					}
+					else
+					{
+						System.Console.WriteLine("EXT_swap_control_tear unsupported. Fall back to standard VSync.");
+						SDL.SDL_ClearError();
+						SDL.SDL_GL_SetSwapInterval(1);
+					}
+				}
+			}
+			else if (interval == PresentInterval.Immediate)
+			{
+				SDL.SDL_GL_SetSwapInterval(0);
+			}
+			else if (interval == PresentInterval.Two)
+			{
+				SDL.SDL_GL_SetSwapInterval(2);
+			}
+			else
+			{
+				throw new Exception("Unrecognized PresentInterval!");
+			}
 		}
 
 		#endregion

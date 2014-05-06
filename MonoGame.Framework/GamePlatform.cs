@@ -89,29 +89,19 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		public virtual bool VSyncEnabled
-		{
-			get
-			{
-				throw new NotImplementedException();
-			}
-			set
-			{
-			}
-		}
+		#endregion
 
-		public abstract string OSVersion
+		#region Internal Properties
+
+		internal string OSVersion
 		{
 			get;
-			protected set;
+			private set;
 		}
 
 		#endregion
 
-		#region Protected Fields
-
-		protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
-		protected bool _needsToResetElapsedTime = false;
+		#region Protected Properties
 
 		protected bool IsDisposed
 		{
@@ -123,7 +113,14 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region Private Fields
+		#region Protected Variables
+
+		protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
+		protected bool _needsToResetElapsedTime = false;
+
+		#endregion
+
+		#region Private Variables
 
 		bool disposed;
 		private bool _isActive;
@@ -134,13 +131,14 @@ namespace Microsoft.Xna.Framework
 
 		#region Protected Constructor
 
-		protected GamePlatform(Game game)
+		protected GamePlatform(Game game, string osVersion)
 		{
 			if (game == null)
 			{
 				throw new ArgumentNullException("game");
 			}
 			Game = game;
+			OSVersion = osVersion;
 		}
 
 		#endregion
@@ -307,6 +305,8 @@ namespace Microsoft.Xna.Framework
 		internal abstract DisplayMode GetCurrentDisplayMode();
 
 		internal abstract DisplayModeCollection GetDisplayModes();
+
+		internal abstract void SetPresentationInterval(PresentInterval interval);
 
 		#endregion
 

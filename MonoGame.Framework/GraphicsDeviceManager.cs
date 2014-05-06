@@ -301,13 +301,10 @@ namespace Microsoft.Xna.Framework
 				GraphicsDevice.PresentationParameters.BackBufferHeight
 			);
 
-			// This platform uses VSyncEnabled rather than PresentationInterval.
-			game.Platform.VSyncEnabled = SynchronizeWithVerticalRetrace;
-
-			// ... But we still need to apply the PresentInterval.
-			GraphicsDevice.PresentationParameters.PresentationInterval = (
+			// Apply the PresentInterval.
+			game.Platform.SetPresentationInterval(
 				SynchronizeWithVerticalRetrace ?
-					PresentInterval.One :
+					GraphicsDevice.PresentationParameters.PresentationInterval :
 					PresentInterval.Immediate
 			);
 
