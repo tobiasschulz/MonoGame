@@ -400,6 +400,15 @@ namespace Microsoft.Xna.Framework
 		public event EventHandler<EventArgs> Disposed;
 		public event EventHandler<EventArgs> Exiting;
 
+		/// <summary>
+		/// Use this event to retrieve text for objects like textboxes.
+		/// This event is not raised by noncharacter keys.
+		/// This event also supports key repeat.
+		/// For more information this event is based off:
+		/// http://msdn.microsoft.com/en-AU/library/system.windows.forms.control.keypress.aspx
+		/// </summary>
+		public event EventHandler<TextInputEventArgs> TextInput;
+
 		#endregion
 
 		#region Public Methods
@@ -769,6 +778,14 @@ namespace Microsoft.Xna.Framework
 		{
 			OnExiting(this, EventArgs.Empty);
 			UnloadContent();
+		}
+
+		internal void OnTextInput(object sender, TextInputEventArgs e)
+		{
+			if (TextInput != null)
+			{
+				TextInput(sender, e);
+			}
 		}
 
 		#endregion

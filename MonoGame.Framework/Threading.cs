@@ -18,7 +18,7 @@
  * With THREADED_GL we instead allow you to run threaded rendering using
  * multiple GL contexts. This is more flexible, but much more dangerous.
  *
- * Also note that this affects SDL2/SDL2_GameWindow.cs! Check THREADED_GL there too.
+ * Also note that this affects SDL2/SDL2_GamePlatform.cs! Check THREADED_GL there too.
  *
  * Basically, if you have to enable this, you should feel very bad.
  * -flibit
