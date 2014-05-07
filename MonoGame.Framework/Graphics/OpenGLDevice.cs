@@ -235,6 +235,91 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
+		#region OpenGL Vertex Buffer Container Class
+
+		public class OpenGLVertexBuffer
+		{
+			public int Handle
+			{
+				get;
+				private set;
+			}
+
+			public BufferUsageHint Dynamic
+			{
+				get;
+				private set;
+			}
+
+			public OpenGLVertexBuffer(bool dynamic, int vertexCount, int vertexStride)
+			{
+				Handle = GL.GenBuffer();
+				Dynamic = dynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw;
+
+				OpenGLDevice.Instance.BindVertexBuffer(this);
+				GL.BufferData(
+					BufferTarget.ArrayBuffer,
+					new IntPtr(vertexStride * vertexCount),
+					IntPtr.Zero,
+					Dynamic
+				);
+			}
+
+			private OpenGLVertexBuffer()
+			{
+				Handle = 0;
+			}
+			public static readonly OpenGLVertexBuffer NullBuffer = new OpenGLVertexBuffer();
+		}
+
+		#endregion
+
+		#region OpenGL Index Buffer Container Class
+
+		public class OpenGLIndexBuffer
+		{
+			public int Handle
+			{
+				get;
+				private set;
+			}
+
+			public BufferUsageHint Dynamic
+			{
+				get;
+				private set;
+			}
+
+			public IntPtr BufferSize
+			{
+				get;
+				private set;
+			}
+
+			public OpenGLIndexBuffer(bool dynamic, int indexCount, IndexElementSize elementSize)
+			{
+				Handle = GL.GenBuffer();
+				Dynamic = dynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw;
+				BufferSize = (IntPtr) (indexCount * (elementSize == IndexElementSize.SixteenBits ? 2 : 4));
+
+				OpenGLDevice.Instance.BindIndexBuffer(this);
+				GL.BufferData(
+					BufferTarget.ElementArrayBuffer,
+					BufferSize,
+					IntPtr.Zero,
+					Dynamic
+				);
+			}
+
+			private OpenGLIndexBuffer()
+			{
+				Handle = 0;
+			}
+			public static readonly OpenGLIndexBuffer NullBuffer = new OpenGLIndexBuffer();
+		}
+
+		#endregion
+
 		#region OpenGL Vertex Attribute State Container Class
 
 		public class OpenGLVertexAttribute
@@ -932,31 +1017,196 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region glBindBuffer Methods
 
-		public void BindVertexBuffer(int buffer)
+		public void BindVertexBuffer(OpenGLVertexBuffer buffer)
 		{
-			if (buffer != currentVertexBuffer)
+			if (buffer.Handle != currentVertexBuffer)
 			{
-				GL.BindBuffer(BufferTarget.ArrayBuffer, buffer);
-				currentVertexBuffer = buffer;
+				GL.BindBuffer(BufferTarget.ArrayBuffer, buffer.Handle);
+				currentVertexBuffer = buffer.Handle;
 			}
 		}
 
-		public void BindIndexBuffer(int buffer)
+		public void BindIndexBuffer(OpenGLIndexBuffer buffer)
 		{
-			if (buffer != currentIndexBuffer)
+			if (buffer.Handle != currentIndexBuffer)
 			{
-				GL.BindBuffer(BufferTarget.ElementArrayBuffer, buffer);
-				currentIndexBuffer = buffer;
+				GL.BindBuffer(BufferTarget.ElementArrayBuffer, buffer.Handle);
+				currentIndexBuffer = buffer.Handle;
 			}
+		}
+
+		#endregion
+
+		#region glSetBufferData Methods
+
+		public void SetVertexBufferData<T>(
+			OpenGLVertexBuffer handle,
+			int bufferSize,
+			int elementSizeInBytes,
+			int offsetInBytes,
+			T[] data,
+			int startIndex,
+			int elementCount,
+			int vertexStride,
+			SetDataOptions options
+		) where T : struct {
+			BindVertexBuffer(handle);
+
+			if (options == SetDataOptions.Discard)
+			{
+				GL.BufferData(
+					BufferTarget.ArrayBuffer,
+					(IntPtr) bufferSize,
+					IntPtr.Zero,
+					handle.Dynamic
+				);
+			}
+
+			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+			GL.BufferSubData(
+				BufferTarget.ArrayBuffer,
+				(IntPtr) offsetInBytes,
+				(IntPtr) (elementSizeInBytes * elementCount),
+				(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInBytes)
+			);
+
+			dataHandle.Free();
+		}
+
+		public void SetIndexBufferData<T>(
+			OpenGLIndexBuffer handle,
+			int offsetInBytes,
+			T[] data,
+			int startIndex,
+			int elementCount,
+			SetDataOptions options
+		) where T : struct {
+			BindIndexBuffer(handle);
+
+			if (options == SetDataOptions.Discard)
+			{
+				GL.BufferData(
+					BufferTarget.ElementArrayBuffer,
+					handle.BufferSize,
+					IntPtr.Zero,
+					handle.Dynamic
+				);
+			}
+
+			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+			int elementSizeInBytes = Marshal.SizeOf(typeof(T));
+			GL.BufferSubData(
+				BufferTarget.ElementArrayBuffer,
+				(IntPtr) offsetInBytes,
+				(IntPtr) (elementSizeInBytes * elementCount),
+				(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInBytes)
+			);
+
+			dataHandle.Free();
+		}
+
+		#endregion
+
+		#region glGetBufferData Methods
+
+		public void GetVertexBufferData<T>(
+			OpenGLVertexBuffer handle,
+			int offsetInBytes,
+			T[] data,
+			int startIndex,
+			int elementCount,
+			int vertexStride
+		) where T : struct {
+			BindVertexBuffer(handle);
+
+			IntPtr ptr = GL.MapBuffer(BufferTarget.ArrayBuffer, BufferAccess.ReadOnly);
+
+			// Pointer to the start of data to read in the index buffer
+			ptr = new IntPtr(ptr.ToInt64() + offsetInBytes);
+
+			if (typeof(T) == typeof(byte))
+			{
+				/* If data is already a byte[] we can skip the temporary buffer.
+				 * Copy from the vertex buffer to the destination array.
+				 */
+				byte[] buffer = data as byte[];
+				Marshal.Copy(ptr, buffer, 0, buffer.Length);
+			}
+			else
+			{
+				// Temporary buffer to store the copied section of data
+				byte[] buffer = new byte[elementCount * vertexStride - offsetInBytes];
+
+				// Copy from the vertex buffer to the temporary buffer
+				Marshal.Copy(ptr, buffer, 0, buffer.Length);
+
+				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+				IntPtr dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * Marshal.SizeOf(typeof(T)));
+
+				// Copy from the temporary buffer to the destination array
+				int dataSize = Marshal.SizeOf(typeof(T));
+				if (dataSize == vertexStride)
+				{
+					Marshal.Copy(buffer, 0, dataPtr, buffer.Length);
+				}
+				else
+				{
+					// If the user is asking for a specific element within the vertex buffer, copy them one by one...
+					for (int i = 0; i < elementCount; i += 1)
+					{
+						Marshal.Copy(buffer, i * vertexStride, dataPtr, dataSize);
+						dataPtr = (IntPtr)(dataPtr.ToInt64() + dataSize);
+					}
+				}
+
+				dataHandle.Free();
+			}
+
+			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
+		}
+
+		public void GetIndexBufferData<T>(
+			OpenGLIndexBuffer handle,
+			int offsetInBytes,
+			T[] data,
+			int startIndex,
+			int elementCount
+		) where T : struct {
+			BindIndexBuffer(handle);
+
+			IntPtr ptr = GL.MapBuffer(BufferTarget.ElementArrayBuffer, BufferAccess.ReadOnly);
+
+			// Pointer to the start of data to read in the index buffer
+			ptr = new IntPtr(ptr.ToInt64() + offsetInBytes);
+
+			/* If data is already a byte[] we can skip the temporary buffer.
+			 * Copy from the index buffer to the destination array.
+			 */
+			if (typeof(T) == typeof(byte))
+			{
+				byte[] buffer = data as byte[];
+				Marshal.Copy(ptr, buffer, 0, buffer.Length);
+			}
+			else
+			{
+				int elementSizeInBytes = Marshal.SizeOf(typeof(T));
+				byte[] buffer = new byte[elementCount * elementSizeInBytes];
+				Marshal.Copy(ptr, buffer, 0, buffer.Length);
+				Buffer.BlockCopy(buffer, 0, data, startIndex * elementSizeInBytes, elementCount * elementSizeInBytes);
+			}
+
+			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
 		}
 
 		#endregion
 
 		#region glDeleteBuffers Methods
 
-		public void DeleteVertexBuffer(int buffer)
+		public void DeleteVertexBuffer(OpenGLVertexBuffer buffer)
 		{
-			if (buffer == currentVertexBuffer)
+			if (buffer.Handle == currentVertexBuffer)
 			{
 				GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 				currentVertexBuffer = 0;
@@ -964,9 +1214,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			GL.DeleteBuffer(0);
 		}
 
-		public void DeleteIndexBuffer(int buffer)
+		public void DeleteIndexBuffer(OpenGLIndexBuffer buffer)
 		{
-			if (buffer == currentIndexBuffer)
+			if (buffer.Handle == currentIndexBuffer)
 			{
 				GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 				currentIndexBuffer = 0;

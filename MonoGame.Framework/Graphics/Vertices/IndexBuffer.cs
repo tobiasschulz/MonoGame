@@ -10,8 +10,6 @@
 #region Using Statements
 using System;
 using System.Runtime.InteropServices;
-
-using OpenTK.Graphics.OpenGL;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -42,17 +40,11 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Internal Properties
 
-		internal int Handle
+		internal OpenGLDevice.OpenGLIndexBuffer Handle
 		{
 			get;
 			private set;
 		}
-
-		#endregion
-
-		#region Private Variables
-
-		private bool INTERNAL_isDynamic;
 
 		#endregion
 
@@ -122,18 +114,12 @@ namespace Microsoft.Xna.Framework.Graphics
 			IndexCount = indexCount;
 			BufferUsage = usage;
 
-			INTERNAL_isDynamic = dynamic;
-
 			Threading.ForceToMainThread(() =>
 			{
-				Handle = GL.GenBuffer();
-
-				OpenGLDevice.Instance.BindIndexBuffer(Handle);
-				GL.BufferData(
-					BufferTarget.ElementArrayBuffer,
-					(IntPtr) (IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4)),
-					IntPtr.Zero,
-					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
+				Handle = new OpenGLDevice.OpenGLIndexBuffer(
+					dynamic,
+					IndexCount,
+					IndexElementSize
 				);
 			});
 		}
@@ -149,6 +135,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDevice.AddDisposeAction(() =>
 				{
 					OpenGLDevice.Instance.DeleteIndexBuffer(Handle);
+					Handle = null;
 				});
 			}
 			base.Dispose(disposing);
@@ -204,7 +191,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			Threading.ForceToMainThread(() =>
-				GetBufferData(
+				OpenGLDevice.Instance.GetIndexBufferData(
+					Handle,
 					offsetInBytes,
 					data,
 					startIndex,
@@ -261,43 +249,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Internal Master GetData Method
-
-		private void GetBufferData<T>(
-			int offsetInBytes,
-			T[] data,
-			int startIndex,
-			int elementCount
-		) where T : struct {
-			OpenGLDevice.Instance.BindIndexBuffer(Handle);
-
-			IntPtr ptr = GL.MapBuffer(BufferTarget.ArrayBuffer, BufferAccess.ReadOnly);
-
-			// Pointer to the start of data to read in the index buffer
-			ptr = new IntPtr(ptr.ToInt64() + offsetInBytes);
-
-			/* If data is already a byte[] we can skip the temporary buffer.
-			 * Copy from the index buffer to the destination array.
-			 */
-			if (typeof(T) == typeof(byte))
-			{
-				byte[] buffer = data as byte[];
-				Marshal.Copy(ptr, buffer, 0, buffer.Length);
-			}
-			else
-			{
-				int elementSizeInBytes = Marshal.SizeOf(typeof(T));
-				byte[] buffer = new byte[elementCount * elementSizeInBytes];
-				Marshal.Copy(ptr, buffer, 0, buffer.Length);
-				Buffer.BlockCopy(buffer, 0, data, startIndex * elementSizeInBytes, elementCount * elementSizeInBytes);
-			}
-
-			GL.UnmapBuffer(BufferTarget.ArrayBuffer);
-		}
-
-		#endregion
-
-		#region Internal Master SetData Methods
+		#region Internal Master SetData Method
 
 		protected void SetDataInternal<T>(
 			int offsetInBytes,
@@ -316,7 +268,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			Threading.ForceToMainThread(() =>
-				BufferData(
+				OpenGLDevice.Instance.SetIndexBufferData(
+					Handle,
 					offsetInBytes,
 					data,
 					startIndex,
@@ -324,38 +277,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					options
 				)
 			);
-		}
-
-		private void BufferData<T>(
-			int offsetInBytes,
-			T[] data,
-			int startIndex,
-			int elementCount,
-			SetDataOptions options
-		) where T : struct {
-			int elementSizeInByte = Marshal.SizeOf(typeof(T));
-			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-			OpenGLDevice.Instance.BindIndexBuffer(Handle);
-
-			if (options == SetDataOptions.Discard)
-			{
-				GL.BufferData(
-					BufferTarget.ElementArrayBuffer,
-					(IntPtr) (IndexCount * (IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4)),
-					IntPtr.Zero,
-					INTERNAL_isDynamic ? BufferUsageHint.StreamDraw : BufferUsageHint.StaticDraw
-				);
-			}
-
-			GL.BufferSubData(
-				BufferTarget.ElementArrayBuffer,
-				(IntPtr) offsetInBytes,
-				(IntPtr) (elementSizeInByte * elementCount),
-				(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInByte)
-			);
-
-			dataHandle.Free();
 		}
 
 		#endregion
