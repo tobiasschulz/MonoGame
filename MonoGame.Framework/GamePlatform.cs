@@ -89,29 +89,19 @@ namespace Microsoft.Xna.Framework
 			}
 		}
 
-		public virtual bool VSyncEnabled
-		{
-			get
-			{
-				throw new NotImplementedException();
-			}
-			set
-			{
-			}
-		}
+		#endregion
 
-		public abstract string OSVersion
+		#region Internal Properties
+
+		internal string OSVersion
 		{
 			get;
-			protected set;
+			private set;
 		}
 
 		#endregion
 
-		#region Protected Fields
-
-		protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
-		protected bool _needsToResetElapsedTime = false;
+		#region Protected Properties
 
 		protected bool IsDisposed
 		{
@@ -123,7 +113,14 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
-		#region Private Fields
+		#region Protected Variables
+
+		protected TimeSpan _inactiveSleepTime = TimeSpan.FromMilliseconds(20.0);
+		protected bool _needsToResetElapsedTime = false;
+
+		#endregion
+
+		#region Private Variables
 
 		bool disposed;
 		private bool _isActive;
@@ -134,13 +131,14 @@ namespace Microsoft.Xna.Framework
 
 		#region Protected Constructor
 
-		protected GamePlatform(Game game)
+		protected GamePlatform(Game game, string osVersion)
 		{
 			if (game == null)
 			{
 				throw new ArgumentNullException("game");
 			}
 			Game = game;
+			OSVersion = osVersion;
 		}
 
 		#endregion
@@ -195,18 +193,18 @@ namespace Microsoft.Xna.Framework
 		}
 
 		/// <summary>
-		/// When implemented in a derived, ends the active run loop.
+		/// When implemented in a derived class, ends the active run loop.
 		/// </summary>
 		public abstract void Exit();
 
 		/// <summary>
-		/// When implemented in a derived, starts the run loop and blocks
+		/// When implemented in a derived class, starts the run loop and blocks
 		/// until it has ended.
 		/// </summary>
 		public abstract void RunLoop();
 
 		/// <summary>
-		/// When implemented in a derived, starts the run loop and returns
+		/// When implemented in a derived class, starts the run loop and returns
 		/// immediately.
 		/// </summary>
 		public abstract void StartRunLoop();
@@ -228,18 +226,6 @@ namespace Microsoft.Xna.Framework
 		/// <param name="gameTime"></param>
 		/// <returns></returns>
 		public abstract bool BeforeDraw(GameTime gameTime);
-
-		/// <summary>
-		/// When implemented in a derived class, causes the game to enter
-		/// full-screen mode.
-		/// </summary>
-		public abstract void EnterFullScreen();
-
-		/// <summary>
-		/// When implemented in a derived class, causes the game to exit
-		/// full-screen mode.
-		/// </summary>
-		public abstract void ExitFullScreen();
 
 		/// <summary>
 		/// Gives derived classes an opportunity to modify
@@ -307,6 +293,8 @@ namespace Microsoft.Xna.Framework
 		internal abstract DisplayMode GetCurrentDisplayMode();
 
 		internal abstract DisplayModeCollection GetDisplayModes();
+
+		internal abstract void SetPresentationInterval(PresentInterval interval);
 
 		#endregion
 

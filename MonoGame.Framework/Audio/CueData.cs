@@ -17,15 +17,6 @@ namespace Microsoft.Xna.Framework.Audio
 {
 	internal class CueData
 	{
-		public enum MaxInstanceBehavior : byte
-		{
-			Fail,
-			Queue,
-			ReplaceOldest,
-			ReplaceQuietest,
-			ReplaceLowestPriority
-		}
-
 		public XACTSound[] Sounds
 		{
 			get;

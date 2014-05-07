@@ -10,6 +10,7 @@
 #region Using Statements
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 #endregion
 
 namespace Microsoft.Xna.Framework.Audio
@@ -17,12 +18,12 @@ namespace Microsoft.Xna.Framework.Audio
 	// http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.audio.audiocategory.aspx
 	public struct AudioCategory : IEquatable<AudioCategory>
 	{
-		#region Private Float Instance Class
+		#region Private Primitive Type Container Class
 
-		private class FloatInstance
+		private class PrimitiveInstance<T>
 		{
-			public float Value;
-			public FloatInstance(float initial)
+			public T Value;
+			public PrimitiveInstance(T initial)
 			{
 				Value = initial;
 			}
@@ -50,7 +51,19 @@ namespace Microsoft.Xna.Framework.Audio
 		private Dictionary<string, int> cueInstanceCounts;
 
 		// Grumble, struct returns...
-		private FloatInstance INTERNAL_volume;
+		private PrimitiveInstance<float> INTERNAL_volume;
+
+		private byte maxCueInstances;
+		private MaxInstanceBehavior maxCueBehavior;
+		private ushort maxFadeInMS;
+		private ushort maxFadeOutMS;
+
+		// TODO: Right now only Queue has fade behavior. -flibit
+		private PrimitiveInstance<bool> fading;
+		private PrimitiveInstance<Cue> fadingCue; // FIXME: May need to be a Queue? -flibit
+		private PrimitiveInstance<Cue> queuedCue; // FIXME: May need to be a Queue? -flibit
+		private PrimitiveInstance<float> fadingCueVolume;
+		private Stopwatch fadeTimer;
 
 		#endregion
 
@@ -58,12 +71,27 @@ namespace Microsoft.Xna.Framework.Audio
 
 		internal AudioCategory(
 			string name,
-			float volume
+			float volume,
+			byte maxInstances,
+			int maxBehavior,
+			ushort fadeInMS,
+			ushort fadeOutMS
 		) {
 			INTERNAL_name = name;
-			INTERNAL_volume = new FloatInstance(volume);
+			INTERNAL_volume = new PrimitiveInstance<float>(volume);
 			activeCues = new List<Cue>();
 			cueInstanceCounts = new Dictionary<string, int>();
+
+			maxCueInstances = maxInstances;
+			maxCueBehavior = (MaxInstanceBehavior) maxBehavior;
+			maxFadeInMS = fadeInMS;
+			maxFadeOutMS = fadeOutMS;
+
+			fading = new PrimitiveInstance<bool>(false);
+			fadingCue = new PrimitiveInstance<Cue>(null);
+			queuedCue = new PrimitiveInstance<Cue>(null);
+			fadingCueVolume = new PrimitiveInstance<float>(0.0f);
+			fadeTimer = new Stopwatch();
 		}
 
 		#endregion
@@ -126,14 +154,14 @@ namespace Microsoft.Xna.Framework.Audio
 			return false;
 		}
 
-		public static bool op_Equality(
+		public static bool operator ==(
 			AudioCategory value1,
 			AudioCategory value2
 		) {
 			return value1.Equals(value2);
 		}
 
-		public static bool op_Inequality(
+		public static bool operator !=(
 			AudioCategory value1,
 			AudioCategory value2
 		) {
@@ -152,6 +180,34 @@ namespace Microsoft.Xna.Framework.Audio
 			 */
 			lock (activeCues)
 			{
+				if (fading.Value)
+				{
+					float fadeOutPerc = (maxFadeOutMS - fadeTimer.ElapsedMilliseconds) / (float) maxFadeOutMS;
+					float fadeInPerc = fadeTimer.ElapsedMilliseconds / (float) maxFadeInMS;
+					if (fadeInPerc >= 1.0f && fadeOutPerc <= 0.0f)
+					{
+						fadingCue.Value.Stop(AudioStopOptions.Immediate);
+						queuedCue.Value.SetVariable("Volume", INTERNAL_volume.Value);
+						fadingCue = null;
+						queuedCue = null;
+						fading.Value = false;
+						fadeTimer.Stop();
+					}
+					if (fadeOutPerc > 0.0f)
+					{
+						fadingCue.Value.SetVariable(
+							"Volume",
+							fadingCueVolume.Value * fadeOutPerc
+						);
+					}
+					if (fadeInPerc < 1.0f)
+					{
+						queuedCue.Value.SetVariable(
+							"Volume",
+							INTERNAL_volume.Value * fadeInPerc
+						);
+					}
+				}
 				for (int i = 0; i < activeCues.Count; i += 1)
 				{
 					if (!activeCues[i].INTERNAL_update())
@@ -181,11 +237,56 @@ namespace Microsoft.Xna.Framework.Audio
 			newCue.SetVariable("Volume", INTERNAL_volume.Value);
 		}
 
-		internal void INTERNAL_addCue(Cue newCue)
+		internal bool INTERNAL_addCue(Cue newCue)
 		{
+			if (activeCues.Count >= maxCueInstances)
+			{
+				if (maxCueBehavior == MaxInstanceBehavior.Fail)
+				{
+					return false; // Just ignore us...
+				}
+				else if (maxCueBehavior == MaxInstanceBehavior.Queue)
+				{
+					newCue.SetVariable("Volume", 0.0f);
+					queuedCue.Value = newCue;
+					fadingCue.Value = activeCues[0];
+					fadingCueVolume.Value = activeCues[0].GetVariable("Volume");
+					fadeTimer.Reset();
+					fadeTimer.Start();
+					fading.Value = true;
+				}
+				else if (maxCueBehavior == MaxInstanceBehavior.ReplaceOldest)
+				{
+					INTERNAL_removeOldestCue(activeCues[0].Name);
+				}
+				else if (maxCueBehavior == MaxInstanceBehavior.ReplaceQuietest)
+				{
+					float lowestVolume = float.MaxValue;
+					int lowestIndex = -1;
+					for (int i = 0; i < activeCues.Count; i += 1)
+					{
+						if (activeCues[i].GetVariable("Volume") < lowestVolume)
+						{
+							lowestVolume = activeCues[i].GetVariable("Volume");
+							lowestIndex = i;
+						}
+					}
+					if (lowestIndex > -1)
+					{
+						cueInstanceCounts[activeCues[lowestIndex].Name] -= 1;
+						activeCues[lowestIndex].Stop(AudioStopOptions.AsAuthored);
+					}
+				}
+				else if (maxCueBehavior == MaxInstanceBehavior.ReplaceLowestPriority)
+				{
+					// FIXME: Priority?
+					INTERNAL_removeOldestCue(activeCues[0].Name);
+				}
+			}
 			cueInstanceCounts[newCue.Name] += 1;
 			newCue.SetVariable("NumCueInstances", cueInstanceCounts[newCue.Name]);
 			activeCues.Add(newCue);
+			return true;
 		}
 
 		internal void INTERNAL_removeLatestCue()

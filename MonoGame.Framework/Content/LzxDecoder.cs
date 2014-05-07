@@ -28,10 +28,10 @@ namespace Microsoft.Xna.Framework.Content
 			uint wndsize = (uint)(1 << window);
 			int posn_slots;
 			
-			// setup proper exception
+			// Setup proper exception.
 			if(window < 15 || window > 21) throw new UnsupportedWindowSizeRange();
 			
-			// let's initialise our state
+			// Let's initialize our state.
 			m_state = new LzxState();
 			m_state.actual_size = 0;
 			m_state.window = new byte[wndsize];
@@ -40,7 +40,7 @@ namespace Microsoft.Xna.Framework.Content
 			m_state.window_size = wndsize;
 			m_state.window_posn = 0;
 			
-			/* initialize static tables */
+			// Initialize static tables.
 			if(extra_bits == null)
 			{
 				extra_bits = new byte[52];
@@ -60,7 +60,7 @@ namespace Microsoft.Xna.Framework.Content
 				}
 			}
 			
-			/* calculate required position slots */
+			// Calculate required position slots.
 			if(window == 20) posn_slots = 42;
 			else if(window == 21) posn_slots = 50;
 			else posn_slots = window << 1;
@@ -74,7 +74,6 @@ namespace Microsoft.Xna.Framework.Content
 			m_state.intel_curpos = 0;
 			m_state.intel_started = 0;
 			
-			// yo dawg i herd u liek arrays so we put arrays in ur arrays so u can array while u array
 			m_state.PRETREE_table = new ushort[(1 << LzxConstants.PRETREE_TABLEBITS) + (LzxConstants.PRETREE_MAXSYMBOLS << 1)];
 			m_state.PRETREE_len = new byte[LzxConstants.PRETREE_MAXSYMBOLS + LzxConstants.LENTABLE_SAFETY];
 			m_state.MAINTREE_table = new ushort[(1 << LzxConstants.MAINTREE_TABLEBITS) + (LzxConstants.MAINTREE_MAXSYMBOLS << 1)];
@@ -83,7 +82,8 @@ namespace Microsoft.Xna.Framework.Content
 			m_state.LENGTH_len = new byte[LzxConstants.LENGTH_MAXSYMBOLS + LzxConstants.LENTABLE_SAFETY];
 			m_state.ALIGNED_table = new ushort[(1 << LzxConstants.ALIGNED_TABLEBITS) + (LzxConstants.ALIGNED_MAXSYMBOLS << 1)];
 			m_state.ALIGNED_len = new byte[LzxConstants.ALIGNED_MAXSYMBOLS + LzxConstants.LENTABLE_SAFETY];
-			/* initialise tables to 0 (because deltas will be applied to them) */
+
+			// Initialize tables to 0 (because deltas will be applied to them).
 			for(int i = 0; i < LzxConstants.MAINTREE_MAXSYMBOLS; i++) m_state.MAINTREE_len[i] = 0;
 			for(int i = 0; i < LzxConstants.LENGTH_MAXSYMBOLS; i++) m_state.LENGTH_len[i] = 0;
 		}
@@ -108,23 +108,23 @@ namespace Microsoft.Xna.Framework.Content
 			
 			bitbuf.InitBitStream();
 			
-			/* read header if necessary */
+			// Read header if necessary.
 			if(m_state.header_read == 0)
 			{
 				uint intel = bitbuf.ReadBits(1);
 				if(intel != 0)
 				{
-					// read the filesize
+					// Read the filesize.
 					i = bitbuf.ReadBits(16); j = bitbuf.ReadBits(16);
 					m_state.intel_filesize = (int)((i << 16) | j);
 				}
 				m_state.header_read = 1;
 			}
 			
-			/* main decoding loop */
+			// Main decoding loop.
 			while(togo > 0)
 			{
-				/* last block finished, new block expected */
+				// last block finished, new block expected.
 				if(m_state.block_remaining == 0)
 				{
 					// TODO may screw something up here
@@ -144,7 +144,7 @@ namespace Microsoft.Xna.Framework.Content
 						for(i = 0, j = 0; i < 8; i++) { j = bitbuf.ReadBits(3); m_state.ALIGNED_len[i] = (byte)j; }
 						MakeDecodeTable(LzxConstants.ALIGNED_MAXSYMBOLS, LzxConstants.ALIGNED_TABLEBITS,
 						                m_state.ALIGNED_len, m_state.ALIGNED_table);
-						/* rest of aligned header is same as verbatim */
+						// Rest of aligned header is same as verbatim
 						goto case LzxConstants.BLOCKTYPE.VERBATIM;
 						
 					case LzxConstants.BLOCKTYPE.VERBATIM:
@@ -160,8 +160,8 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 						
 					case LzxConstants.BLOCKTYPE.UNCOMPRESSED:
-						m_state.intel_started = 1; /* because we can't assume otherwise */
-						bitbuf.EnsureBits(16); /* get up to 16 pad bits into the buffer */
+						m_state.intel_started = 1; // Because we can't assume otherwise.
+						bitbuf.EnsureBits(16); // Get up to 16 pad bits into the buffer.
 						if(bitbuf.GetBitsLeft() > 16) inData.Seek(-2, SeekOrigin.Current); /* and align the bitstream! */
 						byte hi, mh, ml, lo;
 						lo = (byte)inData.ReadByte(); ml = (byte)inData.ReadByte(); mh = (byte)inData.ReadByte(); hi = (byte)inData.ReadByte();
@@ -177,18 +177,17 @@ namespace Microsoft.Xna.Framework.Content
 					}
 				}
 				
-				/* buffer exhaustion check */
+				// Buffer exhaustion check.
 				if(inData.Position > (startpos + inLen))
 				{
-					/* it's possible to have a file where the next run is less than
-				     * 16 bits in size. In this case, the READ_HUFFSYM() macro used
-				     * in building the tables will exhaust the buffer, so we should
-				     * allow for this, but not allow those accidentally read bits to
-				     * be used (so we check that there are at least 16 bits
-				     * remaining - in this boundary case they aren't really part of
-				     * the compressed data)
+					/* It's possible to have a file where the next run is less than
+					 * 16 bits in size. In this case, the READ_HUFFSYM() macro used
+					 * in building the tables will exhaust the buffer, so we should
+					 * allow for this, but not allow those accidentally read bits to
+					 * be used (so we check that there are at least 16 bits
+					 * remaining - in this boundary case they aren't really part of
+					 * the compressed data).
 					 */
-					//Debug.WriteLine("WTF");
 
 					if(inData.Position > (startpos+inLen+2) || bitbuf.GetBitsLeft() < 16) return -1; //TODO throw proper exception
 				}
@@ -199,11 +198,11 @@ namespace Microsoft.Xna.Framework.Content
 					togo -= this_run;
 					m_state.block_remaining -= (uint)this_run;
 					
-					/* apply 2^x-1 mask */
+					// Apply 2^x-1 mask.
 					window_posn &= window_size - 1;
-					/* runs can't straddle the window wraparound */
+					// Runs can't straddle the window wraparound.
 					if((window_posn + this_run) > window_size)
-						return -1; //TODO throw proper exception
+						return -1; // TODO: throw proper exception
 					
 					switch(m_state.block_type)
 					{
@@ -215,13 +214,13 @@ namespace Microsoft.Xna.Framework.Content
 							                           bitbuf);
 							if(main_element < LzxConstants.NUM_CHARS)
 							{
-								/* literal: 0 to NUM_CHARS-1 */
+								// Literal: 0 to NUM_CHARS-1.
 								window[window_posn++] = (byte)main_element;
 								this_run--;
 							}
 							else
 							{
-								/* match: NUM_CHARS + ((slot<<3) | length_header (3 bits)) */
+								// Match: NUM_CHARS + ((slot<<3) | length_header (3 bits))
 								main_element -= LzxConstants.NUM_CHARS;
 								
 								match_length = main_element & LzxConstants.NUM_PRIMARY_LENGTHS;
@@ -238,7 +237,7 @@ namespace Microsoft.Xna.Framework.Content
 								
 								if(match_offset > 2)
 								{
-									/* not repeated offset */
+									// Not repeated offset.
 									if(match_offset != 3)
 									{
 										extra = extra_bits[match_offset];
@@ -250,7 +249,7 @@ namespace Microsoft.Xna.Framework.Content
 										match_offset = 1;
 									}
 									
-									/* update repeated offset LRU queue */
+									// Update repeated offset LRU queue.
 									R2 = R1; R1 = R0; R0 = (uint)match_offset;
 								}
 								else if(match_offset == 0)
@@ -262,7 +261,7 @@ namespace Microsoft.Xna.Framework.Content
 									match_offset = (int)R1;
 									R1 = R0; R0 = (uint)match_offset;
 								}
-								else /* match_offset == 2 */
+								else // match_offset == 2
 								{
 									match_offset = (int)R2;
 									R2 = R0; R0 = (uint)match_offset;
@@ -271,10 +270,10 @@ namespace Microsoft.Xna.Framework.Content
 								rundest = (int)window_posn;
 								this_run -= match_length;
 								
-								/* copy any wrapped around source data */
+								// Copy any wrapped around source data
 								if(window_posn >= match_offset)
 								{
-									/* no wrap */
+									// No wrap
 									runsrc = rundest - match_offset;
 								}
 								else
@@ -291,7 +290,7 @@ namespace Microsoft.Xna.Framework.Content
 								}
 								window_posn += (uint)match_length;
 								
-								/* copy match data - no worries about destination wraps */
+								// Copy match data - no worries about destination wraps
 								while(match_length-- > 0) window[rundest++] = window[runsrc++];
 							}
 						}
@@ -306,13 +305,13 @@ namespace Microsoft.Xna.Framework.Content
 							
 							if(main_element < LzxConstants.NUM_CHARS)
 							{
-								/* literal 0 to NUM_CHARS-1 */
+								// Literal 0 to NUM_CHARS-1
 								window[window_posn++] = (byte)main_element;
-								this_run--;
+								this_run -= 1;
 							}
 							else
 							{
-								/* match: NUM_CHARS + ((slot<<3) | length_header (3 bits)) */
+								// Match: NUM_CHARS + ((slot<<3) | length_header (3 bits))
 								main_element -= LzxConstants.NUM_CHARS;
 								
 								match_length = main_element & LzxConstants.NUM_PRIMARY_LENGTHS;
@@ -329,12 +328,12 @@ namespace Microsoft.Xna.Framework.Content
 								
 								if(match_offset > 2)
 								{
-									/* not repeated offset */
+									// Not repeated offset.
 									extra = extra_bits[match_offset];
 									match_offset = (int)position_base[match_offset] - 2;
 									if(extra > 3)
 									{
-										/* verbatim and aligned bits */
+										// Verbatim and aligned bits.
 										extra -= 3;
 										verbatim_bits = (int)bitbuf.ReadBits((byte)extra);
 										match_offset += (verbatim_bits << 3);
@@ -345,25 +344,25 @@ namespace Microsoft.Xna.Framework.Content
 									}
 									else if(extra == 3)
 									{
-										/* aligned bits only */
+										// Aligned bits only.
 										aligned_bits = (int)ReadHuffSym(m_state.ALIGNED_table, m_state.ALIGNED_len,
 										                           LzxConstants.ALIGNED_MAXSYMBOLS, LzxConstants.ALIGNED_TABLEBITS,
 										                           bitbuf);
 										match_offset += aligned_bits;
 									}
-									else if (extra > 0) /* extra==1, extra==2 */
+									else if (extra > 0) // extra==1, extra==2
 									{
-										/* verbatim bits only */
+										// Verbatim bits only.
 										verbatim_bits = (int)bitbuf.ReadBits((byte)extra);
 										match_offset += verbatim_bits;
 									}
-									else /* extra == 0 */
+									else // extra == 0
 									{
-										/* ??? */
+										// ???
 										match_offset = 1;
 									}
 									
-									/* update repeated offset LRU queue */
+									// Update repeated offset LRU queue.
 									R2 = R1; R1 = R0; R0 = (uint)match_offset;
 								}
 								else if( match_offset == 0)
@@ -375,7 +374,7 @@ namespace Microsoft.Xna.Framework.Content
 									match_offset = (int)R1;
 									R1 = R0; R0 = (uint)match_offset;
 								}
-								else /* match_offset == 2 */
+								else // match_offset == 2
 								{
 									match_offset = (int)R2;
 									R2 = R0; R0 = (uint)match_offset;
@@ -384,10 +383,10 @@ namespace Microsoft.Xna.Framework.Content
 								rundest = (int)window_posn;
 								this_run -= match_length;
 								
-								/* copy any wrapped around source data */
+								// Copy any wrapped around source data
 								if(window_posn >= match_offset)
 								{
-									/* no wrap */
+									// No wrap
 									runsrc = rundest - match_offset;
 								}
 								else
@@ -404,14 +403,14 @@ namespace Microsoft.Xna.Framework.Content
 								}
 								window_posn += (uint)match_length;
 								
-								/* copy match data - no worries about destination wraps */
+								// Copy match data - no worries about destination wraps.
 								while(match_length-- > 0) window[rundest++] = window[runsrc++];
 							}
 						}
 						break;
 						
 					case LzxConstants.BLOCKTYPE.UNCOMPRESSED:
-						if((inData.Position + this_run) > endpos) return -1; //TODO throw proper exception
+						if((inData.Position + this_run) > endpos) return -1; // TODO: Throw proper exception
 						byte[] temp_buffer = new byte[this_run];
 						inData.Read(temp_buffer, 0, this_run);
 						temp_buffer.CopyTo(window, (int)window_posn);
@@ -419,12 +418,12 @@ namespace Microsoft.Xna.Framework.Content
 						break;
 						
 					default:
-						return -1; //TODO throw proper exception
+						return -1; // TODO: Throw proper exception
 					}
 				}
 			}
 			
-			if(togo != 0) return -1; //TODO throw proper exception
+			if(togo != 0) return -1; // TODO: Throw proper exception
 			int start_window_pos = (int)window_posn;
 			if(start_window_pos == 0) start_window_pos = (int)window_size;
 			start_window_pos -= outLen;
@@ -435,8 +434,8 @@ namespace Microsoft.Xna.Framework.Content
 			m_state.R1 = R1;
 			m_state.R2 = R2;
 			
-			// TODO finish intel E8 decoding
-			/* intel E8 decoding */
+			// TODO: Finish intel E8 decoding.
+			// Intel E8 decoding.
 			if((m_state.frames_read++ < 32768) && m_state.intel_filesize != 0)
 			{
 				if(outLen <= 6 || m_state.intel_started == 0)
@@ -460,24 +459,19 @@ namespace Microsoft.Xna.Framework.Content
 			return 0;
 		}
 		
-		// READ_LENGTHS(table, first, last)
-		// if(lzx_read_lens(LENTABLE(table), first, last, bitsleft))
-		//   return ERROR (ILLEGAL_DATA)
-		// 
-		
-		// TODO make returns throw exceptions
+		// TODO: Make returns throw exceptions
 		private int MakeDecodeTable(uint nsyms, uint nbits, byte[] length, ushort[] table)
 		{
 			ushort sym;
 			uint leaf;
 			byte bit_num = 1;
 			uint fill;
-			uint pos			= 0; /* the current position in the decode table */
+			uint pos		= 0; // The current position in the decode table.
 			uint table_mask		= (uint)(1 << (int)nbits);
-			uint bit_mask		= table_mask >> 1; /* don't do 0 length codes */
-			uint next_symbol	= bit_mask;	/* base of allocation for long codes */
+			uint bit_mask		= table_mask >> 1; // Don't do 0 length codes.
+			uint next_symbol	= bit_mask;	// Base of allocation for long codes.
 			
-			/* fill entries for codes short enough for a direct mapping */
+			// Fill entries for codes short enough for a direct mapping.
 			while (bit_num <= nbits )
 			{
 				for(sym = 0; sym < nsyms; sym++)
@@ -486,9 +480,14 @@ namespace Microsoft.Xna.Framework.Content
 					{
 						leaf = pos;
 						
-						if((pos += bit_mask) > table_mask) return 1; /* table overrun */
+						if ((pos += bit_mask) > table_mask)
+						{
+							return 1; // Table overrun
+						}
 						
-						/* fill all possible lookups of this symbol with the symbol itself */
+						/* Fill all possible lookups of this symbol with the
+						 * symbol itself.
+						 */
 						fill = bit_mask;
 						while(fill-- > 0) table[leaf++] = sym;
 					}
@@ -497,13 +496,13 @@ namespace Microsoft.Xna.Framework.Content
 				bit_num++;
 			}
 			
-			/* if there are any codes longer than nbits */
+			// If there are any codes longer than nbits
 			if(pos != table_mask)
 			{
-				/* clear the remainder of the table */
+				// Clear the remainder of the table.
 				for(sym = (ushort)pos; sym < table_mask; sym++) table[sym] = 0;
 				
-				/* give ourselves room for codes to grow by up to 16 more bits */
+				// Give ourselves room for codes to grow by up to 16 more bits.
 				pos <<= 16;
 				table_mask <<= 16;
 				bit_mask = 1 << 15;
@@ -517,14 +516,14 @@ namespace Microsoft.Xna.Framework.Content
 							leaf = pos >> 16;
 							for(fill = 0; fill < bit_num - nbits; fill++)
 							{
-								/* if this path hasn't been taken yet, 'allocate' two entries */
+								// if this path hasn't been taken yet, 'allocate' two entries.
 								if(table[leaf] == 0)
 								{
 									table[(next_symbol << 1)] = 0;
 									table[(next_symbol << 1) + 1] = 0;
 									table[leaf] = (ushort)(next_symbol++);
 								}
-								/* follow the path and select either left or right for next bit */
+								// Follow the path and select either left or right for next bit.
 								leaf = (uint)(table[leaf] << 1);
 								if(((pos >> (int)(15-fill)) & 1) == 1) leaf++;
 							}
@@ -538,15 +537,15 @@ namespace Microsoft.Xna.Framework.Content
 				}
 			}
 			
-			/* full talbe? */
+			// full table?
 			if(pos == table_mask) return 0;
 			
-			/* either erroneous table, or all elements are 0 - let's find out. */
+			// Either erroneous table, or all elements are 0 - let's find out.
 			for(sym = 0; sym < nsyms; sym++) if(length[sym] != 0) return 1;
 			return 0;
 		}
 		
-		// TODO throw exceptions instead of returns
+		// TODO:  Throw exceptions instead of returns
 		private void ReadLengths(byte[] lens, uint first, uint last, BitBuffer bitbuf)
 		{
 			uint x, y;
@@ -602,7 +601,7 @@ namespace Microsoft.Xna.Framework.Content
 				do
 				{
 					j >>= 1; i <<= 1; i |= (bitbuf.GetBuffer() & j) != 0 ? (uint)1 : 0;
-					if(j == 0) return 0; // TODO throw proper exception
+					if(j == 0) return 0; // TODO: throw proper exception
 				} while((i = table[i]) >= nsyms);
 			}
 			j = lengths[i];
@@ -635,7 +634,6 @@ namespace Microsoft.Xna.Framework.Content
 				while(bitsleft < bits) {
 					int lo = (byte)byteStream.ReadByte();
 					int hi = (byte)byteStream.ReadByte();
-                    //int amount2shift = sizeof(uint)*8 - 16 - bitsleft;
 					buffer |= (uint)(((hi << 8) | lo) << (sizeof(uint)*8 - 16 - bitsleft));
 					bitsleft += 16;
 				}
@@ -679,16 +677,16 @@ namespace Microsoft.Xna.Framework.Content
 		#endregion
 		
 		struct LzxState {
-			public uint						R0, R1, R2;			/* for the LRU offset system				*/
-			public ushort					main_elements;		/* number of main tree elements				*/
-			public int						header_read;		/* have we started decoding at all yet? 	*/
-			public LzxConstants.BLOCKTYPE	block_type;			/* type of this block						*/
-			public uint						block_length;		/* uncompressed length of this block 		*/
-			public uint						block_remaining;	/* uncompressed bytes still left to decode	*/
-			public uint						frames_read;		/* the number of CFDATA blocks processed	*/
-			public int						intel_filesize;		/* magic header value used for transform	*/
-			public int						intel_curpos;		/* current offset in transform space		*/
-			public int						intel_started;		/* have we seen any translateable data yet?	*/
+			public uint			R0, R1, R2; // For the LRU offset system
+			public ushort			main_elements; // Number of main tree elements
+			public int			header_read; // Have we started decoding at all yet?
+			public LzxConstants.BLOCKTYPE	block_type; // Type of this block
+			public uint			block_length; // Uncompressed length of this block
+			public uint			block_remaining; // Uncompressed bytes still left to decode
+			public uint			frames_read; // The number of CFDATA blocks processed
+			public int			intel_filesize; // Magic header value used for transform
+			public int			intel_curpos; // Current offset in transform space
+			public int			intel_started; // Have we seen any translateable data yet?
 			
 			public ushort[]		PRETREE_table;
 			public byte[]		PRETREE_len;
@@ -699,11 +697,12 @@ namespace Microsoft.Xna.Framework.Content
 			public ushort[]		ALIGNED_table;
 			public byte[]		ALIGNED_len;
 			
-			// NEEDED MEMBERS
-			// CAB actualsize
-			// CAB window
-			// CAB window_size
-			// CAB window_posn
+			/* NEEDED MEMBERS
+			 * CAB actualsize
+			 * CAB window
+			 * CAB window_size
+			 * CAB window_posn
+			 */
 			public uint		actual_size;
 			public byte[]	window;
 			public uint		window_size;
@@ -711,7 +710,7 @@ namespace Microsoft.Xna.Framework.Content
 		}
 	}
 	
-	/* CONSTANTS */
+	// CONSTANTS
 	struct LzxConstants {
 		public const ushort MIN_MATCH =				2;
 		public const ushort MAX_MATCH =				257;
@@ -739,7 +738,7 @@ namespace Microsoft.Xna.Framework.Content
 		public const ushort LENTABLE_SAFETY =		64;
 	}
 	
-	/* EXCEPTIONS */
+	// EXCEPTIONS
 	class UnsupportedWindowSizeRange : Exception
 	{
 	}

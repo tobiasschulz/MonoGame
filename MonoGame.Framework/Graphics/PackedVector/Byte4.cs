@@ -50,7 +50,9 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		/// <summary>
 		/// Initializes a new instance of the Byte4 class.
 		/// </summary>
-		/// <param name="vector">A vector containing the initial values for the components of the Byte4 structure.</param>
+		/// <param name="vector">
+		/// A vector containing the initial values for the components of the Byte4 structure.
+		/// </param>
 		public Byte4(Vector4 vector)
 		{
 			packedValue = Pack(ref vector);
@@ -105,42 +107,50 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 		#region Public Static Operators and Override Methods
 
 		/// <summary>
-		/// Compares the current instance of a class to another instance to determine whether they are different.
+		/// Compares the current instance of a class to another instance to determine
+		/// whether they are different.
 		/// </summary>
 		/// <param name="a">The object to the left of the equality operator.</param>
 		/// <param name="b">The object to the right of the equality operator.</param>
-		/// <returns>true if the objects are different; false otherwise.</returns>
+		/// <returns>True if the objects are different; false otherwise.</returns>
 		public static bool operator !=(Byte4 a, Byte4 b)
 		{
 			return a.packedValue != b.packedValue;
 		}
 
 		/// <summary>
-		/// Compares the current instance of a class to another instance to determine whether they are the same.
+		/// Compares the current instance of a class to another instance to determine
+		/// whether they are the same.
 		/// </summary>
 		/// <param name="a">The object to the left of the equality operator.</param>
 		/// <param name="b">The object to the right of the equality operator.</param>
-		/// <returns>true if the objects are the same; false otherwise.</returns>
+		/// <returns>True if the objects are the same; false otherwise.</returns>
 		public static bool operator ==(Byte4 a, Byte4 b)
 		{
 			return a.packedValue == b.packedValue;
 		}
 
 		/// <summary>
-		/// Returns a value that indicates whether the current instance is equal to a specified object.
+		/// Returns a value that indicates whether the current instance is equal to a
+		/// specified object.
 		/// </summary>
 		/// <param name="obj">The object with which to make the comparison.</param>
-		/// <returns>true if the current instance is equal to the specified object; false otherwise.</returns>
+		/// <returns>
+		/// True if the current instance is equal to the specified object; false otherwise.
+		/// </returns>
 		public override bool Equals(object obj)
 		{
 			return (obj is Byte4) && Equals((Byte4) obj);
 		}
 
 		/// <summary>
-		/// Returns a value that indicates whether the current instance is equal to a specified object.
+		/// Returns a value that indicates whether the current instance is equal to a
+		/// specified object.
 		/// </summary>
 		/// <param name="other">The object with which to make the comparison.</param>
-		/// <returns>true if the current instance is equal to the specified object; false otherwise.</returns>
+		/// <returns>
+		/// True if the current instance is equal to the specified object; false otherwise.
+		/// </returns>
 		public bool Equals(Byte4 other)
 		{
 			return this == other;

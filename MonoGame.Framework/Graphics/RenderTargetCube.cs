@@ -81,7 +81,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		/// <param name="graphicsDevice">The graphics device.</param>
 		/// <param name="size">The width and height of a texture cube face in pixels.</param>
-		/// <param name="mipMap"><see langword="true"/> to generate a full mipmap chain; otherwise <see langword="false"/>.</param>
+		/// <param name="mipMap">
+		/// <see langword="true"/> to generate a full mipmap chain; otherwise <see langword="false"/>.
+		/// </param>
 		/// <param name="preferredFormat">The preferred format of the surface.</param>
 		/// <param name="preferredDepthFormat">The preferred format of the depth-stencil buffer.</param>
 		public RenderTargetCube(
@@ -106,7 +108,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		/// <param name="graphicsDevice">The graphics device.</param>
 		/// <param name="size">The width and height of a texture cube face in pixels.</param>
-		/// <param name="mipMap"><see langword="true"/> to generate a full mipmap chain; otherwise <see langword="false"/>.</param>
+		/// <param name="mipMap">
+		/// <see langword="true"/> to generate a full mipmap chain; otherwise <see langword="false"/>.
+		/// </param>
 		/// <param name="preferredFormat">The preferred format of the surface.</param>
 		/// <param name="preferredDepthFormat">The preferred format of the depth-stencil buffer.</param>
 		/// <param name="preferredMultiSampleCount">The preferred number of multisample locations.</param>
@@ -137,8 +141,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		#region Protected Dispose Method
 
 		/// <summary>
-		/// Releases the unmanaged resources used by an instance of the <see cref="RenderTargetCube"/> class
-		/// and optionally releases the managed resources.
+		/// Releases the unmanaged resources used by an instance of the
+		/// <see cref="RenderTargetCube"/> class and optionally releases the managed
+		/// resources.
 		/// </summary>
 		/// <param name="disposing">
 		/// <see langword="true"/> to release both managed and unmanaged resources;

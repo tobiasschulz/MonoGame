@@ -214,12 +214,12 @@ namespace Microsoft.Xna.Framework.Content
 				object obj2;
 				if (reader == null && elementType == typeof(object))
 				{
-					/* Reading elements serialized as "object" */
+					// Reading elements serialized as "object"
 					obj2 = input.ReadObject<object>();
 				}
 				else
 				{
-					/* Default */
+					// Default
 
 					/* Evolutional: Fix. We can get here and still be NULL,
 					 * exit gracefully
