@@ -257,7 +257,11 @@ namespace Microsoft.Xna.Framework
 				return;
 			}
 			DRC.drc_enable_system_input_feeder(wiiuStream);
-			wiiuPixelData = new byte[startWidth * startHeight * 4];
+			wiiuPixelData = new byte[
+				OpenGLDevice.Instance.Backbuffer.Width *
+				OpenGLDevice.Instance.Backbuffer.Height *
+				4
+			];
 #endif
 		}
 
