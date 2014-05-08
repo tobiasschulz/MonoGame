@@ -9,7 +9,6 @@
 
 #region Using Statements
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 #endregion
 
@@ -143,7 +142,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				0,
 				data,
 				0,
-				data.Count(),
+				data.Length,
 				Marshal.SizeOf(typeof(T))
 			);
 		}

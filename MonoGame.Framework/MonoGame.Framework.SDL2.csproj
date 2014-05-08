@@ -397,6 +397,7 @@
     <Compile Include="GamerServices\NotificationPosition.cs" />
     <Compile Include="Graphics\DeviceLostException.cs" />
     <Compile Include="Graphics\DeviceNotResetException.cs" />
+    <Compile Include="Graphics\NoSuitableGraphicsDeviceException.cs" />
     <Compile Include="Graphics\OpenGLDevice.cs" />
     <Compile Include="Graphics\OcclusionQuery.cs" />
     <Compile Include="Input\Touch\TouchPanelState.cs" />

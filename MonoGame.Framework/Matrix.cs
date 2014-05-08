@@ -67,7 +67,7 @@ namespace Microsoft.Xna.Framework
 					case 14: return M43;
 					case 15: return M44;
 				}
-				throw new ArgumentOutOfRangeException();
+				throw new ArgumentOutOfRangeException("index");
 			}
 			set
 			{
@@ -89,7 +89,7 @@ namespace Microsoft.Xna.Framework
 					case 13: M42 = value; break;
 					case 14: M43 = value; break;
 					case 15: M44 = value; break;
-					default: throw new ArgumentOutOfRangeException();
+					default: throw new ArgumentOutOfRangeException("index");
 				}
 			}
 		}

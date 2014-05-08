@@ -74,7 +74,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (item == null)
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("item");
 			}
 
 			if (innerlist.Count == 0)

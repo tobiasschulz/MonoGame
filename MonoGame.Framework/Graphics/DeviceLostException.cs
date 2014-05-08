@@ -9,13 +9,27 @@
 
 #region Using Statements
 using System;
+using System.Runtime.Serialization;
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-	[Serializable]
-	public class DeviceLostException : Exception
+	[DataContract]
+	public sealed class DeviceLostException : Exception
 	{
-		// TODO: How exactly does this behave? Also, lol, DirectX.
+		public DeviceLostException()
+			: base()
+		{
+		}
+
+		public DeviceLostException(string message)
+			: base(message)
+		{
+		}
+
+		public DeviceLostException(string message, Exception inner)
+			: base(message, inner)
+		{
+		}
 	}
 }
