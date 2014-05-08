@@ -319,16 +319,14 @@ namespace Microsoft.Xna.Framework.Storage
 			// Retrieve the delegate.
 			AsyncResult asyncResult = (AsyncResult) result;
 
-			object del = asyncResult.AsyncDelegate;
+			ShowSelectorAsynchronous del = asyncResult.AsyncDelegate as ShowSelectorAsynchronous;
 
-			if (del is ShowSelectorAsynchronous)
+			if (del != null)
 			{
-				return (del as ShowSelectorAsynchronous).EndInvoke(result);
+				return del.EndInvoke(result);
 			}
-			else
-			{
-				throw new ArgumentException("result");
-			}
+
+			throw new ArgumentException("result");
 		}
 
 		#endregion

@@ -1919,9 +1919,11 @@ namespace Microsoft.Xna.Framework
 			System.Globalization.CultureInfo culture,
 			object value
 		) {
-			if (value is string)
+			var s = value as string;
+
+			if (s != null)
 			{
-				string[] v = ((string) value).Split(
+				string[] v = s.Split(
 					culture.NumberFormat.NumberGroupSeparator.ToCharArray()
 				);
 				return new Color(
