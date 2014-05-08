@@ -234,7 +234,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				case SurfaceFormat.Vector4:
 					return 16;
 				default:
-					throw new ArgumentException();
+					throw new ArgumentException("Should be a value defined in SurfaceFormat", "Format");
 			}
 		}
 
