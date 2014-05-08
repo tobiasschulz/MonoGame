@@ -275,8 +275,8 @@ namespace Microsoft.Xna.Framework.Input
 				System.Console.WriteLine("Ignoring device removal, ID: " + which.ToString());
 				return;
 			}
-			INTERNAL_states[which] = GamePadState.InitializedState;
 			INTERNAL_instanceList.Remove(which);
+			INTERNAL_states[output] = GamePadState.InitializedState;
 			if (INTERNAL_haptics[output] != IntPtr.Zero)
 			{
 				SDL.SDL_HapticClose(INTERNAL_haptics[output]);
