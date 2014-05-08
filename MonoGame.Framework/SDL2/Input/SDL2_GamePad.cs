@@ -1066,18 +1066,9 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			else
 			{
-				float strength;
-				if (leftMotor >= rightMotor)
-				{
-					strength = leftMotor;
-				}
-				else
-				{
-					strength = rightMotor;
-				}
 				SDL.SDL_HapticRumblePlay(
 					haptic,
-					strength,
+					Math.Max(leftMotor, rightMotor),
 					SDL.SDL_HAPTIC_INFINITY // Oh dear...
 				);
 			}
