@@ -33,7 +33,6 @@ namespace Microsoft.Xna.Framework.Input
 				{
 					left = value;
 				}
-				break;
 			}
 		}
 		public Vector2 Right
