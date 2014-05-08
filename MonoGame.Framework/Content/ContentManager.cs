@@ -386,7 +386,7 @@ namespace Microsoft.Xna.Framework.Content
 						using (ContentReader reader = GetContentReaderFromXnb(assetName, ref stream, xnbReader, recordDisposableObject))
 						{
 							result = reader.ReadAsset<T>();
-							var resource = result as GraphicsResource;
+							GraphicsResource resource = result as GraphicsResource;
 							if (resource != null)
 							{
 								resource.Name = originalAssetName;

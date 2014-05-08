@@ -47,7 +47,7 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				throw new ContentLoadException("Resource not found");
 			}
-			var byteArrayObject = obj as byte[];
+			byte[] byteArrayObject = obj as byte[];
 			if (byteArrayObject == null)
 			{
 				throw new ContentLoadException("Resource is not in binary format");
