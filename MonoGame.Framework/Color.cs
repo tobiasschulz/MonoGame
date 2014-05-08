@@ -1919,7 +1919,7 @@ namespace Microsoft.Xna.Framework
 			System.Globalization.CultureInfo culture,
 			object value
 		) {
-			var s = value as string;
+			string s = value as string;
 
 			if (s != null)
 			{

@@ -75,7 +75,9 @@ namespace Microsoft.Xna.Framework.Graphics
                 var arrayData = data as Array;
 
                 if (arrayData != null)
+                {
                     Buffer.BlockCopy(arrayData, 0, _buffer, offset, elementSize);
+                }
                 else
                 {
                     // TODO: When we eventually expose the internal Shader 
