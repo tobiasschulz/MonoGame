@@ -14,7 +14,7 @@ namespace Microsoft.Xna.Framework.Graphics
 	/// declaration for a particular type once.
 	/// </summary>
 	/// <typeparam name="T">A vertex structure which implements IVertexType.</typeparam>
-	internal class VertexDeclarationCache<T>
+	internal static class VertexDeclarationCache<T>
 		where T : struct, IVertexType
 	{
 		#region Public Static Properties

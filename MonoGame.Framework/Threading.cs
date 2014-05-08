@@ -38,7 +38,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Microsoft.Xna.Framework
 {
-	internal class Threading
+	internal static class Threading
 	{
 		#region Private Thread ID Variable
 
