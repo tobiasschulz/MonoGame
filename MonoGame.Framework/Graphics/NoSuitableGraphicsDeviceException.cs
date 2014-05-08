@@ -15,19 +15,19 @@ using System.Runtime.Serialization;
 namespace Microsoft.Xna.Framework.Graphics
 {
 	[DataContract]
-	public sealed class DeviceNotResetException : Exception
+	public sealed class NoSuitableGraphicsDeviceException : Exception
 	{
-		public DeviceNotResetException()
+		public NoSuitableGraphicsDeviceException()
 			: base()
 		{
 		}
 
-		public DeviceNotResetException(string message)
+		public NoSuitableGraphicsDeviceException(string message)
 			: base(message)
 		{
 		}
 
-		public DeviceNotResetException(string message, Exception inner)
+		public NoSuitableGraphicsDeviceException(string message, Exception inner)
 			: base(message, inner)
 		{
 		}
