@@ -831,13 +831,18 @@ namespace Microsoft.Xna.Framework
 
 		private void CategorizeComponent(IGameComponent component)
 		{
-			if (component is IUpdateable)
+			IUpdateable updateable = component as IUpdateable;
+
+			if (updateable != null)
 			{
-				_updateables.Add((IUpdateable)component);
+				_updateables.Add(updateable);
 			}
-			if (component is IDrawable)
+
+			IDrawable drawable = component as IDrawable;
+
+			if (drawable != null)
 			{
-				_drawables.Add((IDrawable)component);
+				_drawables.Add(drawable);
 			}
 		}
 
@@ -846,13 +851,18 @@ namespace Microsoft.Xna.Framework
 		 */
 		private void DecategorizeComponent(IGameComponent component)
 		{
-			if (component is IUpdateable)
+			IUpdateable updateable = component as IUpdateable;
+
+			if (updateable != null)
 			{
-				_updateables.Remove((IUpdateable) component);
+				_updateables.Remove(updateable);
 			}
-			if (component is IDrawable)
+
+			IDrawable drawable = component as IDrawable;
+
+			if (drawable != null)
 			{
-				_drawables.Remove((IDrawable) component);
+				_drawables.Remove(drawable);
 			}
 		}
 

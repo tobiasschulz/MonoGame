@@ -131,7 +131,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public override bool Equals(object obj)
 		{
-			return obj is DisplayMode && this == (DisplayMode)obj;
+			return (obj as DisplayMode) == this;
 		}
 
 		public override int GetHashCode()

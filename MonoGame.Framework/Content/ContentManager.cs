@@ -386,9 +386,10 @@ namespace Microsoft.Xna.Framework.Content
 						using (ContentReader reader = GetContentReaderFromXnb(assetName, ref stream, xnbReader, recordDisposableObject))
 						{
 							result = reader.ReadAsset<T>();
-							if (result is GraphicsResource)
+							GraphicsResource resource = result as GraphicsResource;
+							if (resource != null)
 							{
-								((GraphicsResource) result).Name = originalAssetName;
+								resource.Name = originalAssetName;
 							}
 						}
 					}
@@ -422,15 +423,17 @@ namespace Microsoft.Xna.Framework.Content
 				 * disposables recorded here. Doing it outside of this catch will
 				 * result in disposables being logged twice.
 				 */
-				if (result is IDisposable)
+				var disposableResult = result as IDisposable;
+
+				if (disposableResult != null)
 				{
 					if (recordDisposableObject != null)
 					{
-						recordDisposableObject(result as IDisposable);
+						recordDisposableObject(disposableResult);
 					}
 					else
 					{
-						disposableAssets.Add(result as IDisposable);
+						disposableAssets.Add(disposableResult);
 					}
 				}
 			}
