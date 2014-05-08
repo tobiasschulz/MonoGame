@@ -423,7 +423,7 @@ namespace Microsoft.Xna.Framework.Content
 				 * disposables recorded here. Doing it outside of this catch will
 				 * result in disposables being logged twice.
 				 */
-				var disposableResult = result as IDisposable;
+				IDisposable disposableResult = result as IDisposable;
 
 				if (disposableResult != null)
 				{
