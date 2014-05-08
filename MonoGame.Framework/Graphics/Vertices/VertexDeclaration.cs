@@ -242,7 +242,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					return 4;
 			}
 
-			throw new ArgumentException();
+			throw new ArgumentException("Should be a value defined in VertexElementFormat", "elementFormat");
 		}
 
 		private static VertexAttribPointerType OpenGLVertexAttribPointerType(VertexElementFormat elementFormat)
@@ -275,7 +275,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					return VertexAttribPointerType.HalfFloat;
 			}
 
-			throw new ArgumentException();
+			throw new ArgumentException("Should be a value defined in VertexElementFormat", "elementFormat");
 		}
 
 		private static bool OpenGLVertexAttribNormalized(VertexElement element)

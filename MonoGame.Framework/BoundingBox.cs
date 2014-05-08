@@ -523,7 +523,7 @@ namespace Microsoft.Xna.Framework
 		{
 			if (points == null)
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("points");
 			}
 
 			bool empty = true;
@@ -543,7 +543,7 @@ namespace Microsoft.Xna.Framework
 			}
 			if (empty)
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("Collection is empty", "points");
 			}
 
 			return new BoundingBox(minVec, maxVec);

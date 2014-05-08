@@ -1104,7 +1104,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					return BeginMode.TriangleStrip;
 			}
 
-			throw new ArgumentException();
+			throw new ArgumentException("Should be a value defined in PrimitiveType", "primitiveType");
 		}
 
 		#endregion

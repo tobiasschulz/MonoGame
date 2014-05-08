@@ -240,7 +240,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				case CubeMapFace.PositiveZ: return TextureTarget.TextureCubeMapPositiveZ;
 				case CubeMapFace.NegativeZ: return TextureTarget.TextureCubeMapNegativeZ;
 			}
-			throw new ArgumentException();
+            throw new ArgumentException("Should be a value defined in CubeMapFace", "face");
 		}
 
 		#endregion

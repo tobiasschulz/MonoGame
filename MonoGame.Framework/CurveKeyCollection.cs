@@ -70,7 +70,7 @@ namespace Microsoft.Xna.Framework
 			{
 				if (value == null)
 				{
-					throw new ArgumentNullException();
+					throw new ArgumentNullException("value");
 				}
 
 				if (index >= innerlist.Count)
@@ -114,7 +114,7 @@ namespace Microsoft.Xna.Framework
 		{
 			if (item == null)
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("item");
 			}
 
 			if (innerlist.Count == 0)

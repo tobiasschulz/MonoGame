@@ -343,7 +343,11 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new ArgumentNullException("boneTransforms");
 
             if (boneTransforms.Length > MaxBones)
-                throw new ArgumentException();
+            {
+                throw new ArgumentException(
+                    String.Format("The length of boneTransforms ({0}) is larger than MaxBones ({1})", boneTransforms.Length, MaxBones), 
+                    "boneTransforms");
+            }
 
             bonesParam.SetValue(boneTransforms);
         }
