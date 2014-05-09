@@ -91,7 +91,7 @@ namespace Microsoft.Xna.Framework.Content
 					}
 					else
 					{
-						throw new NotSupportedException ("Parameter type is not supported");
+						throw new NotSupportedException("Parameter type is not supported");
 					}
 				}
 				else
