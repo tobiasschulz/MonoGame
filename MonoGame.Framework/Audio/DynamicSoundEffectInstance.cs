@@ -32,15 +32,31 @@ namespace Microsoft.Xna.Framework.Audio
 		#region Private XNA Variables
 
 		private int sampleRate;
+		private AudioChannels channels;
 
 		#endregion
 
 		#region Private OpenAL Variables
 
-		private ALFormat alFormat;
 		private Queue<int> queuedBuffers;
 		private Queue<int> buffersToQueue;
 		private Queue<int> availableBuffers;
+
+		#endregion
+
+		#region Private Static XNA->AL Dictionaries
+
+		private static readonly Dictionary<AudioChannels, ALFormat> XNAToShort = new Dictionary<AudioChannels, ALFormat>
+		{
+			{ AudioChannels.Mono, ALFormat.Mono16 },
+			{ AudioChannels.Stereo, ALFormat.Stereo16 }
+		};
+
+		private static readonly Dictionary<AudioChannels, ALFormat> XNAToFloat = new Dictionary<AudioChannels, ALFormat>
+		{
+			{ AudioChannels.Mono, ALFormat.MonoFloat32Ext },
+			{ AudioChannels.Stereo, ALFormat.StereoFloat32Ext }
+		};
 
 		#endregion
 
@@ -55,26 +71,10 @@ namespace Microsoft.Xna.Framework.Audio
 		public DynamicSoundEffectInstance(int sampleRate, AudioChannels channels) : base(null)
 		{
 			this.sampleRate = sampleRate;
+			this.channels = channels;
 
 			PendingBufferCount = 0;
 
-			alFormat = channels == AudioChannels.Mono ? ALFormat.Mono16 : ALFormat.Stereo16;
-			queuedBuffers = new Queue<int>();
-			buffersToQueue = new Queue<int>();
-			availableBuffers = new Queue<int>();
-		}
-
-		#endregion
-
-		#region Internal Constructor
-
-		internal DynamicSoundEffectInstance() : base(null)
-		{
-			/* Internally, we are going to provide a float32 buffer format.
-			 * This is currently being used for the VideoPlayer.
-			 * -flibit
-			 */
-			PendingBufferCount = 0;
 			queuedBuffers = new Queue<int>();
 			buffersToQueue = new Queue<int>();
 			availableBuffers = new Queue<int>();
@@ -156,7 +156,7 @@ namespace Microsoft.Xna.Framework.Audio
 			int newBuf = availableBuffers.Dequeue();
 			AL.BufferData(
 				newBuf,
-				alFormat,
+				XNAToShort[channels],
 				buffer, // TODO: offset -flibit
 				count,
 				sampleRate
@@ -297,10 +297,11 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#region Internal SubmitFloatBuffer Method
 
-		internal void SubmitFloatBuffer(float[] buffer, int channels, int sampleRate)
+		/* THIS IS AN EXTENSION OF THE XNA4 API! */
+		internal void SubmitFloatBuffer(float[] buffer)
 		{
-			/* For more on why this delicious copypasta is here, see the
-			 * internal constructor.
+			/* Float samples are the typical format received from decoders.
+			 * We currently use this for the VideoPlayer.
 			 * -flibit
 			 */
 
@@ -314,9 +315,9 @@ namespace Microsoft.Xna.Framework.Audio
 			int newBuf = availableBuffers.Dequeue();
 			AL.BufferData(
 				newBuf,
-				(channels == 2) ? ALFormat.StereoFloat32Ext : ALFormat.MonoFloat32Ext,
+				XNAToFloat[channels],
 				buffer,
-				buffer.Length * 2 * channels,
+				buffer.Length * 2 * (int) channels,
 				sampleRate
 			);
 

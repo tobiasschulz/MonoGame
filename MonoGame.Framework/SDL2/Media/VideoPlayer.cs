@@ -954,11 +954,7 @@ namespace Microsoft.Xna.Framework.Media
 			// If we actually got data, buffer it into OpenAL.
 			if (data.Count > 0)
 			{
-				audioStream.SubmitFloatBuffer(
-					data.ToArray(),
-					currentAudio.channels,
-					currentAudio.freq
-				);
+				audioStream.SubmitFloatBuffer(data.ToArray());
 				return true;
 			}
 			return false;
@@ -979,7 +975,16 @@ namespace Microsoft.Xna.Framework.Media
 			const int NUM_BUFFERS = 4;
 
 			// Generate the source.
-			audioStream = new DynamicSoundEffectInstance();
+			IntPtr audioPtr = IntPtr.Zero;
+			do
+			{
+				audioPtr = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
+			} while (audioPtr == IntPtr.Zero);
+			TheoraPlay.THEORAPLAY_AudioPacket packet = TheoraPlay.getAudioPacket(audioPtr);
+			audioStream = new DynamicSoundEffectInstance(
+				packet.freq,
+				(AudioChannels) packet.channels
+			);
 			audioStream.BufferNeeded += OnBufferRequest;
 			UpdateVolume();
 
