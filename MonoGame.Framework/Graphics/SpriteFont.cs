@@ -64,6 +64,25 @@ namespace Microsoft.Xna.Framework.Graphics
 			set;
 		}
 
+		/// <summary>
+		/// Gets the texture that this SpriteFont draws from.
+		/// THIS IS A MONOGAME EXTENSION!
+		/// </summary>
+		/// <remarks>Can be used to implement custom rendering of a SpriteFont</remarks>
+		public Texture2D Texture { get { return _texture; } }
+
+		/// <summary>
+		/// Returns a copy of the dictionary containing the glyphs in this SpriteFont.
+		/// THIS IS A MONOGAME EXTENSION!
+		/// </summary>
+		/// <returns>A new Dictionary containing all of the glyphs inthis SpriteFont</returns>
+		/// <remarks>Can be used to calculate character bounds when implementing custom SpriteFont rendering.</remarks>
+		public Dictionary<char, Glyph> GetGlyphs()
+		{
+			return new Dictionary<char, Glyph>(_glyphs);
+		}
+
+
 		#endregion
 
 		#region Internal Readonly Variables
@@ -469,14 +488,40 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private Glyph struct
 
-		struct Glyph
+		/// <summary>
+		/// Struct that defines the spacing, Kerning, and bounds of a character.
+		/// THIS IS A MONOGAME EXTENSION!
+		/// </summary>
+		/// <remarks>Provides the data necessary to implement custom SpriteFont rendering.</remarks>
+		public struct Glyph
 		{
+			/// <summary>
+			/// The char associated with this glyph.
+			/// </summary>
 			public char Character;
-			public Rectangle BoundsInTexture;
+			/// <summary>
+			/// Rectangle in the font texture where this letter exists.
+			/// </summary>
+ 			public Rectangle BoundsInTexture;
+			/// <summary>
+			/// Cropping applied to the BoundsInTexture to calculate the bounds of the actual character.
+			/// </summary>
 			public Rectangle Cropping;
+			/// <summary>
+			/// The amount of space between the left side of the character and its first pixel in the X dimension.
+			/// </summary>
 			public float LeftSideBearing;
+			/// <summary>
+			/// The amount of space between the right side of the character and its last pixel in the X dimension.
+			/// </summary>
 			public float RightSideBearing;
+			/// <summary>
+			/// Width of the character before kerning is applied. 
+			/// </summary>
 			public float Width;
+			/// <summary>
+			/// Width of the character before kerning is applied. 
+			/// </summary>
 			public float WidthIncludingBearings;
 
 			public static readonly Glyph Empty = new Glyph();

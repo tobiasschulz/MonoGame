@@ -272,6 +272,7 @@ namespace Microsoft.Xna.Framework.Media
 
 		private static void NextSong(int direction)
 		{
+			Stop();
 			if (IsRepeating && Queue.ActiveSongIndex >= Queue.Count - 1)
 			{
 				Queue.ActiveSongIndex = 0;
@@ -286,11 +287,7 @@ namespace Microsoft.Xna.Framework.Media
 
 			Song nextSong = Queue.GetNextSong(direction, IsShuffled);
 
-			if (nextSong == null)
-			{
-				Stop();
-			}
-			else
+			if (nextSong != null)
 			{
 				PlaySong(nextSong);
 			}
