@@ -428,9 +428,6 @@ namespace Microsoft.Xna.Framework
 			// Stop the game loop
 			INTERNAL_runApplication = false;
 
-			// End the network subsystem
-			Net.NetworkSession.Exit();
-
 			// Close SDL2_mixer if needed
 			Media.Song.closeMixer();
 		}
