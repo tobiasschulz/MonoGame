@@ -575,6 +575,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private OpenGLDevice()
 		{
+			/* This looks redundant, but Framebuffer needs this.
+			 * Remove this when we have our own entry points.
+			 * -flibit
+			 */
+			Instance = this;
+
 			// Load OpenGL entry points
 			GL.LoadAll();
 
