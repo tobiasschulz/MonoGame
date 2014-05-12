@@ -57,15 +57,25 @@ namespace Microsoft.Xna.Framework.Audio
 
 		#endregion
 
-		#region Public Constructor
+		#region Public Initializer
 
-		public OpenALDevice()
+		public static void Initialize()
 		{
+			// We should only have one of these!
 			if (Instance != null)
 			{
 				throw new Exception("OpenALDevice already created!");
 			}
 
+			Instance = new OpenALDevice();
+		}
+
+		#endregion
+
+		#region Private Constructor
+
+		private OpenALDevice()
+		{
 			alDevice = Alc.OpenDevice(string.Empty);
 			if (CheckALCError("Could not open AL device") || alDevice == IntPtr.Zero)
 			{
@@ -103,8 +113,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 			instancePool = new List<SoundEffectInstance>();
 			dynamicInstancePool = new List<DynamicSoundEffectInstance>();
-
-			Instance = this;
 		}
 
 		#endregion

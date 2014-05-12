@@ -556,17 +556,25 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Constructor
+		#region Public Initializer
 
-		public OpenGLDevice()
+		public static void Initialize()
 		{
 			// We should only have one of these!
 			if (Instance != null)
 			{
 				throw new Exception("OpenGLDevice already created!");
 			}
-			Instance = this;
 
+			Instance = new OpenGLDevice();
+		}
+
+		#endregion
+
+		#region Private Constructor
+
+		private OpenGLDevice()
+		{
 			// Load OpenGL entry points
 			GL.LoadAll();
 

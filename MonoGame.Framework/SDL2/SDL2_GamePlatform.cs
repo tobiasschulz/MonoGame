@@ -224,10 +224,10 @@ namespace Microsoft.Xna.Framework
 #endif
 
 			// Set up the OpenGL Device. Loads entry points.
-			new OpenGLDevice();
+			OpenGLDevice.Initialize();
 
 			// Create the OpenAL device
-			new OpenALDevice();
+			OpenALDevice.Initialize();
 
 			// Initialize Active Key List
 			keys = new List<Keys>();
