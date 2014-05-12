@@ -1126,14 +1126,30 @@ namespace Microsoft.Xna.Framework.Input
 				}
 				else if (Game.Instance.Platform.OSVersion.Equals("Windows"))
 				{
-					result.Append((char) resChar[0]);
-					result.Append((char) resChar[1]);
-					result.Append((char) resChar[2]);
-					result.Append((char) resChar[3]);
-					result.Append((char) resChar[4]);
-					result.Append((char) resChar[5]);
-					result.Append((char) resChar[6]);
-					result.Append((char) resChar[7]);
+					bool isXInput = true;
+					foreach (byte b in resChar)
+					{
+						if (((char) b) != '0' && b != 0)
+						{
+							isXInput = false;
+							break;
+						}
+					}
+					if (isXInput)
+					{
+						result.Append("xinput");
+					}
+					else
+					{
+						result.Append((char)resChar[0]);
+						result.Append((char)resChar[1]);
+						result.Append((char)resChar[2]);
+						result.Append((char)resChar[3]);
+						result.Append((char)resChar[4]);
+						result.Append((char)resChar[5]);
+						result.Append((char)resChar[6]);
+						result.Append((char)resChar[7]);
+					}
 				}
 				else
 				{
