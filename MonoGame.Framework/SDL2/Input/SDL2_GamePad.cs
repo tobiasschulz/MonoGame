@@ -1090,33 +1090,57 @@ namespace Microsoft.Xna.Framework.Input
 
 			if (INTERNAL_isGameController[(int) playerIndex])
 			{
-				string mapping = SDL.SDL_GameControllerMapping(device);
-				string guid = mapping.Substring(0, mapping.IndexOf(','));
-				StringBuilder uniformID = new StringBuilder();
+				device = SDL.SDL_GameControllerGetJoystick(device);
+			}
+
+			StringBuilder result = new StringBuilder();
+			Threading.ForceToMainThread(() =>
+			{
+				byte[] resChar = new byte[33]; // FIXME: Sort of arbitrary.
+				SDL.SDL_JoystickGetGUIDString(
+					SDL.SDL_JoystickGetGUID(device),
+					resChar,
+					resChar.Length
+				);
 				if (Game.Instance.Platform.OSVersion.Equals("Linux"))
 				{
-					uniformID.Append(guid.Substring(8, 4));
-					uniformID.Append(guid.Substring(16, 4));
-					return uniformID.ToString();
+					result.Append((char) resChar[8]);
+					result.Append((char) resChar[9]);
+					result.Append((char) resChar[10]);
+					result.Append((char) resChar[11]);
+					result.Append((char) resChar[16]);
+					result.Append((char) resChar[17]);
+					result.Append((char) resChar[18]);
+					result.Append((char) resChar[19]);
 				}
-				if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
+				else if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
 				{
-					uniformID.Append(guid.Substring(0, 4));
-					uniformID.Append(guid.Substring(16, 4));
-					return uniformID.ToString();
+					result.Append((char) resChar[0]);
+					result.Append((char) resChar[1]);
+					result.Append((char) resChar[2]);
+					result.Append((char) resChar[3]);
+					result.Append((char) resChar[16]);
+					result.Append((char) resChar[17]);
+					result.Append((char) resChar[18]);
+					result.Append((char) resChar[19]);
 				}
-				if (Game.Instance.Platform.OSVersion.Equals("Windows"))
+				else if (Game.Instance.Platform.OSVersion.Equals("Windows"))
 				{
-					if (guid.Equals("xinput"))
-					{
-						return guid;
-					}
-					uniformID.Append(guid.Substring(0, 8));
-					return uniformID.ToString();
+					result.Append((char) resChar[0]);
+					result.Append((char) resChar[1]);
+					result.Append((char) resChar[2]);
+					result.Append((char) resChar[3]);
+					result.Append((char) resChar[4]);
+					result.Append((char) resChar[5]);
+					result.Append((char) resChar[6]);
+					result.Append((char) resChar[7]);
 				}
-				throw new Exception("SDL2_GamePad: Platform.OSVersion not handled!");
-			}
-			throw new Exception("TODO: GetGUID SDL_joystick");
+				else
+				{
+					throw new Exception("SDL2_GamePad: Platform.OSVersion not handled!");
+				}
+			});
+			return result.ToString();
 		}
 
 		#endregion
