@@ -137,9 +137,7 @@ namespace Microsoft.Xna.Framework.Audio
 				reader.ReadUInt32();
 
 				// SoundBank Name, unused
-				System.Text.Encoding.UTF8.GetString(
-					reader.ReadBytes(64), 0, 64
-				);
+				reader.ReadBytes(64);
 
 				// Parse WaveBank names
 				soundBankStream.Seek(waveBankNameTableOffset, SeekOrigin.Begin);
