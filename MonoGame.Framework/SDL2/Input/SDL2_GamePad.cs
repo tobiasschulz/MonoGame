@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Xml.Serialization;
 
 using SDL2;
@@ -1073,6 +1074,49 @@ namespace Microsoft.Xna.Framework.Input
 				);
 			}
 			return true;
+		}
+
+		#endregion
+
+		#region Public GamePad API, FNA Extensions
+
+		public static string GetGUID(PlayerIndex playerIndex)
+		{
+			IntPtr device = INTERNAL_devices[(int) playerIndex];
+			if (device == IntPtr.Zero)
+			{
+				return null;
+			}
+
+			if (INTERNAL_isGameController[(int) playerIndex])
+			{
+				string mapping = SDL.SDL_GameControllerMapping(device);
+				string guid = mapping.Substring(0, mapping.IndexOf(','));
+				StringBuilder uniformID = new StringBuilder();
+				if (Game.Instance.Platform.OSVersion.Equals("Linux"))
+				{
+					uniformID.Append(guid.Substring(8, 4));
+					uniformID.Append(guid.Substring(16, 4));
+					return uniformID.ToString();
+				}
+				if (Game.Instance.Platform.OSVersion.Equals("Mac OS X"))
+				{
+					uniformID.Append(guid.Substring(0, 4));
+					uniformID.Append(guid.Substring(16, 4));
+					return uniformID.ToString();
+				}
+				if (Game.Instance.Platform.OSVersion.Equals("Windows"))
+				{
+					if (guid.Equals("xinput"))
+					{
+						return guid;
+					}
+					uniformID.Append(guid.Substring(0, 8));
+					return uniformID.ToString();
+				}
+				throw new Exception("SDL2_GamePad: Platform.OSVersion not handled!");
+			}
+			throw new Exception("TODO: GetGUID SDL_joystick");
 		}
 
 		#endregion
