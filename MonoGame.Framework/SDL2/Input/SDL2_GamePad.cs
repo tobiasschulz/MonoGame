@@ -1141,14 +1141,14 @@ namespace Microsoft.Xna.Framework.Input
 					}
 					else
 					{
-						result.Append((char)resChar[0]);
-						result.Append((char)resChar[1]);
-						result.Append((char)resChar[2]);
-						result.Append((char)resChar[3]);
-						result.Append((char)resChar[4]);
-						result.Append((char)resChar[5]);
-						result.Append((char)resChar[6]);
-						result.Append((char)resChar[7]);
+						result.Append((char) resChar[0]);
+						result.Append((char) resChar[1]);
+						result.Append((char) resChar[2]);
+						result.Append((char) resChar[3]);
+						result.Append((char) resChar[4]);
+						result.Append((char) resChar[5]);
+						result.Append((char) resChar[6]);
+						result.Append((char) resChar[7]);
 					}
 				}
 				else
