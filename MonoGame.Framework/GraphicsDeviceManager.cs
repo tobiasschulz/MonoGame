@@ -140,6 +140,8 @@ namespace Microsoft.Xna.Framework
 			PreferredBackBufferFormat = SurfaceFormat.Color;
 			PreferredDepthStencilFormat = DepthFormat.Depth24;
 
+			SynchronizeWithVerticalRetrace = true;
+
 			if (game.Services.GetService(typeof(IGraphicsDeviceManager)) != null)
 			{
 				throw new ArgumentException("Graphics Device Manager Already Present");
