@@ -30,7 +30,7 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		{
 			get
 			{
-				return isConnected;
+				return TouchPanel.GetCapabilities().IsConnected;
 			}
 		}
 
@@ -92,8 +92,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
 
 		private TouchLocation[] collection;
 
-		private bool isConnected;
-
 		private static readonly TouchLocation[] emptyCollection = new TouchLocation[0];
 
 		#endregion
@@ -109,7 +107,6 @@ namespace Microsoft.Xna.Framework.Input.Touch
 		/// </param>
 		public TouchCollection(TouchLocation[] touches)
 		{
-			isConnected = true;
 			collection = touches;
 		}
 
