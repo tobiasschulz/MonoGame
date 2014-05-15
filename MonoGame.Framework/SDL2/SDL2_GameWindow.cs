@@ -270,11 +270,6 @@ namespace Microsoft.Xna.Framework
 
 		#region Internal Methods
 
-		internal void INTERNAL_ShowWindow()
-		{
-			SDL.SDL_ShowWindow(INTERNAL_sdlWindow);
-		}
-
 		internal void INTERNAL_ClientSizeChanged()
 		{
 			OnClientSizeChanged();
