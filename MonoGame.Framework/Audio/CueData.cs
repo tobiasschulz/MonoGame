@@ -286,19 +286,16 @@ namespace Microsoft.Xna.Framework.Audio
 	{
 		private XACTEvent[] INTERNAL_events;
 
-		private double INTERNAL_clipVolume;
-
 		public XACTClip(ushort track, byte waveBank)
 		{
-			INTERNAL_clipVolume = 0.0;
 			INTERNAL_events = new XACTEvent[1];
 			INTERNAL_events[0] = new PlayWaveEvent(
 				new ushort[] { track },
 				new byte[] { waveBank },
 				0,
 				0,
-				1.0f,
-				1.0f,
+				1.0,
+				1.0,
 				0,
 				0,
 				new byte[] { 0xFF }
@@ -307,8 +304,6 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public XACTClip(BinaryReader reader, double clipVolume)
 		{
-			INTERNAL_clipVolume = clipVolume;
-
 			// Number of XACT Events
 			INTERNAL_events = new XACTEvent[reader.ReadByte()];
 
@@ -357,8 +352,8 @@ namespace Microsoft.Xna.Framework.Audio
 						new byte[] { waveBank },
 						0,
 						0,
-						0.0,
-						0.0,
+						clipVolume,
+						clipVolume,
 						loopCount,
 						0,
 						new byte[] { 0xFF }
@@ -408,8 +403,8 @@ namespace Microsoft.Xna.Framework.Audio
 						waveBanks,
 						0,
 						0,
-						0.0,
-						0.0,
+						clipVolume,
+						clipVolume,
 						0,
 						variationType,
 						weights
@@ -437,8 +432,9 @@ namespace Microsoft.Xna.Framework.Audio
 					// Loop Count, unconfirmed
 					byte loopCount = reader.ReadByte();
 					
-					// Unknown values
-					reader.ReadBytes(4);
+					// Speaker position angle/arc, unused
+					reader.ReadUInt16();
+					reader.ReadUInt16();
 					
 					// Pitch Variation
 					short minPitch = reader.ReadInt16();
@@ -448,11 +444,15 @@ namespace Microsoft.Xna.Framework.Audio
 					double minVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 					double maxVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 
-					// Unknown values
+					// Frequency Variation, unusued
 					reader.ReadSingle();
 					reader.ReadSingle();
+
+					// Q Factor Variation, unused
 					reader.ReadSingle();
 					reader.ReadSingle();
+
+					// Unknown value
 					reader.ReadByte();
 					
 					// Finally.
@@ -492,11 +492,15 @@ namespace Microsoft.Xna.Framework.Audio
 					double minVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 					double maxVolume = XACTCalculator.ParseDecibel(reader.ReadByte());
 
-					// Unknown values
+					// Frequency Variation, unusued
 					reader.ReadSingle();
 					reader.ReadSingle();
+
+					// Q Factor Variation, unused
 					reader.ReadSingle();
 					reader.ReadSingle();
+
+					// Unknown value
 					reader.ReadByte();
 
 					// Variation flags
@@ -608,7 +612,6 @@ namespace Microsoft.Xna.Framework.Audio
 				if (curEvent.Type == 1)
 				{
 					wavs.Add(((PlayWaveEvent) curEvent).GenerateInstance(
-						INTERNAL_clipVolume,
 						soundVolume,
 						soundPitch
 					));
@@ -706,7 +709,6 @@ namespace Microsoft.Xna.Framework.Audio
 		}
 
 		public SoundEffectInstance GenerateInstance(
-			double clipVolume,
 			double soundVolume,
 			float soundPitch
 		) {
@@ -714,7 +716,7 @@ namespace Microsoft.Xna.Framework.Audio
 			SoundEffectInstance result = INTERNAL_waves[INTERNAL_curWave].CreateInstance();
 			result.INTERNAL_isXACTSource = true;
 			result.Volume = XACTCalculator.CalculateAmplitudeRatio(
-				soundVolume + clipVolume + (
+				soundVolume + (
 					random.NextDouble() *
 					(INTERNAL_maxVolume - INTERNAL_minVolume)
 				) + INTERNAL_minVolume
