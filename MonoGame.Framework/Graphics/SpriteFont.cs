@@ -298,7 +298,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					 */
 					if (firstGlyphOfLine)
 					{
-						offset.X = Math.Max(offset.X, 0);
+						offset.X = Math.Max(currentGlyph.LeftSideBearing, 0);
 						firstGlyphOfLine = false;
 					}
 					else
