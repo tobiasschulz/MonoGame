@@ -141,7 +141,7 @@ namespace Microsoft.Xna.Framework
 
 			INTERNAL_sdlWindowFlags_Next = (
 				SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL |
-				SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
+				SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN |
 				SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS |
 				SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
 			);

@@ -271,6 +271,8 @@ namespace Microsoft.Xna.Framework
 
 		public override void RunLoop()
 		{
+			SDL.SDL_ShowWindow(Window.Handle);
+
 			SDL.SDL_Event evt;
 
 			while (INTERNAL_runApplication)
