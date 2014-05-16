@@ -290,7 +290,6 @@ namespace Microsoft.Xna.Framework
 				INTERNAL_sdlWindow,
 				title
 			);
-			INTERNAL_SetIcon(title);
 		}
 
 		#endregion
