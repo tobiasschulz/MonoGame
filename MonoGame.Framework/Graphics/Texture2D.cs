@@ -469,6 +469,39 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
+			// Read the image data from the stream
+			int width, height;
+			byte[] pixels;
+			TextureDataFromStreamEXT(stream, out width, out height, out pixels);
+
+			// Create the Texture2D from the SDL_Surface
+			Texture2D result = new Texture2D(
+				graphicsDevice,
+				width,
+				height
+			);
+			result.SetData(pixels);
+			return result;
+		}
+
+		#endregion
+
+		#region Public Static Texture2D Extensions
+		
+		/// <summary>
+		/// Loads image data from a given stream.
+		/// </summary>
+		/// <remarks>
+		/// This is an extension of XNA 4 and is not compatible with XNA. It exists to help with dynamically reloading
+		/// textures while games are running. Games can use this method to read a stream into memory and then call
+		/// SetData on a texture with that data, rather than having to dispose the texture and recreate it entirely.
+		/// </remarks>
+		/// <param name="stream">The stream from which to read the image data.</param>
+		/// <param name="width">Outputs the width of the image.</param>
+		/// <param name="height">Outputs the height of the image.</param>
+		/// <param name="pixels">Outputs the pixel data of the image, in non-premultiplied RGBA format.</param>
+		public static void TextureDataFromStreamEXT(Stream stream, out int width, out int height, out byte[] pixels)
+		{
 			// Load the Stream into an SDL_RWops*
 			byte[] mem = new byte[stream.Length];
 			stream.Read(mem, 0, mem.Length);
@@ -477,9 +510,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Load the SDL_Surface* from RWops, get the image data
 			IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
 			surface = INTERNAL_convertSurfaceFormat(surface);
-			int width = INTERNAL_getSurfaceWidth(surface);
-			int height = INTERNAL_getSurfaceHeight(surface);
-			byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
+			width = INTERNAL_getSurfaceWidth(surface);
+			height = INTERNAL_getSurfaceHeight(surface);
+			pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
 			Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
 
 			/* Ensure that the alpha pixels are... well, actual alpha.
@@ -496,15 +529,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					pixels[i + 2] = 0;
 				}
 			}
-
-			// Create the Texture2D from the SDL_Surface
-			Texture2D result = new Texture2D(
-				graphicsDevice,
-				width,
-				height
-			);
-			result.SetData(pixels);
-			return result;
 		}
 
 		#endregion
