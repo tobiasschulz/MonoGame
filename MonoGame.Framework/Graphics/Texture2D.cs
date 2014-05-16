@@ -472,7 +472,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Read the image data from the stream
 			int width, height;
 			byte[] pixels;
-			TextureDataFromStream_EXT(stream, out width, out height, out pixels);
+			TextureDataFromStreamEXT(stream, out width, out height, out pixels);
 
 			// Create the Texture2D from the SDL_Surface
 			Texture2D result = new Texture2D(
@@ -487,8 +487,20 @@ namespace Microsoft.Xna.Framework.Graphics
 		#endregion
 
 		#region Public Static Texture2D Extensions
-
-		public static void TextureDataFromStream_EXT(Stream stream, out int width, out int height, out byte[] pixels)
+		
+		/// <summary>
+		/// Loads image data from a given stream.
+		/// </summary>
+		/// <remarks>
+		/// This is an extension of XNA 4 and is not compatible with XNA. It exists to help with dynamically reloading
+		/// textures while games are running. Games can use this method to read a stream into memory and then call
+		/// SetData on a texture with that data, rather than having to dispose the texture and recreate it entirely.
+		/// </remarks>
+		/// <param name="stream">The stream from which to read the image data.</param>
+		/// <param name="width">Outputs the width of the image.</param>
+		/// <param name="height">Outputs the height of the image.</param>
+		/// <param name="pixels">Outputs the pixel data of the image, in non-premultiplied RGBA format.</param>
+		public static void TextureDataFromStreamEXT(Stream stream, out int width, out int height, out byte[] pixels)
 		{
 			// Load the Stream into an SDL_RWops*
 			byte[] mem = new byte[stream.Length];
