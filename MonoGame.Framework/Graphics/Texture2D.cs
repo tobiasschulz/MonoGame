@@ -469,6 +469,27 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public static Texture2D FromStream(GraphicsDevice graphicsDevice, Stream stream)
 		{
+			// Read the image data from the stream
+			int width, height;
+			byte[] pixels;
+			TextureDataFromStream_EXT(stream, out width, out height, out pixels);
+
+			// Create the Texture2D from the SDL_Surface
+			Texture2D result = new Texture2D(
+				graphicsDevice,
+				width,
+				height
+			);
+			result.SetData(pixels);
+			return result;
+		}
+
+		#endregion
+
+		#region Public Static Texture2D Extensions
+
+		public static void TextureDataFromStream_EXT(Stream stream, out int width, out int height, out byte[] pixels)
+		{
 			// Load the Stream into an SDL_RWops*
 			byte[] mem = new byte[stream.Length];
 			stream.Read(mem, 0, mem.Length);
@@ -477,9 +498,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Load the SDL_Surface* from RWops, get the image data
 			IntPtr surface = SDL_image.IMG_Load_RW(rwops, 1);
 			surface = INTERNAL_convertSurfaceFormat(surface);
-			int width = INTERNAL_getSurfaceWidth(surface);
-			int height = INTERNAL_getSurfaceHeight(surface);
-			byte[] pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
+			width = INTERNAL_getSurfaceWidth(surface);
+			height = INTERNAL_getSurfaceHeight(surface);
+			pixels = new byte[width * height * 4]; // MUST be SurfaceFormat.Color!
 			Marshal.Copy(INTERNAL_getSurfacePixels(surface), pixels, 0, pixels.Length);
 
 			/* Ensure that the alpha pixels are... well, actual alpha.
@@ -496,15 +517,6 @@ namespace Microsoft.Xna.Framework.Graphics
 					pixels[i + 2] = 0;
 				}
 			}
-
-			// Create the Texture2D from the SDL_Surface
-			Texture2D result = new Texture2D(
-				graphicsDevice,
-				width,
-				height
-			);
-			result.SetData(pixels);
-			return result;
 		}
 
 		#endregion
