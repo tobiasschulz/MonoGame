@@ -213,6 +213,15 @@ namespace Microsoft.Xna.Framework
 				IsBorderless ? SDL.SDL_bool.SDL_FALSE : SDL.SDL_bool.SDL_TRUE
 			);
 
+			/*	Because Mac windows resizes from the bottom, we have to get the position before changing
+				the size so we can keep the window centered when resizing in windowed mode. */
+			int prevX = 0;
+			int prevY = 0;
+			if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
+			{
+				SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out prevX, out prevY);
+			}
+
 			// Window bounds
 			SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
 
@@ -229,14 +238,10 @@ namespace Microsoft.Xna.Framework
 			}
 			else if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
 			{
-				// Try to center the window around the old window position.
-				int x = 0;
-				int y = 0;
-				SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
 				SDL.SDL_SetWindowPosition(
 					INTERNAL_sdlWindow,
-					x + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
-					y + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
+					prevX + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
+					prevY + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
 				);
 			}
 
