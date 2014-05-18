@@ -26,6 +26,15 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
+		#region Static Constructor
+
+		static TitleContainer()
+		{
+			Location = AppDomain.CurrentDomain.BaseDirectory;
+		}
+
+		#endregion
+
 		#region Public Static Methods
 
 		/// <summary>
@@ -54,11 +63,6 @@ namespace Microsoft.Xna.Framework
 		#endregion
 
 		#region Internal Static Methods
-
-		internal static void Initialize()
-		{
-			Location = AppDomain.CurrentDomain.BaseDirectory;
-		}
 
 		/* TODO: This is just path normalization.
 		 * Remove this and replace it with a proper utility function.
