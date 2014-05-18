@@ -213,8 +213,9 @@ namespace Microsoft.Xna.Framework
 				IsBorderless ? SDL.SDL_bool.SDL_FALSE : SDL.SDL_bool.SDL_TRUE
 			);
 
-			/*	Because Mac windows resizes from the bottom, we have to get the position before changing
-				the size so we can keep the window centered when resizing in windowed mode. */
+			/* Because Mac windows resizes from the bottom, we have to get the position before changing
+			 * the size so we can keep the window centered when resizing in windowed mode.
+			 */
 			int prevX = 0;
 			int prevY = 0;
 			if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
