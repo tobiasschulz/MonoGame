@@ -305,10 +305,47 @@ namespace Microsoft.Xna.Framework
 		private void INTERNAL_SetIcon(string title)
 		{
 			string fileIn = String.Empty;
-			if (System.IO.File.Exists(title + ".bmp"))
+
+			/* If the game's using SDL2_image, provide the option to use a PNG
+			 * instead of a BMP. Nice for anyone who cares about transparency.
+			 * -flibit
+			 */
+			try
+			{
+				fileIn = INTERNAL_GetIconName(title, ".png");
+				if (!String.IsNullOrEmpty(fileIn))
+				{
+					IntPtr icon = SDL_image.IMG_Load(fileIn);
+					SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+					SDL.SDL_FreeSurface(icon);
+					return;
+				}
+			}
+			catch(DllNotFoundException)
+			{
+				// Not that big a deal guys.
+			}
+
+			fileIn = INTERNAL_GetIconName(title, ".bmp");
+			if (!String.IsNullOrEmpty(fileIn))
+			{
+				IntPtr icon = SDL.SDL_LoadBMP(fileIn);
+				SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+				SDL.SDL_FreeSurface(icon);
+			}
+		}
+
+		#endregion
+
+		#region Private Static Icon Filename Method
+
+		private static string INTERNAL_GetIconName(string title, string extension)
+		{
+			string fileIn = String.Empty;
+			if (System.IO.File.Exists(title + extension))
 			{
 				// If the title and filename work, it just works. Fine.
-				fileIn = title + ".bmp";
+				fileIn = title + extension;
 			}
 			else
 			{
@@ -339,20 +376,14 @@ namespace Microsoft.Xna.Framework
 				{
 					stripChars = stripChars.Replace(c.ToString(), "");
 				}
-				stripChars += ".bmp";
+				stripChars += extension;
 
 				if (System.IO.File.Exists(stripChars))
 				{
 					fileIn = stripChars;
 				}
 			}
-
-			if (!String.IsNullOrEmpty(fileIn))
-			{
-				IntPtr icon = SDL.SDL_LoadBMP(fileIn);
-				SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
-				SDL.SDL_FreeSurface(icon);
-			}
+			return fileIn;
 		}
 
 		#endregion
