@@ -136,6 +136,22 @@ namespace Microsoft.Xna.Framework.Graphics
 				Handle = 0;
 			}
 
+			public bool NeedsFlush()
+			{
+				if (Handle == 0)
+				{
+					return false; // Nothing to modify!
+				}
+
+				return (	WrapS.NeedsFlush() ||
+						WrapT.NeedsFlush() ||
+						WrapR.NeedsFlush() ||
+						Filter.NeedsFlush() ||
+						Anistropy.NeedsFlush() ||
+						MaxMipmapLevel.NeedsFlush() ||
+						LODBias.NeedsFlush()	);
+			}
+
 			public void Flush(bool force)
 			{
 				if (Handle == 0)
@@ -926,7 +942,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				OpenGLSampler sampler = Samplers[i];
 				if (!(	force ||
 					sampler.Target.NeedsFlush() ||
-					sampler.Texture.NeedsFlush()	))
+					sampler.Texture.NeedsFlush() ||
+					sampler.Texture.GetCurrent().NeedsFlush()	))
 				{
 					// Nothing changed in this sampler, skip it.
 					continue;
@@ -942,7 +959,9 @@ namespace Microsoft.Xna.Framework.Graphics
 					GL.BindTexture(sampler.Target.GetCurrent(), 0);
 				}
 
-				if (force || sampler.Texture.NeedsFlush())
+				if (	force ||
+					sampler.Texture.NeedsFlush() || 
+					sampler.Texture.GetCurrent().NeedsFlush()	)
 				{
 					OpenGLTexture texture = sampler.Texture.Flush();
 					GL.BindTexture(sampler.Target.Flush(), texture.Handle);
