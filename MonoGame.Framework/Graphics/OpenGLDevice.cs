@@ -143,14 +143,13 @@ namespace Microsoft.Xna.Framework.Graphics
 					return false; // Nothing to modify!
 				}
 
-				return
-					WrapS.NeedsFlush() ||
-					WrapT.NeedsFlush() ||
-					WrapR.NeedsFlush() ||
-					Filter.NeedsFlush() ||
-					Anistropy.NeedsFlush() ||
-					MaxMipmapLevel.NeedsFlush() ||
-					LODBias.NeedsFlush();
+				return (	WrapS.NeedsFlush() ||
+						WrapT.NeedsFlush() ||
+						WrapR.NeedsFlush() ||
+						Filter.NeedsFlush() ||
+						Anistropy.NeedsFlush() ||
+						MaxMipmapLevel.NeedsFlush() ||
+						LODBias.NeedsFlush()	);
 			}
 
 			public void Flush(bool force)
@@ -944,7 +943,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (!(	force ||
 					sampler.Target.NeedsFlush() ||
 					sampler.Texture.NeedsFlush() ||
-					sampler.Texture.Get().NeedsFlush() ||
 					sampler.Texture.GetCurrent().NeedsFlush()	))
 				{
 					// Nothing changed in this sampler, skip it.
@@ -961,10 +959,9 @@ namespace Microsoft.Xna.Framework.Graphics
 					GL.BindTexture(sampler.Target.GetCurrent(), 0);
 				}
 
-				if (force ||
+				if (	force ||
 					sampler.Texture.NeedsFlush() || 
-					sampler.Texture.Get().NeedsFlush() ||
-					sampler.Texture.GetCurrent().NeedsFlush())
+					sampler.Texture.GetCurrent().NeedsFlush()	)
 				{
 					OpenGLTexture texture = sampler.Texture.Flush();
 					GL.BindTexture(sampler.Target.Flush(), texture.Handle);
