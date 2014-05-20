@@ -10,6 +10,8 @@
 #region Using Statements
 using System;
 using System.IO;
+
+using Microsoft.Xna.Framework.Utilities;
 #endregion
 
 namespace Microsoft.Xna.Framework
@@ -45,7 +47,7 @@ namespace Microsoft.Xna.Framework
 		public static Stream OpenStream(string name)
 		{
 			// Normalize the file path.
-			string safeName = GetFilename(name);
+			string safeName = FileHelpers.NormalizeFilePathSeparators(name);
 
 			// We do not accept absolute paths here.
 			if (Path.IsPathRooted(safeName))
@@ -58,21 +60,6 @@ namespace Microsoft.Xna.Framework
 
 			string absolutePath = Path.Combine(Location, safeName);
 			return File.OpenRead(absolutePath);
-		}
-
-		#endregion
-
-		#region Internal Static Methods
-
-		/* TODO: This is just path normalization.
-		 * Remove this and replace it with a proper utility function.
-		 * I'm sure this same logic is duplicated all over the code base.
-		 */
-		internal static string GetFilename(string name)
-		{
-			// Replaces Windows path separators with local path separators.
-			name = name.Replace('\\', Path.DirectorySeparatorChar);
-			return name;
 		}
 
 		#endregion

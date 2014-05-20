@@ -17,6 +17,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Utilities;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content
@@ -328,7 +329,7 @@ namespace Microsoft.Xna.Framework.Content
 			Stream stream;
 			try
 			{
-				string assetPath = TitleContainer.GetFilename(
+				string assetPath = FileHelpers.NormalizeFilePathSeparators(
 					Path.Combine(RootDirectoryFullPath, assetName) + ".xnb"
 				);
 				stream = File.OpenRead(assetPath);
@@ -405,7 +406,7 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException ex)
 			{
 				// MonoGame try to load as a non-content file
-				assetName = TitleContainer.GetFilename(
+				assetName = FileHelpers.NormalizeFilePathSeparators(
 					Path.Combine(RootDirectoryFullPath, assetName)
 				);
 				assetName = Normalize<T>(assetName);
@@ -615,7 +616,7 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException)
 			{
 				// Try to reload as a non-xnb file.
-				assetName = TitleContainer.GetFilename(
+				assetName = FileHelpers.NormalizeFilePathSeparators(
 					Path.Combine(RootDirectoryFullPath, assetName)
 				);
 				assetName = Normalize<T>(assetName);

@@ -12,6 +12,7 @@ using System;
 using System.IO;
 
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Utilities;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content
@@ -41,7 +42,7 @@ namespace Microsoft.Xna.Framework.Content
 		) {
 			string path = input.ReadString();
 			path = Path.Combine(input.ContentManager.RootDirectory, path);
-			path = TitleContainer.GetFilename(path);
+			path = FileHelpers.NormalizeFilePathSeparators(path);
 
 			/* The path string includes the ".wmv" extension. Let's see if this
 			 * file exists in a format we actually support...

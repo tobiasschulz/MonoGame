@@ -346,6 +346,7 @@
     <Compile Include="FrameworkDispatcher.cs" />
     <Compile Include="Audio\DSPEffect.cs" />
     <Compile Include="Utilities\AssemblyHelper.cs" />
+    <Compile Include="Utilities\FileHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\TheoraPlay#\TheoraPlay-CS.csproj">
