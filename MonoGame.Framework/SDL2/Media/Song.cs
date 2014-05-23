@@ -94,10 +94,8 @@ namespace Microsoft.Xna.Framework.Media
 
 		public string Name
 		{
-			get
-			{
-				return Path.GetFileNameWithoutExtension(FilePath);
-			}
+			get;
+			private set;
 		}
 
 		public int PlayCount
@@ -163,6 +161,7 @@ namespace Microsoft.Xna.Framework.Media
 		internal Song(string fileName)
 		{
 			FilePath = fileName;
+			Name = Path.GetFileNameWithoutExtension(FilePath);
 			initializeMixer();
 			INTERNAL_mixMusic = SDL_mixer.Mix_LoadMUS(fileName);
 			IsDisposed = false;
@@ -269,6 +268,33 @@ namespace Microsoft.Xna.Framework.Media
 		public override int GetHashCode()
 		{
 			return base.GetHashCode();
+		}
+
+		#endregion
+
+		#region Public Static Methods
+
+		/// <summary>
+		/// Constructs a new Song object based on the specified URI.
+		/// </summary>
+		/// <remarks>
+		/// This method matches the signature of the one in XNA4, however we currently can't play remote songs, so
+		/// the URI is required to be a file name and the code uses the LocalPath property only.
+		/// </remarks>
+		/// <param name="name">Name of the song.</param>
+		/// <param name="uri">Uri object that represents the URI.</param>
+		/// <returns>Song object that can be used to play the song.</returns>
+		public static Song FromUri(string name, Uri uri)
+		{
+			if (!uri.IsFile)
+			{
+				throw new InvalidOperationException("Only local file URIs are supported for now");
+			}
+
+			return new Song(uri.LocalPath)
+			{
+				Name = name
+			};
 		}
 
 		#endregion
