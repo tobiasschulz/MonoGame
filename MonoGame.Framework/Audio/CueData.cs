@@ -290,6 +290,7 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			INTERNAL_events = new XACTEvent[1];
 			INTERNAL_events[0] = new PlayWaveEvent(
+				0,
 				new ushort[] { track },
 				new byte[] { waveBank },
 				0,
@@ -314,7 +315,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 				// XACT Event Type, Timestamp
 				uint eventType = eventInfo & 0x0000001F;
-				// uint eventTimestamp = (eventInfo >> 5) & 0x0000FFFF;
+				uint eventTimestamp = (eventInfo >> 5) & 0x0000FFFF;
 				// uint eventUnknown = eventInfo >> 21;
 
 				// Random offset, unused
@@ -348,6 +349,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// Finally.
 					INTERNAL_events[i] = new PlayWaveEvent(
+						eventTimestamp,
 						new ushort[] { track },
 						new byte[] { waveBank },
 						0,
@@ -399,6 +401,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// Finally.
 					INTERNAL_events[i] = new PlayWaveEvent(
+						eventTimestamp,
 						tracks,
 						waveBanks,
 						0,
@@ -457,6 +460,7 @@ namespace Microsoft.Xna.Framework.Audio
 					
 					// Finally.
 					INTERNAL_events[i] = new PlayWaveEvent(
+						eventTimestamp,
 						new ushort[] { track },
 						new byte[] { waveBank },
 						minPitch,
@@ -543,6 +547,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 					// Finally.
 					INTERNAL_events[i] = new PlayWaveEvent(
+						eventTimestamp,
 						tracks,
 						waveBanks,
 						minPitch,
@@ -566,6 +571,7 @@ namespace Microsoft.Xna.Framework.Audio
 					reader.ReadBytes(8);
 
 					INTERNAL_events[i] = new SetVolumeEvent(
+						eventTimestamp,
 						constant
 					);
 				}
@@ -637,9 +643,16 @@ namespace Microsoft.Xna.Framework.Audio
 			private set;
 		}
 
-		public XACTEvent(uint type)
+		public uint Timestamp
+		{
+			get;
+			private set;
+		}
+
+		public XACTEvent(uint type, uint timestamp)
 		{
 			Type = type;
+			Timestamp = timestamp;
 		}
 	}
 
@@ -674,6 +687,7 @@ namespace Microsoft.Xna.Framework.Audio
 		private static Random random = new Random();
 
 		public PlayWaveEvent(
+			uint timestamp,
 			ushort[] tracks,
 			byte[] waveBanks,
 			short minPitch,
@@ -683,7 +697,7 @@ namespace Microsoft.Xna.Framework.Audio
 			byte loopCount,
 			ushort variationType,
 			byte[] weights
-		) : base(1) {
+		) : base(1, timestamp) {
 			INTERNAL_tracks = tracks;
 			INTERNAL_waveBanks = waveBanks;
 			INTERNAL_minPitch = minPitch;
@@ -715,6 +729,7 @@ namespace Microsoft.Xna.Framework.Audio
 			INTERNAL_getNextSound();
 			SoundEffectInstance result = INTERNAL_waves[INTERNAL_curWave].CreateInstance();
 			result.INTERNAL_isXACTSource = true;
+			result.INTERNAL_delayMS = Timestamp;
 			result.Volume = XACTCalculator.CalculateAmplitudeRatio(
 				soundVolume + (
 					random.NextDouble() *
@@ -810,8 +825,9 @@ namespace Microsoft.Xna.Framework.Audio
 		private float INTERNAL_constant;
 
 		public SetVolumeEvent(
+			uint timestamp,
 			float constant
-		) : base(2) {
+		) : base(2, timestamp) {
 			INTERNAL_constant = constant;
 		}
 

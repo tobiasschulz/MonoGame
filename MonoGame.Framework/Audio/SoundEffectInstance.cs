@@ -87,6 +87,14 @@ namespace Microsoft.Xna.Framework.Audio
 		{
 			get
 			{
+				if (INTERNAL_timer.IsRunning)
+				{
+					return SoundState.Playing;
+				}
+				else if (INTERNAL_timer.ElapsedMilliseconds > 0)
+				{
+					return SoundState.Paused;
+				}
 				if (INTERNAL_alSource == -1)
 				{
 					return SoundState.Stopped;
@@ -133,6 +141,10 @@ namespace Microsoft.Xna.Framework.Audio
 		 * -flibit
 		 */
 		internal bool INTERNAL_isXACTSource = false;
+
+		// FIXME: This is stupid and terrible! Fix the Cue animation! -flibit
+		internal System.Diagnostics.Stopwatch INTERNAL_timer = new System.Diagnostics.Stopwatch();
+		internal uint INTERNAL_delayMS = 0;
 
 		#endregion
 
@@ -249,6 +261,17 @@ namespace Microsoft.Xna.Framework.Audio
 				// FIXME: Is this XNA4 behavior?
 				Stop();
 			}
+
+			if (INTERNAL_delayMS != 0 && !INTERNAL_timer.IsRunning)
+			{
+				INTERNAL_timer.Start();
+			}
+			if (INTERNAL_timer.ElapsedMilliseconds < INTERNAL_delayMS)
+			{
+				return; // We'll be back...
+			}
+			INTERNAL_timer.Stop();
+			INTERNAL_timer.Reset();
 
 			if (INTERNAL_alSource != -1)
 			{

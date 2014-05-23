@@ -421,6 +421,15 @@ namespace Microsoft.Xna.Framework.Audio
 
 			for (int i = 0; i < INTERNAL_instancePool.Count; i += 1)
 			{
+				if (INTERNAL_instancePool[i].INTERNAL_timer.ElapsedMilliseconds > INTERNAL_instancePool[i].INTERNAL_delayMS)
+				{
+					// Okay, play this NOW!
+					INTERNAL_instancePool[i].Play();
+					if (IsPaused)
+					{
+						INTERNAL_instancePool[i].Pause();
+					}
+				}
 				if (INTERNAL_instancePool[i].State == SoundState.Stopped)
 				{
 					INTERNAL_instancePool[i].Dispose();
