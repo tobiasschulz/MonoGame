@@ -328,6 +328,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Pause()
 		{
+			INTERNAL_timer.Stop();
 			if (INTERNAL_alSource != -1 && State == SoundState.Playing)
 			{
 				AL.SourcePause(INTERNAL_alSource);
@@ -336,6 +337,7 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Resume()
 		{
+			INTERNAL_timer.Start();
 			if (INTERNAL_alSource != -1 && State == SoundState.Paused)
 			{
 				AL.SourcePlay(INTERNAL_alSource);
@@ -344,6 +346,8 @@ namespace Microsoft.Xna.Framework.Audio
 
 		public void Stop()
 		{
+			INTERNAL_timer.Stop();
+			INTERNAL_timer.Reset();
 			if (INTERNAL_alSource != -1)
 			{
 				AL.SourceStop(INTERNAL_alSource);
