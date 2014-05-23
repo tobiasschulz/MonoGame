@@ -1726,6 +1726,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		public static class Framebuffer
 		{
 			private static bool hasARB = false;
+			private static int currentReadFramebuffer = 0;
+			private static int currentDrawFramebuffer = 0;
 
 			public static void Initialize()
 			{
@@ -1760,20 +1762,84 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			public static void BindFramebuffer(int handle)
 			{
+				if (currentReadFramebuffer != handle && currentDrawFramebuffer != handle)
+				{
+					if (hasARB)
+					{
+						GL.BindFramebuffer(
+							FramebufferTarget.Framebuffer,
+							handle
+						);
+					}
+					else
+					{
+						GL.Ext.BindFramebuffer(
+							FramebufferTarget.FramebufferExt,
+							handle
+						);
+					}
+
+					currentReadFramebuffer = handle;
+					currentDrawFramebuffer = handle;
+				}
+				else if (currentReadFramebuffer != handle)
+				{
+					BindReadFramebuffer(handle);
+				}
+				else if (currentDrawFramebuffer != handle)
+				{
+					BindDrawFramebuffer(handle);
+				}
+			}
+
+			public static void BindReadFramebuffer(int handle)
+			{
+				if (handle == currentReadFramebuffer)
+				{
+					return;
+				}
+
 				if (hasARB)
 				{
 					GL.BindFramebuffer(
-						FramebufferTarget.Framebuffer,
+						FramebufferTarget.ReadFramebuffer,
 						handle
 					);
 				}
 				else
 				{
 					GL.Ext.BindFramebuffer(
-						FramebufferTarget.FramebufferExt,
+						FramebufferTarget.ReadFramebuffer,
 						handle
 					);
 				}
+
+				currentReadFramebuffer = handle;
+			}
+
+			public static void BindDrawFramebuffer(int handle)
+			{
+				if (handle == currentDrawFramebuffer)
+				{
+					return;
+				}
+
+				if (hasARB)
+				{
+					GL.BindFramebuffer(
+						FramebufferTarget.DrawFramebuffer,
+						handle
+					);
+				}
+				else
+				{
+					GL.Ext.BindFramebuffer(
+						FramebufferTarget.DrawFramebuffer,
+						handle
+					);
+				}
+
+				currentDrawFramebuffer = handle;
 			}
 
 			public static uint GenRenderbuffer(int width, int height, DepthFormat format)
@@ -1925,42 +1991,31 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					GL.Disable(EnableCap.ScissorTest);
 				}
+
+				BindReadFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+				BindDrawFramebuffer(0);
+
 				if (hasARB)
 				{
-					GL.BindFramebuffer(
-						FramebufferTarget.ReadFramebuffer,
-						OpenGLDevice.Instance.Backbuffer.Handle
-					);
-					GL.BindFramebuffer(
-						FramebufferTarget.DrawFramebuffer,
-						0
-					);
 					GL.BlitFramebuffer(
 						0, 0, srcWidth, srcHeight,
 						0, 0, dstWidth, dstHeight,
 						ClearBufferMask.ColorBufferBit,
 						BlitFramebufferFilter.Linear
 					);
-					GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 				}
 				else
 				{
-					GL.Ext.BindFramebuffer(
-						FramebufferTarget.ReadFramebuffer,
-						OpenGLDevice.Instance.Backbuffer.Handle
-					);
-					GL.Ext.BindFramebuffer(
-						FramebufferTarget.DrawFramebuffer,
-						0
-					);
 					GL.Ext.BlitFramebuffer(
 						0, 0, srcWidth, srcHeight,
 						0, 0, dstWidth, dstHeight,
 						ClearBufferMask.ColorBufferBit,
 						BlitFramebufferFilter.Linear
 					);
-					GL.Ext.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
 				}
+
+				BindFramebuffer(0);
+
 				if (scissorTest)
 				{
 					GL.Enable(EnableCap.ScissorTest);
