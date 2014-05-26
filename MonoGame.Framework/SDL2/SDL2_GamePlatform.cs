@@ -407,11 +407,6 @@ namespace Microsoft.Xna.Framework
 				// Text Input Controls Key Handling
 				INTERNAL_TextInputUpdate();
 
-				if (keys.Contains(Keys.LeftAlt) && keys.Contains(Keys.F4))
-				{
-					INTERNAL_runApplication = false;
-				}
-
 				Keyboard.SetKeys(keys);
 				Game.Tick();
 			}
