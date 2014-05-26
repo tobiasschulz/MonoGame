@@ -295,9 +295,8 @@ namespace Microsoft.Xna.Framework
 					else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
 					{
 						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
-						if (keys.Contains(key))
+						if (keys.Remove(key))
 						{
-							keys.Remove(key);
 							INTERNAL_TextInputOut(key);
 						}
 					}
