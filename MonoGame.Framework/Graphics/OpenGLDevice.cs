@@ -500,11 +500,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Render Target Cache Variables
 
-		public int CurrentFramebuffer
-		{
-			get;
-			private set;
-		}
 		private int targetFramebuffer = 0;
 		private int[] currentAttachments;
 		private int currentDrawBuffers;
@@ -639,7 +634,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDeviceManager.DefaultBackBufferHeight,
 				DepthFormat.Depth16
 			);
-			CurrentFramebuffer = Backbuffer.Handle;
 
 			// Initialize sampler state array
 			int numSamplers;
@@ -1407,17 +1401,12 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Bind the right framebuffer, if needed
 			if (attachments == null)
 			{
-				if (Backbuffer.Handle != CurrentFramebuffer)
-				{
-					Framebuffer.BindFramebuffer(Backbuffer.Handle);
-					CurrentFramebuffer = Backbuffer.Handle;
-				}
+				Framebuffer.BindFramebuffer(Backbuffer.Handle);
 				return;
 			}
-			else if (targetFramebuffer != CurrentFramebuffer)
+			else
 			{
 				Framebuffer.BindFramebuffer(targetFramebuffer);
-				CurrentFramebuffer = targetFramebuffer;
 			}
 
 			// Update the color attachments, DrawBuffers state
@@ -1728,6 +1717,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			private static bool hasARB = false;
 			private static int currentReadFramebuffer = 0;
 			private static int currentDrawFramebuffer = 0;
+
+			public static int CurrentReadFramebuffer { get { return currentReadFramebuffer; } }
+			public static int CurrentDrawFramebuffer { get { return currentDrawFramebuffer; } }
 
 			public static void Initialize()
 			{

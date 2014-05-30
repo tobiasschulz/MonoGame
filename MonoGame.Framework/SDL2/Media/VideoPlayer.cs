@@ -226,7 +226,7 @@ namespace Microsoft.Xna.Framework.Media
 			// Attach the Texture2D to the framebuffer.
 			OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
 			OpenGLDevice.Framebuffer.AttachColor(videoTexture.texture.Handle, 0);
-			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
 
 			// Be careful about non-2D textures currently bound...
 			if (prevTarget != TextureTarget.Texture2D)
@@ -338,7 +338,7 @@ namespace Microsoft.Xna.Framework.Media
 			GL.ActiveTexture(TextureUnit.Texture0);
 
 			// Restore the active framebuffer
-			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
 
 			// Flush various GL states, if applicable
 			if (OpenGLDevice.Instance.ScissorTestEnable.Flush())
