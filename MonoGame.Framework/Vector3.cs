@@ -878,6 +878,22 @@ namespace Microsoft.Xna.Framework
 			result.Z = z;
 		}
 
+		public static void TransformNormal(Vector3[] sourceArray, ref Matrix matrix, Vector3[] destinationArray)
+		{
+			Debug.Assert(
+				destinationArray.Length >= sourceArray.Length,
+				"The destination array is smaller than the source array."
+			);
+
+			for (int i = 0; i < sourceArray.Length; i += 1)
+			{
+				Vector3 normal = sourceArray[i];
+				destinationArray[i].X = (normal.X * matrix.M11) + (normal.Y * matrix.M21) + (normal.Z * matrix.M31);
+				destinationArray[i].Y = (normal.X * matrix.M12) + (normal.Y * matrix.M22) + (normal.Z * matrix.M32);
+				destinationArray[i].Z = (normal.X * matrix.M13) + (normal.Y * matrix.M23) + (normal.Z * matrix.M33);
+			}
+		}
+
 		#endregion
 
 		#region Public Static Operators
