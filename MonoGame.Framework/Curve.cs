@@ -312,7 +312,7 @@ namespace Microsoft.Xna.Framework
 			// Only for position in curve.
 			CurveKey prev = Keys[0];
 			CurveKey next;
-			for (int i = 1; i < Keys.Count; i++)
+			for (int i = 1; i < Keys.Count; i += 1)
 			{
 				next = Keys[i];
 				if (next.Position >= position)
