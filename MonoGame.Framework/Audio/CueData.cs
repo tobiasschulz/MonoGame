@@ -784,8 +784,10 @@ namespace Microsoft.Xna.Framework.Audio
 					max -= INTERNAL_weights[i];
 				}
 			}
-			else if (INTERNAL_variationType == VariationPlaylistType.RandomNoImmediateRepeats)
+			else if (	INTERNAL_variationType == VariationPlaylistType.RandomNoImmediateRepeats ||
+					INTERNAL_variationType == VariationPlaylistType.Shuffle	)
 			{
+				// FIXME: Is Shuffle really any different from this?
 				double max = 0.0;
 				for (int i = 0; i < INTERNAL_weights.Length; i += 1)
 				{
