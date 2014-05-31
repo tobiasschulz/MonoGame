@@ -189,6 +189,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (force || Filter.NeedsFlush() || Anistropy.NeedsFlush())
 				{
 					TextureFilter filter = Filter.Flush();
+					float anistropy = Anistropy.Flush();
 					GL.TexParameter(
 						Target,
 						TextureParameterName.TextureMagFilter,
@@ -202,7 +203,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					GL.TexParameter(
 						Target,
 						(TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-						(filter == TextureFilter.Anisotropic) ? Math.Max(Anistropy.Flush(), 1.0f) : 1.0f
+						(filter == TextureFilter.Anisotropic) ? Math.Max(anistropy, 1.0f) : 1.0f
 					);
 				}
 
