@@ -534,9 +534,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			// Store off the old frame buffer components
 			int prevReadBuffer = OpenGLDevice.Framebuffer.CurrentReadFramebuffer;
-			int prevDrawBuffer = OpenGLDevice.Framebuffer.CurrentDrawFramebuffer;
 
-			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+			OpenGLDevice.Framebuffer.BindReadFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
 			GL.ReadPixels(
 				0, 0,
 				OpenGLDevice.Instance.Backbuffer.Width,
@@ -548,7 +547,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			// Restore old buffer components
 			OpenGLDevice.Framebuffer.BindReadFramebuffer(prevReadBuffer);
-			OpenGLDevice.Framebuffer.BindDrawFramebuffer(prevDrawBuffer);
 
 			// Now we get to do a software-based flip! Yes, really! -flibit
 			int width = OpenGLDevice.Instance.Backbuffer.Width;
