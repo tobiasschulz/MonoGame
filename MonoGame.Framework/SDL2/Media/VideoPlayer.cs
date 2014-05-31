@@ -224,9 +224,12 @@ namespace Microsoft.Xna.Framework.Media
 			int prevTexture = OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle;
 
 			// Attach the Texture2D to the framebuffer.
+			int prevReadFramebuffer = OpenGLDevice.Framebuffer.CurrentReadFramebuffer;
+			int prevDrawFramebuffer = OpenGLDevice.Framebuffer.CurrentDrawFramebuffer;
 			OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
 			OpenGLDevice.Framebuffer.AttachColor(videoTexture.texture.Handle, 0);
-			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+			OpenGLDevice.Framebuffer.BindReadFramebuffer(prevReadFramebuffer);
+			OpenGLDevice.Framebuffer.BindDrawFramebuffer(prevDrawFramebuffer);
 
 			// Be careful about non-2D textures currently bound...
 			if (prevTarget != TextureTarget.Texture2D)

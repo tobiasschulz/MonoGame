@@ -1714,12 +1714,25 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public static class Framebuffer
 		{
-			private static bool hasARB = false;
 			private static int currentReadFramebuffer = 0;
-			private static int currentDrawFramebuffer = 0;
+			public static int CurrentReadFramebuffer
+			{
+				get
+				{
+					return currentReadFramebuffer;
+				}
+			}
 
-			public static int CurrentReadFramebuffer { get { return currentReadFramebuffer; } }
-			public static int CurrentDrawFramebuffer { get { return currentDrawFramebuffer; } }
+			private static int currentDrawFramebuffer = 0;
+			public static int CurrentDrawFramebuffer
+			{
+				get
+				{
+					return currentDrawFramebuffer;
+				}
+			}
+
+			private static bool hasARB = false;
 
 			public static void Initialize()
 			{
