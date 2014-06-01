@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class TextureReader : ContentTypeReader<Texture>
+	internal class TextureReader : ContentTypeReader<Texture>
 	{
 		#region Protected Read Method
 

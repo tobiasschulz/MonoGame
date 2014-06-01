@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class ModelReader : ContentTypeReader<Model>
+	internal class ModelReader : ContentTypeReader<Model>
 	{
 		#region Public Constructor
 

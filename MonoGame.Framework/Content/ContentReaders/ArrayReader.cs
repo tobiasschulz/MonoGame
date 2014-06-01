@@ -38,7 +38,7 @@ using System;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class ArrayReader<T> : ContentTypeReader<T[]>
+	internal class ArrayReader<T> : ContentTypeReader<T[]>
 	{
 		#region Private ContentTypeReader Instance
 

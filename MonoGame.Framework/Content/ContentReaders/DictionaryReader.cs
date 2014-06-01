@@ -14,7 +14,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class DictionaryReader<TKey, TValue> : ContentTypeReader<Dictionary<TKey, TValue>>
+	internal class DictionaryReader<TKey, TValue> : ContentTypeReader<Dictionary<TKey, TValue>>
 	{
 		#region Private Variables
 
