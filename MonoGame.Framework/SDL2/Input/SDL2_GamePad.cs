@@ -178,21 +178,25 @@ namespace Microsoft.Xna.Framework.Input
 			// We use this when dealing with Haptic initialization.
 			IntPtr thisJoystick;
 
+			// Store these first before assigning, in case we've duplicated.
+			IntPtr controller;
+			bool isGameController;
+
 			// Initialize either a GameController or a Joystick.
 			if (SDL.SDL_IsGameController(which) == SDL.SDL_bool.SDL_TRUE)
 			{
-				INTERNAL_isGameController[which] = true;
-				INTERNAL_devices[which] = SDL.SDL_GameControllerOpen(which);
-				thisJoystick = SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[which]);
+				isGameController = true;
+				controller = SDL.SDL_GameControllerOpen(which);
+				thisJoystick = SDL.SDL_GameControllerGetJoystick(controller);
 			}
 			else
 			{
-				INTERNAL_isGameController[which] = false;
-				INTERNAL_devices[which] = SDL.SDL_JoystickOpen(which);
-				thisJoystick = INTERNAL_devices[which];
+				isGameController = false;
+				controller = SDL.SDL_JoystickOpen(which);
+				thisJoystick = controller;
 			}
 
-			if (INTERNAL_devices[which] == IntPtr.Zero && thisJoystick == IntPtr.Zero)
+			if (controller == IntPtr.Zero && thisJoystick == IntPtr.Zero)
 			{
 				// Crap, something went wrong.
 				System.Console.WriteLine("JOYSTICK OPEN ERROR: " + SDL.SDL_GetError());
@@ -211,9 +215,13 @@ namespace Microsoft.Xna.Framework.Input
 				return;
 			}
 			INTERNAL_instanceList.Add(instance, which);
+
+			// We're all set, assign our results!
+			INTERNAL_devices[which] = controller;
+			INTERNAL_isGameController[which] = isGameController;
 			INTERNAL_states[which] = GamePadState.InitializedState;
 
-			// Initialize the haptics for each joystick.
+			// Initialize the haptics for the joystick, if applicable.
 			if (SDL.SDL_JoystickIsHaptic(thisJoystick) == 1)
 			{
 				INTERNAL_haptics[which] = SDL.SDL_HapticOpenFromJoystick(thisJoystick);
