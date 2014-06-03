@@ -173,7 +173,12 @@ namespace Microsoft.Xna.Framework
 			SDL.SDL_SetMainReady();
 
 			// This _should_ be the first real SDL call we make...
-			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
+			SDL.SDL_Init(
+				SDL.SDL_INIT_VIDEO |
+				SDL.SDL_INIT_JOYSTICK |
+				SDL.SDL_INIT_GAMECONTROLLER |
+				SDL.SDL_INIT_HAPTIC
+			);
 
 			// Set and initialize the SDL2 window
 			Window = new SDL2_GameWindow(game);
@@ -426,6 +431,27 @@ namespace Microsoft.Xna.Framework
 
 			// Close SDL2_mixer if needed
 			Media.Song.closeMixer();
+		}
+
+		public override void BeforeInitialize()
+		{
+			base.BeforeInitialize();
+
+			// We want to initialize the controllers ASAP!
+			SDL.SDL_Event[] evt = new SDL.SDL_Event[1];
+			while (SDL.SDL_PeepEvents(
+				evt,
+				1,
+				SDL.SDL_eventaction.SDL_GETEVENT,
+				SDL.SDL_EventType.SDL_JOYDEVICEADDED,
+				SDL.SDL_EventType.SDL_JOYDEVICEADDED
+			) == 1)
+			{
+				GamePad.INTERNAL_AddInstance(evt[0].jdevice.which);
+			}
+
+			// Also, initialize the MonoGameJoystick.cfg file.
+			GamePad.INTERNAL_InitMonoGameJoystick();
 		}
 
 		public override bool BeforeUpdate(GameTime gameTime)
