@@ -445,8 +445,7 @@ namespace Microsoft.Xna.Framework
 				SDL.SDL_eventaction.SDL_GETEVENT,
 				SDL.SDL_EventType.SDL_JOYDEVICEADDED,
 				SDL.SDL_EventType.SDL_JOYDEVICEADDED
-			) == 1)
-			{
+			) == 1) {
 				GamePad.INTERNAL_AddInstance(evt[0].jdevice.which);
 			}
 
