@@ -439,6 +439,7 @@ namespace Microsoft.Xna.Framework
 
 			// We want to initialize the controllers ASAP!
 			SDL.SDL_Event[] evt = new SDL.SDL_Event[1];
+			SDL.SDL_PumpEvents(); // Required to get OSX device events this early.
 			while (SDL.SDL_PeepEvents(
 				evt,
 				1,
