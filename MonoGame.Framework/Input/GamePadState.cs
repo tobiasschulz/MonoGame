@@ -15,7 +15,6 @@ namespace Microsoft.Xna.Framework.Input
 	/// </summary>
 	public struct GamePadState
 	{
-
 		#region Public Properties
 
 		/// <summary>
@@ -26,6 +25,7 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
+
 		/// <summary>
 		/// Gets the packet number associated with this state.
 		/// </summary>
@@ -72,24 +72,6 @@ namespace Microsoft.Xna.Framework.Input
 			get;
 			internal set;
 		}
-
-		#endregion
-
-		#region Internal Properties
-
-		internal static GamePadState InitializedState
-		{
-			get
-			{
-				return initializedGamePadState;
-			}
-		}
-
-		#endregion
-
-		#region Private Static Variables
-
-		private static GamePadState initializedGamePadState = new GamePadState();
 
 		#endregion
 
@@ -186,7 +168,7 @@ namespace Microsoft.Xna.Framework.Input
 		/// <summary>
 		/// Gets the button mask along with 'virtual buttons' like LeftThumbstickLeft.
 		/// </summary>
-		private Buttons GetVirtualButtons ()
+		private Buttons GetVirtualButtons()
 		{
 			Buttons result = Buttons.buttons;
 			GamePadThumbSticks sticks = ThumbSticks;

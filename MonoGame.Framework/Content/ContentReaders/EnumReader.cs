@@ -13,7 +13,7 @@ using System;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class EnumReader<T> : ContentTypeReader<T>
+	internal class EnumReader<T> : ContentTypeReader<T>
 	{
 		#region Private ContentTypeReader Instance
 

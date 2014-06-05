@@ -28,10 +28,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		/// </summary>
 		public ReadOnlyCollection<char> Characters
 		{
-			get
-			{
-				return _characters;
-			}
+			get;
+			private set;
 		}
 
 		/// <summary>
@@ -64,17 +62,24 @@ namespace Microsoft.Xna.Framework.Graphics
 			set;
 		}
 
+		/// <summary>
+		/// Gets the texture that this SpriteFont draws from.
+		/// THIS IS A MONOGAME EXTENSION!
+		/// </summary>
+		/// <remarks>Can be used to implement custom rendering of a SpriteFont</remarks>
+		public Texture2D Texture
+		{
+			get
+			{
+				return _texture;
+			}
+		}
+
 		#endregion
 
 		#region Internal Readonly Variables
 
-		internal readonly Texture2D _texture;
-
-		#endregion
-
-		#region Private Variables
-
-		private ReadOnlyCollection<char> _characters;
+		private readonly Texture2D _texture;
 
 		#endregion
 
@@ -107,7 +112,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			List<Vector3> kerning,
 			char? defaultCharacter
 		) {
-			_characters = new ReadOnlyCollection<char>(characters.ToArray());
+			Characters = new ReadOnlyCollection<char>(characters.ToArray());
 			_texture = texture;
 			_glyphBounds = glyphBounds;
 			_cropping = cropping;
@@ -117,7 +122,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			Spacing = spacing;
 			DefaultCharacter = defaultCharacter;
 
-			_glyphs = new Dictionary<char, Glyph>(characters.Count);
+			_glyphs = new Dictionary<char, Glyph>(characters.Count, CharComparer.Default);
 
 			for (int i = 0; i < characters.Count; i += 1)
 			{
@@ -168,6 +173,17 @@ namespace Microsoft.Xna.Framework.Graphics
 			Vector2 size;
 			MeasureString(ref source, out size);
 			return size;
+		}
+
+		/// <summary>
+		/// Returns a copy of the dictionary containing the glyphs in this SpriteFont.
+		/// THIS IS A MONOGAME EXTENSION!
+		/// </summary>
+		/// <returns>A new Dictionary containing all of the glyphs inthis SpriteFont</returns>
+		/// <remarks>Can be used to calculate character bounds when implementing custom SpriteFont rendering.</remarks>
+		public Dictionary<char, Glyph> GetGlyphs()
+		{
+			return new Dictionary<char, Glyph>(_glyphs, _glyphs.Comparer);
 		}
 
 		#endregion
@@ -258,8 +274,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					offset.X += Spacing + currentGlyph.Width + currentGlyph.RightSideBearing;
 				}
 
-				hasCurrentGlyph = _glyphs.TryGetValue(c, out currentGlyph);
-				if (!hasCurrentGlyph)
+				if (!_glyphs.TryGetValue(c, out currentGlyph))
 				{
 					if (!defaultGlyph.HasValue)
 					{
@@ -267,25 +282,22 @@ namespace Microsoft.Xna.Framework.Graphics
 					}
 
 					currentGlyph = defaultGlyph.Value;
-					hasCurrentGlyph = true;
 				}
+				hasCurrentGlyph = true;
 
-				if (hasCurrentGlyph)
+				/* The first character on a line might have a negative left
+				 * side bearing. In this scenario, SpriteBatch/SpriteFont
+				 * normally offset the text to the right, so that text does
+				 * not hang off the left side of its rectangle.
+				 */
+				if (firstGlyphOfLine)
 				{
-					/* The first character on a line might have a negative left
-					 * side bearing. In this scenario, SpriteBatch/SpriteFont
-					 * normally offset the text to the right, so that text does
-					 * not hang off the left side of its rectangle.
-					 */
-					if (firstGlyphOfLine)
-					{
-						offset.X = Math.Max(offset.X, 0);
-						firstGlyphOfLine = false;
-					}
-					else
-					{
-						offset.X += currentGlyph.LeftSideBearing;
-					}
+					offset.X = Math.Max(currentGlyph.LeftSideBearing, 0);
+					firstGlyphOfLine = false;
+				}
+				else
+				{
+					offset.X += currentGlyph.LeftSideBearing;
 				}
 
 				Vector2 p = offset;
@@ -469,14 +481,40 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private Glyph struct
 
-		struct Glyph
+		/// <summary>
+		/// Struct that defines the spacing, Kerning, and bounds of a character.
+		/// THIS IS A MONOGAME EXTENSION!
+		/// </summary>
+		/// <remarks>Provides the data necessary to implement custom SpriteFont rendering.</remarks>
+		public struct Glyph
 		{
+			/// <summary>
+			/// The char associated with this glyph.
+			/// </summary>
 			public char Character;
-			public Rectangle BoundsInTexture;
+			/// <summary>
+			/// Rectangle in the font texture where this letter exists.
+			/// </summary>
+ 			public Rectangle BoundsInTexture;
+			/// <summary>
+			/// Cropping applied to the BoundsInTexture to calculate the bounds of the actual character.
+			/// </summary>
 			public Rectangle Cropping;
+			/// <summary>
+			/// The amount of space between the left side of the character and its first pixel in the X dimension.
+			/// </summary>
 			public float LeftSideBearing;
+			/// <summary>
+			/// The amount of space between the right side of the character and its last pixel in the X dimension.
+			/// </summary>
 			public float RightSideBearing;
+			/// <summary>
+			/// Width of the character before kerning is applied. 
+			/// </summary>
 			public float Width;
+			/// <summary>
+			/// Width of the character before kerning is applied. 
+			/// </summary>
 			public float WidthIncludingBearings;
 
 			public static readonly Glyph Empty = new Glyph();
@@ -487,6 +525,25 @@ namespace Microsoft.Xna.Framework.Graphics
 					"CharacterIndex={0}, Glyph={1}, Cropping={2}, Kerning={3},{4},{5}",
 					Character, BoundsInTexture, Cropping, LeftSideBearing, Width, RightSideBearing);
 			}
+		}
+
+		#endregion
+
+		#region Character Comparison Class
+
+		class CharComparer: IEqualityComparer<char>
+		{
+			public bool Equals(char x, char y)
+			{
+				return x == y;
+			}
+
+			public int GetHashCode(char b)
+			{
+				return (b | (b << 16));
+			}
+
+			static public readonly CharComparer Default = new CharComparer();
 		}
 
 		#endregion

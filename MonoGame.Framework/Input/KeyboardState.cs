@@ -323,7 +323,7 @@ namespace Microsoft.Xna.Framework.Input
 
 		private static int AddKeysToArray(uint keys, int offset, Keys[] pressedKeys, int index)
 		{
-			for (int i = 0; i < 32; i++)
+			for (int i = 0; i < 32; i += 1)
 			{
 				if ((keys & (1 << i)) != 0)
 				{

@@ -297,7 +297,7 @@ namespace Microsoft.Xna.Framework
 				 * we'd get better accuracy by adding v / num_points.
 				 */
 				center += v;
-				++num_points;
+				num_points += 1;
 			}
 
 			center /= (float) num_points;

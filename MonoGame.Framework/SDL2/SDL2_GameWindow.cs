@@ -141,7 +141,7 @@ namespace Microsoft.Xna.Framework
 
 			INTERNAL_sdlWindowFlags_Next = (
 				SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL |
-				SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
+				SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN |
 				SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS |
 				SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
 			);
@@ -213,6 +213,16 @@ namespace Microsoft.Xna.Framework
 				IsBorderless ? SDL.SDL_bool.SDL_FALSE : SDL.SDL_bool.SDL_TRUE
 			);
 
+			/* Because Mac windows resizes from the bottom, we have to get the position before changing
+			 * the size so we can keep the window centered when resizing in windowed mode.
+			 */
+			int prevX = 0;
+			int prevY = 0;
+			if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
+			{
+				SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out prevX, out prevY);
+			}
+
 			// Window bounds
 			SDL.SDL_SetWindowSize(INTERNAL_sdlWindow, clientWidth, clientHeight);
 
@@ -229,14 +239,10 @@ namespace Microsoft.Xna.Framework
 			}
 			else if ((INTERNAL_sdlWindowFlags_Next & SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
 			{
-				// Try to center the window around the old window position.
-				int x = 0;
-				int y = 0;
-				SDL.SDL_GetWindowPosition(INTERNAL_sdlWindow, out x, out y);
 				SDL.SDL_SetWindowPosition(
 					INTERNAL_sdlWindow,
-					x + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
-					y + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
+					prevX + ((OpenGLDevice.Instance.Backbuffer.Width - clientWidth) / 2),
+					prevY + ((OpenGLDevice.Instance.Backbuffer.Height - clientHeight) / 2)
 				);
 			}
 
@@ -290,7 +296,6 @@ namespace Microsoft.Xna.Framework
 				INTERNAL_sdlWindow,
 				title
 			);
-			INTERNAL_SetIcon(title);
 		}
 
 		#endregion
@@ -300,10 +305,47 @@ namespace Microsoft.Xna.Framework
 		private void INTERNAL_SetIcon(string title)
 		{
 			string fileIn = String.Empty;
-			if (System.IO.File.Exists(title + ".bmp"))
+
+			/* If the game's using SDL2_image, provide the option to use a PNG
+			 * instead of a BMP. Nice for anyone who cares about transparency.
+			 * -flibit
+			 */
+			try
+			{
+				fileIn = INTERNAL_GetIconName(title, ".png");
+				if (!String.IsNullOrEmpty(fileIn))
+				{
+					IntPtr icon = SDL_image.IMG_Load(fileIn);
+					SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+					SDL.SDL_FreeSurface(icon);
+					return;
+				}
+			}
+			catch(DllNotFoundException)
+			{
+				// Not that big a deal guys.
+			}
+
+			fileIn = INTERNAL_GetIconName(title, ".bmp");
+			if (!String.IsNullOrEmpty(fileIn))
+			{
+				IntPtr icon = SDL.SDL_LoadBMP(fileIn);
+				SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
+				SDL.SDL_FreeSurface(icon);
+			}
+		}
+
+		#endregion
+
+		#region Private Static Icon Filename Method
+
+		private static string INTERNAL_GetIconName(string title, string extension)
+		{
+			string fileIn = String.Empty;
+			if (System.IO.File.Exists(title + extension))
 			{
 				// If the title and filename work, it just works. Fine.
-				fileIn = title + ".bmp";
+				fileIn = title + extension;
 			}
 			else
 			{
@@ -334,20 +376,14 @@ namespace Microsoft.Xna.Framework
 				{
 					stripChars = stripChars.Replace(c.ToString(), "");
 				}
-				stripChars += ".bmp";
+				stripChars += extension;
 
 				if (System.IO.File.Exists(stripChars))
 				{
 					fileIn = stripChars;
 				}
 			}
-
-			if (!String.IsNullOrEmpty(fileIn))
-			{
-				IntPtr icon = SDL.SDL_LoadBMP(fileIn);
-				SDL.SDL_SetWindowIcon(INTERNAL_sdlWindow, icon);
-				SDL.SDL_FreeSurface(icon);
-			}
+			return fileIn;
 		}
 
 		#endregion

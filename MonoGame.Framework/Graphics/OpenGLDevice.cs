@@ -136,6 +136,22 @@ namespace Microsoft.Xna.Framework.Graphics
 				Handle = 0;
 			}
 
+			public bool NeedsFlush()
+			{
+				if (Handle == 0)
+				{
+					return false; // Nothing to modify!
+				}
+
+				return (	WrapS.NeedsFlush() ||
+						WrapT.NeedsFlush() ||
+						WrapR.NeedsFlush() ||
+						Filter.NeedsFlush() ||
+						Anistropy.NeedsFlush() ||
+						MaxMipmapLevel.NeedsFlush() ||
+						LODBias.NeedsFlush()	);
+			}
+
 			public void Flush(bool force)
 			{
 				if (Handle == 0)
@@ -173,6 +189,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				if (force || Filter.NeedsFlush() || Anistropy.NeedsFlush())
 				{
 					TextureFilter filter = Filter.Flush();
+					float anistropy = Anistropy.Flush();
 					GL.TexParameter(
 						Target,
 						TextureParameterName.TextureMagFilter,
@@ -186,7 +203,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					GL.TexParameter(
 						Target,
 						(TextureParameterName) ExtTextureFilterAnisotropic.TextureMaxAnisotropyExt,
-						(filter == TextureFilter.Anisotropic) ? Math.Max(Anistropy.Flush(), 1.0f) : 1.0f
+						(filter == TextureFilter.Anisotropic) ? Math.Max(anistropy, 1.0f) : 1.0f
 					);
 				}
 
@@ -484,11 +501,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Render Target Cache Variables
 
-		public int CurrentFramebuffer
-		{
-			get;
-			private set;
-		}
 		private int targetFramebuffer = 0;
 		private int[] currentAttachments;
 		private int currentDrawBuffers;
@@ -556,15 +568,29 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#endregion
 
-		#region Constructor
+		#region Public Initializer
 
-		public OpenGLDevice()
+		public static void Initialize()
 		{
 			// We should only have one of these!
 			if (Instance != null)
 			{
 				throw new Exception("OpenGLDevice already created!");
 			}
+
+			Instance = new OpenGLDevice();
+		}
+
+		#endregion
+
+		#region Private Constructor
+
+		private OpenGLDevice()
+		{
+			/* This looks redundant, but Framebuffer needs this.
+			 * Remove this when we have our own entry points.
+			 * -flibit
+			 */
 			Instance = this;
 
 			// Load OpenGL entry points
@@ -609,7 +635,6 @@ namespace Microsoft.Xna.Framework.Graphics
 				GraphicsDeviceManager.DefaultBackBufferHeight,
 				DepthFormat.Depth16
 			);
-			CurrentFramebuffer = Backbuffer.Handle;
 
 			// Initialize sampler state array
 			int numSamplers;
@@ -912,7 +937,8 @@ namespace Microsoft.Xna.Framework.Graphics
 				OpenGLSampler sampler = Samplers[i];
 				if (!(	force ||
 					sampler.Target.NeedsFlush() ||
-					sampler.Texture.NeedsFlush()	))
+					sampler.Texture.NeedsFlush() ||
+					sampler.Texture.GetCurrent().NeedsFlush()	))
 				{
 					// Nothing changed in this sampler, skip it.
 					continue;
@@ -928,7 +954,9 @@ namespace Microsoft.Xna.Framework.Graphics
 					GL.BindTexture(sampler.Target.GetCurrent(), 0);
 				}
 
-				if (force || sampler.Texture.NeedsFlush())
+				if (	force ||
+					sampler.Texture.NeedsFlush() || 
+					sampler.Texture.GetCurrent().NeedsFlush()	)
 				{
 					OpenGLTexture texture = sampler.Texture.Flush();
 					GL.BindTexture(sampler.Target.Flush(), texture.Handle);
@@ -1374,17 +1402,12 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Bind the right framebuffer, if needed
 			if (attachments == null)
 			{
-				if (Backbuffer.Handle != CurrentFramebuffer)
-				{
-					Framebuffer.BindFramebuffer(Backbuffer.Handle);
-					CurrentFramebuffer = Backbuffer.Handle;
-				}
+				Framebuffer.BindFramebuffer(Backbuffer.Handle);
 				return;
 			}
-			else if (targetFramebuffer != CurrentFramebuffer)
+			else
 			{
 				Framebuffer.BindFramebuffer(targetFramebuffer);
-				CurrentFramebuffer = targetFramebuffer;
 			}
 
 			// Update the color attachments, DrawBuffers state
@@ -1692,6 +1715,24 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		public static class Framebuffer
 		{
+			private static int currentReadFramebuffer = 0;
+			public static int CurrentReadFramebuffer
+			{
+				get
+				{
+					return currentReadFramebuffer;
+				}
+			}
+
+			private static int currentDrawFramebuffer = 0;
+			public static int CurrentDrawFramebuffer
+			{
+				get
+				{
+					return currentDrawFramebuffer;
+				}
+			}
+
 			private static bool hasARB = false;
 
 			public static void Initialize()
@@ -1730,20 +1771,84 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			public static void BindFramebuffer(int handle)
 			{
+				if (currentReadFramebuffer != handle && currentDrawFramebuffer != handle)
+				{
+					if (hasARB)
+					{
+						GL.BindFramebuffer(
+							FramebufferTarget.Framebuffer,
+							handle
+						);
+					}
+					else
+					{
+						GL.Ext.BindFramebuffer(
+							FramebufferTarget.FramebufferExt,
+							handle
+						);
+					}
+
+					currentReadFramebuffer = handle;
+					currentDrawFramebuffer = handle;
+				}
+				else if (currentReadFramebuffer != handle)
+				{
+					BindReadFramebuffer(handle);
+				}
+				else if (currentDrawFramebuffer != handle)
+				{
+					BindDrawFramebuffer(handle);
+				}
+			}
+
+			public static void BindReadFramebuffer(int handle)
+			{
+				if (handle == currentReadFramebuffer)
+				{
+					return;
+				}
+
 				if (hasARB)
 				{
 					GL.BindFramebuffer(
-						FramebufferTarget.Framebuffer,
+						FramebufferTarget.ReadFramebuffer,
 						handle
 					);
 				}
 				else
 				{
 					GL.Ext.BindFramebuffer(
-						FramebufferTarget.FramebufferExt,
+						FramebufferTarget.ReadFramebuffer,
 						handle
 					);
 				}
+
+				currentReadFramebuffer = handle;
+			}
+
+			public static void BindDrawFramebuffer(int handle)
+			{
+				if (handle == currentDrawFramebuffer)
+				{
+					return;
+				}
+
+				if (hasARB)
+				{
+					GL.BindFramebuffer(
+						FramebufferTarget.DrawFramebuffer,
+						handle
+					);
+				}
+				else
+				{
+					GL.Ext.BindFramebuffer(
+						FramebufferTarget.DrawFramebuffer,
+						handle
+					);
+				}
+
+				currentDrawFramebuffer = handle;
 			}
 
 			public static uint GenRenderbuffer(int width, int height, DepthFormat format)
@@ -1895,42 +2000,31 @@ namespace Microsoft.Xna.Framework.Graphics
 				{
 					GL.Disable(EnableCap.ScissorTest);
 				}
+
+				BindReadFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
+				BindDrawFramebuffer(0);
+
 				if (hasARB)
 				{
-					GL.BindFramebuffer(
-						FramebufferTarget.ReadFramebuffer,
-						OpenGLDevice.Instance.Backbuffer.Handle
-					);
-					GL.BindFramebuffer(
-						FramebufferTarget.DrawFramebuffer,
-						0
-					);
 					GL.BlitFramebuffer(
 						0, 0, srcWidth, srcHeight,
 						0, 0, dstWidth, dstHeight,
 						ClearBufferMask.ColorBufferBit,
 						BlitFramebufferFilter.Linear
 					);
-					GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 				}
 				else
 				{
-					GL.Ext.BindFramebuffer(
-						FramebufferTarget.ReadFramebuffer,
-						OpenGLDevice.Instance.Backbuffer.Handle
-					);
-					GL.Ext.BindFramebuffer(
-						FramebufferTarget.DrawFramebuffer,
-						0
-					);
 					GL.Ext.BlitFramebuffer(
 						0, 0, srcWidth, srcHeight,
 						0, 0, dstWidth, dstHeight,
 						ClearBufferMask.ColorBufferBit,
 						BlitFramebufferFilter.Linear
 					);
-					GL.Ext.BindFramebuffer(FramebufferTarget.FramebufferExt, 0);
 				}
+
+				BindFramebuffer(0);
+
 				if (scissorTest)
 				{
 					GL.Enable(EnableCap.ScissorTest);

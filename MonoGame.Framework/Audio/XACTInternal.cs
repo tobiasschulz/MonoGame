@@ -13,7 +13,7 @@ using System;
 
 namespace Microsoft.Xna.Framework.Audio
 {
-	internal class XACTCalculator
+	internal static class XACTCalculator
 	{
 		public static double ParseDecibel(byte binaryValue)
 		{

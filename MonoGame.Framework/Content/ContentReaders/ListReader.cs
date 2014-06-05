@@ -39,7 +39,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Xna.Framework.Content
 {
-	public class ListReader<T> : ContentTypeReader<List<T>>
+	internal class ListReader<T> : ContentTypeReader<List<T>>
 	{
 		#region Private ContentTypeReader Instance
 

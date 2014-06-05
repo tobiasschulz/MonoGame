@@ -17,6 +17,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Utilities;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content
@@ -328,7 +329,7 @@ namespace Microsoft.Xna.Framework.Content
 			Stream stream;
 			try
 			{
-				string assetPath = TitleContainer.GetFilename(
+				string assetPath = FileHelpers.NormalizeFilePathSeparators(
 					Path.Combine(RootDirectoryFullPath, assetName) + ".xnb"
 				);
 				stream = File.OpenRead(assetPath);
@@ -386,9 +387,10 @@ namespace Microsoft.Xna.Framework.Content
 						using (ContentReader reader = GetContentReaderFromXnb(assetName, ref stream, xnbReader, recordDisposableObject))
 						{
 							result = reader.ReadAsset<T>();
-							if (result is GraphicsResource)
+							GraphicsResource resource = result as GraphicsResource;
+							if (resource != null)
 							{
-								((GraphicsResource) result).Name = originalAssetName;
+								resource.Name = originalAssetName;
 							}
 						}
 					}
@@ -404,7 +406,7 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException ex)
 			{
 				// MonoGame try to load as a non-content file
-				assetName = TitleContainer.GetFilename(
+				assetName = FileHelpers.NormalizeFilePathSeparators(
 					Path.Combine(RootDirectoryFullPath, assetName)
 				);
 				assetName = Normalize<T>(assetName);
@@ -422,15 +424,17 @@ namespace Microsoft.Xna.Framework.Content
 				 * disposables recorded here. Doing it outside of this catch will
 				 * result in disposables being logged twice.
 				 */
-				if (result is IDisposable)
+				IDisposable disposableResult = result as IDisposable;
+
+				if (disposableResult != null)
 				{
 					if (recordDisposableObject != null)
 					{
-						recordDisposableObject(result as IDisposable);
+						recordDisposableObject(disposableResult);
 					}
 					else
 					{
-						disposableAssets.Add(result as IDisposable);
+						disposableAssets.Add(disposableResult);
 					}
 				}
 			}
@@ -612,7 +616,7 @@ namespace Microsoft.Xna.Framework.Content
 			catch (ContentLoadException)
 			{
 				// Try to reload as a non-xnb file.
-				assetName = TitleContainer.GetFilename(
+				assetName = FileHelpers.NormalizeFilePathSeparators(
 					Path.Combine(RootDirectoryFullPath, assetName)
 				);
 				assetName = Normalize<T>(assetName);

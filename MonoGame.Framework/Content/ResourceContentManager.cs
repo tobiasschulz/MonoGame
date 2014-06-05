@@ -47,11 +47,12 @@ namespace Microsoft.Xna.Framework.Content
 			{
 				throw new ContentLoadException("Resource not found");
 			}
-			if (!(obj is byte[]))
+			byte[] byteArrayObject = obj as byte[];
+			if (byteArrayObject == null)
 			{
 				throw new ContentLoadException("Resource is not in binary format");
 			}
-			return new MemoryStream(obj as byte[]);
+			return new MemoryStream(byteArrayObject);
 		}
 
 		#endregion

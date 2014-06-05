@@ -38,6 +38,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Utilities;
 #endregion
 
 namespace Microsoft.Xna.Framework.Content
@@ -129,18 +130,7 @@ namespace Microsoft.Xna.Framework.Content
 			string externalReference = ReadString();
 			if (!String.IsNullOrEmpty(externalReference))
 			{
-				const char notSeparator = '\\';
-				char separator = Path.DirectorySeparatorChar;
-				externalReference = externalReference.Replace(notSeparator, separator);
-				// Get a uri for the asset path using the file:// schema and no host
-				Uri src = new Uri("file:///" + assetName.Replace(notSeparator, separator));
-				// Add the relative path to the external reference
-				Uri dst = new Uri(src, externalReference);
-				/* The uri now contains the path to the external reference within the
-				 * content manager. Get the local path and skip the first character
-				 * (the path separator).
-				 */
-				return contentManager.Load<T>(dst.LocalPath.Substring(1));
+				return contentManager.Load<T>(FileHelpers.ResolveRelativePath(assetName, externalReference));
 			}
 			return default(T);
 		}

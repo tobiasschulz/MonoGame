@@ -58,11 +58,14 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (byte) (this._packedValue >> 16);
+				unchecked
+				{
+					return (byte) (this._packedValue >> 16);
+				}
 			}
 			set
 			{
-				this._packedValue = (this._packedValue & 0xff00ffff) | (uint) (value << 16);
+				this._packedValue = (this._packedValue & 0xff00ffff) | ((uint) value << 16);
 			}
 		}
 
@@ -74,11 +77,14 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (byte) (this._packedValue >> 8);
+				unchecked
+				{
+					return (byte) (this._packedValue >> 8);
+				}
 			}
 			set
 			{
-				this._packedValue = (this._packedValue & 0xffff00ff) | ((uint) (value << 8));
+				this._packedValue = (this._packedValue & 0xffff00ff) | ((uint) value << 8);
 			}
 		}
 
@@ -90,7 +96,10 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (byte) (this._packedValue);
+				unchecked
+				{
+					return (byte) (this._packedValue);
+				}
 			}
 			set
 			{
@@ -106,11 +115,14 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return (byte) (this._packedValue >> 24);
+				unchecked
+				{
+					return (byte) (this._packedValue >> 24);
+				}
 			}
 			set
 			{
-				this._packedValue = (this._packedValue & 0x00ffffff) | ((uint) (value << 24));
+				this._packedValue = (this._packedValue & 0x00ffffff) | ((uint) value << 24);
 			}
 		}
 
@@ -1919,9 +1931,11 @@ namespace Microsoft.Xna.Framework
 			System.Globalization.CultureInfo culture,
 			object value
 		) {
-			if (value is string)
+			string s = value as string;
+
+			if (s != null)
 			{
-				string[] v = ((string) value).Split(
+				string[] v = s.Split(
 					culture.NumberFormat.NumberGroupSeparator.ToCharArray()
 				);
 				return new Color(

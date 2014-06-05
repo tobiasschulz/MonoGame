@@ -30,14 +30,68 @@ namespace Microsoft.Xna.Framework.Content
 			Dictionary<string, object> dict = input.ReadObject<Dictionary<string, object>>();
 			foreach (KeyValuePair<string, object> item in dict) {
 				EffectParameter parameter = effectMaterial.Parameters[item.Key];
-				if (parameter != null) {
-					if (typeof(Texture).IsAssignableFrom(item.Value.GetType()))
+				if (parameter != null)
+				{
+					Type itemType = item.Value.GetType();
+					if (typeof(Texture).IsAssignableFrom(itemType))
 					{
 						parameter.SetValue((Texture) item.Value);
 					}
+					else if (typeof(int).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((int) item.Value);
+					}
+					else if (typeof(bool).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((bool) item.Value);
+					}
+					else if (typeof(float).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((float) item.Value);
+					}
+					else if (typeof(float[]).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((float[]) item.Value);
+					}
+					else if (typeof(Vector2).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Vector2) item.Value);
+					}
+					else if (typeof(Vector2[]).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Vector2[]) item.Value);
+					}
+					else if (typeof(Vector3).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Vector3) item.Value);
+					}
+					else if (typeof(Vector3[]).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Vector3[]) item.Value);
+					}
+					else if (typeof(Vector4).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Vector4) item.Value);
+					}
+					else if (typeof(Vector4[]).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Vector4[]) item.Value);
+					}
+					else if (typeof(Matrix).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Matrix) item.Value);
+					}
+					else if (typeof(Matrix[]).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Matrix[]) item.Value);
+					}
+					else if (typeof(Quaternion).IsAssignableFrom(itemType))
+					{
+						parameter.SetValue((Quaternion) item.Value);
+					}
 					else
 					{
-						throw new NotImplementedException();
+						throw new NotSupportedException("Parameter type is not supported");
 					}
 				}
 				else

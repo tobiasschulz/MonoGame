@@ -224,9 +224,12 @@ namespace Microsoft.Xna.Framework.Media
 			int prevTexture = OpenGLDevice.Instance.Samplers[0].Texture.GetCurrent().Handle;
 
 			// Attach the Texture2D to the framebuffer.
+			int prevReadFramebuffer = OpenGLDevice.Framebuffer.CurrentReadFramebuffer;
+			int prevDrawFramebuffer = OpenGLDevice.Framebuffer.CurrentDrawFramebuffer;
 			OpenGLDevice.Framebuffer.BindFramebuffer(rgbaFramebuffer);
 			OpenGLDevice.Framebuffer.AttachColor(videoTexture.texture.Handle, 0);
-			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+			OpenGLDevice.Framebuffer.BindReadFramebuffer(prevReadFramebuffer);
+			OpenGLDevice.Framebuffer.BindDrawFramebuffer(prevDrawFramebuffer);
 
 			// Be careful about non-2D textures currently bound...
 			if (prevTarget != TextureTarget.Texture2D)
@@ -338,7 +341,7 @@ namespace Microsoft.Xna.Framework.Media
 			GL.ActiveTexture(TextureUnit.Texture0);
 
 			// Restore the active framebuffer
-			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.CurrentFramebuffer);
+			OpenGLDevice.Framebuffer.BindFramebuffer(OpenGLDevice.Instance.Backbuffer.Handle);
 
 			// Flush various GL states, if applicable
 			if (OpenGLDevice.Instance.ScissorTestEnable.Flush())
@@ -954,11 +957,7 @@ namespace Microsoft.Xna.Framework.Media
 			// If we actually got data, buffer it into OpenAL.
 			if (data.Count > 0)
 			{
-				audioStream.SubmitFloatBuffer(
-					data.ToArray(),
-					currentAudio.channels,
-					currentAudio.freq
-				);
+				audioStream.SubmitFloatBuffer(data.ToArray());
 				return true;
 			}
 			return false;
@@ -979,7 +978,16 @@ namespace Microsoft.Xna.Framework.Media
 			const int NUM_BUFFERS = 4;
 
 			// Generate the source.
-			audioStream = new DynamicSoundEffectInstance();
+			IntPtr audioPtr = IntPtr.Zero;
+			do
+			{
+				audioPtr = TheoraPlay.THEORAPLAY_getAudio(Video.theoraDecoder);
+			} while (audioPtr == IntPtr.Zero);
+			TheoraPlay.THEORAPLAY_AudioPacket packet = TheoraPlay.getAudioPacket(audioPtr);
+			audioStream = new DynamicSoundEffectInstance(
+				packet.freq,
+				(AudioChannels) packet.channels
+			);
 			audioStream.BufferNeeded += OnBufferRequest;
 			UpdateVolume();
 

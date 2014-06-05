@@ -25,30 +25,13 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			internal set
 			{
-				switch (Gate)
+				if (value.LengthSquared() > 1f)
 				{
-					case GateType.None:
-						left = value;
-						break;
-					case GateType.Round:
-						if (value.LengthSquared() > 1f)
-						{
-							left = Vector2.Normalize(value);
-						}
-						else
-						{
-							left = value;
-						}
-						break;
-					case GateType.Square:
-						left = new Vector2(
-							MathHelper.Clamp(value.X, -1f, 1f),
-							MathHelper.Clamp(value.Y, -1f, 1f)
-						);
-						break;
-					default:
-						left = Vector2.Zero;
-						break;
+					left = Vector2.Normalize(value);
+				}
+				else
+				{
+					left = value;
 				}
 			}
 		}
@@ -60,46 +43,16 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			internal set
 			{
-				switch (Gate)
+				if (value.LengthSquared() > 1f)
 				{
-					case GateType.None:
-						right = value;
-						break;
-					case GateType.Round:
-						if (value.LengthSquared() > 1f)
-						{
-							right = Vector2.Normalize(value);
-						}
-						else
-						{
-							right = value;
-						}
-						break;
-					case GateType.Square:
-						right = new Vector2(
-							MathHelper.Clamp(value.X, -1f, 1f),
-							MathHelper.Clamp(value.Y, -1f, 1f)
-						);
-						break;
-					default:
-						right = Vector2.Zero;
-						break;
+					right = Vector2.Normalize(value);
+				}
+				else
+				{
+					right = value;
 				}
 			}
 		}
-
-		#endregion
-
-		#region Public Variables and GateType Enum
-
-		public enum GateType
-		{
-			None,
-			Round,
-			Square
-		}
-
-		public static GateType Gate = GateType.Round;
 
 		#endregion
 
